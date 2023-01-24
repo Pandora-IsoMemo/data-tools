@@ -1,0 +1,9 @@
+^.*\.Rproj$
+^Dockerfile$
+^Jenkinsfile$
+^JenkinsfileMPI$
+^bin$
+^LICENSE\.md$
+^deploy\.sh$
+^\..*$
+^\.Rproj\.user$
