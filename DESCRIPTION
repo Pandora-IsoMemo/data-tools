@@ -5,9 +5,26 @@ Version: 0.1.0
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
-Maintainer: Antonia Runge antonia.runge@inwt-statistics.de
+Maintainer: Antonia Runge <antonia.runge@inwt-statistics.de>
 Description: Helpful functions and modules that can be applied across the Isomemo Apps.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+Imports:
+  DT,
+  httr,
+  magrittr,
+  openxlsx,
+  readODS,
+  readr,
+  readxl,
+  RSQLite,
+  shiny,
+  shinyAce,
+  shinyjs,
+  templates,
+  tidyr
+Suggests:
+  lintr (>= 1.0.2),
+  testthat (>= 2.0.0)
 RoxygenNote: 7.2.1
