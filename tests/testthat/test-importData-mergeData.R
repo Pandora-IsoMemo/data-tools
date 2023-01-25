@@ -1,6 +1,6 @@
-testthat::test_that("Test module mergeViaUI", {
+testthat::test_that("Test module mergeSettings", {
   testMergeList <-
-    readRDS(testthat::test_path("data-module-mergeImports.rds"))
+    readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
 
   for (i in 1:length(testMergeList)) {
     colnames(testMergeList[[i]]$dataImport) <-
@@ -208,7 +208,7 @@ test_that("matchColClasses/equalColClasses function", {
 
 testthat::test_that("Test module queryDataServer", {
   testMergeList <-
-    readRDS(testthat::test_path("data-module-mergeImports.rds"))
+    readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
 
   shiny::testServer(queryDataServer,
                     args = list(mergeList = reactive(
