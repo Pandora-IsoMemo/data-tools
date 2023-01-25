@@ -1,0 +1,8 @@
+body {
+  padding-top: 80px;
+}
+
+/* Remove sliderInput minor ticks */
+.irs-grid-pol.small {
+  display: none;
+}
