@@ -31,7 +31,6 @@ toolsPanelServer <- function(id) {
       importedData <- importDataServer("localData")
 
       observe({
-        browser()
         req(length(importedData()) > 0)
         d <- importedData()[[1]]
         testData(d)

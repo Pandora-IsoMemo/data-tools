@@ -51,6 +51,7 @@ queryDataUI <- function(id) {
   )
 }
 
+
 #' Query Data Server
 #'
 #' Server function of the qery data module
