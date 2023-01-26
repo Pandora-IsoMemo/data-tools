@@ -98,7 +98,7 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                    req(preparedData())
 
                    previewData <-
-                     cutAllLongStrings(preparedData()[1:2, , drop = FALSE], cutAt = 20)
+                     cutAllLongStrings(preparedData(), cutAt = 20)
                    DT::datatable(
                      previewData,
                      filter = "none",
@@ -106,8 +106,9 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                      rownames = FALSE,
                      options = list(
                        dom = "t",
-                       ordering = FALSE,
-                       scrollX = TRUE
+                       searching = FALSE,
+                       scrollX = TRUE,
+                       scrollY = "12rem"
                      )
                    )
                  })

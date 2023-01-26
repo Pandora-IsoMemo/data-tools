@@ -259,8 +259,9 @@ importDataServer <- function(id,
                      rownames = FALSE,
                      options = list(
                        dom = "t",
-                       ordering = FALSE,
-                       scrollX = TRUE
+                       searching = FALSE,
+                       scrollX = TRUE,
+                       scrollY = "12rem"
                      )
                    )
                  })
@@ -275,7 +276,7 @@ importDataServer <- function(id,
                    req(preparedData())
 
                    values$dataImport <- preparedData()
-                   values$preview <- cutAllLongStrings(values$dataImport[1:2, , drop = FALSE], cutAt = 20)
+                   values$preview <- cutAllLongStrings(values$dataImport, cutAt = 20)
                    shinyjs::enable(ns("addData"), asis = TRUE)
                  })
 
@@ -373,7 +374,7 @@ importDataDialog <- function(ns) {
     style = 'height: 940px',
     footer = tagList(
       actionButton(ns("accept"), "Accept"),
-      actionButton(ns("addData"), "Mark for Merge / Query"),
+      actionButton(ns("addData"), "Send to Merge / Query"),
       actionButton(ns("acceptMerged"), "Accept Merged"),
       actionButton(ns("acceptQuery"), "Accept Query"),
       actionButton(ns("cancel"), "Cancel")
@@ -467,7 +468,7 @@ selectDataTab <- function(ns) {
     checkboxInput(ns("rownames"), "First column contains rownames"),
     helpText("The first row in your file need to contain variable names."),
     div(
-      style = "height: 12.5em",
+      style = "height: 14em",
       div(class = "text-danger", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
       div(class = "text-success", textOutput(ns("success")))
