@@ -92,35 +92,6 @@ testthat::test_that("Test module mergeSettings", {
       )
 
       testthat::expect_equal(session$returned$command, testMergeCommand)
-
-      # testthat::expect_true(typeof(output$colNames) == "character")
-      # testthat::expect_equal(
-      #   colnames(joinedData())[c(1:10, (ncol(joinedData()) - 10):ncol(joinedData()))],
-      #   c(
-      #     "Human.Entry.ID",
-      #     "Submitter.ID",
-      #     "Context.ID",
-      #     "Radiocarbon.ID",
-      #     "Individual.ID",
-      #     "Sample.ID",
-      #     "Sex",
-      #     "Age.Category",
-      #     "Min..Age.(yrs)",
-      #     "Max..Age.(yrs)",
-      #     "IRMS.Lab.Institution.Stable.Oxygen.Phosphate.Measurement",
-      #     "Nr..of.Samples.(δ18O)",
-      #     "δ18O.Phosphate.(VPDB)",
-      #     "δ18O.Phosphate.(VPDB).unc.",
-      #     "δ18O.Phosphate.(VSMOW)",
-      #     "δ18O.Phosphate.(VSMOW).unc.",
-      #     "δ18O.Drinking.Water.(if.not.reported.differently)",
-      #     "Lab.Institution.Stable.Strontium.Measurement",
-      #     "Nr..of.Samples.(87Sr/86Sr)",
-      #     "87Sr/86Sr",
-      #     "87Sr/86Sr.unc."
-      #   )
-      #
-      # )
     }
   )
 })
