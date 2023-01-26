@@ -5,7 +5,7 @@
 #' @param id id of module
 #' @param label label of button
 #' @rdname importData
-#'
+#' @export
 importDataUI <- function(id, label = "Import Data") {
   ns <- NS(id)
   actionButton(ns("openPopup"), label)
@@ -24,7 +24,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param customErrorChecks list of reactive functions which will be executed after importing
 #' of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
-#'
+#' @export
 importDataServer <- function(id,
                              rowNames = NULL,
                              colNames = NULL,
