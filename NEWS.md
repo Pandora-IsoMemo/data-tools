@@ -1,5 +1,10 @@
 # IsoAppTools
 
+## Version 23.01.2
+
+### New features
+- custom checks for warnings and errors added that can be applied in the importData module
+
 ## Version 23.01.1
 
 ### New features

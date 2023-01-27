@@ -18,10 +18,10 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param id namespace id
 #' @param rowNames (reactive) use this for rownames of imported data
 #' @param colNames (reactive) use this for colnames of imported data
-#' @param customWarningChecks list of reactive functions which will be executed after importing
+#' @param customWarningChecks list of reactive(!) functions which will be executed after importing
 #'  of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
-#' @param customErrorChecks list of reactive functions which will be executed after importing
+#' @param customErrorChecks list of reactive(!) functions which will be executed after importing
 #' of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
 #' @export
@@ -29,7 +29,8 @@ importDataServer <- function(id,
                              rowNames = NULL,
                              colNames = NULL,
                              customWarningChecks = list(),
-                             customErrorChecks = list()) {
+                             customErrorChecks = list(),
+                             ignoreWarnings = FALSE) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -217,7 +218,7 @@ importDataServer <- function(id,
                      )
 
                      if (length(values$errors) > 0 ||
-                         length(values$warnings) > 0) {
+                          (!ignoreWarnings && length(values$warnings) > 0)) {
                        shinyjs::disable(ns("addData"), asis = TRUE)
                        shinyjs::disable(ns("accept"), asis = TRUE)
                      } else {

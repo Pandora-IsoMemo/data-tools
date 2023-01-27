@@ -1,7 +1,7 @@
 Package: IsoAppTools
 Type: Package
 Title: Iso App Tools
-Version: 23.01.1
+Version: 23.01.2
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
