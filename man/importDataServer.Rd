@@ -27,6 +27,8 @@ of data.
 \item{customErrorChecks}{list of reactive(!) functions which will be executed after importing
 of data.
   functions need to return TRUE if check is successful or a character with a warning otherwise.}
+
+\item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 }
 \description{
 Backend for data import module
