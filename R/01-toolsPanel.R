@@ -28,7 +28,12 @@ toolsPanelServer <- function(id) {
     id,
     function(input, output, session) {
       testData <- reactiveVal(NULL)
-      importedData <- importDataServer("localData")
+      importedData <- importDataServer(
+        "localData",
+        customWarningChecks = list(reactive(checkWarningEmptyValues)),
+        customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+        ignoreWarnings = TRUE
+        )
 
       observe({
         req(length(importedData()) > 0)

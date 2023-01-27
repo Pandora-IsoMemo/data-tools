@@ -279,7 +279,24 @@ importDataServer <- function(id,
 
                    values$dataImport <- preparedData()
                    values$preview <- cutAllLongStrings(values$dataImport, cutAt = 20)
-                   shinyjs::enable(ns("addData"), asis = TRUE)
+
+                   ## Import valid?
+                   values <- checkImport(values,
+                                         df = values$dataImport,
+                                         customWarningChecks,
+                                         customErrorChecks)
+
+                   if (length(values$errors) > 0 ||
+                       (!ignoreWarnings && length(values$warnings) > 0)) {
+                     shinyjs::disable(ns("addData"), asis = TRUE)
+                     shinyjs::disable(ns("accept"), asis = TRUE)
+                     values$fileImportSuccess <- NULL
+                   } else {
+                     shinyjs::enable(ns("addData"), asis = TRUE)
+                     shinyjs::enable(ns("accept"), asis = TRUE)
+                     values$fileImportSuccess <-
+                       "Data import successful"
+                   }
                  })
 
                  ## button cancel ----
@@ -471,7 +488,7 @@ selectDataTab <- function(ns) {
     helpText("The first row in your file need to contain variable names."),
     div(
       style = "height: 14em",
-      div(class = "text-danger", uiOutput(ns("warning"))),
+      div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
       div(class = "text-success", textOutput(ns("success")))
     ),
@@ -541,6 +558,14 @@ loadDataWrapper <- function(values,
   values$fileName <- filename
   values$dataImport <- as.data.frame(df)
 
+  values
+}
+
+
+checkImport <- function(values,
+                        df,
+                        customWarningChecks,
+                        customErrorChecks) {
   ## Import valid?
   lapply(customWarningChecks, function(fun) {
     res <- fun()(df)
