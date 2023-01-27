@@ -218,8 +218,7 @@ importDataServer <- function(id,
                        customErrorChecks = customErrorChecks
                      )
 
-                     if (length(values$errors) > 0 ||
-                          (!ignoreWarnings && length(values$warnings) > 0)) {
+                     if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                        shinyjs::disable(ns("addData"), asis = TRUE)
                        shinyjs::disable(ns("accept"), asis = TRUE)
                      } else {
@@ -246,9 +245,9 @@ importDataServer <- function(id,
                  })
 
                  output$warning <-
-                   renderUI(tagList(lapply(values$warnings, tags$p)))
+                   renderUI(tagList(lapply(unlist(values$warnings, use.names = FALSE), tags$p)))
                  output$error <-
-                   renderUI(tagList(lapply(values$errors, tags$p)))
+                   renderUI(tagList(lapply(unlist(values$errors, use.names = FALSE), tags$p)))
                  output$success <-
                    renderText(values$fileImportSuccess)
 
@@ -275,19 +274,18 @@ importDataServer <- function(id,
                    )
 
                  observeEvent(preparedData(), {
-                   req(preparedData())
-
                    values$dataImport <- preparedData()
                    values$preview <- cutAllLongStrings(values$dataImport, cutAt = 20)
 
                    ## Import valid?
+                   values$warnings$import <- list()
+                   values$errors$import <- list()
                    values <- checkImport(values,
                                          df = values$dataImport,
                                          customWarningChecks,
                                          customErrorChecks)
 
-                   if (length(values$errors) > 0 ||
-                       (!ignoreWarnings && length(values$warnings) > 0)) {
+                   if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("addData"), asis = TRUE)
                      shinyjs::disable(ns("accept"), asis = TRUE)
                      values$fileImportSuccess <- NULL
@@ -536,11 +534,11 @@ loadDataWrapper <- function(values,
       headOnly = headOnly
     ),
     error = function(e) {
-      values$errors <- c(values$errors, "Could not read in file.")
+      values$errors <- list(load = "Could not read in file.")
       NULL
     },
     warning = function(w) {
-      values$warnings <- c(values$warnings, "Could not read in file.")
+      values$warnings <- list(load = "Could not read in file.")
       NULL
     }
   )
@@ -558,6 +556,12 @@ loadDataWrapper <- function(values,
   values$fileName <- filename
   values$dataImport <- as.data.frame(df)
 
+  # custom checks are running after "prepare data"
+  # values <- checkImport(values,
+  #                       df = values$dataImport,
+  #                       customWarningChecks,
+  #                       customErrorChecks)
+
   values
 }
 
@@ -567,23 +571,31 @@ checkImport <- function(values,
                         customWarningChecks,
                         customErrorChecks) {
   ## Import valid?
-  lapply(customWarningChecks, function(fun) {
-    res <- fun()(df)
-    if (!isTRUE(res)) {
-      values$warnings <- c(values$warnings, res)
-    }
-  })
+  if (length(values$errors$load) == 0) {
+    lapply(customWarningChecks, function(fun) {
+      res <- fun()(df)
+      if (!isTRUE(res)) {
+        values$warnings$import <- c(values$warnings$import, res)
+      }
+    })
+  }
 
-  lapply(customErrorChecks, function(fun) {
-    res <- fun()(df)
-    if (!isTRUE(res)) {
-      values$errors <- c(values$errors, res)
-    }
-  })
+  if (length(values$errors$load) == 0) {
+    lapply(customErrorChecks, function(fun) {
+      res <- fun()(df)
+      if (!isTRUE(res)) {
+        values$errors$import <- c(values$errors$import, res)
+      }
+    })
+  }
 
   values
 }
 
+isNotValid <- function(errors, warnings, ignoreWarnings) {
+  length(unlist(errors, use.names = FALSE)) > 0 ||
+    (!ignoreWarnings && length(unlist(warnings, use.names = FALSE)) > 0)
+}
 
 loadData <-
   function(file,
