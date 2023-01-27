@@ -1,5 +1,10 @@
 # IsoAppTools
 
+## Version 23.01.3
+
+### Bug fixes
+- reset fields in _Prepare Data_ when switching source to file or url
+
 ## Version 23.01.2
 
 ### New features

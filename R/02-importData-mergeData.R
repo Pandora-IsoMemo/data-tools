@@ -16,7 +16,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableX"),
           "Select tabel x",
-          choices = c("Mark files ..." = ""),
+          choices = c("Send files ..." = ""),
           width = "100%"
         )
       ),
@@ -28,7 +28,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableY"),
           "Select tabel y",
-          choices = c("Mark files ..." = ""),
+          choices = c("Send files ..." = ""),
           width = "100%"
         )
       ),

@@ -108,7 +108,7 @@ queryDataServer <- function(id, mergeList) {
 
                  output$inMemoryTables <- renderDataTable({
                    validate(need(!is.null(tableIds()),
-                                 "In-memory tables: Mark files ..."))
+                                 "In-memory tables: Send files ..."))
 
                    req(tableIds())
                    DT::datatable(
@@ -131,7 +131,7 @@ queryDataServer <- function(id, mergeList) {
 
                  output$inMemoryColumns <- renderDataTable({
                    validate(need(!is.null(tableIds()),
-                                 "In-memory columns: Mark files ..."))
+                                 "In-memory columns: Send files ..."))
 
                    req(tableIds())
                    inMemColsPasted <-

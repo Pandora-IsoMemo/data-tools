@@ -41,9 +41,9 @@ prepareDataUI <- function(id) {
 prepareDataServer <- function(id, selectedData, nameOfSelected) {
   moduleServer(id,
                function(input, output, session) {
-                 preparedData <- reactiveVal()
+                 preparedData <- reactiveVal(NULL)
 
-                 observeEvent(selectedData(), {
+                 observeEvent(selectedData(), ignoreNULL = FALSE, {
                    preparedData(selectedData())
                  })
 
@@ -156,8 +156,10 @@ renameColumnsServer <- function(id, columnNames) {
                function(input, output, session) {
                  newColumnNames <- reactiveVal()
 
-                 observeEvent(columnNames(), {
-                   updateSelectInput(session, "columnToRename", choices = columnNames())
+                 observeEvent(columnNames(), ignoreNULL = FALSE, {
+                   if (is.null(columnNames())) choices <- c("Select data ..." = "") else
+                     choices <- columnNames()
+                   updateSelectInput(session, "columnToRename", choices = choices)
                    updateTextInput(session, "newName", value = "")
 
                    # by default return current column names
@@ -219,11 +221,14 @@ deleteColumnsServer <- function(id, preparedData) {
                function(input, output, session) {
                  newData <- reactiveVal()
 
-                 observeEvent(preparedData(), {
+                 observeEvent(preparedData(), ignoreNULL = FALSE, {
+                   if (is.null(preparedData())) choices <- c("Select data ..." = "") else
+                     choices <- colnames(preparedData())
+
                    updateSelectInput(
                      session,
                      "columnsToDelete",
-                     choices = colnames(preparedData()),
+                     choices = choices,
                      selected = c()
                    )
 
@@ -294,11 +299,14 @@ joinColumnsServer <- function(id, preparedData) {
                function(input, output, session) {
                  newData <- reactiveVal()
 
-                 observeEvent(preparedData(), {
+                 observeEvent(preparedData(), ignoreNULL = FALSE, {
+                   if (is.null(preparedData())) choices <- c("Select data ..." = "") else
+                     choices <- colnames(preparedData())
+
                    updateSelectInput(session, "column1ToJoin",
-                                     choices = colnames(preparedData()))
+                                     choices = choices)
                    updateSelectInput(session, "column2ToJoin",
-                                     choices = colnames(preparedData()))
+                                     choices = choices)
                    updateTextInput(session, "newName", value = "")
 
                    # by default return current data
@@ -374,9 +382,12 @@ splitColumnsServer <- function(id, preparedData) {
                function(input, output, session) {
                  newData <- reactiveVal()
 
-                 observeEvent(preparedData(), {
+                 observeEvent(preparedData(), ignoreNULL = FALSE, {
+                   if (is.null(preparedData())) choices <- c("Select data ..." = "") else
+                     choices <- colnames(preparedData())
+
                    updateSelectInput(session, "columnToSplit",
-                                     choices = colnames(preparedData()))
+                                     choices = choices)
                    updateTextInput(session, "newName1", value = "")
                    updateTextInput(session, "newName2", value = "")
 
