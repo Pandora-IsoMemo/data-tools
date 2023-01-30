@@ -1,5 +1,11 @@
 # IsoAppTools
 
+## Version 23.01.4
+
+### Bug fixes
+- fix typo in _Merge Data_
+- fix disappearance of buttons after opening pop-up a second time
+
 ## Version 23.01.3
 
 ### Bug fixes

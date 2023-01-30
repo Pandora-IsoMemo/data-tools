@@ -73,8 +73,6 @@ importDataServer <- function(id,
                    shinyjs::disable(ns("accept"), asis = TRUE)
                    shinyjs::disable(ns("acceptMerged"), asis = TRUE)
                    shinyjs::disable(ns("acceptQuery"), asis = TRUE)
-                   shinyjs::hide(ns("addData"), asis = TRUE)
-                   shinyjs::hide(ns("accept"), asis = TRUE)
                    shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
 
@@ -398,6 +396,7 @@ importDataDialog <- function(ns) {
     ),
     tabsetPanel(
       id = ns("tabImport"),
+      selected = "Select (required)",
       tabPanel("Select (required)",
                selectDataTab(ns = ns)),
       tabPanel("Prepare",
@@ -556,7 +555,7 @@ loadDataWrapper <- function(values,
   values$fileName <- filename
   values$dataImport <- as.data.frame(df)
 
-  # custom checks are running after "prepare data"
+  # custom checks are running after "prepare data" now
   # values <- checkImport(values,
   #                       df = values$dataImport,
   #                       customWarningChecks,
