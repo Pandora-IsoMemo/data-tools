@@ -3,6 +3,7 @@
 export("%>%")
 export(checkErrorNoNumericColumns)
 export(checkWarningEmptyValues)
+export(cutAllLongStrings)
 export(importDataServer)
 export(importDataUI)
 export(startApplication)

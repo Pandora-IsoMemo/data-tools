@@ -19,7 +19,8 @@ ui <- fluidPage(
 )
 
 server <- function(input, output, session) {
-  toolsPanelServer(id = "import_panel")
+  toolsPanelServer(id = "import_panel",
+                   defaultSource = "file")
 }
 
 shinyApp(ui, server)

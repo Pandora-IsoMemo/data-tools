@@ -12,5 +12,5 @@ cutAllLongStrings(df, cutAt = 50)
 \item{cutAt}{(numeric) number of characters after which to cut the entries of an character-column}
 }
 \description{
-Cut All Strings
+Cuts strings of character columns if a string is longer than cutAt parameter.
 }

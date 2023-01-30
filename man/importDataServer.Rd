@@ -10,7 +10,8 @@ importDataServer(
   colNames = NULL,
   customWarningChecks = list(),
   customErrorChecks = list(),
-  ignoreWarnings = FALSE
+  ignoreWarnings = FALSE,
+  defaultSource = "ckan"
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ of data.
   functions need to return TRUE if check is successful or a character with a warning otherwise.}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
+
+\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 }
 \description{
 Backend for data import module

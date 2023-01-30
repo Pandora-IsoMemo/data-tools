@@ -25,13 +25,15 @@ importDataUI <- function(id, label = "Import Data") {
 #' of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
+#' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @export
 importDataServer <- function(id,
                              rowNames = NULL,
                              colNames = NULL,
                              customWarningChecks = list(),
                              customErrorChecks = list(),
-                             ignoreWarnings = FALSE) {
+                             ignoreWarnings = FALSE,
+                             defaultSource = "ckan") {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -67,7 +69,7 @@ importDataServer <- function(id,
                    values$data <- list()
                    dataSource(NULL)
 
-                   showModal(importDataDialog(ns = ns))
+                   showModal(importDataDialog(ns = ns, defaultSource = defaultSource))
 
                    shinyjs::disable(ns("addData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
@@ -382,7 +384,7 @@ importDataServer <- function(id,
 }
 
 # import data dialog UI ----
-importDataDialog <- function(ns) {
+importDataDialog <- function(ns, defaultSource = "ckan") {
   modalDialog(
     shinyjs::useShinyjs(),
     title = "Import Data",
@@ -398,7 +400,7 @@ importDataDialog <- function(ns) {
       id = ns("tabImport"),
       selected = "Select (required)",
       tabPanel("Select (required)",
-               selectDataTab(ns = ns)),
+               selectDataTab(ns = ns, defaultSource = defaultSource)),
       tabPanel("Prepare",
                prepareDataUI(ns("dataPreparer"))),
       tabPanel("Merge",
@@ -413,7 +415,8 @@ importDataDialog <- function(ns) {
 #' Select Data UI
 #'
 #' @param ns namespace
-selectDataTab <- function(ns) {
+#' @inheritParams importDataServer
+selectDataTab <- function(ns, defaultSource = "ckan") {
   tagList(
     tags$br(),
     fluidRow(
@@ -426,7 +429,8 @@ selectDataTab <- function(ns) {
                  "Pandora Platform" = "ckan",
                  "File" = "file",
                  "URL" = "url"
-               )
+               ),
+               selected = defaultSource
              )),
       column(
         8,
@@ -691,8 +695,11 @@ loadData <-
 
 #' Cut All Strings
 #'
+#' Cuts strings of character columns if a string is longer than cutAt parameter.
+#'
 #' @param df (data.frame) data.frame with character and non-character columns
 #' @param cutAt (numeric) number of characters after which to cut the entries of an character-column
+#' @export
 cutAllLongStrings <- function(df, cutAt = 50) {
   if (is.null(df)) return(NULL)
 

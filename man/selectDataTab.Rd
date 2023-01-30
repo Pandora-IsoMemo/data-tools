@@ -4,10 +4,12 @@
 \alias{selectDataTab}
 \title{Select Data UI}
 \usage{
-selectDataTab(ns)
+selectDataTab(ns, defaultSource = "ckan")
 }
 \arguments{
 \item{ns}{namespace}
+
+\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 }
 \description{
 Select Data UI

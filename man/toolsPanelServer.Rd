@@ -4,10 +4,12 @@
 \alias{toolsPanelServer}
 \title{Server function of toolsPanel module}
 \usage{
-toolsPanelServer(id)
+toolsPanelServer(id, defaultSource = "ckan")
 }
 \arguments{
 \item{id}{module id}
+
+\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 }
 \description{
 Server function of toolsPanel module

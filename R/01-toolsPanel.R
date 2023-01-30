@@ -22,8 +22,8 @@ toolsPanelUI <- function(id) {
 #' Server function of toolsPanel module
 #'
 #' @param id module id
-#'
-toolsPanelServer <- function(id) {
+#' @inheritParams importDataServer
+toolsPanelServer <- function(id, defaultSource = "ckan") {
   moduleServer(
     id,
     function(input, output, session) {
@@ -32,7 +32,8 @@ toolsPanelServer <- function(id) {
         "localData",
         customWarningChecks = list(reactive(checkWarningEmptyValues)),
         customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-        ignoreWarnings = TRUE
+        ignoreWarnings = TRUE,
+        defaultSource = defaultSource
         )
 
       observe({

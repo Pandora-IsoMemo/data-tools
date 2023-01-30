@@ -1,5 +1,11 @@
 # IsoAppTools
 
+## Version 23.01.5
+
+### Updates
+- export of function `cutAllLongStrings()`
+- new parameter `defaultSource` in `importDataServer()`
+
 ## Version 23.01.4
 
 ### Bug fixes
