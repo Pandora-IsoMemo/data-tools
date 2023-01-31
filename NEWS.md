@@ -1,6 +1,6 @@
 # DataTools
 
-## Version 23.01.5
+## Version 23.01.6
 
 ### Updates
 - renaming package to DataTools
