@@ -2,7 +2,7 @@
 % Please edit documentation in R/03-checks.R
 \name{checkWarningEmptyValues}
 \alias{checkWarningEmptyValues}
-\title{Check Warning Empty VAlues}
+\title{Check Warning Empty Values}
 \usage{
 checkWarningEmptyValues(data)
 }
@@ -10,5 +10,5 @@ checkWarningEmptyValues(data)
 \item{data}{data to be checked}
 }
 \description{
-Check for empty values that can be applied as customWarningChecks in importDataServer.
+Check for empty values. Check can be applied as customWarningChecks in importDataServer.
 }
