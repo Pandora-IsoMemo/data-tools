@@ -23,13 +23,13 @@ checkWarningEmptyValues <- function(data) {
   TRUE
 }
 
-#' Check Error Any Non-Numeric Columns
+#' Check Any Non-Numeric Columns
 #'
-#' Check for any non-numeric columns. Check can be applied as customErrorChecks in importDataServer.
+#' Check for any non-numeric columns. Check can be applied as custom checks in importDataServer.
 #'
 #' @param data data to be checked
 #' @export
-checkErrorAnyNonNumericColumns <- function(data) {
+checkAnyNonNumericColumns <- function(data) {
   nNumericCol <- sum(findNumericCol(as.data.frame(data)))
 
   if (nNumericCol < ncol(data)) {

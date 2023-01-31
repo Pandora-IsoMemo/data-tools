@@ -9,15 +9,15 @@ test_that("Test checkWarningEmptyValues()", {
   expect_true(checkWarningEmptyValues(testData))
 })
 
-test_that("Test checkWarningEmptyValues()", {
+test_that("Test checkAnyNonNumericColumns()", {
   testData <- data.frame(x = 1:3,
                          y = c("a", "b", "c"))
-  expect_equal(checkErrorAnyNonNumericColumns(testData),
+  expect_equal(checkAnyNonNumericColumns(testData),
                "Please provide a dataset with all numeric variables.")
 
   testData <- data.frame(x = 1:3,
                          y = 5:7)
-  expect_true(checkWarningEmptyValues(testData))
+  expect_true(checkAnyNonNumericColumns(testData))
 })
 
 test_that("Test checkErrorNoNumericColumns()", {
