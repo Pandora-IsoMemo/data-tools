@@ -1,5 +1,10 @@
 # DataTools
 
+## Version 23.01.7
+
+### Updates
+- new custom check to ensure that all columns are numeric
+
 ## Version 23.01.6
 
 ### Updates

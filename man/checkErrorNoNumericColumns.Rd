@@ -10,5 +10,5 @@ checkErrorNoNumericColumns(data)
 \item{data}{data to be checked}
 }
 \description{
-Check for minimal numeric columns that can be applied as customErrorChecks in importDataServer.
+Check for minimal numeric columns. Check can be applied as customErrorChecks in importDataServer.
 }
