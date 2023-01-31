@@ -1,4 +1,4 @@
 library(testthat)
-library(IsoAppTools)
+library(DataTools)
 
-test_check("IsoAppTools")
+test_check("DataTools")

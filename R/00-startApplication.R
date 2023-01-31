@@ -9,7 +9,7 @@ startApplication <- function(port = getOption("shiny.port"),
                              host = getOption("shiny.host", "127.0.0.1"),
                              launch.browser = getOption("shiny.launch.browser", interactive())) {
   shiny::runApp(
-    system.file("app", package = "IsoAppTools"),
+    system.file("app", package = "DataTools"),
     port = port,
     host = host,
     launch.browser = launch.browser

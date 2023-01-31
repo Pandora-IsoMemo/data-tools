@@ -1,7 +1,7 @@
 ui <- fluidPage(
   tagList(
     navbarPage(
-      title = paste("Test App", packageVersion("IsoAppTools")),
+      title = paste("Test App", packageVersion("DataTools")),
       theme = shinythemes::shinytheme("flatly"),
       position = "fixed-top",
       collapsible = TRUE,

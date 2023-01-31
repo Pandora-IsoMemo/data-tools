@@ -1,4 +1,9 @@
-# IsoAppTools
+# DataTools
+
+## Version 23.01.6
+
+### Updates
+- renaming package to DataTools
 
 ## Version 23.01.5
 
