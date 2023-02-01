@@ -1,5 +1,10 @@
 # DataTools
 
+## Version 23.02.1
+
+### Bug fixes
+- wrong warnings when switching on/of 'First column contains rownames' 
+
 ## Version 23.01.7
 
 ### Updates
