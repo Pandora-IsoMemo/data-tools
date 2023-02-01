@@ -179,8 +179,16 @@ importDataServer <- function(id,
                    updateSelectInput(session = session, "sheet", selected = character(0))
                  })
 
-                 # specify file server ----
+                 observeEvent(list(input$type, dataSource()$file), {
+                   req(input$type)
 
+                   if (input$type %in% c("xls", "xlsx")) {
+                     updateSelectInput(session, "sheet",
+                                       choices = getSheetSelection(dataSource()$file))
+                   }
+                 })
+
+                 # specify file server ----
                  observeEvent(list(
                    dataSource(),
                    input$type,
@@ -227,44 +235,9 @@ importDataServer <- function(id,
                        values$fileImportSuccess <-
                          "Data import successful"
                      }
-
-                     req(values$dataImport)
-                     values$preview <- cutAllLongStrings(values$dataImport[1:2, , drop = FALSE], cutAt = 20)
                    },
                    value = 0.75,
                    message = 'loading data ...')
-                 })
-
-                 observeEvent(list(input$type, dataSource()$file), {
-                   req(input$type)
-
-                   if (input$type %in% c("xls", "xlsx")) {
-                     updateSelectInput(session, "sheet",
-                                       choices = getSheetSelection(dataSource()$file))
-                   }
-                 })
-
-                 output$warning <-
-                   renderUI(tagList(lapply(unlist(values$warnings, use.names = FALSE), tags$p)))
-                 output$error <-
-                   renderUI(tagList(lapply(unlist(values$errors, use.names = FALSE), tags$p)))
-                 output$success <-
-                   renderText(values$fileImportSuccess)
-
-                 output$preview <- renderDataTable({
-                   req(values$preview)
-                   DT::datatable(
-                     values$preview,
-                     filter = "none",
-                     selection = "none",
-                     rownames = FALSE,
-                     options = list(
-                       dom = "t",
-                       searching = FALSE,
-                       scrollX = TRUE,
-                       scrollY = "12rem"
-                     )
-                   )
                  })
 
                  preparedData <- prepareDataServer(
@@ -295,6 +268,29 @@ importDataServer <- function(id,
                      values$fileImportSuccess <-
                        "Data import successful"
                    }
+                 })
+
+                 output$warning <-
+                   renderUI(tagList(lapply(unlist(values$warnings, use.names = FALSE), tags$p)))
+                 output$error <-
+                   renderUI(tagList(lapply(unlist(values$errors, use.names = FALSE), tags$p)))
+                 output$success <-
+                   renderText(values$fileImportSuccess)
+
+                 output$preview <- renderDataTable({
+                   req(values$preview)
+                   DT::datatable(
+                     values$preview,
+                     filter = "none",
+                     selection = "none",
+                     rownames = FALSE,
+                     options = list(
+                       dom = "t",
+                       searching = FALSE,
+                       scrollX = TRUE,
+                       scrollY = "12rem"
+                     )
+                   )
                  })
 
                  ## button cancel ----
@@ -536,12 +532,12 @@ loadDataWrapper <- function(values,
       sheetId = sheetId,
       headOnly = headOnly
     ),
-    error = function(e) {
-      values$errors <- list(load = "Could not read in file.")
+    error = function(cond) {
+      values$errors <- list(load = paste("Could not read in file:", cond$message))
       NULL
     },
-    warning = function(w) {
-      values$warnings <- list(load = "Could not read in file.")
+    warning = function(cond) {
+      values$warnings <- list(load = paste("Warning:", cond$message))
       NULL
     }
   )

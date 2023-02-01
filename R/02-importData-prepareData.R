@@ -193,11 +193,18 @@ deleteColumnsUI <- function(id) {
   tagList(fluidRow(
     column(
       5,
-      selectInput(
+      pickerInput(
         ns("columnsToDelete"),
-        "Delete column(s)",
+        "Delete column",
         choices = NULL,
-        multiple = TRUE
+        multiple = TRUE,
+        options = list(
+          `actions-box` = TRUE,
+          size = 10,
+          `none-selected-text` = "No column selected",
+          `selected-text-format` = "count > 8",
+          style = "backgound:'gray'"
+        )
       )
     ),
     column(
@@ -225,7 +232,7 @@ deleteColumnsServer <- function(id, preparedData) {
                    if (is.null(preparedData())) choices <- c("Select data ..." = "") else
                      choices <- colnames(preparedData())
 
-                   updateSelectInput(
+                   updatePickerInput(
                      session,
                      "columnsToDelete",
                      choices = choices,
