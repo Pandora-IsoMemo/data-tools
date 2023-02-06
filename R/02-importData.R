@@ -620,7 +620,7 @@ loadDataWrapper <- function(values,
   # }
 
   ## set colnames
-  if (!input$withColnames && !is.null(colNames)) {
+  if (!withColnames && !is.null(colNames)) {
     colnames(df) <- rep("", ncol(df))
     mini <- min(length(colNames()), ncol(df))
     colnames(df)[seq_len(mini)] <- colNames()[seq_len(mini)]
