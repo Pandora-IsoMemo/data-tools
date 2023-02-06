@@ -20,7 +20,7 @@ test_that("Test module importData", {
                  ckanResource = "CIMA Humans 29.05.2021",
                  type = "xlsx",
                  sheet = "1",
-                 rownames = FALSE,
+                 withRownames = FALSE,
                  accept = TRUE
                )
 
@@ -59,7 +59,7 @@ test_that("Test module importData", {
                  openPopup = TRUE,
                  source = "file",
                  type = "csv",
-                 rownames = FALSE,
+                 withRownames = FALSE,
                  colSep = ",",
                  decSep = ".",
                  colnames = TRUE,
@@ -81,7 +81,7 @@ test_that("Test module importData", {
                # MUST be integrated into the module: ----
                desiredOutput <- session$returned()[[1]] %>% as.matrix()
                attr(desiredOutput, "includeSd") <- isTRUE(input$includeSd)
-               attr(desiredOutput, "includeRownames") <- isTRUE(input$rownames)
+               attr(desiredOutput, "includeRownames") <- isTRUE(input$withRownames)
 
                expect_equal(
                  desiredOutput,

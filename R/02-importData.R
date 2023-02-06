@@ -27,6 +27,8 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param batch (logical) use batch import
+#' @param outputAsMatrix (logical) TRUE if output must be a matrix,
+#'  e.g. for batch = TRUE in Resources
 #' @export
 importDataServer <- function(id,
                              rowNames = NULL,
@@ -35,7 +37,8 @@ importDataServer <- function(id,
                              customErrorChecks = list(),
                              ignoreWarnings = FALSE,
                              defaultSource = "ckan",
-                             batch = FALSE) {
+                             batch = FALSE,
+                             outputAsMatrix = FALSE) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -218,7 +221,7 @@ importDataServer <- function(id,
                      input$type,
                      input$colSep,
                      input$decSep,
-                     input$rownames,
+                     input$withRownames,
                      #input$includeSd
                      input$sheet
                    ),
@@ -243,11 +246,11 @@ importDataServer <- function(id,
                          type = input$type,
                          sep = input$colSep,
                          dec = input$decSep,
-                         withRownames = isTRUE(input$rownames),
-                         sheetId = as.numeric(input$sheet),
-                         headOnly = FALSE,
-                         customWarningChecks = customWarningChecks,
-                         customErrorChecks = customErrorChecks
+                         withRownames = isTRUE(input$withRownames),
+                         withColnames = isTRUE(input$withColnames),
+                         includeSd = isTRUE(input$includeSd),
+                         outputAsMatrix = outputAsMatrix,
+                         sheetId = as.numeric(input$sheet)
                        )
 
                        if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
@@ -535,8 +538,10 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
         )
       )
     ),
-    checkboxInput(ns("rownames"),
+    checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE),
+    checkboxInput(ns("withRownames"),
                   paste(if (batch) "Second" else "First", "column contains rownames")),
+    if (batch) checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE),
     helpText("The first row in your file need to contain variable names."),
     if (batch) {
       helpText(
@@ -572,8 +577,8 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
 #' @param sep (character) column separator input
 #' @param dec (character) decimal separator input
 #' @param withRownames (logical) contains rownames input
+#' @param includeSd (logical) include sd input
 #' @param sheetId (numeric) sheet id
-#' @param headOnly (logical) load only head (first n rows) of file
 loadDataWrapper <- function(values,
                             filepath,
                             filename,
@@ -582,19 +587,19 @@ loadDataWrapper <- function(values,
                             sep,
                             dec,
                             withRownames,
-                            sheetId,
-                            headOnly,
-                            customWarningChecks,
-                            customErrorChecks) {
+                            withColnames,
+                            includeSd,
+                            outputAsMatrix,
+                            sheetId) {
   df <- tryCatch(
     loadData(
       file = filepath,
       type = type,
       sep = sep,
       dec = dec,
-      rownames = withRownames,
+      withRownames = withRownames,
       sheetId = sheetId,
-      headOnly = headOnly
+      headOnly = FALSE
     ),
     error = function(cond) {
       values$errors <-
@@ -607,24 +612,31 @@ loadDataWrapper <- function(values,
     }
   )
 
-  #attr(df, "includeSd") <- isTRUE(input$includeSd)
+  ## set colnames
+  # if (!is.null(colNames)) {
+  #   colnames(df) <- rep("", ncol(df))
+  #   mini <- min(length(colNames()), ncol(df))
+  #   colnames(df)[seq_len(mini)] <- colNames()[seq_len(mini)]
+  # }
 
   ## set colnames
-  if (!is.null(colNames)) {
+  if (!input$withColnames && !is.null(colNames)) {
     colnames(df) <- rep("", ncol(df))
     mini <- min(length(colNames()), ncol(df))
     colnames(df)[seq_len(mini)] <- colNames()[seq_len(mini)]
   }
 
   ## Import technically successful
-  values$fileName <- filename
-  values$dataImport <- as.data.frame(df)
+  if(outputAsMatrix) {
+    df <- as.matrix(df)
+    attr(df, "includeSd") <- isTRUE(includeSd)
+    attr(df, "includeRownames") <- withRownames # isTRUE(input$withRownames)
+    values$dataImport <- df
+  } else {
+    values$dataImport <- as.data.frame(df)
+  }
 
-  # custom checks are running after "prepare data" now
-  # values <- checkImport(values,
-  #                       df = values$dataImport,
-  #                       customWarningChecks,
-  #                       customErrorChecks)
+  values$fileName <- filename
 
   values
 }
@@ -667,7 +679,7 @@ loadData <-
            type,
            sep = ",",
            dec = ".",
-           rownames = FALSE,
+           withRownames = FALSE,
            sheetId = 1,
            headOnly = FALSE) {
     # if(type == "csv" | type == "txt"){
@@ -745,7 +757,7 @@ loadData <-
       return(NULL)
     }
 
-    if (rownames) {
+    if (withRownames) {
       rn <- data[, 1]
       data <- data[, -1, drop = FALSE]
       rownames(data) <- rn
