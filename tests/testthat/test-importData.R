@@ -125,6 +125,75 @@ test_that("Test module importData", {
                  )
                )
              })
+
+  testServer(importDataServer,
+             {
+               # Arrange
+               print("test import with rownames")
+               # Act
+               session$setInputs(
+                 openPopup = TRUE,
+                 source = "file",
+                 type = "xlsx",
+                 rownames = TRUE,
+                 colSep = ",",
+                 decSep = ".",
+                 colnames = TRUE,
+                 includeSd = TRUE,
+                 file = structure(
+                   list(
+                     name = "sources.xlsx",
+                     size = 199L,
+                     type = "xlsx",
+                     datapath = testthat::test_path("sources.xlsx")
+                   ),
+                   class = "data.frame",
+                   row.names = c(NA,
+                                 -1L)
+                 ),
+                 accept = TRUE
+               )
+               browser()
+               expect_equal(dim(session$returned()), c(48, 6))
+               expect_setequal(
+                 rownames(session$returned()),
+                 c(
+                   "Plants",
+                   "TerrestrialAnimals",
+                   "MarineFish",
+                   "FreshwaterFish"
+                 )
+               )
+               expect_equal(session$returned()[1:3, ],
+                            structure(
+                              c(
+                                -25,
+                                -24,
+                                -25,
+                                0.5,
+                                0.5,
+                                0.5,
+                                3,
+                                1,
+                                2,
+                                0.5,
+                                0.5,
+                                0.5,
+                                6,
+                                6,
+                                6,
+                                0.5,
+                                0.5,
+                                0.5
+                              ),
+                              dim = c(3L, 6L),
+                              dimnames = list(
+                                c("Plants", "Plants", "Plants"),
+                                c("13C", "unc", "15N", "unc.1",
+                                  "34S", "unc.2")
+                              )
+                            ))
+             })
 })
 
 test_that("cutAllLongStrings function", {
