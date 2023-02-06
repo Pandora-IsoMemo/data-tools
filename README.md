@@ -7,6 +7,8 @@ Contains
 
 ## The Import Data Module
 
+Access to uploads from file, url, and the Pandora Platform.
+
 ### UI function
 
 ```R
