@@ -84,7 +84,12 @@ importDataServer <- function(id,
 
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
-                   updateSelectInput(session, "ckanRecord", choices = titles)
+                   updateSelectizeInput(
+                     session,
+                     "ckanRecord",
+                     choices = c("Select Pandora dataset ..." = "", titles),
+                     selected = c("Select Pandora dataset ..." = "")
+                   )
                  })
 
                  observeEvent(input$tabImport, {
@@ -106,6 +111,15 @@ importDataServer <- function(id,
                    }
                  })
 
+                 # important for custom options of selectizeInput of ckanRecord:
+                 # forces update after selection (even with 'Enter') and
+                 # removes 'onFocus' as well as this.clear(true)
+                 observe({
+                   req(input$ckanRecord)
+                   updateSelectizeInput(session, "ckanRecord", selected = input$ckanRecord)
+                 }) %>%
+                   bindEvent(input$ckanRecord)
+
                  ckanRecord <- reactive({
                    req(input$ckanRecord)
                    updateSelectInput(session = session, "sheet", selected = character(0))
@@ -125,7 +139,9 @@ importDataServer <- function(id,
 
                  observeEvent(ckanResources(), {
                    choices <- ckanResources()
-                   updateSelectizeInput(session, "ckanResource", choices = choices)
+                   updateSelectizeInput(session,
+                                        "ckanResource",
+                                        choices = choices)
                  })
 
                  observeEvent(input$source, {
@@ -149,7 +165,10 @@ importDataServer <- function(id,
 
                    # "file" will be used to load the file
                    # "filename" will be stored in values$fileName
-                   dataSource(list(file = resource$url, filename = basename(resource$url)))
+                   dataSource(list(
+                     file = resource$url,
+                     filename = basename(resource$url)
+                   ))
                  })
 
                  observeEvent(input$file, {
@@ -193,66 +212,69 @@ importDataServer <- function(id,
                  })
 
                  # specify file server ----
-                 observeEvent(list(
-                   dataSource(),
-                   input$type,
-                   input$colSep,
-                   input$decSep,
-                   input$rownames,
-                   #input$includeSd
-                   input$sheet
-                 ),
-                 {
-                   req(dataSource())
+                 observeEvent(
+                   list(
+                     dataSource(),
+                     input$type,
+                     input$colSep,
+                     input$decSep,
+                     input$rownames,
+                     #input$includeSd
+                     input$sheet
+                   ),
+                   {
+                     req(dataSource())
 
-                   # reset values
-                   values$warnings <- list()
-                   values$errors <- list()
-                   values$fileName <- ""
-                   values$fileImportSuccess <- NULL
-                   values$dataImport <- NULL
-                   values$preview <- NULL
-                   values$data <- list()
+                     # reset values
+                     values$warnings <- list()
+                     values$errors <- list()
+                     values$fileName <- ""
+                     values$fileImportSuccess <- NULL
+                     values$dataImport <- NULL
+                     values$preview <- NULL
+                     values$data <- list()
 
-                   withProgress({
-                     values <- loadDataWrapper(
-                       values = values,
-                       filepath = dataSource()$file,
-                       filename = dataSource()$filename,
-                       colNames = colNames,
-                       type = input$type,
-                       sep = input$colSep,
-                       dec = input$decSep,
-                       withRownames = isTRUE(input$rownames),
-                       sheetId = as.numeric(input$sheet),
-                       headOnly = FALSE,
-                       customWarningChecks = customWarningChecks,
-                       customErrorChecks = customErrorChecks
-                     )
+                     withProgress({
+                       values <- loadDataWrapper(
+                         values = values,
+                         filepath = dataSource()$file,
+                         filename = dataSource()$filename,
+                         colNames = colNames,
+                         type = input$type,
+                         sep = input$colSep,
+                         dec = input$decSep,
+                         withRownames = isTRUE(input$rownames),
+                         sheetId = as.numeric(input$sheet),
+                         headOnly = FALSE,
+                         customWarningChecks = customWarningChecks,
+                         customErrorChecks = customErrorChecks
+                       )
 
-                     if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                       shinyjs::disable(ns("addData"), asis = TRUE)
-                       shinyjs::disable(ns("accept"), asis = TRUE)
-                     } else {
-                       shinyjs::enable(ns("addData"), asis = TRUE)
-                       shinyjs::enable(ns("accept"), asis = TRUE)
-                       values$fileImportSuccess <-
-                         "Data import successful"
-                     }
-                   },
-                   value = 0.75,
-                   message = 'loading data ...')
-                 })
+                       if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                         shinyjs::disable(ns("addData"), asis = TRUE)
+                         shinyjs::disable(ns("accept"), asis = TRUE)
+                       } else {
+                         shinyjs::enable(ns("addData"), asis = TRUE)
+                         shinyjs::enable(ns("accept"), asis = TRUE)
+                         values$fileImportSuccess <-
+                           "Data import successful"
+                       }
+                     },
+                     value = 0.75,
+                     message = 'loading data ...')
+                   }
+                 )
 
                  preparedData <- prepareDataServer(
                    "dataPreparer",
                    selectedData = reactive(values$dataImport),
                    nameOfSelected = reactive(values$fileName)
-                   )
+                 )
 
                  observeEvent(preparedData(), {
                    values$dataImport <- preparedData()
-                   values$preview <- cutAllLongStrings(values$dataImport, cutAt = 20)
+                   values$preview <-
+                     cutAllLongStrings(values$dataImport, cutAt = 20)
 
                    ## Import valid?
                    values$warnings$import <- list()
@@ -275,9 +297,13 @@ importDataServer <- function(id,
                  })
 
                  output$warning <-
-                   renderUI(tagList(lapply(unlist(values$warnings, use.names = FALSE), tags$p)))
+                   renderUI(tagList(lapply(
+                     unlist(values$warnings, use.names = FALSE), tags$p
+                   )))
                  output$error <-
-                   renderUI(tagList(lapply(unlist(values$errors, use.names = FALSE), tags$p)))
+                   renderUI(tagList(lapply(
+                     unlist(values$errors, use.names = FALSE), tags$p
+                   )))
                  output$success <-
                    renderText(values$fileImportSuccess)
 
@@ -325,33 +351,29 @@ importDataServer <- function(id,
                      tmpMergeList <- mergeList()
                      tmpMergeList[[values$fileName]] <- tmpData
                      mergeList(tmpMergeList)
-                     showNotification(
-                       "File was marked already and was updated successfully."
-                     )
+                     showNotification("File was marked already and was updated successfully.")
                    } else {
-                     mergeList(c(
-                       mergeList(),
-                       setNames(
-                         list(tmpData),
-                         values$fileName
-                       )
-                     ))
+                     mergeList(c(mergeList(),
+                                 setNames(list(tmpData),
+                                          values$fileName)))
                    }
 
                    shinyjs::disable(ns("addData"), asis = TRUE)
                  })
 
                  ## button merge data ----
-                 joinedData <- mergeDataServer("dataMerger", mergeList = mergeList)
+                 joinedData <-
+                   mergeDataServer("dataMerger", mergeList = mergeList)
 
-                 observeEvent(joinedData(), {
+                 observe({
                    if (is.null(joinedData()) ||
                        nrow(joinedData()) == 0) {
                      shinyjs::disable(ns("acceptMerged"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptMerged"), asis = TRUE)
                    }
-                 })
+                 }) %>%
+                   bindEvent(joinedData(), ignoreNULL = FALSE)
 
                  observeEvent(input$acceptMerged, {
                    removeModal()
@@ -360,16 +382,18 @@ importDataServer <- function(id,
                  })
 
                  ## button query data ----
-                 queriedData <- queryDataServer("dataQuerier", mergeList = mergeList)
+                 queriedData <-
+                   queryDataServer("dataQuerier", mergeList = mergeList)
 
-                 observeEvent(queriedData(), {
+                 observe({
                    if (is.null(queriedData()) ||
                        nrow(queriedData()) == 0) {
                      shinyjs::disable(ns("acceptQuery"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptQuery"), asis = TRUE)
                    }
-                 })
+                 }) %>%
+                   bindEvent(queriedData(), ignoreNULL = FALSE)
 
                  observeEvent(input$acceptQuery, {
                    removeModal()
@@ -399,8 +423,10 @@ importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE) {
     tabsetPanel(
       id = ns("tabImport"),
       selected = "Select (required)",
-      tabPanel("Select (required)",
-               selectDataTab(ns = ns, defaultSource = defaultSource, batch = batch)),
+      tabPanel(
+        "Select (required)",
+        selectDataTab(ns = ns, defaultSource = defaultSource, batch = batch)
+      ),
       tabPanel("Prepare",
                prepareDataUI(ns("dataPreparer"))),
       tabPanel("Merge",
@@ -420,32 +446,56 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
   tagList(
     tags$br(),
     fluidRow(
-      column(4,
-             # select source UI ----
-             selectInput(
-               ns("source"),
-               "Source",
-               choices = c(
-                 "Pandora Platform" = "ckan",
-                 "File" = "file",
-                 "URL" = "url"
-               ),
-               selected = defaultSource
-             )),
+      column(
+        4,
+        # select source UI ----
+        selectInput(
+          ns("source"),
+          "Source",
+          choices = c(
+            "Pandora Platform" = "ckan",
+            "File" = "file",
+            "URL" = "url"
+          ),
+          selected = defaultSource
+        )
+      ),
       column(
         8,
         conditionalPanel(
           condition = "input.source == 'ckan'",
           ns = ns,
-          selectInput(ns("ckanRecord"), "Pandora dataset", choices = NULL, width = "100%"),
-          selectizeInput(ns("ckanResource"), "Pandora dataset resource", choices = NULL, width = "100%")
+          selectizeInput(
+            ns("ckanRecord"),
+            "Pandora dataset",
+            choices = c("No Pandora dataset available" = ""),
+            width = "100%",
+            options = list(
+              onFocus = I(
+                "function() {currentVal = this.getValue(); this.clear(true); }"
+              ),
+              onBlur = I(
+                "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+              )
+            )
+          ),
+          selectizeInput(
+            ns("ckanResource"),
+            "Pandora dataset resource",
+            choices = c("Select Pandora dataset ..." = ""),
+            width = "100%"
+          )
         ),
-        conditionalPanel(condition = "input.source == 'file'",
-                         ns = ns,
-                         fileInput(ns("file"), "File", width = "100%")),
-        conditionalPanel(condition = "input.source == 'url'",
-                         ns = ns,
-                         textInput(ns("url"), "URL", width = "100%"))
+        conditionalPanel(
+          condition = "input.source == 'file'",
+          ns = ns,
+          fileInput(ns("file"), "File", width = "100%")
+        ),
+        conditionalPanel(
+          condition = "input.source == 'url'",
+          ns = ns,
+          textInput(ns("url"), "URL", width = "100%")
+        )
       )
     ),
     tags$hr(),
@@ -500,7 +550,11 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
       div(class = "text-success", textOutput(ns("success")))
     ),
     tags$hr(),
-    tags$html(HTML("<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)")),
+    tags$html(
+      HTML(
+        "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
+      )
+    ),
     fluidRow(column(12,
                     dataTableOutput(ns(
                       "preview"
@@ -543,7 +597,8 @@ loadDataWrapper <- function(values,
       headOnly = headOnly
     ),
     error = function(cond) {
-      values$errors <- list(load = paste("Could not read in file:", cond$message))
+      values$errors <-
+        list(load = paste("Could not read in file:", cond$message))
       NULL
     },
     warning = function(cond) {
@@ -603,7 +658,8 @@ checkImport <- function(values,
 
 isNotValid <- function(errors, warnings, ignoreWarnings) {
   length(unlist(errors, use.names = FALSE)) > 0 ||
-    (!ignoreWarnings && length(unlist(warnings, use.names = FALSE)) > 0)
+    (!ignoreWarnings &&
+       length(unlist(warnings, use.names = FALSE)) > 0)
 }
 
 loadData <-
@@ -707,7 +763,8 @@ loadData <-
 #' @param cutAt (numeric) number of characters after which to cut the entries of an character-column
 #' @export
 cutAllLongStrings <- function(df, cutAt = 50) {
-  if (is.null(df)) return(NULL)
+  if (is.null(df))
+    return(NULL)
 
   df <- lapply(df, function(z) {
     if (!is.character(z))
@@ -732,7 +789,8 @@ cutAllLongStrings <- function(df, cutAt = 50) {
 cutStrings <- function(charVec, cutAt = 50) {
   if (any(nchar(charVec) > cutAt, na.rm = TRUE)) {
     index <- !is.na(charVec) & nchar(charVec) > cutAt
-    charVec[index] <- paste0(substr(charVec[index], 1, cutAt), "...")
+    charVec[index] <-
+      paste0(substr(charVec[index], 1, cutAt), "...")
   }
 
   charVec
@@ -776,8 +834,11 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
 
   if (any(grepl("[^[:alnum:] | ^\\.]", vNames))) {
     if (!isTest) {
-      message <- paste("Warning: One or more column names contain non-alphanumeric characters,",
-      "replacing with a dot.")
+      message <-
+        paste(
+          "Warning: One or more column names contain non-alphanumeric characters,",
+          "replacing with a dot."
+        )
     }
     # replace non-alphanum characters with dot
     vNames <- gsub("[^[:alnum:] | ^\\.]", ".", vNames)
@@ -788,8 +849,12 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
   if (any(grepl("^[0-9]{1,}$", substr(vNames, 1, 1)))) {
     if (!isTest) {
       message <- paste(
-        c(message, "Warning: One or more column names begin with a number, adding prefix 'x'."),
-        collapse = "\n\n")
+        c(
+          message,
+          "Warning: One or more column names begin with a number, adding prefix 'x'."
+        ),
+        collapse = "\n\n"
+      )
     }
 
     # if name begins with a number paste x before name
@@ -801,23 +866,26 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
     isDuplicate <- duplicated(vNames)
 
     if (!isTest) {
-      message <- paste(
-        c(message,
-          paste0("Warning: Duplicated column names found, number added to second occurrence of: \n",
-                 paste(vNames[isDuplicate], collapse = ", "))),
-        collapse = "\n\n")
+      message <- paste(c(
+        message,
+        paste0(
+          "Warning: Duplicated column names found, number added to second occurrence of: \n",
+          paste(vNames[isDuplicate], collapse = ", ")
+        )
+      ),
+      collapse = "\n\n")
     }
 
     # add number if duplicated names
     inc <- 1
-    while(any(isDuplicate)) {
+    while (any(isDuplicate)) {
       vNames <- addIncIfDuplicate(vNames, isDuplicate, inc = inc)
       isDuplicate <- duplicated(vNames)
       inc <- inc + 1
     }
   }
 
-  if(!isTest && !is.null(message)) {
+  if (!isTest && !is.null(message)) {
     shinyjs::alert(message)
   }
 
@@ -835,7 +903,8 @@ addIncIfDuplicate <- function(vNames, isDuplicate, inc = 1) {
 #'
 #' @param filepath (character) url or path
 getSheetSelection <- function(filepath) {
-  if (is.null(filepath)) return(list())
+  if (is.null(filepath))
+    return(list())
 
   fileSplit <- strsplit(filepath, split = "\\.")[[1]]
   typeOfFile <- fileSplit[length(fileSplit)]
