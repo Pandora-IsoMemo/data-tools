@@ -26,6 +26,7 @@ importDataUI <- function(id, label = "Import Data") {
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
+#' @param batch (logical) use batch import
 #' @export
 importDataServer <- function(id,
                              rowNames = NULL,
@@ -33,7 +34,8 @@ importDataServer <- function(id,
                              customWarningChecks = list(),
                              customErrorChecks = list(),
                              ignoreWarnings = FALSE,
-                             defaultSource = "ckan") {
+                             defaultSource = "ckan",
+                             batch = FALSE) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -69,7 +71,9 @@ importDataServer <- function(id,
                    values$data <- list()
                    dataSource(NULL)
 
-                   showModal(importDataDialog(ns = ns, defaultSource = defaultSource))
+                   showModal(importDataDialog(ns = ns,
+                                              defaultSource = defaultSource,
+                                              batch = batch))
 
                    shinyjs::disable(ns("addData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
@@ -380,7 +384,7 @@ importDataServer <- function(id,
 }
 
 # import data dialog UI ----
-importDataDialog <- function(ns, defaultSource = "ckan") {
+importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE) {
   modalDialog(
     shinyjs::useShinyjs(),
     title = "Import Data",
@@ -396,7 +400,7 @@ importDataDialog <- function(ns, defaultSource = "ckan") {
       id = ns("tabImport"),
       selected = "Select (required)",
       tabPanel("Select (required)",
-               selectDataTab(ns = ns, defaultSource = defaultSource)),
+               selectDataTab(ns = ns, defaultSource = defaultSource, batch = batch)),
       tabPanel("Prepare",
                prepareDataUI(ns("dataPreparer"))),
       tabPanel("Merge",
@@ -412,7 +416,7 @@ importDataDialog <- function(ns, defaultSource = "ckan") {
 #'
 #' @param ns namespace
 #' @inheritParams importDataServer
-selectDataTab <- function(ns, defaultSource = "ckan") {
+selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
   tagList(
     tags$br(),
     fluidRow(
@@ -481,8 +485,14 @@ selectDataTab <- function(ns, defaultSource = "ckan") {
         )
       )
     ),
-    checkboxInput(ns("rownames"), "First column contains rownames"),
+    checkboxInput(ns("rownames"),
+                  paste(if (batch) "Second" else "First", "column contains rownames")),
     helpText("The first row in your file need to contain variable names."),
+    if (batch) {
+      helpText(
+        "The first column in your file need to contain the observation names from the target table."
+      )
+    },
     div(
       style = "height: 14em",
       div(class = "text-warning", uiOutput(ns("warning"))),
