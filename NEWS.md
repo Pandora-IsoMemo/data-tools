@@ -1,9 +1,14 @@
 # DataTools
 
+## Version 23.02.3
+
+### Updates
+- import of Pandora dataset: keep string in input even if not found in choices (#19, PR #21)
+
 ## Version 23.02.2
 
 ### Updates
-- import of Pandora dataset: empty input as default input
+- import of Pandora dataset: empty input as default input (#19)
 
 ### Bug fixes
 - disable _"Accept Merged"_ / _"Accept Query"_ buttons if merge / query failed
