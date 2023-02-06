@@ -80,7 +80,7 @@ importDataServer <- function(id,
 
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
-                   updateSelectInput(
+                   updateSelectizeInput(
                      session,
                      "ckanRecord",
                      choices = c("Select Pandora dataset ..." = "", titles),
@@ -106,6 +106,15 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    }
                  })
+
+                 # important for custom options of selectizeInput of ckanRecord:
+                 # forces update after selection (even with 'Enter') and
+                 # removes 'onFocus' as well as this.clear(true)
+                 observe({
+                   req(input$ckanRecord)
+                   updateSelectizeInput(session, "ckanRecord", selected = input$ckanRecord)
+                 }) %>%
+                   bindEvent(input$ckanRecord)
 
                  ckanRecord <- reactive({
                    req(input$ckanRecord)
@@ -452,11 +461,19 @@ selectDataTab <- function(ns, defaultSource = "ckan") {
         conditionalPanel(
           condition = "input.source == 'ckan'",
           ns = ns,
-          selectInput(
+          selectizeInput(
             ns("ckanRecord"),
             "Pandora dataset",
             choices = c("No Pandora dataset available" = ""),
-            width = "100%"
+            width = "100%",
+            options = list(
+              onFocus = I(
+                "function() {currentVal = this.getValue(); this.clear(true); }"
+              ),
+              onBlur = I(
+                "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+              )
+            )
           ),
           selectizeInput(
             ns("ckanResource"),
