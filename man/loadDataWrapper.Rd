@@ -36,6 +36,8 @@ loadDataWrapper(
 
 \item{withRownames}{(logical) contains rownames input}
 
+\item{withColnames}{(logical) contains colnames input}
+
 \item{includeSd}{(logical) include sd input}
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,

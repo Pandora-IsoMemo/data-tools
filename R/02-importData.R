@@ -577,6 +577,7 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
 #' @param sep (character) column separator input
 #' @param dec (character) decimal separator input
 #' @param withRownames (logical) contains rownames input
+#' @param withColnames (logical) contains colnames input
 #' @param includeSd (logical) include sd input
 #' @param sheetId (numeric) sheet id
 loadDataWrapper <- function(values,
