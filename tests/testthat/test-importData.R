@@ -89,6 +89,8 @@ test_that("Test module importData", {
              })
 
   testServer(importDataServer,
+             args = list(batch = TRUE,
+                         outputAsMatrix = TRUE),
              {
                # Arrange
                print("test import of batch covariance")
@@ -116,16 +118,10 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               # MUST be integrated into the module: ----
-               desiredOutput <- session$returned()[["batch_covariance.csv"]] %>% as.matrix()
-               attr(desiredOutput, "includeSd") <- isTRUE(input$includeSd)
-               attr(desiredOutput, "includeRownames") <- isTRUE(input$withRownames)
-
-               expect_type(session$returned()[["batch_covariance.csv"]], "list")
-               expect_type(desiredOutput, "character")
-               expect_equal(class(desiredOutput), c("matrix", "array"))
+               expect_type(session$returned()[["batch_covariance.csv"]], "character")
+               expect_equal(class(session$returned()[["batch_covariance.csv"]]), c("matrix", "array"))
                expect_equal(
-                 desiredOutput,
+                 session$returned()[["batch_covariance.csv"]],
                  structure(
                    c(
                      "Individual_1",
@@ -366,6 +362,8 @@ test_that("cutAllLongStrings function", {
 test_that("Test formatColumnNames()", {
   vNames <- c("abc", "12hgf", "#j.f", "jg-$jhfl+4", "abc.(237)")
 
-  expect_equal(formatColumnNames(vNames, isTest = TRUE),
-               c("abc", "x12hgf", "j.f", "jg..jhfl.4", "abc..237."))
+  expect_equal(
+    formatColumnNames(vNames, isTest = TRUE),
+    c("abc", "x12hgf", "j.f", "jg..jhfl.4", "abc..237.")
+  )
 })
