@@ -61,12 +61,12 @@ importDataServer <- function(id,
                  )
 
                  observe({
-                   req(input$withRownames)
+                   req(!is.null(input$withRownames))
                    customNames$withRownames <- input$withRownames
                  })
 
                  observe({
-                   req(input$withColnames)
+                   req(!is.null(input$withColnames))
                    customNames$withColnames <- input$withColnames
                  })
 
