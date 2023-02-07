@@ -8,14 +8,12 @@ loadDataWrapper(
   values,
   filepath,
   filename,
-  colNames,
   type,
   sep,
   dec,
   withRownames,
   withColnames,
   includeSd,
-  outputAsMatrix,
   sheetId
 )
 }
@@ -25,8 +23,6 @@ loadDataWrapper(
 \item{filepath}{(character) url or path}
 
 \item{filename}{(character) url or file name}
-
-\item{colNames}{(reactive) use this for colnames of imported data}
 
 \item{type}{(character) file type input}
 
@@ -39,9 +35,6 @@ loadDataWrapper(
 \item{withColnames}{(logical) contains colnames input}
 
 \item{includeSd}{(logical) include sd input}
-
-\item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
-e.g. for batch = TRUE in Resources}
 
 \item{sheetId}{(numeric) sheet id}
 }

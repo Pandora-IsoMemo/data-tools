@@ -50,8 +50,31 @@ importDataServer <- function(id,
                    fileImportSuccess = NULL,
                    dataImport = NULL,
                    preview = NULL,
-                   data = list()
+                   data = list(),
+                   dataRownames = NULL
                  )
+
+                 customNames <- reactiveValues(
+                   withRownames = FALSE,
+                   rownames = rowNames,
+                   dataRownames = NULL,
+                   withColnames = TRUE,
+                   colnames = colNames
+                 )
+
+                 observe({
+                   req(input$withRownames)
+                   customNames$withRownames <- input$withRownames
+                 })
+
+                 observe({
+                   customNames$dataRownames <- values$dataRownames
+                 })
+
+                 observe({
+                   req(input$withColnames)
+                   customNames$withColnames <- input$withColnames
+                 })
 
                  mergeList <- reactiveVal(list())
 
@@ -191,7 +214,6 @@ importDataServer <- function(id,
                    req(trimws(input$url) != "")
 
                    tmp <- tempfile()
-
                    res <-
                      try(download.file(input$url, destfile = tmp))
                    if (inherits(res, "try-error")) {
@@ -221,9 +243,10 @@ importDataServer <- function(id,
                      input$type,
                      input$colSep,
                      input$decSep,
-                     input$withRownames,
-                     #input$includeSd
-                     input$sheet
+                     input$includeSd,
+                     input$sheet,
+                     customNames$withRownames,
+                     customNames$withColnames
                    ),
                    {
                      req(dataSource())
@@ -242,14 +265,12 @@ importDataServer <- function(id,
                          values = values,
                          filepath = dataSource()$file,
                          filename = dataSource()$filename,
-                         colNames = colNames,
                          type = input$type,
                          sep = input$colSep,
                          dec = input$decSep,
-                         withRownames = isTRUE(input$withRownames),
-                         withColnames = isTRUE(input$withColnames),
+                         withRownames = customNames$withRownames,
+                         withColnames = customNames$withColnames,
                          includeSd = isTRUE(input$includeSd),
-                         outputAsMatrix = outputAsMatrix,
                          sheetId = as.numeric(input$sheet)
                        )
 
@@ -331,18 +352,6 @@ importDataServer <- function(id,
                    removeModal()
                  })
 
-                 ## button accept ----
-                 observeEvent(input$accept, {
-                   removeModal()
-
-                   tmpData <- preparedData()
-                   ### format column names for import ----
-                   colnames(tmpData) <- colnames(tmpData) %>%
-                     formatColumnNames()
-
-                   values$data[[values$fileName]] <- tmpData
-                 })
-
                  ## button add data ----
                  observeEvent(input$addData, {
                    tmpData <- preparedData()
@@ -378,12 +387,6 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(joinedData(), ignoreNULL = FALSE)
 
-                 observeEvent(input$acceptMerged, {
-                   removeModal()
-
-                   values$data[["mergedData"]] <- joinedData()
-                 })
-
                  ## button query data ----
                  queriedData <-
                    queryDataServer("dataQuerier", mergeList = mergeList)
@@ -398,10 +401,29 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(queriedData(), ignoreNULL = FALSE)
 
+                 ## ACCEPT buttons ----
+                 observeEvent(input$accept, {
+                   removeModal()
+                   values$data[[values$fileName]] <- preparedData() %>%
+                     formatForImport(outputAsMatrix = outputAsMatrix,
+                                     includeSd = input$includeSd,
+                                     customNames = customNames)
+                 })
+
+                 observeEvent(input$acceptMerged, {
+                   removeModal()
+                   values$data[["mergedData"]] <- joinedData() %>%
+                     formatForImport(outputAsMatrix = outputAsMatrix,
+                                     includeSd = input$includeSd,
+                                     customNames = customNames)
+                 })
+
                  observeEvent(input$acceptQuery, {
                    removeModal()
-
-                   values$data[["queriedData"]] <- queriedData()
+                   values$data[["queriedData"]] <- queriedData() %>%
+                     formatForImport(outputAsMatrix = outputAsMatrix,
+                                     includeSd = input$includeSd,
+                                     customNames = customNames)
                  })
 
                  # return value for parent module: ----
@@ -569,7 +591,6 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
 
 #' Load Data Wrapper
 #'
-#' @inheritParams importDataServer
 #' @param values (list) list with import specifications
 #' @param filepath (character) url or path
 #' @param filename (character) url or file name
@@ -583,14 +604,12 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
 loadDataWrapper <- function(values,
                             filepath,
                             filename,
-                            colNames,
                             type,
                             sep,
                             dec,
                             withRownames,
                             withColnames,
                             includeSd,
-                            outputAsMatrix,
                             sheetId) {
   df <- tryCatch(
     loadData(
@@ -599,6 +618,7 @@ loadDataWrapper <- function(values,
       sep = sep,
       dec = dec,
       withRownames = withRownames,
+      withColnames = withColnames,
       sheetId = sheetId,
       headOnly = FALSE
     ),
@@ -613,29 +633,17 @@ loadDataWrapper <- function(values,
     }
   )
 
-  if (is.null(df)) return(NULL)
-
-  ## set colnames
-  # if (!is.null(colNames)) {
-  #   colnames(df) <- rep("", ncol(df))
-  #   mini <- min(length(colNames()), ncol(df))
-  #   colnames(df)[seq_len(mini)] <- colNames()[seq_len(mini)]
-  # }
-
-  ## set colnames
-  if (!withColnames && !is.null(colNames)) {
-    colnames(df) <- rep("", ncol(df))
-    mini <- min(length(colNames()), ncol(df))
-    colnames(df)[seq_len(mini)] <- colNames()[seq_len(mini)]
-  }
-
-  ## Import technically successful
-  if(!outputAsMatrix) {
-    values$dataImport <- as.data.frame(df)
+  if (is.null(df)) {
+    values$dataImport <- NULL
   } else {
-    attr(df, "includeSd") <- isTRUE(includeSd)
-    attr(df, "includeRownames") <- withRownames # isTRUE(input$withRownames)
-    values$dataImport <- df
+    ## Import technically successful
+    if (withRownames) {
+      # keep rownames for outputAsMatrix
+      values$dataRownames <- rownames(df)
+    } else {
+      values$dataRownames <- NULL
+    }
+    values$dataImport <- as.data.frame(df)
   }
 
   values$fileName <- filename
@@ -682,6 +690,7 @@ loadData <-
            sep = ",",
            dec = ".",
            withRownames = FALSE,
+           withColnames = TRUE,
            sheetId = 1,
            headOnly = FALSE) {
     # if(type == "csv" | type == "txt"){
@@ -715,6 +724,7 @@ loadData <-
       csv = suppressWarnings({
         read.csv(
           file,
+          header = withColnames,
           sep = sep,
           dec = dec,
           stringsAsFactors = FALSE,
@@ -726,6 +736,7 @@ loadData <-
       txt = suppressWarnings({
         read.csv(
           file,
+          header = withColnames,
           sep = sep,
           dec = dec,
           stringsAsFactors = FALSE,
@@ -734,11 +745,20 @@ loadData <-
           nrows = getNrow(headOnly, type)
         )
       }),
-      xlsx = read.xlsx(file, sheet = sheetId, rows = getNrow(headOnly, type)),
+      xlsx = read.xlsx(file,
+                       sheet = sheetId,
+                       colNames = withColnames,
+                       rows = getNrow(headOnly, type)),
       xls = suppressWarnings({
-        readxl::read_excel(file, sheet = sheetId, n_max = getNrow(headOnly, type))
+        readxl::read_excel(file,
+                           sheet = sheetId,
+                           col_names = withColnames,
+                           n_max = getNrow(headOnly, type))
       }),
-      ods = readODS::read_ods(file, sheet = sheetId, range = getNrow(headOnly, type))
+      ods = readODS::read_ods(file,
+                              sheet = sheetId,
+                              col_names = withColnames,
+                              range = getNrow(headOnly, type))
     )
 
     if (is.null(data))
@@ -759,12 +779,12 @@ loadData <-
       return(NULL)
     }
 
+    data <- as.matrix(data)
+
     if (withRownames) {
       rn <- data[, 1]
-      data <- as.matrix(data[, -1, drop = FALSE])
+      data <- data[, -1, drop = FALSE]
       rownames(data) <- rn
-    } else {
-      data <- as.matrix(data)
     }
 
     return(data)
@@ -836,6 +856,39 @@ getNrow <- function(headOnly, type, n = 3) {
     else
       return(-999)
   }
+}
+
+
+formatForImport <- function(df, outputAsMatrix, includeSd, customNames) {
+  if (is.null(df)) return (df)
+
+  ### format column names for import ----
+  colnames(df) <- colnames(df) %>%
+    formatColumnNames()
+
+  if(outputAsMatrix) {
+    df <- as.matrix(df)
+    attr(df, "includeSd") <- isTRUE(includeSd)
+    attr(df, "includeRownames") <- isTRUE(customNames$withRownames)
+
+    if (isFALSE(customNames$withColnames) && !is.null(customNames$colnames)) {
+      colnames(df) <- rep("", ncol(df))
+      mini <- min(length(customNames$colnames), ncol(df))
+      colnames(df)[seq_len(mini)] <- customNames$colnames[seq_len(mini)]
+    }
+
+    if (isFALSE(customNames$withRownames) && !is.null(customNames$rownames)) {
+      rownames(df) <- rep("", ncol(df))
+      mini <- min(length(customNames$rownames), ncol(df))
+      rownames(df)[seq_len(mini)] <- customNames$rownames[seq_len(mini)]
+    }
+
+    if (isTRUE(customNames$withRownames)) {
+      rownames(df) <- customNames$dataRownames
+    }
+  }
+
+  df
 }
 
 

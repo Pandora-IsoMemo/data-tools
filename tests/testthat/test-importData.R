@@ -100,9 +100,9 @@ test_that("Test module importData", {
                  source = "file",
                  type = "csv",
                  withRownames = FALSE,
+                 withColnames = TRUE,
                  colSep = ",",
                  decSep = ".",
-                 colnames = TRUE,
                  includeSd = TRUE,
                  file = structure(
                    list(
@@ -119,7 +119,12 @@ test_that("Test module importData", {
                )
 
                expect_type(session$returned()[["batch_covariance.csv"]], "character")
-               expect_equal(class(session$returned()[["batch_covariance.csv"]]), c("matrix", "array"))
+               expect_equal(class(session$returned()[["batch_covariance.csv"]]),
+                            c("matrix", "array"))
+               expect_true(attr(session$returned()[["batch_covariance.csv"]],
+                                which = "includeSd"))
+               expect_false(attr(session$returned()[["batch_covariance.csv"]],
+                                 which = "includeRownames"))
                expect_equal(
                  session$returned()[["batch_covariance.csv"]],
                  structure(
@@ -174,10 +179,10 @@ test_that("Test module importData", {
                  source = "file",
                  type = "xlsx",
                  sheet = "1",
-                 withRownames = TRUE,
                  colSep = ",",
                  decSep = ".",
-                 colnames = TRUE,
+                 withRownames = TRUE,
+                 withColnames = TRUE,
                  includeSd = TRUE,
                  file = structure(
                    list(
