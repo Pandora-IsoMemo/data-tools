@@ -50,14 +50,12 @@ importDataServer <- function(id,
                    fileImportSuccess = NULL,
                    dataImport = NULL,
                    preview = NULL,
-                   data = list(),
-                   dataRownames = NULL
+                   data = list()
                  )
 
                  customNames <- reactiveValues(
                    withRownames = FALSE,
                    rownames = rowNames,
-                   dataRownames = NULL,
                    withColnames = TRUE,
                    colnames = colNames
                  )
@@ -282,8 +280,6 @@ importDataServer <- function(id,
                      },
                      value = 0.75,
                      message = 'loading data ...')
-
-                     customNames$dataRownames <- values$dataRownames
                    }
                  )
 
@@ -635,13 +631,19 @@ loadDataWrapper <- function(values,
   } else {
     ## Import technically successful
     if (withRownames) {
-      # keep rownames for outputAsMatrix
-      values$dataRownames <- df[, 1]
+      rn <- df[, 1]
+      if (any(is.na(suppressWarnings(as.integer(rn))))) {
+        rn <- as.character(rn)
+      } else {
+        rn <- as.integer(rn)
+      }
+
       df <- df[, -1, drop = FALSE]
+      values$dataImport <- as.data.frame(df, row.names = rn)
     } else {
-      values$dataRownames <- NULL
+      values$dataImport <- as.data.frame(df)
     }
-    values$dataImport <- as.data.frame(df)
+
   }
 
   values$fileName <- filename
@@ -870,16 +872,6 @@ formatForImport <- function(df, outputAsMatrix, includeSd, customNames) {
       rownames(df) <- rep("", ncol(df))
       mini <- min(length(customNames$rownames), ncol(df))
       rownames(df)[seq_len(mini)] <- customNames$rownames[seq_len(mini)]
-    }
-
-    if (isTRUE(customNames$withRownames)) {
-      rownames(df) <- customNames$dataRownames
-    }
-  } else {
-    if (isTRUE(customNames$withRownames)) {
-      if (length(unique(customNames$dataRownames)) == nrow(df)) {
-        rownames(df) <- customNames$dataRownames
-      }
     }
   }
 
