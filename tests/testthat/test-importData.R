@@ -168,6 +168,7 @@ test_that("Test module importData", {
              })
 
   testServer(importDataServer,
+             args = list(outputAsMatrix = TRUE),
              {
                # Arrange
                print("test import with rownames")
@@ -176,7 +177,8 @@ test_that("Test module importData", {
                  openPopup = TRUE,
                  source = "file",
                  type = "xlsx",
-                 rownames = TRUE,
+                 sheet = "1",
+                 withRownames = TRUE,
                  colSep = ",",
                  decSep = ".",
                  colnames = TRUE,
@@ -195,7 +197,7 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_type(session$returned()[["sources.xlsx"]], "character")
+               expect_type(session$returned()[["sources.xlsx"]], "double")
                expect_equal(class(session$returned()[["sources.xlsx"]]), c("matrix", "array"))
                expect_equal(dim(session$returned()[["sources.xlsx"]]), c(48, 6))
                expect_setequal(
@@ -232,8 +234,8 @@ test_that("Test module importData", {
                               dim = c(3L, 6L),
                               dimnames = list(
                                 c("Plants", "Plants", "Plants"),
-                                c("13C", "unc", "15N", "unc.1",
-                                  "34S", "unc.2")
+                                c("x13C", "unc", "x15N", "unc.1",
+                                  "x34S", "unc.2")
                               )
                             ))
              })

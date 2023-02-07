@@ -613,6 +613,8 @@ loadDataWrapper <- function(values,
     }
   )
 
+  if (is.null(df)) return(NULL)
+
   ## set colnames
   # if (!is.null(colNames)) {
   #   colnames(df) <- rep("", ncol(df))
@@ -628,13 +630,12 @@ loadDataWrapper <- function(values,
   }
 
   ## Import technically successful
-  if(outputAsMatrix) {
-    df <- as.matrix(df)
+  if(!outputAsMatrix) {
+    values$dataImport <- as.data.frame(df)
+  } else {
     attr(df, "includeSd") <- isTRUE(includeSd)
     attr(df, "includeRownames") <- withRownames # isTRUE(input$withRownames)
     values$dataImport <- df
-  } else {
-    values$dataImport <- as.data.frame(df)
   }
 
   values$fileName <- filename
