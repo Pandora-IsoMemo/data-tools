@@ -93,7 +93,8 @@ importDataServer <- function(id,
 
                    showModal(importDataDialog(ns = ns,
                                               defaultSource = defaultSource,
-                                              batch = batch))
+                                              batch = batch,
+                                              outputAsMatrix = outputAsMatrix))
 
                    shinyjs::disable(ns("addData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
@@ -352,7 +353,8 @@ importDataServer <- function(id,
                    ### format column names for import ----
                    colnames(tmpData) <- colnames(tmpData) %>%
                      formatColumnNames()
-
+                   # ADD WARNING that rownames and includeSd get lost when using merger/query!! ----
+                   # includeSd is false if merge / query
                    if (values$fileName %in% names(mergeList())) {
                      tmpMergeList <- mergeList()
                      tmpMergeList[[values$fileName]] <- tmpData
@@ -406,17 +408,21 @@ importDataServer <- function(id,
 
                  observeEvent(input$acceptMerged, {
                    removeModal()
+                   customNames$withRownames <- FALSE
+                   customNames$withColnames <- TRUE
                    values$data[["mergedData"]] <- joinedData() %>%
                      formatForImport(outputAsMatrix = outputAsMatrix,
-                                     includeSd = input$includeSd,
+                                     includeSd = FALSE,
                                      customNames = customNames)
                  })
 
                  observeEvent(input$acceptQuery, {
                    removeModal()
+                   customNames$withRownames <- FALSE
+                   customNames$withColnames <- TRUE
                    values$data[["queriedData"]] <- queriedData() %>%
                      formatForImport(outputAsMatrix = outputAsMatrix,
-                                     includeSd = input$includeSd,
+                                     includeSd = FALSE,
                                      customNames = customNames)
                  })
 
@@ -426,8 +432,9 @@ importDataServer <- function(id,
                })
 }
 
+# Helper Functions ----
 # import data dialog UI ----
-importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE) {
+importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE, outputAsMatrix = FALSE) {
   modalDialog(
     shinyjs::useShinyjs(),
     title = "Import Data",
@@ -444,7 +451,10 @@ importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE) {
       selected = "Select (required)",
       tabPanel(
         "Select (required)",
-        selectDataTab(ns = ns, defaultSource = defaultSource, batch = batch)
+        selectDataTab(ns = ns,
+                      defaultSource = defaultSource,
+                      batch = batch,
+                      outputAsMatrix = outputAsMatrix)
       ),
       tabPanel("Prepare",
                prepareDataUI(ns("dataPreparer"))),
@@ -461,7 +471,7 @@ importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE) {
 #'
 #' @param ns namespace
 #' @inheritParams importDataServer
-selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
+selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE, outputAsMatrix = FALSE) {
   tagList(
     tags$br(),
     fluidRow(
@@ -554,11 +564,16 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE) {
         )
       )
     ),
-    checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE),
+    if (outputAsMatrix && batch) {
+      checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE)
+      },
     checkboxInput(ns("withRownames"),
                   paste(if (batch) "Second" else "First", "column contains rownames")),
-    if (batch) checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE),
-    helpText("The first row in your file need to contain variable names."),
+    if (outputAsMatrix) {
+      checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
+    } else {
+      helpText("The first row in your file need to contain variable names.")
+    },
     if (batch) {
       helpText(
         "The first column in your file need to contain the observation names from the target table."
