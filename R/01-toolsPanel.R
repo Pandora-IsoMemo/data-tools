@@ -10,10 +10,19 @@ toolsPanelUI <- function(id) {
     sidebarPanel(
       width = 2,
       style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
-      importDataUI(ns("localData"), "Import Data")
+      importDataUI(ns("localData"), "Import Data"),
+      tags$br(), tags$br(),
+      importDataUI(ns("batchData"), "Import Batch Data")
     ),
     mainPanel(
-      DT::dataTableOutput(ns("importedDataTable"))
+      tabsetPanel(
+        tabPanel("imported data",
+                 DT::dataTableOutput(ns("importedDataTable"))
+                 ),
+        tabPanel("imported batch data",
+                 DT::dataTableOutput(ns("importedBatchTable"))
+                 )
+      )
     )
   )
 }
@@ -27,7 +36,6 @@ toolsPanelServer <- function(id, defaultSource = "ckan") {
   moduleServer(
     id,
     function(input, output, session) {
-      testData <- reactiveVal(NULL)
       importedData <- importDataServer(
         "localData",
         customWarningChecks = list(reactive(checkWarningEmptyValues)),
@@ -36,20 +44,32 @@ toolsPanelServer <- function(id, defaultSource = "ckan") {
         defaultSource = defaultSource
         )
 
-      observe({
-        req(length(importedData()) > 0)
-        d <- importedData()[[1]]
-        testData(d)
-      }) %>%
-        bindEvent(importedData())
+      importedBatchData <- importDataServer(
+        "batchData",
+        customWarningChecks = list(reactive(checkWarningEmptyValues)),
+        customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+        ignoreWarnings = TRUE,
+        defaultSource = defaultSource,
+        batch = TRUE,
+        outputAsMatrix = TRUE
+      )
 
       output$importedDataTable <- renderDataTable({
         validate(need(
-          !is.null(testData()),
+          length(importedData()) > 0,
           "Please import data."
         ))
-        req(testData())
-        testData()
+        req(length(importedData()) > 0)
+        importedData()[[1]]
+      })
+
+      output$importedBatchTable <- renderDataTable({
+        validate(need(
+          length(importedBatchData()) > 0,
+          "Please import batch data."
+        ))
+        req(length(importedBatchData()) > 0)
+        importedBatchData()[[1]]
       })
     })
 }

@@ -248,7 +248,7 @@ deleteColumnsServer <- function(id, preparedData) {
 
                    tmpData <- preparedData()
                    tmpData <-
-                     tmpData[!(colnames(tmpData) %in% input$columnsToDelete)]
+                     tmpData[ ,!(colnames(tmpData) %in% input$columnsToDelete)]
                    newData(tmpData)
                  })
 
