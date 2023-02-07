@@ -760,8 +760,10 @@ loadData <-
 
     if (withRownames) {
       rn <- data[, 1]
-      data <- data[, -1, drop = FALSE]
+      data <- as.matrix(data[, -1, drop = FALSE])
       rownames(data) <- rn
+    } else {
+      data <- as.matrix(data)
     }
 
     return(data)

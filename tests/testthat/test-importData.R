@@ -25,6 +25,7 @@ test_that("Test module importData", {
                )
 
                expect_type(session$returned()[["cima-humans.xlsx"]], "list")
+               expect_equal(class(session$returned()[["cima-humans.xlsx"]]), "data.frame")
                expect_true(all(
                  c("Entry.ID", "Reference", "Link", "DOI") %in%
                    names(session$returned()[["cima-humans.xlsx"]])
@@ -64,6 +65,7 @@ test_that("Test module importData", {
                )
 
                expect_type(session$returned()[["cima-humans.xlsx"]], "list")
+               expect_equal(class(session$returned()[["cima-humans.xlsx"]]), "data.frame")
                expect_true(all(
                  c("Reference", "Link", "DOI") %in%
                    names(session$returned()[["cima-humans.xlsx"]])
@@ -121,6 +123,7 @@ test_that("Test module importData", {
 
                expect_type(session$returned()[["batch_covariance.csv"]], "list")
                expect_type(desiredOutput, "character")
+               expect_equal(class(desiredOutput), c("matrix", "array"))
                expect_equal(
                  desiredOutput,
                  structure(
@@ -191,10 +194,12 @@ test_that("Test module importData", {
                  ),
                  accept = TRUE
                )
-               browser()
-               expect_equal(dim(session$returned()), c(48, 6))
+
+               expect_type(session$returned()[["sources.xlsx"]], "character")
+               expect_equal(class(session$returned()[["sources.xlsx"]]), c("matrix", "array"))
+               expect_equal(dim(session$returned()[["sources.xlsx"]]), c(48, 6))
                expect_setequal(
-                 rownames(session$returned()),
+                 rownames(session$returned()[["sources.xlsx"]]),
                  c(
                    "Plants",
                    "TerrestrialAnimals",
@@ -202,7 +207,7 @@ test_that("Test module importData", {
                    "FreshwaterFish"
                  )
                )
-               expect_equal(session$returned()[1:3, ],
+               expect_equal(session$returned()[["sources.xlsx"]][1:3, ],
                             structure(
                               c(
                                 -25,
