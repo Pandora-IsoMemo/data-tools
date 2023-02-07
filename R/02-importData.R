@@ -68,10 +68,6 @@ importDataServer <- function(id,
                  })
 
                  observe({
-                   customNames$dataRownames <- values$dataRownames
-                 })
-
-                 observe({
                    req(input$withColnames)
                    customNames$withColnames <- input$withColnames
                  })
@@ -286,6 +282,8 @@ importDataServer <- function(id,
                      },
                      value = 0.75,
                      message = 'loading data ...')
+
+                     customNames$dataRownames <- values$dataRownames
                    }
                  )
 
@@ -617,7 +615,6 @@ loadDataWrapper <- function(values,
       type = type,
       sep = sep,
       dec = dec,
-      withRownames = withRownames,
       withColnames = withColnames,
       sheetId = sheetId,
       headOnly = FALSE
@@ -639,7 +636,8 @@ loadDataWrapper <- function(values,
     ## Import technically successful
     if (withRownames) {
       # keep rownames for outputAsMatrix
-      values$dataRownames <- rownames(df)
+      values$dataRownames <- df[, 1]
+      df <- df[, -1, drop = FALSE]
     } else {
       values$dataRownames <- NULL
     }
@@ -689,7 +687,6 @@ loadData <-
            type,
            sep = ",",
            dec = ".",
-           withRownames = FALSE,
            withColnames = TRUE,
            sheetId = 1,
            headOnly = FALSE) {
@@ -777,14 +774,6 @@ loadData <-
     if (any(dim(data) == 0)) {
       stop("Number of rows or columns equal to 0")
       return(NULL)
-    }
-
-    data <- as.matrix(data)
-
-    if (withRownames) {
-      rn <- data[, 1]
-      data <- data[, -1, drop = FALSE]
-      rownames(data) <- rn
     }
 
     return(data)
@@ -885,6 +874,12 @@ formatForImport <- function(df, outputAsMatrix, includeSd, customNames) {
 
     if (isTRUE(customNames$withRownames)) {
       rownames(df) <- customNames$dataRownames
+    }
+  } else {
+    if (isTRUE(customNames$withRownames)) {
+      if (length(unique(customNames$dataRownames)) == nrow(df)) {
+        rownames(df) <- customNames$dataRownames
+      }
     }
   }
 
