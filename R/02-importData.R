@@ -91,10 +91,14 @@ importDataServer <- function(id,
                    values$data <- list()
                    dataSource(NULL)
 
-                   showModal(importDataDialog(ns = ns,
-                                              defaultSource = defaultSource,
-                                              batch = batch,
-                                              outputAsMatrix = outputAsMatrix))
+                   showModal(
+                     importDataDialog(
+                       ns = ns,
+                       defaultSource = defaultSource,
+                       batch = batch,
+                       outputAsMatrix = outputAsMatrix
+                     )
+                   )
 
                    shinyjs::disable(ns("addData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
@@ -353,17 +357,15 @@ importDataServer <- function(id,
                      formatColumnNames()
                    notifications <- c()
                    if (customNames$withRownames) {
-                     notifications <- c(
-                       notifications,
-                       "Rownames are not preserved when using Merge or Query data."
-                       )
-                     }
+                     notifications <- c(notifications,
+                                        "Rownames are not preserved when using Merge or Query data.")
+                   }
                    if (values$fileName %in% names(mergeList())) {
                      tmpMergeList <- mergeList()
                      tmpMergeList[[values$fileName]] <- tmpData
                      mergeList(tmpMergeList)
-                     notifications <- c(
-                       notifications, "File was send already and was updated successfully.")
+                     notifications <- c(notifications,
+                                        "File was send already and was updated successfully.")
                    } else {
                      mergeList(c(mergeList(),
                                  setNames(list(tmpData),
@@ -371,9 +373,8 @@ importDataServer <- function(id,
                    }
 
                    if (length(notifications) > 0) {
-                     shinyjs::info(
-                       paste0(notifications, collapse = "\n")
-                     )}
+                     shinyjs::info(paste0(notifications, collapse = "\n"))
+                   }
                    shinyjs::disable(ns("addData"), asis = TRUE)
                  })
 
@@ -408,10 +409,13 @@ importDataServer <- function(id,
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
                    removeModal()
-                   values$data[[values$fileName]] <- preparedData() %>%
-                     formatForImport(outputAsMatrix = outputAsMatrix,
-                                     includeSd = input$includeSd,
-                                     customNames = customNames)
+                   values$data[[values$fileName]] <-
+                     preparedData() %>%
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = input$includeSd,
+                       customNames = customNames
+                     )
                  })
 
                  observeEvent(input$acceptMerged, {
@@ -419,9 +423,11 @@ importDataServer <- function(id,
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
                    values$data[["mergedData"]] <- joinedData() %>%
-                     formatForImport(outputAsMatrix = outputAsMatrix,
-                                     includeSd = FALSE,
-                                     customNames = customNames)
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = FALSE,
+                       customNames = customNames
+                     )
                  })
 
                  observeEvent(input$acceptQuery, {
@@ -429,9 +435,11 @@ importDataServer <- function(id,
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
                    values$data[["queriedData"]] <- queriedData() %>%
-                     formatForImport(outputAsMatrix = outputAsMatrix,
-                                     includeSd = FALSE,
-                                     customNames = customNames)
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = FALSE,
+                       customNames = customNames
+                     )
                  })
 
                  # return value for parent module: ----
@@ -442,13 +450,16 @@ importDataServer <- function(id,
 
 # Helper Functions ----
 # import data dialog UI ----
-importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE, outputAsMatrix = FALSE) {
-  modalDialog(
-    shinyjs::useShinyjs(),
-    title = "Import Data",
-    style = 'height: 940px',
-    footer = tagList(
-      fluidRow(
+importDataDialog <-
+  function(ns,
+           defaultSource = "ckan",
+           batch = FALSE,
+           outputAsMatrix = FALSE) {
+    modalDialog(
+      shinyjs::useShinyjs(),
+      title = "Import Data",
+      style = 'height: 940px',
+      footer = tagList(fluidRow(
         column(4,
                align = "left",
                style = "margin-top: -1em;",
@@ -457,165 +468,176 @@ importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE, outputAs
                } else {
                  tags$br()
                }),
-        column(8,
-               align = "right",
-               actionButton(ns("accept"), "Accept"),
-               actionButton(ns("addData"), "Send to Merge / Query"),
-               actionButton(ns("acceptMerged"), "Accept Merged"),
-               actionButton(ns("acceptQuery"), "Accept Query"),
-               actionButton(ns("cancel"), "Cancel")
-               )
+        column(
+          8,
+          align = "right",
+          actionButton(ns("accept"), "Accept"),
+          actionButton(ns("addData"), "Send to Merge / Query"),
+          actionButton(ns("acceptMerged"), "Accept Merged"),
+          actionButton(ns("acceptQuery"), "Accept Query"),
+          actionButton(ns("cancel"), "Cancel")
+        )
+      )),
+      tabsetPanel(
+        id = ns("tabImport"),
+        selected = "Select (required)",
+        tabPanel(
+          "Select (required)",
+          selectDataTab(
+            ns = ns,
+            defaultSource = defaultSource,
+            batch = batch,
+            outputAsMatrix = outputAsMatrix
+          )
+        ),
+        tabPanel("Prepare",
+                 prepareDataUI(ns("dataPreparer"))),
+        tabPanel("Merge",
+                 mergeDataUI(ns("dataMerger"))),
+        tabPanel("Query with SQL",
+                 queryDataUI(ns("dataQuerier")))
       )
-    ),
-    tabsetPanel(
-      id = ns("tabImport"),
-      selected = "Select (required)",
-      tabPanel(
-        "Select (required)",
-        selectDataTab(ns = ns,
-                      defaultSource = defaultSource,
-                      batch = batch,
-                      outputAsMatrix = outputAsMatrix)
-      ),
-      tabPanel("Prepare",
-               prepareDataUI(ns("dataPreparer"))),
-      tabPanel("Merge",
-               mergeDataUI(ns("dataMerger"))),
-      tabPanel("Query with SQL",
-               queryDataUI(ns("dataQuerier")))
     )
-  )
-}
+  }
 
 
 #' Select Data UI
 #'
 #' @param ns namespace
 #' @inheritParams importDataServer
-selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE, outputAsMatrix = FALSE) {
-  tagList(
-    tags$br(),
-    fluidRow(
-      column(
-        4,
-        # select source UI ----
-        selectInput(
-          ns("source"),
-          "Source",
-          choices = c(
-            "Pandora Platform" = "ckan",
-            "File" = "file",
-            "URL" = "url"
-          ),
-          selected = defaultSource
-        )
-      ),
-      column(
-        8,
-        conditionalPanel(
-          condition = "input.source == 'ckan'",
-          ns = ns,
-          selectizeInput(
-            ns("ckanRecord"),
-            "Pandora dataset",
-            choices = c("No Pandora dataset available" = ""),
-            width = "100%",
-            options = list(
-              onFocus = I(
-                "function() {currentVal = this.getValue(); this.clear(true); }"
-              ),
-              onBlur = I(
-                "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+selectDataTab <-
+  function(ns,
+           defaultSource = "ckan",
+           batch = FALSE,
+           outputAsMatrix = FALSE) {
+    tagList(
+      tags$br(),
+      fluidRow(
+        column(
+          4,
+          # select source UI ----
+          selectInput(
+            ns("source"),
+            "Source",
+            choices = c(
+              "Pandora Platform" = "ckan",
+              "File" = "file",
+              "URL" = "url"
+            ),
+            selected = defaultSource
+          )
+        ),
+        column(
+          8,
+          conditionalPanel(
+            condition = "input.source == 'ckan'",
+            ns = ns,
+            selectizeInput(
+              ns("ckanRecord"),
+              "Pandora dataset",
+              choices = c("No Pandora dataset available" = ""),
+              width = "100%",
+              options = list(
+                onFocus = I(
+                  "function() {currentVal = this.getValue(); this.clear(true); }"
+                ),
+                onBlur = I(
+                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                )
               )
+            ),
+            selectizeInput(
+              ns("ckanResource"),
+              "Pandora dataset resource",
+              choices = c("Select Pandora dataset ..." = ""),
+              width = "100%"
             )
           ),
-          selectizeInput(
-            ns("ckanResource"),
-            "Pandora dataset resource",
-            choices = c("Select Pandora dataset ..." = ""),
-            width = "100%"
-          )
-        ),
-        conditionalPanel(
-          condition = "input.source == 'file'",
-          ns = ns,
-          fileInput(ns("file"), "File", width = "100%")
-        ),
-        conditionalPanel(
-          condition = "input.source == 'url'",
-          ns = ns,
-          textInput(ns("url"), "URL", width = "100%")
-        )
-      )
-    ),
-    tags$hr(),
-    # specify file UI ----
-    fluidRow(
-      column(4,
-             selectInput(
-               ns("type"),
-               "File type",
-               choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
-               selected = "xlsx"
-             )),
-      column(
-        8,
-        conditionalPanel(
-          condition = paste0("input.type == 'csv' || input.type == 'txt'"),
-          ns = ns,
-          fluidRow(column(
-            width = 5,
-            textInput(ns("colSep"), "column separator:", value = ",")
+          conditionalPanel(
+            condition = "input.source == 'file'",
+            ns = ns,
+            fileInput(ns("file"), "File", width = "100%")
           ),
-          column(
-            width = 5,
-            textInput(ns("decSep"), "decimal separator:", value = ".")
-          ))
-        ),
-        conditionalPanel(
-          condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
-          ns = ns,
-          selectInput(
-            ns("sheet"),
-            "Sheet",
-            selected = 1,
-            choices = 1:10,
-            width = "100%"
+          conditionalPanel(
+            condition = "input.source == 'url'",
+            ns = ns,
+            textInput(ns("url"), "URL", width = "100%")
           )
         )
-      )
-    ),
-    checkboxInput(ns("withRownames"),
-                  paste(if (batch) "Second" else "First", "column contains rownames")),
-    # check logic for second column
-    if (outputAsMatrix) {
-      checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
-    } else {
-      helpText("The first row in your file need to contain variable names.")
-    },
-    if (batch) {
-      helpText(
-        "The first column in your file need to contain the observation names from the target table."
-      )
-    },
-    div(
-      style = "height: 14em",
-      div(class = "text-warning", uiOutput(ns("warning"))),
-      div(class = "text-danger", uiOutput(ns("error"))),
-      div(class = "text-success", textOutput(ns("success")))
-    ),
-    tags$hr(),
-    tags$html(
-      HTML(
-        "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
-      )
-    ),
-    fluidRow(column(12,
-                    dataTableOutput(ns(
-                      "preview"
-                    ))))
-  )
-}
+      ),
+      tags$hr(),
+      # specify file UI ----
+      fluidRow(
+        column(4,
+               selectInput(
+                 ns("type"),
+                 "File type",
+                 choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
+                 selected = "xlsx"
+               )),
+        column(
+          8,
+          conditionalPanel(
+            condition = paste0("input.type == 'csv' || input.type == 'txt'"),
+            ns = ns,
+            fluidRow(column(
+              width = 5,
+              textInput(ns("colSep"), "column separator:", value = ",")
+            ),
+            column(
+              width = 5,
+              textInput(ns("decSep"), "decimal separator:", value = ".")
+            ))
+          ),
+          conditionalPanel(
+            condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
+            ns = ns,
+            selectInput(
+              ns("sheet"),
+              "Sheet",
+              selected = 1,
+              choices = 1:10,
+              width = "100%"
+            )
+          )
+        )
+      ),
+      checkboxInput(
+        ns("withRownames"),
+        paste(if (batch)
+          "Second"
+          else
+            "First", "column contains rownames")
+      ),
+      # check logic for second column
+      if (outputAsMatrix) {
+        checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
+      } else {
+        helpText("The first row in your file need to contain variable names.")
+      },
+      if (batch) {
+        helpText(
+          "The first column in your file need to contain the observation names from the target table."
+        )
+      },
+      div(
+        style = "height: 14em",
+        div(class = "text-warning", uiOutput(ns("warning"))),
+        div(class = "text-danger", uiOutput(ns("error"))),
+        div(class = "text-success", textOutput(ns("success")))
+      ),
+      tags$hr(),
+      tags$html(
+        HTML(
+          "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
+        )
+      ),
+      fluidRow(column(12,
+                      dataTableOutput(ns(
+                        "preview"
+                      ))))
+    )
+  }
 
 #' Load Data Wrapper
 #'
@@ -776,20 +798,26 @@ loadData <-
           nrows = getNrow(headOnly, type)
         )
       }),
-      xlsx = read.xlsx(file,
-                       sheet = sheetId,
-                       colNames = withColnames,
-                       rows = getNrow(headOnly, type)),
+      xlsx = read.xlsx(
+        file,
+        sheet = sheetId,
+        colNames = withColnames,
+        rows = getNrow(headOnly, type)
+      ),
       xls = suppressWarnings({
-        readxl::read_excel(file,
-                           sheet = sheetId,
-                           col_names = withColnames,
-                           n_max = getNrow(headOnly, type))
+        readxl::read_excel(
+          file,
+          sheet = sheetId,
+          col_names = withColnames,
+          n_max = getNrow(headOnly, type)
+        )
       }),
-      ods = readODS::read_ods(file,
-                              sheet = sheetId,
-                              col_names = withColnames,
-                              range = getNrow(headOnly, type))
+      ods = readODS::read_ods(
+        file,
+        sheet = sheetId,
+        col_names = withColnames,
+        range = getNrow(headOnly, type)
+      )
     )
 
     if (is.null(data))
@@ -882,33 +910,42 @@ getNrow <- function(headOnly, type, n = 3) {
 }
 
 
-formatForImport <- function(df, outputAsMatrix, includeSd, customNames) {
-  if (is.null(df)) return (df)
+formatForImport <-
+  function(df,
+           outputAsMatrix,
+           includeSd,
+           customNames) {
+    if (is.null(df))
+      return (df)
 
-  ### format column names for import ----
-  colnames(df) <- colnames(df) %>%
-    formatColumnNames()
+    ### format column names for import ----
+    colnames(df) <- colnames(df) %>%
+      formatColumnNames()
 
-  if(outputAsMatrix) {
-    df <- as.matrix(df)
-    attr(df, "includeSd") <- isTRUE(includeSd)
-    attr(df, "includeRownames") <- isTRUE(customNames$withRownames)
+    if (outputAsMatrix) {
+      df <- as.matrix(df)
+      attr(df, "includeSd") <- isTRUE(includeSd)
+      attr(df, "includeRownames") <- isTRUE(customNames$withRownames)
 
-    if (isFALSE(customNames$withColnames) && !is.null(customNames$colnames)) {
-      colnames(df) <- rep("", ncol(df))
-      mini <- min(length(customNames$colnames), ncol(df))
-      colnames(df)[seq_len(mini)] <- customNames$colnames[seq_len(mini)]
+      if (isFALSE(customNames$withColnames) &&
+          !is.null(customNames$colnames)) {
+        colnames(df) <- rep("", ncol(df))
+        mini <- min(length(customNames$colnames), ncol(df))
+        colnames(df)[seq_len(mini)] <-
+          customNames$colnames[seq_len(mini)]
+      }
+
+      if (isFALSE(customNames$withRownames) &&
+          !is.null(customNames$rownames)) {
+        rownames(df) <- rep("", ncol(df))
+        mini <- min(length(customNames$rownames), ncol(df))
+        rownames(df)[seq_len(mini)] <-
+          customNames$rownames[seq_len(mini)]
+      }
     }
 
-    if (isFALSE(customNames$withRownames) && !is.null(customNames$rownames)) {
-      rownames(df) <- rep("", ncol(df))
-      mini <- min(length(customNames$rownames), ncol(df))
-      rownames(df)[seq_len(mini)] <- customNames$rownames[seq_len(mini)]
-    }
+    df
   }
-
-  df
-}
 
 
 #' Format Column Names
