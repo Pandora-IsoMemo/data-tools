@@ -621,7 +621,7 @@ selectDataTab <-
         )
       },
       div(
-        style = "height: 14em",
+        style = if (batch) "height: 10em" else  "height: 14em",
         div(class = "text-warning", uiOutput(ns("warning"))),
         div(class = "text-danger", uiOutput(ns("error"))),
         div(class = "text-success", textOutput(ns("success")))
