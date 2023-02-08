@@ -212,7 +212,7 @@ importDataServer <- function(id,
                    res <-
                      try(download.file(input$url, destfile = tmp))
                    if (inherits(res, "try-error")) {
-                     alert("Could not load remote file")
+                     shinyjs::alert("Could not load remote file")
                      return()
                    }
 
@@ -238,7 +238,6 @@ importDataServer <- function(id,
                      input$type,
                      input$colSep,
                      input$decSep,
-                     input$includeSd,
                      input$sheet,
                      customNames$withRownames,
                      customNames$withColnames
@@ -265,7 +264,6 @@ importDataServer <- function(id,
                          dec = input$decSep,
                          withRownames = customNames$withRownames,
                          withColnames = customNames$withColnames,
-                         includeSd = isTRUE(input$includeSd),
                          sheetId = as.numeric(input$sheet)
                        )
 
@@ -353,19 +351,29 @@ importDataServer <- function(id,
                    ### format column names for import ----
                    colnames(tmpData) <- colnames(tmpData) %>%
                      formatColumnNames()
-                   # ADD WARNING that rownames and includeSd get lost when using merger/query!! ----
-                   # includeSd is false if merge / query
+                   notifications <- c()
+                   if (customNames$withRownames) {
+                     notifications <- c(
+                       notifications,
+                       "Rownames are not preserved when using Merge or Query data."
+                       )
+                     }
                    if (values$fileName %in% names(mergeList())) {
                      tmpMergeList <- mergeList()
                      tmpMergeList[[values$fileName]] <- tmpData
                      mergeList(tmpMergeList)
-                     showNotification("File was marked already and was updated successfully.")
+                     notifications <- c(
+                       notifications, "File was send already and was updated successfully.")
                    } else {
                      mergeList(c(mergeList(),
                                  setNames(list(tmpData),
                                           values$fileName)))
                    }
 
+                   if (length(notifications) > 0) {
+                     shinyjs::info(
+                       paste0(notifications, collapse = "\n")
+                     )}
                    shinyjs::disable(ns("addData"), asis = TRUE)
                  })
 
@@ -440,11 +448,24 @@ importDataDialog <- function(ns, defaultSource = "ckan", batch = FALSE, outputAs
     title = "Import Data",
     style = 'height: 940px',
     footer = tagList(
-      actionButton(ns("accept"), "Accept"),
-      actionButton(ns("addData"), "Send to Merge / Query"),
-      actionButton(ns("acceptMerged"), "Accept Merged"),
-      actionButton(ns("acceptQuery"), "Accept Query"),
-      actionButton(ns("cancel"), "Cancel")
+      fluidRow(
+        column(4,
+               align = "left",
+               style = "margin-top: -1em;",
+               if (outputAsMatrix && batch) {
+                 checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE)
+               } else {
+                 tags$br()
+               }),
+        column(8,
+               align = "right",
+               actionButton(ns("accept"), "Accept"),
+               actionButton(ns("addData"), "Send to Merge / Query"),
+               actionButton(ns("acceptMerged"), "Accept Merged"),
+               actionButton(ns("acceptQuery"), "Accept Query"),
+               actionButton(ns("cancel"), "Cancel")
+               )
+      )
     ),
     tabsetPanel(
       id = ns("tabImport"),
@@ -564,11 +585,9 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE, outputAsMat
         )
       )
     ),
-    if (outputAsMatrix && batch) {
-      checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE)
-      },
     checkboxInput(ns("withRownames"),
                   paste(if (batch) "Second" else "First", "column contains rownames")),
+    # check logic for second column
     if (outputAsMatrix) {
       checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
     } else {
@@ -608,7 +627,6 @@ selectDataTab <- function(ns, defaultSource = "ckan", batch = FALSE, outputAsMat
 #' @param dec (character) decimal separator input
 #' @param withRownames (logical) contains rownames input
 #' @param withColnames (logical) contains colnames input
-#' @param includeSd (logical) include sd input
 #' @param sheetId (numeric) sheet id
 loadDataWrapper <- function(values,
                             filepath,
@@ -618,7 +636,6 @@ loadDataWrapper <- function(values,
                             dec,
                             withRownames,
                             withColnames,
-                            includeSd,
                             sheetId) {
   df <- tryCatch(
     loadData(

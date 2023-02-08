@@ -7,10 +7,9 @@
 checkWarningEmptyValues <- function(data) {
   vals <- data[, -1, drop = FALSE]
 
-  #mode(vals) <- "numeric"
-  # if (attr(data, "includeSd")) {
-  #   vals <- vals[, seq(2, ncol(vals), by = 2, )]
-  # }
+  if (isTRUE(attr(data, "includeSd"))) {
+    vals <- vals[, seq(2, ncol(vals), by = 2, )]
+  }
 
   vals <-
     as.data.frame(sapply(vals, function(x)

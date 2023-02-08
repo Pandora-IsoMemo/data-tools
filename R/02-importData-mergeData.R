@@ -192,7 +192,7 @@ mergeDataServer <- function(id, mergeList) {
                        },
                        error = function(cond) {
                          joinedResult$errors <- "Could not merge data."
-                         alert(paste("Could not merge data:", cond$message))
+                         shinyjs::alert(paste("Could not merge data:", cond$message))
                          # Choose a return value in case of error
                          return(NULL)
                        },
@@ -238,7 +238,7 @@ mergeDataServer <- function(id, mergeList) {
                      }
 
                      if (length(joinedResult$warningsPopup) > 0) {
-                       alert(paste0(
+                       shinyjs::alert(paste0(
                          "WARNING: \n",
                          paste(joinedResult$warningsPopup, collapse = "\n")
                        ))
@@ -422,7 +422,7 @@ mergeSettingsServer <-
                        mergeViaUIResult$command <- ""
 
                        if (isEqualTables(tableXId(), tableYId())) {
-                         alert("Please choose two different tables.")
+                         shinyjs::alert("Please choose two different tables.")
                        }
                      }
                    })

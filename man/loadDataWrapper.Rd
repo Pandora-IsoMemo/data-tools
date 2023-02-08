@@ -13,7 +13,6 @@ loadDataWrapper(
   dec,
   withRownames,
   withColnames,
-  includeSd,
   sheetId
 )
 }
@@ -33,8 +32,6 @@ loadDataWrapper(
 \item{withRownames}{(logical) contains rownames input}
 
 \item{withColnames}{(logical) contains colnames input}
-
-\item{includeSd}{(logical) include sd input}
 
 \item{sheetId}{(numeric) sheet id}
 }
