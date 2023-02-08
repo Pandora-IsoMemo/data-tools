@@ -4,12 +4,22 @@
 \alias{selectDataTab}
 \title{Select Data UI}
 \usage{
-selectDataTab(ns, defaultSource = "ckan")
+selectDataTab(
+  ns,
+  defaultSource = "ckan",
+  batch = FALSE,
+  outputAsMatrix = FALSE
+)
 }
 \arguments{
 \item{ns}{namespace}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+
+\item{batch}{(logical) use batch import}
+
+\item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
+e.g. for batch = TRUE in Resources}
 }
 \description{
 Select Data UI

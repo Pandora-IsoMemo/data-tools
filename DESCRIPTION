@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 23.02.3
+Version: 23.02.4
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
@@ -29,4 +29,4 @@ Imports:
 Suggests:
   lintr (>= 1.0.2),
   testthat (>= 2.0.0)
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.1

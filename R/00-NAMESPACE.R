@@ -8,7 +8,7 @@
 #' @importFrom readxl excel_sheets read_excel
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
-#' @importFrom shinyjs alert reset runjs useShinyjs
+#' @importFrom shinyjs alert info reset runjs useShinyjs
 #' @importFrom shinyWidgets pickerInput updatePickerInput
 #' @importFrom stats setNames
 #' @importFrom templates tmpl

@@ -1,4 +1,5 @@
 ui <- fluidPage(
+  useShinyjs(),  # Set up shinyjs
   tagList(
     navbarPage(
       title = paste("Test App", packageVersion("DataTools")),

@@ -11,7 +11,9 @@ importDataServer(
   customWarningChecks = list(),
   customErrorChecks = list(),
   ignoreWarnings = FALSE,
-  defaultSource = "ckan"
+  defaultSource = "ckan",
+  batch = FALSE,
+  outputAsMatrix = FALSE
 )
 }
 \arguments{
@@ -32,6 +34,11 @@ of data.
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+
+\item{batch}{(logical) use batch import}
+
+\item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
+e.g. for batch = TRUE in Resources}
 }
 \description{
 Backend for data import module

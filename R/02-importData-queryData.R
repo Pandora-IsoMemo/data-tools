@@ -173,7 +173,7 @@ queryDataServer <- function(id, mergeList) {
                      },
                      error = function(cond) {
                        result$errors <- "Query failed."
-                       alert(paste("Query failed:", cond$message))
+                       shinyjs::alert(paste("Query failed:", cond$message))
                        return(NULL)
                      },
                      warning = function(cond) {

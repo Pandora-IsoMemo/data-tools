@@ -26,6 +26,9 @@ importDataUI <- function(id, label = "Import Data") {
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
+#' @param batch (logical) use batch import
+#' @param outputAsMatrix (logical) TRUE if output must be a matrix,
+#'  e.g. for batch = TRUE in Resources
 #' @export
 importDataServer <- function(id,
                              rowNames = NULL,
@@ -33,7 +36,9 @@ importDataServer <- function(id,
                              customWarningChecks = list(),
                              customErrorChecks = list(),
                              ignoreWarnings = FALSE,
-                             defaultSource = "ckan") {
+                             defaultSource = "ckan",
+                             batch = FALSE,
+                             outputAsMatrix = FALSE) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -47,6 +52,23 @@ importDataServer <- function(id,
                    preview = NULL,
                    data = list()
                  )
+
+                 customNames <- reactiveValues(
+                   withRownames = FALSE,
+                   rownames = rowNames,
+                   withColnames = TRUE,
+                   colnames = colNames
+                 )
+
+                 observe({
+                   req(!is.null(input$withRownames))
+                   customNames$withRownames <- input$withRownames
+                 })
+
+                 observe({
+                   req(!is.null(input$withColnames))
+                   customNames$withColnames <- input$withColnames
+                 })
 
                  mergeList <- reactiveVal(list())
 
@@ -69,7 +91,14 @@ importDataServer <- function(id,
                    values$data <- list()
                    dataSource(NULL)
 
-                   showModal(importDataDialog(ns = ns, defaultSource = defaultSource))
+                   showModal(
+                     importDataDialog(
+                       ns = ns,
+                       defaultSource = defaultSource,
+                       batch = batch,
+                       outputAsMatrix = outputAsMatrix
+                     )
+                   )
 
                    shinyjs::disable(ns("addData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
@@ -184,11 +213,10 @@ importDataServer <- function(id,
                    req(trimws(input$url) != "")
 
                    tmp <- tempfile()
-
                    res <-
                      try(download.file(input$url, destfile = tmp))
                    if (inherits(res, "try-error")) {
-                     alert("Could not load remote file")
+                     shinyjs::alert("Could not load remote file")
                      return()
                    }
 
@@ -214,9 +242,9 @@ importDataServer <- function(id,
                      input$type,
                      input$colSep,
                      input$decSep,
-                     input$rownames,
-                     #input$includeSd
-                     input$sheet
+                     input$sheet,
+                     customNames$withRownames,
+                     customNames$withColnames
                    ),
                    {
                      req(dataSource())
@@ -235,15 +263,12 @@ importDataServer <- function(id,
                          values = values,
                          filepath = dataSource()$file,
                          filename = dataSource()$filename,
-                         colNames = colNames,
                          type = input$type,
                          sep = input$colSep,
                          dec = input$decSep,
-                         withRownames = isTRUE(input$rownames),
-                         sheetId = as.numeric(input$sheet),
-                         headOnly = FALSE,
-                         customWarningChecks = customWarningChecks,
-                         customErrorChecks = customErrorChecks
+                         withRownames = customNames$withRownames,
+                         withColnames = customNames$withColnames,
+                         sheetId = as.numeric(input$sheet)
                        )
 
                        if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
@@ -324,36 +349,32 @@ importDataServer <- function(id,
                    removeModal()
                  })
 
-                 ## button accept ----
-                 observeEvent(input$accept, {
-                   removeModal()
-
-                   tmpData <- preparedData()
-                   ### format column names for import ----
-                   colnames(tmpData) <- colnames(tmpData) %>%
-                     formatColumnNames()
-
-                   values$data[[values$fileName]] <- tmpData
-                 })
-
                  ## button add data ----
                  observeEvent(input$addData, {
                    tmpData <- preparedData()
                    ### format column names for import ----
                    colnames(tmpData) <- colnames(tmpData) %>%
                      formatColumnNames()
-
+                   notifications <- c()
+                   if (customNames$withRownames) {
+                     notifications <- c(notifications,
+                                        "Rownames are not preserved when using Merge or Query data.")
+                   }
                    if (values$fileName %in% names(mergeList())) {
                      tmpMergeList <- mergeList()
                      tmpMergeList[[values$fileName]] <- tmpData
                      mergeList(tmpMergeList)
-                     showNotification("File was marked already and was updated successfully.")
+                     notifications <- c(notifications,
+                                        "File was send already and was updated successfully.")
                    } else {
                      mergeList(c(mergeList(),
                                  setNames(list(tmpData),
                                           values$fileName)))
                    }
 
+                   if (length(notifications) > 0) {
+                     shinyjs::info(paste0(notifications, collapse = "\n"))
+                   }
                    shinyjs::disable(ns("addData"), asis = TRUE)
                  })
 
@@ -371,12 +392,6 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(joinedData(), ignoreNULL = FALSE)
 
-                 observeEvent(input$acceptMerged, {
-                   removeModal()
-
-                   values$data[["mergedData"]] <- joinedData()
-                 })
-
                  ## button query data ----
                  queriedData <-
                    queryDataServer("dataQuerier", mergeList = mergeList)
@@ -391,10 +406,40 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(queriedData(), ignoreNULL = FALSE)
 
+                 ## ACCEPT buttons ----
+                 observeEvent(input$accept, {
+                   removeModal()
+                   values$data[[values$fileName]] <-
+                     preparedData() %>%
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = input$includeSd,
+                       customNames = customNames
+                     )
+                 })
+
+                 observeEvent(input$acceptMerged, {
+                   removeModal()
+                   customNames$withRownames <- FALSE
+                   customNames$withColnames <- TRUE
+                   values$data[["mergedData"]] <- joinedData() %>%
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = FALSE,
+                       customNames = customNames
+                     )
+                 })
+
                  observeEvent(input$acceptQuery, {
                    removeModal()
-
-                   values$data[["queriedData"]] <- queriedData()
+                   customNames$withRownames <- FALSE
+                   customNames$withColnames <- TRUE
+                   values$data[["queriedData"]] <- queriedData() %>%
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = FALSE,
+                       customNames = customNames
+                     )
                  })
 
                  # return value for parent module: ----
@@ -403,158 +448,199 @@ importDataServer <- function(id,
                })
 }
 
+# Helper Functions ----
 # import data dialog UI ----
-importDataDialog <- function(ns, defaultSource = "ckan") {
-  modalDialog(
-    shinyjs::useShinyjs(),
-    title = "Import Data",
-    style = 'height: 940px',
-    footer = tagList(
-      actionButton(ns("accept"), "Accept"),
-      actionButton(ns("addData"), "Send to Merge / Query"),
-      actionButton(ns("acceptMerged"), "Accept Merged"),
-      actionButton(ns("acceptQuery"), "Accept Query"),
-      actionButton(ns("cancel"), "Cancel")
-    ),
-    tabsetPanel(
-      id = ns("tabImport"),
-      selected = "Select (required)",
-      tabPanel(
-        "Select (required)",
-        selectDataTab(ns = ns, defaultSource = defaultSource)
-      ),
-      tabPanel("Prepare",
-               prepareDataUI(ns("dataPreparer"))),
-      tabPanel("Merge",
-               mergeDataUI(ns("dataMerger"))),
-      tabPanel("Query with SQL",
-               queryDataUI(ns("dataQuerier")))
+importDataDialog <-
+  function(ns,
+           defaultSource = "ckan",
+           batch = FALSE,
+           outputAsMatrix = FALSE) {
+    modalDialog(
+      shinyjs::useShinyjs(),
+      title = "Import Data",
+      style = 'height: 940px',
+      footer = tagList(fluidRow(
+        column(4,
+               align = "left",
+               style = "margin-top: -1em;",
+               if (outputAsMatrix && batch) {
+                 checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE)
+               } else {
+                 tags$br()
+               }),
+        column(
+          8,
+          align = "right",
+          actionButton(ns("accept"), "Accept"),
+          actionButton(ns("addData"), "Send to Merge / Query"),
+          actionButton(ns("acceptMerged"), "Accept Merged"),
+          actionButton(ns("acceptQuery"), "Accept Query"),
+          actionButton(ns("cancel"), "Cancel")
+        )
+      )),
+      tabsetPanel(
+        id = ns("tabImport"),
+        selected = "Select (required)",
+        tabPanel(
+          "Select (required)",
+          selectDataTab(
+            ns = ns,
+            defaultSource = defaultSource,
+            batch = batch,
+            outputAsMatrix = outputAsMatrix
+          )
+        ),
+        tabPanel("Prepare",
+                 prepareDataUI(ns("dataPreparer"))),
+        tabPanel("Merge",
+                 mergeDataUI(ns("dataMerger"))),
+        tabPanel("Query with SQL",
+                 queryDataUI(ns("dataQuerier")))
+      )
     )
-  )
-}
+  }
 
 
 #' Select Data UI
 #'
 #' @param ns namespace
 #' @inheritParams importDataServer
-selectDataTab <- function(ns, defaultSource = "ckan") {
-  tagList(
-    tags$br(),
-    fluidRow(
-      column(
-        4,
-        # select source UI ----
-        selectInput(
-          ns("source"),
-          "Source",
-          choices = c(
-            "Pandora Platform" = "ckan",
-            "File" = "file",
-            "URL" = "url"
-          ),
-          selected = defaultSource
-        )
-      ),
-      column(
-        8,
-        conditionalPanel(
-          condition = "input.source == 'ckan'",
-          ns = ns,
-          selectizeInput(
-            ns("ckanRecord"),
-            "Pandora dataset",
-            choices = c("No Pandora dataset available" = ""),
-            width = "100%",
-            options = list(
-              onFocus = I(
-                "function() {currentVal = this.getValue(); this.clear(true); }"
-              ),
-              onBlur = I(
-                "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+selectDataTab <-
+  function(ns,
+           defaultSource = "ckan",
+           batch = FALSE,
+           outputAsMatrix = FALSE) {
+    tagList(
+      tags$br(),
+      fluidRow(
+        column(
+          4,
+          # select source UI ----
+          selectInput(
+            ns("source"),
+            "Source",
+            choices = c(
+              "Pandora Platform" = "ckan",
+              "File" = "file",
+              "URL" = "url"
+            ),
+            selected = defaultSource
+          )
+        ),
+        column(
+          8,
+          conditionalPanel(
+            condition = "input.source == 'ckan'",
+            ns = ns,
+            selectizeInput(
+              ns("ckanRecord"),
+              "Pandora dataset",
+              choices = c("No Pandora dataset available" = ""),
+              width = "100%",
+              options = list(
+                onFocus = I(
+                  "function() {currentVal = this.getValue(); this.clear(true); }"
+                ),
+                onBlur = I(
+                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                )
               )
+            ),
+            selectizeInput(
+              ns("ckanResource"),
+              "Pandora dataset resource",
+              choices = c("Select Pandora dataset ..." = ""),
+              width = "100%"
             )
           ),
-          selectizeInput(
-            ns("ckanResource"),
-            "Pandora dataset resource",
-            choices = c("Select Pandora dataset ..." = ""),
-            width = "100%"
-          )
-        ),
-        conditionalPanel(
-          condition = "input.source == 'file'",
-          ns = ns,
-          fileInput(ns("file"), "File", width = "100%")
-        ),
-        conditionalPanel(
-          condition = "input.source == 'url'",
-          ns = ns,
-          textInput(ns("url"), "URL", width = "100%")
-        )
-      )
-    ),
-    tags$hr(),
-    # specify file UI ----
-    fluidRow(
-      column(4,
-             selectInput(
-               ns("type"),
-               "File type",
-               choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
-               selected = "xlsx"
-             )),
-      column(
-        8,
-        conditionalPanel(
-          condition = paste0("input.type == 'csv' || input.type == 'txt'"),
-          ns = ns,
-          fluidRow(column(
-            width = 5,
-            textInput(ns("colSep"), "column separator:", value = ",")
+          conditionalPanel(
+            condition = "input.source == 'file'",
+            ns = ns,
+            fileInput(ns("file"), "File", width = "100%")
           ),
-          column(
-            width = 5,
-            textInput(ns("decSep"), "decimal separator:", value = ".")
-          ))
-        ),
-        conditionalPanel(
-          condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
-          ns = ns,
-          selectInput(
-            ns("sheet"),
-            "Sheet",
-            selected = 1,
-            choices = 1:10,
-            width = "100%"
+          conditionalPanel(
+            condition = "input.source == 'url'",
+            ns = ns,
+            textInput(ns("url"), "URL", width = "100%")
           )
         )
-      )
-    ),
-    checkboxInput(ns("rownames"), "First column contains rownames"),
-    helpText("The first row in your file need to contain variable names."),
-    div(
-      style = "height: 14em",
-      div(class = "text-warning", uiOutput(ns("warning"))),
-      div(class = "text-danger", uiOutput(ns("error"))),
-      div(class = "text-success", textOutput(ns("success")))
-    ),
-    tags$hr(),
-    tags$html(
-      HTML(
-        "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
-      )
-    ),
-    fluidRow(column(12,
-                    dataTableOutput(ns(
-                      "preview"
-                    ))))
-  )
-}
+      ),
+      tags$hr(),
+      # specify file UI ----
+      fluidRow(
+        column(4,
+               selectInput(
+                 ns("type"),
+                 "File type",
+                 choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
+                 selected = "xlsx"
+               )),
+        column(
+          8,
+          conditionalPanel(
+            condition = paste0("input.type == 'csv' || input.type == 'txt'"),
+            ns = ns,
+            fluidRow(column(
+              width = 5,
+              textInput(ns("colSep"), "column separator:", value = ",")
+            ),
+            column(
+              width = 5,
+              textInput(ns("decSep"), "decimal separator:", value = ".")
+            ))
+          ),
+          conditionalPanel(
+            condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
+            ns = ns,
+            selectInput(
+              ns("sheet"),
+              "Sheet",
+              selected = 1,
+              choices = 1:10,
+              width = "100%"
+            )
+          )
+        )
+      ),
+      checkboxInput(
+        ns("withRownames"),
+        paste(if (batch)
+          "Second"
+          else
+            "First", "column contains rownames")
+      ),
+      # check logic for second column
+      if (outputAsMatrix) {
+        checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
+      } else {
+        helpText("The first row in your file need to contain variable names.")
+      },
+      if (batch) {
+        helpText(
+          "The first column in your file need to contain the observation names from the target table."
+        )
+      },
+      div(
+        style = if (batch) "height: 10em" else  "height: 14em",
+        div(class = "text-warning", uiOutput(ns("warning"))),
+        div(class = "text-danger", uiOutput(ns("error"))),
+        div(class = "text-success", textOutput(ns("success")))
+      ),
+      tags$hr(),
+      tags$html(
+        HTML(
+          "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
+        )
+      ),
+      fluidRow(column(12,
+                      dataTableOutput(ns(
+                        "preview"
+                      ))))
+    )
+  }
 
 #' Load Data Wrapper
 #'
-#' @inheritParams importDataServer
 #' @param values (list) list with import specifications
 #' @param filepath (character) url or path
 #' @param filename (character) url or file name
@@ -562,29 +648,26 @@ selectDataTab <- function(ns, defaultSource = "ckan") {
 #' @param sep (character) column separator input
 #' @param dec (character) decimal separator input
 #' @param withRownames (logical) contains rownames input
+#' @param withColnames (logical) contains colnames input
 #' @param sheetId (numeric) sheet id
-#' @param headOnly (logical) load only head (first n rows) of file
 loadDataWrapper <- function(values,
                             filepath,
                             filename,
-                            colNames,
                             type,
                             sep,
                             dec,
                             withRownames,
-                            sheetId,
-                            headOnly,
-                            customWarningChecks,
-                            customErrorChecks) {
+                            withColnames,
+                            sheetId) {
   df <- tryCatch(
     loadData(
       file = filepath,
       type = type,
       sep = sep,
       dec = dec,
-      rownames = withRownames,
+      withColnames = withColnames,
       sheetId = sheetId,
-      headOnly = headOnly
+      headOnly = FALSE
     ),
     error = function(cond) {
       values$errors <-
@@ -597,24 +680,27 @@ loadDataWrapper <- function(values,
     }
   )
 
-  #attr(df, "includeSd") <- isTRUE(input$includeSd)
+  if (is.null(df)) {
+    values$dataImport <- NULL
+  } else {
+    ## Import technically successful
+    if (withRownames) {
+      rn <- df[, 1]
+      if (any(is.na(suppressWarnings(as.integer(rn))))) {
+        rn <- as.character(rn)
+      } else {
+        rn <- as.integer(rn)
+      }
 
-  ## set colnames
-  if (!is.null(colNames)) {
-    colnames(df) <- rep("", ncol(df))
-    mini <- min(length(colNames()), ncol(df))
-    colnames(df)[seq_len(mini)] <- colNames()[seq_len(mini)]
+      df <- df[, -1, drop = FALSE]
+      values$dataImport <- as.data.frame(df, row.names = rn)
+    } else {
+      values$dataImport <- as.data.frame(df)
+    }
+
   }
 
-  ## Import technically successful
   values$fileName <- filename
-  values$dataImport <- as.data.frame(df)
-
-  # custom checks are running after "prepare data" now
-  # values <- checkImport(values,
-  #                       df = values$dataImport,
-  #                       customWarningChecks,
-  #                       customErrorChecks)
 
   values
 }
@@ -657,7 +743,7 @@ loadData <-
            type,
            sep = ",",
            dec = ".",
-           rownames = FALSE,
+           withColnames = TRUE,
            sheetId = 1,
            headOnly = FALSE) {
     # if(type == "csv" | type == "txt"){
@@ -691,6 +777,7 @@ loadData <-
       csv = suppressWarnings({
         read.csv(
           file,
+          header = withColnames,
           sep = sep,
           dec = dec,
           stringsAsFactors = FALSE,
@@ -702,6 +789,7 @@ loadData <-
       txt = suppressWarnings({
         read.csv(
           file,
+          header = withColnames,
           sep = sep,
           dec = dec,
           stringsAsFactors = FALSE,
@@ -710,11 +798,26 @@ loadData <-
           nrows = getNrow(headOnly, type)
         )
       }),
-      xlsx = read.xlsx(file, sheet = sheetId, rows = getNrow(headOnly, type)),
+      xlsx = read.xlsx(
+        file,
+        sheet = sheetId,
+        colNames = withColnames,
+        rows = getNrow(headOnly, type)
+      ),
       xls = suppressWarnings({
-        readxl::read_excel(file, sheet = sheetId, n_max = getNrow(headOnly, type))
+        readxl::read_excel(
+          file,
+          sheet = sheetId,
+          col_names = withColnames,
+          n_max = getNrow(headOnly, type)
+        )
       }),
-      ods = readODS::read_ods(file, sheet = sheetId, range = getNrow(headOnly, type))
+      ods = readODS::read_ods(
+        file,
+        sheet = sheetId,
+        col_names = withColnames,
+        range = getNrow(headOnly, type)
+      )
     )
 
     if (is.null(data))
@@ -733,12 +836,6 @@ loadData <-
     if (any(dim(data) == 0)) {
       stop("Number of rows or columns equal to 0")
       return(NULL)
-    }
-
-    if (rownames) {
-      rn <- data[, 1]
-      data <- data[, -1, drop = FALSE]
-      rownames(data) <- rn
     }
 
     return(data)
@@ -811,6 +908,44 @@ getNrow <- function(headOnly, type, n = 3) {
       return(-999)
   }
 }
+
+
+formatForImport <-
+  function(df,
+           outputAsMatrix,
+           includeSd,
+           customNames) {
+    if (is.null(df))
+      return (df)
+
+    ### format column names for import ----
+    colnames(df) <- colnames(df) %>%
+      formatColumnNames()
+
+    if (outputAsMatrix) {
+      df <- as.matrix(df)
+      attr(df, "includeSd") <- isTRUE(includeSd)
+      attr(df, "includeRownames") <- isTRUE(customNames$withRownames)
+
+      if (isFALSE(customNames$withColnames) &&
+          !is.null(customNames$colnames)) {
+        colnames(df) <- rep("", ncol(df))
+        mini <- min(length(customNames$colnames), ncol(df))
+        colnames(df)[seq_len(mini)] <-
+          customNames$colnames[seq_len(mini)]
+      }
+
+      if (isFALSE(customNames$withRownames) &&
+          !is.null(customNames$rownames)) {
+        rownames(df) <- rep("", ncol(df))
+        mini <- min(length(customNames$rownames), ncol(df))
+        rownames(df)[seq_len(mini)] <-
+          customNames$rownames[seq_len(mini)]
+      }
+    }
+
+    df
+  }
 
 
 #' Format Column Names

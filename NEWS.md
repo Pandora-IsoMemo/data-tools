@@ -1,5 +1,14 @@
 # DataTools
 
+## Version 23.02.4
+
+### New Features
+- UI for batch mode (requirement for ReSources app)
+- option to format output as matrix (requirement for ReSources app)
+
+### Updates
+- update logic for assignment of colnames and rownames because of matrix outputs
+
 ## Version 23.02.3
 
 ### Updates
