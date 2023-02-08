@@ -172,7 +172,7 @@ test_that("Test module importData", {
              args = list(outputAsMatrix = TRUE),
              {
                # Arrange
-               print("test import with rownames")
+               print("test import with duplicate rownames")
                # Act
                session$setInputs(
                  openPopup = TRUE,
@@ -240,6 +240,33 @@ test_that("Test module importData", {
                               )
                             ))
              })
+})
+
+test_that("loadData with csv", {
+  df <- data.frame(
+    num = c(0, 1, 2, 3, pi),
+    char = letters[1:5],
+    stringsAsFactors = FALSE
+  )
+
+  file <- paste0(tempdir(), "test.csv")
+  utils::write.csv(df, file, row.names = FALSE)
+
+  expect_equal(loadData(file, "csv"), df)
+  expect_error(loadData(file, "xlsx"))
+})
+
+test_that("loadData with xlsx", {
+  df <- data.frame(
+    num = c(0, 1, 2, 3, pi),
+    char = letters[1:5],
+    stringsAsFactors = FALSE
+  )
+
+  file <- paste0(tempdir(), "test.xlsx")
+  openxlsx::write.xlsx(df, file)
+
+  expect_equal(loadData(file, "xlsx"), df)
 })
 
 test_that("cutAllLongStrings function", {

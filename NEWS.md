@@ -1,5 +1,10 @@
 # DataTools
 
+## Version 23.02.5
+
+### Bug Fixes
+- apply output format before applying custom checks
+
 ## Version 23.02.4
 
 ### New Features

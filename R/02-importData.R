@@ -293,15 +293,20 @@ importDataServer <- function(id,
                  )
 
                  observeEvent(preparedData(), {
-                   values$dataImport <- preparedData()
+                   #values$dataImport <- preparedData()
                    values$preview <-
-                     cutAllLongStrings(values$dataImport, cutAt = 20)
+                     cutAllLongStrings(preparedData(), cutAt = 20)
 
                    ## Import valid?
                    values$warnings$import <- list()
                    values$errors$import <- list()
                    values <- checkImport(values,
-                                         df = values$dataImport,
+                                         df = preparedData() %>%
+                                           formatForImport(
+                                             outputAsMatrix = outputAsMatrix,
+                                             includeSd = input$includeSd,
+                                             customNames = customNames
+                                           ),
                                          customWarningChecks,
                                          customErrorChecks)
 
