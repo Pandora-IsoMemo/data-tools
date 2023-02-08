@@ -6,8 +6,8 @@
 \usage{
 importDataServer(
   id,
-  rowNames = NULL,
-  colNames = NULL,
+  rowNames = reactiveVal(NULL),
+  colNames = reactiveVal(NULL),
   customWarningChecks = list(),
   customErrorChecks = list(),
   ignoreWarnings = FALSE,

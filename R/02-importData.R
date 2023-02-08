@@ -31,8 +31,8 @@ importDataUI <- function(id, label = "Import Data") {
 #'  e.g. for batch = TRUE in Resources
 #' @export
 importDataServer <- function(id,
-                             rowNames = NULL,
-                             colNames = NULL,
+                             rowNames = reactiveVal(NULL),
+                             colNames = reactiveVal(NULL),
                              customWarningChecks = list(),
                              customErrorChecks = list(),
                              ignoreWarnings = FALSE,
@@ -81,6 +81,7 @@ importDataServer <- function(id,
                  # select source server ----
 
                  observeEvent(input$openPopup, ignoreNULL = TRUE, {
+                   logDebug("Updating input$openPopup")
                    reset("file")
                    values$warnings <- list()
                    values$errors <- list()
@@ -118,6 +119,7 @@ importDataServer <- function(id,
                  })
 
                  observeEvent(input$tabImport, {
+                   logDebug("Updating input$tabImport")
                    if (input$tabImport == "Merge") {
                      shinyjs::hide(ns("addData"), asis = TRUE)
                      shinyjs::hide(ns("accept"), asis = TRUE)
@@ -140,18 +142,21 @@ importDataServer <- function(id,
                  # forces update after selection (even with 'Enter') and
                  # removes 'onFocus' as well as this.clear(true)
                  observe({
+                   logDebug("Updating ckanRecord")
                    req(input$ckanRecord)
                    updateSelectizeInput(session, "ckanRecord", selected = input$ckanRecord)
                  }) %>%
                    bindEvent(input$ckanRecord)
 
                  ckanRecord <- reactive({
+                   logDebug("Setting ckanRecord")
                    req(input$ckanRecord)
                    updateSelectInput(session = session, "sheet", selected = character(0))
                    ckanFiles()[[input$ckanRecord]]
                  })
 
                  ckanResources <- reactive({
+                   logDebug("Setting ckanResources()")
                    req(ckanRecord())
 
                    resources <- names(ckanRecord()$resources)
@@ -163,6 +168,7 @@ importDataServer <- function(id,
                  })
 
                  observeEvent(ckanResources(), {
+                   logDebug("Updating ckanResources()")
                    choices <- ckanResources()
                    updateSelectizeInput(session,
                                         "ckanResource",
@@ -170,6 +176,7 @@ importDataServer <- function(id,
                  })
 
                  observeEvent(input$source, {
+                   logDebug("Updating input$source")
                    # reset values
                    values$warnings <- list()
                    values$errors <- list()
@@ -183,6 +190,7 @@ importDataServer <- function(id,
                  })
 
                  observe({
+                   logDebug("Updating input$ckanResource")
                    req(input$source == "ckan", input$ckanResource)
                    resource <-
                      ckanRecord()$resources[[input$ckanResource]]
@@ -197,6 +205,7 @@ importDataServer <- function(id,
                  })
 
                  observeEvent(input$file, {
+                   logDebug("Updating input$file")
                    inFile <- input$file
 
                    if (is.null(inFile))
@@ -209,6 +218,7 @@ importDataServer <- function(id,
                  })
 
                  observe({
+                   logDebug("Updating input$url")
                    req(input$source == "url", input$url)
                    req(trimws(input$url) != "")
 
@@ -227,6 +237,7 @@ importDataServer <- function(id,
                  })
 
                  observeEvent(list(input$type, dataSource()$file), {
+                   logDebug("Updating dataSource()$file")
                    req(input$type)
 
                    if (input$type %in% c("xls", "xlsx")) {
@@ -247,6 +258,7 @@ importDataServer <- function(id,
                      customNames$withColnames
                    ),
                    {
+                     logDebug("Updating values$dataImport")
                      req(dataSource())
 
                      # reset values
@@ -293,6 +305,7 @@ importDataServer <- function(id,
                  )
 
                  observeEvent(preparedData(), {
+                   logDebug("Updating preparedData()")
                    #values$dataImport <- preparedData()
                    values$preview <-
                      cutAllLongStrings(preparedData(), cutAt = 20)
@@ -300,12 +313,13 @@ importDataServer <- function(id,
                    ## Import valid?
                    values$warnings$import <- list()
                    values$errors$import <- list()
+
                    values <- checkImport(values,
                                          df = preparedData() %>%
                                            formatForImport(
                                              outputAsMatrix = outputAsMatrix,
                                              includeSd = input$includeSd,
-                                             customNames = customNames
+                                             dfNames = customNames
                                            ),
                                          customWarningChecks,
                                          customErrorChecks)
@@ -356,6 +370,7 @@ importDataServer <- function(id,
 
                  ## button add data ----
                  observeEvent(input$addData, {
+                   logDebug("Updating input$addData")
                    tmpData <- preparedData()
                    ### format column names for import ----
                    colnames(tmpData) <- colnames(tmpData) %>%
@@ -388,6 +403,7 @@ importDataServer <- function(id,
                    mergeDataServer("dataMerger", mergeList = mergeList)
 
                  observe({
+                   logDebug("Updating joinedData()")
                    if (is.null(joinedData()) ||
                        nrow(joinedData()) == 0) {
                      shinyjs::disable(ns("acceptMerged"), asis = TRUE)
@@ -402,6 +418,7 @@ importDataServer <- function(id,
                    queryDataServer("dataQuerier", mergeList = mergeList)
 
                  observe({
+                   logDebug("Updating queriedData()")
                    if (is.null(queriedData()) ||
                        nrow(queriedData()) == 0) {
                      shinyjs::disable(ns("acceptQuery"), asis = TRUE)
@@ -413,17 +430,19 @@ importDataServer <- function(id,
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
+                   logDebug("Updating input$accept")
                    removeModal()
                    values$data[[values$fileName]] <-
                      preparedData() %>%
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = input$includeSd,
-                       customNames = customNames
+                       dfNames = customNames
                      )
                  })
 
                  observeEvent(input$acceptMerged, {
+                   logDebug("Updating input$acceptMerged")
                    removeModal()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
@@ -431,11 +450,12 @@ importDataServer <- function(id,
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = FALSE,
-                       customNames = customNames
+                       dfNames = customNames
                      )
                  })
 
                  observeEvent(input$acceptQuery, {
+                   logDebug("Updating input$acceptQuery")
                    removeModal()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
@@ -443,7 +463,7 @@ importDataServer <- function(id,
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = FALSE,
-                       customNames = customNames
+                       dfNames = customNames
                      )
                  })
 
@@ -919,7 +939,7 @@ formatForImport <-
   function(df,
            outputAsMatrix,
            includeSd,
-           customNames) {
+           dfNames) {
     if (is.null(df))
       return (df)
 
@@ -930,22 +950,22 @@ formatForImport <-
     if (outputAsMatrix) {
       df <- as.matrix(df)
       attr(df, "includeSd") <- isTRUE(includeSd)
-      attr(df, "includeRownames") <- isTRUE(customNames$withRownames)
+      attr(df, "includeRownames") <- isTRUE(dfNames$withRownames)
 
-      if (isFALSE(customNames$withColnames) &&
-          !is.null(customNames$colnames)) {
+      if (isFALSE(dfNames$withColnames) &&
+          !is.null(dfNames$colnames())) {
         colnames(df) <- rep("", ncol(df))
-        mini <- min(length(customNames$colnames), ncol(df))
+        mini <- min(length(dfNames$colnames()), ncol(df))
         colnames(df)[seq_len(mini)] <-
-          customNames$colnames[seq_len(mini)]
+          dfNames$colnames()[seq_len(mini)]
       }
 
-      if (isFALSE(customNames$withRownames) &&
-          !is.null(customNames$rownames)) {
-        rownames(df) <- rep("", ncol(df))
-        mini <- min(length(customNames$rownames), ncol(df))
+      if (isFALSE(dfNames$withRownames) &&
+          !is.null(dfNames$rownames())) {
+        rownames(df) <- rep("", nrow(df))
+        mini <- min(length(dfNames$rownames()), nrow(df))
         rownames(df)[seq_len(mini)] <-
-          customNames$rownames[seq_len(mini)]
+          dfNames$rownames()[seq_len(mini)]
       }
     }
 
