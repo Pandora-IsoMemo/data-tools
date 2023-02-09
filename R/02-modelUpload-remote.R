@@ -33,12 +33,14 @@ remoteModelsServer <- function(id,
                    dir(file.path(altPathToModels)) %>%
                      sub(pattern = '\\.zip$', replacement = '')
                  })
-                 remoteChoices <- reactiveVal(getRemoteModelsFromGithub(githubRepo = githubRepo))
+                 remoteChoices <-
+                   reactiveVal(getRemoteModelsFromGithub(githubRepo = githubRepo))
 
                  pathToRemote <- reactiveVal(NULL)
 
                  observeEvent(localChoices(), {
-                   updateSelectInput(session = session, "remoteModelChoice",
+                   updateSelectInput(session = session,
+                                     "remoteModelChoice",
                                      choices = localChoices())
                  })
 
@@ -51,7 +53,8 @@ remoteModelsServer <- function(id,
                      choices <- localChoices()
                    }
 
-                   updateSelectInput(session = session, "remoteModelChoice",
+                   updateSelectInput(session = session,
+                                     "remoteModelChoice",
                                      choices = choices)
                  })
 
@@ -67,14 +70,13 @@ remoteModelsServer <- function(id,
                            input$remoteModelChoice,
                            ".zip"
                          ),
-                         destfile = tmpPath))
+                         destfile = tmpPath
+                       ))
                      })
                    } else {
                      # FALL BACK IF NO INTERNET CONNECTION
-                     tmpPath <- file.path(
-                       altPathToModels,
-                       paste0(input$remoteModelChoice, ".zip")
-                     )
+                     tmpPath <- file.path(altPathToModels,
+                                          paste0(input$remoteModelChoice, ".zip"))
                    }
 
                    pathToRemote(tmpPath)
@@ -91,19 +93,23 @@ remoteModelsServer <- function(id,
 getRemoteModelsFromGithub <- function(githubRepo) {
   res <- try({
     apiOut <- getGithubContent(githubRepo = githubRepo)
-    lapply(apiOut, function(el) el$name) %>%
+    lapply(apiOut, function(el)
+      el$name) %>%
       unlist() %>%
       sub(pattern = '\\.zip$', replacement = '')
   })
 
   if (inherits(res, "try-error")) {
-
     thisPackage <- packageName(environment(getRemoteModelsFromGithub))
-    shinyjs::alert(paste(
-      "No connection to the remote github folder. The 'remote models'",
-      "are taken from the models that were locally saved with version",
-      packageVersion(thisPackage), "of", thisPackage
-    ))
+    shinyjs::alert(
+      paste(
+        "No connection to the remote github folder. The 'remote models'",
+        "are taken from the models that were locally saved with version",
+        packageVersion(thisPackage),
+        "of",
+        thisPackage
+      )
+    )
     NULL
   } else {
     res
@@ -116,9 +122,13 @@ getRemoteModelsFromGithub <- function(githubRepo) {
 #' @inheritParams remoteModelsServer
 getGithubContent <- function(githubRepo) {
   # api.github.com/repos/Pandora-IsoMemo/bpred/contents/inst/app/predefinedModels
-  res <- httr::GET(paste0(
-    "api.github.com/repos/Pandora-IsoMemo/", githubRepo, "/contents/inst/app/predefinedModels"
-  ))
+  res <- httr::GET(
+    paste0(
+      "api.github.com/repos/Pandora-IsoMemo/",
+      githubRepo,
+      "/contents/inst/app/predefinedModels"
+    )
+  )
   httr::content(res)
 }
 
@@ -135,8 +145,7 @@ uiRemote <- fluidPage(
 serverRemote <- function(input, output, session) {
   isoDataFull <- reactiveVal(NULL)
 
-  pathToPresavedModel <- remoteModelsServer(
-    id = "remoteModel")
+  pathToPresavedModel <- remoteModelsServer(id = "remoteModel")
 
   output$path <- renderText({
     pathToPresavedModel()

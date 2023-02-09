@@ -13,6 +13,7 @@ LazyData: true
 Imports:
   dplyr,
   DT,
+  htmltools,
   httr,
   futile.logger,
   magrittr,
@@ -26,7 +27,8 @@ Imports:
   shinyjs,
   shinyWidgets,
   templates,
-  tidyr
+  tidyr,
+  zip
 Suggests:
   lintr (>= 1.0.2),
   testthat (>= 2.0.0),
