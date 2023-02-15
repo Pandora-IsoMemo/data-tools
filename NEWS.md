@@ -1,5 +1,10 @@
 # DataTools
 
+## Version 23.02.6
+
+### Updates
+- factors are converted to character in cutAllLongStrings (#25)
+
 ## Version 23.02.5
 
 ### Bug Fixes
