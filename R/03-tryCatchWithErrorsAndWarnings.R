@@ -3,8 +3,8 @@
 #' Catches errors and warnings and forwards them as an alert. If an error occurs, NULL is returned.
 #' If a warning occurs, the result is returned.
 #'
-#' @inheritParams tryCatch
-#' @param messagePreError (character) error message prefix
+#' @param expr expression to be evaluated.
+#' @param messagePreError (character) error message prefix.
 #'
 #' @export
 tryCatchWithWarningsAndErrors <- function(expr, messagePreError = "Modeling failed:") {

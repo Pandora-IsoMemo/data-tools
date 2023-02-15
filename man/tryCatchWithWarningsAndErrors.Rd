@@ -7,7 +7,9 @@
 tryCatchWithWarningsAndErrors(expr, messagePreError = "Modeling failed:")
 }
 \arguments{
-\item{messagePreError}{(character) error message prefix}
+\item{expr}{expression to be evaluated.}
+
+\item{messagePreError}{(character) error message prefix.}
 }
 \description{
 Catches errors and warnings and forwards them as an alert. If an error occurs, NULL is returned.
