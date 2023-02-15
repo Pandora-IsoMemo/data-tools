@@ -1,6 +1,8 @@
-#' @rdname shinyModule
+#' Remote Models module
 #'
-#' @export
+#' Displays a button which opens a import dialog when clicked
+#'
+#' @param id id of module
 remoteModelsUI <- function(id) {
   ns <- NS(id)
 
@@ -8,8 +10,7 @@ remoteModelsUI <- function(id) {
     selectInput(
       ns("remoteModelChoice"),
       label = "Select remote model",
-      choices = NULL,
-      selected = NULL
+      choices = c("No remote models found ..." = "")
     ),
     actionButton(ns("loadRemoteModel"), "Load Remote Model")
     #helpText("Remote models are only available on on https://isomemoapp.com")
@@ -17,40 +18,42 @@ remoteModelsUI <- function(id) {
 
 }
 
-#' @rdname shinyModule
+#' Server function for Remote Models
+#'
+#' Backend for the remote models module
+#'
+#' @param id namespace id
 #' @param githubRepo (character) name of the app's github repository, currently "bpred",
 #'  "osteo-bior", "resources"
-#' @param altPathToModels (character) alternative local path to models, if there is no internet
-#'  connection, e.g. "../<repo-name>/inst/app/predefinedModels"
-#' @export
+#' @param resetSelected (reactive) if TRUE resets the selected remote model.
 remoteModelsServer <- function(id,
                                githubRepo = "bpred",
-                               altPathToModels = "../bpred/inst/app/predefinedModels") {
+                               resetSelected = reactiveVal(FALSE)) {
   moduleServer(id,
                function(input, output, session) {
                  useLocalModels <- reactiveVal(TRUE)
-                 localChoices <- reactiveVal({
-                   dir(file.path(altPathToModels)) %>%
-                     sub(pattern = '\\.zip$', replacement = '')
-                 })
+
                  remoteChoices <-
                    reactiveVal(getRemoteModelsFromGithub(githubRepo = githubRepo))
+                 #remoteChoices <- reactiveVal() # test local choices
 
                  pathToRemote <- reactiveVal(NULL)
 
-                 observeEvent(localChoices(), {
-                   updateSelectInput(session = session,
-                                     "remoteModelChoice",
-                                     choices = localChoices())
-                 })
-
-                 observeEvent(remoteChoices(), {
+                 observe({
                    if (!is.null(remoteChoices())) {
                      useLocalModels(FALSE)
                      choices <- remoteChoices()
                    } else {
                      useLocalModels(TRUE)
-                     choices <- localChoices()
+                     choices <-
+                       getLocalModelDir(githubRepo = githubRepo) %>%
+                       getLocalModelChoices()
+                   }
+
+                   if (length(choices) == 0) {
+                     choices <- c("No remote models found ..." = "")
+                   } else {
+                     choices <- c(c("Please select a model ..." = ""), choices)
                    }
 
                    updateSelectInput(session = session,
@@ -58,7 +61,17 @@ remoteModelsServer <- function(id,
                                      choices = choices)
                  })
 
+                 observe({
+                   req(resetSelected())
+                   updateSelectInput(session = session,
+                                     "remoteModelChoice",
+                                     selected = c("Please select a model ..." = ""))
+                 }) %>%
+                   bindEvent(resetSelected())
+
                  observeEvent(input$loadRemoteModel, {
+                   req(input$remoteModelChoice)
+
                    if (!useLocalModels()) {
                      tmpPath <- tempfile()
                      withProgress(message = "Downloading remote model ...", value = 0.9, {
@@ -73,17 +86,37 @@ remoteModelsServer <- function(id,
                          destfile = tmpPath
                        ))
                      })
-                   } else {
-                     # FALL BACK IF NO INTERNET CONNECTION
-                     tmpPath <- file.path(altPathToModels,
-                                          paste0(input$remoteModelChoice, ".zip"))
                    }
 
+                   if (useLocalModels() | inherits(res, "try-error")) {
+                     # FALL BACK IF NO INTERNET CONNECTION
+                     # add a warning ??
+                     tmpPath <-
+                       file.path(getLocalModelDir(githubRepo),
+                                 paste0(input$remoteModelChoice, ".zip"))
+                   }
+
+                   resetSelected(FALSE)
                    pathToRemote(tmpPath)
                  })
 
                  return(pathToRemote)
                })
+}
+
+getLocalModelChoices <- function(localModelDir) {
+  dir(localModelDir) %>%
+    sub(pattern = '\\.zip$', replacement = '')
+}
+
+getLocalModelDir <- function(githubRepo = "bpred") {
+  modelDir <- file.path("..", githubRepo, "inst/app/predefinedModels")
+
+  if (length(dir(modelDir)) == 0) {
+    warning("No models found.")
+  }
+
+  modelDir
 }
 
 #' Get Remote Models From Github
@@ -138,6 +171,7 @@ getGithubContent <- function(githubRepo) {
 uiRemote <- fluidPage(
   shinyjs::useShinyjs(),
   remoteModelsUI(id = "remoteModel"),
+  tags$hr(),
   tags$h4("Module output"),
   textOutput("path")
 )

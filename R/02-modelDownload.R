@@ -131,8 +131,8 @@ serverDownload <- function(input, output, session) {
   downloadModelServer(
     "downloadModel",
     listOfModels = reactiveVal(list(
-      m1 = list(input = "abc", output = 5),
-      m2 = list(input = "xyz", output = 8)
+      m1 = list(input = "abc", fit = 5),
+      m2 = list(input = "xyz", fit = 8)
     )),
     uploadedNotes = reactiveVal("test")
   )
