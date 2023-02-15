@@ -29,3 +29,47 @@ tryCatchWithWarningsAndErrors <- function(expr, messagePreError = "Modeling fail
 
   res
 }
+
+# TEST MODULE -------------------------------------------------------------
+
+uiTestTryCatch <- fluidPage(
+  shinyjs::useShinyjs(),
+  actionButton("buttonWarn", "Test warning"),
+  actionButton("buttonErr", "Test error"),
+  tags$hr(),
+  textOutput("resWarn"),
+  textOutput("resErr")
+)
+
+serverTestTryCatch <- function(input, output, session) {
+  resWarn <- reactiveVal()
+  resErr <- reactiveVal()
+
+  observe({
+    tmpRes <- tryCatchWithWarningsAndErrors({
+      warning("test warning")
+      5+4
+      }, messagePreError = "Modeling failed:")
+    resWarn(tmpRes)
+  }) %>%
+    bindEvent(input$buttonWarn)
+
+  observe({
+    tmpRes <- tryCatchWithWarningsAndErrors({
+      stop("test error")
+      5+4
+    }, messagePreError = "Modeling failed:")
+    resErr(tmpRes)
+  }) %>%
+    bindEvent(input$buttonErr)
+
+  output$resWarn <- renderText({
+    as.character(resWarn())
+  })
+
+  output$resErr <- renderText({
+    as.character(resErr())
+  })
+}
+
+shinyApp(uiTestTryCatch, serverTestTryCatch)
