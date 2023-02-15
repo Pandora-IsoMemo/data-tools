@@ -1,5 +1,11 @@
 # DataTools
 
+## Version 23.02.7
+
+### Features
+- New function to catch and forward errors and warnings to the UI of the app. If a warning is 
+triggered the result of the evaluated expression is kept and returned.
+
 ## Version 23.02.6
 
 ### Updates
