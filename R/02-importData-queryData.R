@@ -14,30 +14,68 @@ queryDataUI <- function(id) {
     tags$br(),
     dataTableOutput(ns("inMemoryColumns")),
     tags$br(),
+    checkboxInput("useGpt", "Use GPT3"),
+    conditionalPanel(
+      condition = "input.useGpt == true",
+      fluidRow(
+        column(4,
+               fileInput("accessKey", "Upload access key file")),
+        column(3,
+               numericInput("temperatureX", "Temperature", value = 0.1)),
+        column(3,
+               numericInput("maxtokensX", "Max_tokens", value = 100)),
+        column(2,
+               numericInput("nX", "N", value = 1))
+      ),
+      div(style = "margin-bottom: 0.5em;",
+          tags$html(
+            HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
+          )),
+      fluidRow(column(
+        10,
+        aceEditor(
+          ns("gptCommand"),
+          value = NULL,
+          mode = "text",
+          theme = "cobalt",
+          fontSize = 16,
+          autoScrollEditorIntoView = TRUE,
+          minLines = 3,
+          maxLines = 6,
+          autoComplete = "live",
+          placeholder = "... your natural language instructions"
+        )
+      ),
+      column(2,
+             actionButton(
+               ns("applyPrompt"), "Apply"
+             ))),
+    ),
     div(style = "margin-top: 1em; margin-bottom: 0.5em;",
         tags$html(
           HTML(
             "<b>SQL query</b> &nbsp;&nbsp; (Please, use the table ID to name tables)"
           )
         )),
-    aceEditor(
-      ns("sqlCommand"),
-      value = NULL,
-      mode = "sql",
-      theme = "cobalt",
-      fontSize = 18,
-      autoScrollEditorIntoView = TRUE,
-      minLines = 5,
-      maxLines = 10,
-      autoComplete = "live"
+    fluidRow(column(
+      10,
+      aceEditor(
+        ns("sqlCommand"),
+        value = NULL,
+        mode = "sql",
+        theme = "cobalt",
+        fontSize = 16,
+        autoScrollEditorIntoView = TRUE,
+        minLines = 3,
+        maxLines = 6,
+        autoComplete = "live"
+      )
     ),
-    div(style = "margin-top: 1em;",
-        fluidRow(
-          column(3, actionButton(ns("applyQuery"), "Apply Query")),
-          column(9, align = "right", style = "margin-top: 12px;", textOutput(ns(
-            "nRowsQueriedData"
-          )))
-        )),
+    column(2,
+           actionButton(
+             ns("applyQuery"), "Apply"
+           ))),
+    textOutput(ns("nRowsQueriedData")),
     tags$hr(),
     tags$html(
       HTML(

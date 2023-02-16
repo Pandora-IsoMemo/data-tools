@@ -17,6 +17,7 @@ Imports:
   futile.logger,
   magrittr,
   openxlsx,
+  rgpt3,
   readODS,
   readr,
   readxl,
