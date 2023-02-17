@@ -14,43 +14,7 @@ queryDataUI <- function(id) {
     tags$br(),
     dataTableOutput(ns("inMemoryColumns")),
     tags$br(),
-    checkboxInput("useGpt", "Use GPT3"),
-    conditionalPanel(
-      condition = "input.useGpt == true",
-      fluidRow(
-        column(4,
-               fileInput("accessKey", "Upload access key file")),
-        column(3,
-               numericInput("temperatureX", "Temperature", value = 0.1)),
-        column(3,
-               numericInput("maxtokensX", "Max_tokens", value = 100)),
-        column(2,
-               numericInput("nX", "N", value = 1))
-      ),
-      div(style = "margin-bottom: 0.5em;",
-          tags$html(
-            HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
-          )),
-      fluidRow(column(
-        10,
-        aceEditor(
-          ns("gptCommand"),
-          value = NULL,
-          mode = "text",
-          theme = "cobalt",
-          fontSize = 16,
-          autoScrollEditorIntoView = TRUE,
-          minLines = 3,
-          maxLines = 6,
-          autoComplete = "live",
-          placeholder = "... your natural language instructions"
-        )
-      ),
-      column(2,
-             actionButton(
-               ns("applyPrompt"), "Apply"
-             ))),
-    ),
+    gptUI(ns("gpt3")),
     div(style = "margin-top: 1em; margin-bottom: 0.5em;",
         tags$html(
           HTML(
@@ -109,6 +73,8 @@ queryDataServer <- function(id, mergeList) {
                    warningsPopup = list(),
                    errors = list()
                  )
+
+                 sqlCommandFromGpt <- gptServer("gpt3", autoCompleteList = inMemColumns)
 
                  observe({
                    req(length(mergeList()) > 0)
@@ -197,6 +163,15 @@ queryDataServer <- function(id, mergeList) {
                  })
 
                  observe({
+                   updateAceEditor(
+                     session = session,
+                     "sqlCommand",
+                     value = sqlCommandFromGpt()
+                   )
+                 }) %>%
+                   bindEvent(sqlCommandFromGpt(), ignoreNULL = FALSE, ignoreInit = TRUE)
+
+                 observe({
                    req(length(mergeList()) > 0, input$applyQuery > 0)
 
                    result$data <- NULL
@@ -251,3 +226,179 @@ queryDataServer <- function(id, mergeList) {
                  return(reactive(result$data))
                })
 }
+
+# GPT Module ----
+
+#' GPT UI
+#'
+#' UI of the gpt3 module
+#'
+#' @param id id of module
+gptUI <- function(id) {
+  ns <- NS(id)
+
+  tagList(
+    fileInput(ns("apiKey"),
+              "To use GPT3 upload an API key file",
+              accept = "text/plain"),
+    conditionalPanel(
+      condition = "output.showGpt",
+      ns = ns,
+      fluidRow(
+        column(3,
+               style = "margin-top: -1em;",
+               numericInput(ns("temperature"), "Temperature", value = 0.1, min = 0)),
+        column(3,
+               style = "margin-top: -1em;",
+               numericInput(ns("maxTokens"), "Max_tokens", value = 100, min = 0)),
+        column(3,
+               style = "margin-top: -1em;",
+               numericInput(ns("n"), "N", value = 1, min = 0))
+      ),
+      div(style = "margin-bottom: 0.5em;",
+          tags$html(
+            HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
+          )),
+      fluidRow(column(
+        10,
+        aceEditor(
+          ns("gptPrompt"),
+          value = NULL,
+          mode = "text",
+          theme = "cobalt",
+          fontSize = 16,
+          autoScrollEditorIntoView = TRUE,
+          minLines = 3,
+          maxLines = 6,
+          autoComplete = "live",
+          placeholder = "... your natural language instructions"
+        )
+      ),
+      column(2,
+             actionButton(
+               ns("applyPrompt"), "Apply"
+             ))),
+    )
+  )}
+
+
+#' GPT Server
+#'
+#' Server function of the gpt3 module
+#' @param id id of module
+#' @param autoCompleteList
+gptServer <- function(id, autoCompleteList) {
+  moduleServer(id,
+               function(input, output, session) {
+                 validConnection <- reactiveVal(FALSE)
+                 gptOut <- reactiveVal()
+                 sqlCommand <- reactiveVal(NULL)
+
+                 observe({
+                   updateAceEditor(
+                     session = session,
+                     "gptPrompt",
+                     autoCompleters = c("snippet", "text", "static", "keyword"),
+                     autoCompleteList = unlist(autoCompleteList(), use.names = FALSE)
+                   )
+                 }) %>%
+                   bindEvent(autoCompleteList(), ignoreNULL = FALSE, ignoreInit = TRUE)
+
+                 observe({
+                   logDebug("button input$apiKey")
+                   inFile <- input$apiKey
+
+                   # check key format
+                   key <- inFile$datapath %>%
+                     validateKey() %>%
+                     tryCatchWithWarningsAndErrors(messagePreError = "Invalid API key:")
+
+                   req(key)
+                   withProgress({
+                     invisible(capture.output(gpt3_authenticate(key)))
+
+                     # check connection
+                     connSuccess <- NULL
+                     connSuccess <- gpt3_test_completion() %>%
+                       tryCatchWithWarningsAndErrors(messagePreError = "Access failed:")
+
+                     if (!is.null(connSuccess)) {
+                       validConnection(TRUE)
+                     } else {
+                       if (exists("api_key")) {
+                         api_key <- NULL
+                       }
+                       validConnection(FALSE)
+                     }
+                   },
+                   value = 0.75,
+                   message = 'checking connection ...')
+
+                 }) %>%
+                   bindEvent(input$apiKey)
+
+                 output$showGpt <- reactive({
+                   validConnection()
+                 })
+                 outputOptions(output, "showGpt", suspendWhenHidden = FALSE)
+
+                 observe({
+                   logDebug("button input$applyPrompt")
+                   # reset output
+                   sqlCommand(NULL)
+
+                   req(validConnection())
+                   withProgress({
+                   res <- gpt3_single_completion(
+                     prompt_input = paste("Write an SQL query to", input$gptPrompt),
+                     temperature = input$temperature,
+                     max_tokens = input$maxTokens,
+                     n = input$n) %>%
+                     validateCompletion() %>%
+                     tryCatchWithWarningsAndErrors(messagePreError = "Prompt failed:")
+                   },
+                   value = 0.75,
+                   message = 'sending request to gpt3 ...')
+
+                   # gptOut is only needed for tests
+                   gptOut(res)
+
+                   req(res[[1]][["gpt3"]])
+                   sqlCommand(res[[1]][["gpt3"]])
+                   #invisible(capture.output(rgpt3:::gpt3_endsession()))
+                 }) %>%
+                   bindEvent(input$applyPrompt)
+
+                 sqlCommand
+               })
+}
+
+validateKey <- function(filepath) {
+  keyFile <- filepath %>% readLines()
+
+  if (!(length(keyFile) == 1)) {
+    warning(paste0("Wrong format. The file should only contain one line with the key.\n",
+                   "Please, check\n https://github.com/ben-aaron188/rgpt3#api-call-error\n",
+                   "for details."))
+  }
+
+  filepath
+}
+
+validateCompletion <- function(gptOut) {
+  if (is.null(gptOut[[1]][["gpt3"]])) {
+    warning("No output available.")
+  }
+
+  gptOut
+}
+# TEST MODULE -------------------------------------------------------------
+
+uiGPT <- fluidPage(shinyjs::useShinyjs(),
+                   gptUI(id = "gpt3"))
+
+serverGPT <- function(input, output, session) {
+  gptServer("gpt3", autoCompleteList = reactive(c("testA", "testB")))
+}
+
+shinyApp(uiGPT, serverGPT)

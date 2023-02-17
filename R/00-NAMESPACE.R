@@ -6,6 +6,7 @@
 #' @importFrom readODS read_ods
 #' @importFrom readr guess_encoding
 #' @importFrom readxl excel_sheets read_excel
+#' @importFrom rgpt3 gpt3_authenticate gpt3_single_completion gpt3_test_completion
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
 #' @importFrom shinyjs alert info reset runjs useShinyjs
