@@ -14,5 +14,5 @@
 #' @importFrom stats setNames
 #' @importFrom templates tmpl
 #' @importFrom tidyr separate unite
-#' @importFrom utils download.file read.csv
+#' @importFrom utils capture.output download.file read.csv
 NULL

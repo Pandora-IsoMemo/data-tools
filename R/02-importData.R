@@ -258,11 +258,9 @@ importDataServer <- function(id,
                      customNames$withRownames,
                      customNames$withColnames
                    ),
-                   ignoreInit = TRUE,
                    {
-                     logDebug("Updating values$dataImport")
                      req(dataSource())
-
+                     logDebug("Updating values$dataImport")
                      # reset values
                      values$warnings <- list()
                      values$errors <- list()
