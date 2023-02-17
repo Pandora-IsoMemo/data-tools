@@ -74,7 +74,8 @@ queryDataServer <- function(id, mergeList) {
                    errors = list()
                  )
 
-                 sqlCommandFromGpt <- gptServer("gpt3", autoCompleteList = inMemColumns)
+                 sqlCommandFromGpt <-
+                   gptServer("gpt3", autoCompleteList = inMemColumns)
 
                  observe({
                    req(length(mergeList()) > 0)
@@ -163,13 +164,13 @@ queryDataServer <- function(id, mergeList) {
                  })
 
                  observe({
-                   updateAceEditor(
-                     session = session,
-                     "sqlCommand",
-                     value = sqlCommandFromGpt()
-                   )
+                   updateAceEditor(session = session,
+                                   "sqlCommand",
+                                   value = sqlCommandFromGpt())
                  }) %>%
-                   bindEvent(sqlCommandFromGpt(), ignoreNULL = FALSE, ignoreInit = TRUE)
+                   bindEvent(sqlCommandFromGpt(),
+                             ignoreNULL = FALSE,
+                             ignoreInit = TRUE)
 
                  observe({
                    req(length(mergeList()) > 0, input$applyQuery > 0)
@@ -247,13 +248,25 @@ gptUI <- function(id) {
       fluidRow(
         column(3,
                style = "margin-top: -1em;",
-               numericInput(ns("temperature"), "Temperature", value = 0.1, min = 0)),
+               numericInput(
+                 ns("temperature"),
+                 "Temperature",
+                 value = 0.1,
+                 min = 0
+               )),
         column(3,
                style = "margin-top: -1em;",
-               numericInput(ns("maxTokens"), "Max_tokens", value = 100, min = 0)),
+               numericInput(
+                 ns("maxTokens"),
+                 "Max_tokens",
+                 value = 100,
+                 min = 0
+               )),
         column(3,
                style = "margin-top: -1em;",
-               numericInput(ns("n"), "N", value = 1, min = 0))
+               numericInput(
+                 ns("n"), "N", value = 1, min = 0
+               ))
       ),
       div(style = "margin-bottom: 0.5em;",
           tags$html(
@@ -279,7 +292,8 @@ gptUI <- function(id) {
                ns("applyPrompt"), "Apply"
              ))),
     )
-  )}
+  )
+}
 
 
 #' GPT Server
@@ -302,7 +316,9 @@ gptServer <- function(id, autoCompleteList) {
                      autoCompleteList = unlist(autoCompleteList(), use.names = FALSE)
                    )
                  }) %>%
-                   bindEvent(autoCompleteList(), ignoreNULL = FALSE, ignoreInit = TRUE)
+                   bindEvent(autoCompleteList(),
+                             ignoreNULL = FALSE,
+                             ignoreInit = TRUE)
 
                  observe({
                    logDebug("button input$apiKey")
@@ -322,7 +338,8 @@ gptServer <- function(id, autoCompleteList) {
                      connSuccess <- gpt3_test_completion() %>%
                        tryCatchWithWarningsAndErrors(messagePreError = "Access failed:")
 
-                     if (!is.null(connSuccess) && !is.null(connSuccess[[1]][["gpt3"]])) {
+                     if (!is.null(connSuccess) &&
+                         !is.null(connSuccess[[1]][["gpt3"]])) {
                        validConnection(TRUE)
                      } else {
                        if (exists("api_key")) {
@@ -349,13 +366,14 @@ gptServer <- function(id, autoCompleteList) {
 
                    req(validConnection())
                    withProgress({
-                   res <- gpt3_single_completion(
-                     prompt_input = paste("Write an SQL query to", input$gptPrompt),
-                     temperature = input$temperature,
-                     max_tokens = input$maxTokens,
-                     n = input$n) %>%
-                     validateCompletion() %>%
-                     tryCatchWithWarningsAndErrors(messagePreError = "Prompt failed:")
+                     res <- gpt3_single_completion(
+                       prompt_input = paste("Write an SQL query to", input$gptPrompt),
+                       temperature = input$temperature,
+                       max_tokens = input$maxTokens,
+                       n = input$n
+                     ) %>%
+                       validateCompletion() %>%
+                       tryCatchWithWarningsAndErrors(messagePreError = "Prompt failed:")
                    },
                    value = 0.75,
                    message = 'sending request to gpt3 ...')
@@ -379,9 +397,13 @@ validateKey <- function(filepath) {
   keyFile <- filepath %>% readLines()
 
   if (!(length(keyFile) == 1)) {
-    warning(paste0("Wrong format. The file should only contain one line with the key.\n",
-                   "Please, check\n https://github.com/ben-aaron188/rgpt3#api-call-error\n",
-                   "for details."))
+    warning(
+      paste0(
+        "Wrong format. The file should only contain one line with the key.\n",
+        "Please, check\n https://github.com/ben-aaron188/rgpt3#api-call-error\n",
+        "for details."
+      )
+    )
   }
 
   filepath

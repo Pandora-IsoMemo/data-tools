@@ -94,8 +94,12 @@ testthat::test_that("Test queryDataServer", {
 
 
 testthat::test_that("Test gptServer", {
-  expect_warning(validateKey(testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")))
-  expect_no_warning(validateKey(testthat::test_path("test-importData_gpt3_validKeyFormat.txt")))
+  expect_warning(validateKey(
+    testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")
+  ))
+  expect_no_warning(validateKey(
+    testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
+  ))
 
   shiny::testServer(gptServer,
                     args = list(autoCompleteList = reactive(c("testA", "testB"))),
@@ -125,4 +129,4 @@ testthat::test_that("Test gptServer", {
                       testthat::expect_false(validConnection())
                       testthat::expect_null(session$returned())
                     })
-  })
+})
