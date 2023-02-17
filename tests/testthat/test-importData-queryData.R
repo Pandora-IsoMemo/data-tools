@@ -1,4 +1,4 @@
-testthat::test_that("Test module queryDataServer", {
+testthat::test_that("Test queryDataServer", {
   testMergeList <-
     readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
 
@@ -91,3 +91,38 @@ testthat::test_that("Test module queryDataServer", {
   },
   finally = NULL))
 })
+
+
+testthat::test_that("Test gptServer", {
+  expect_warning(validateKey(testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")))
+  expect_no_warning(validateKey(testthat::test_path("test-importData_gpt3_validKeyFormat.txt")))
+
+  shiny::testServer(gptServer,
+                    args = list(autoCompleteList = reactive(c("testA", "testB"))),
+                    {
+                      # Arrange
+                      print("test gptServer: no auth, empty prompt")
+                      # Act
+                      session$setInputs(
+                        apiKey =
+                          structure(
+                            list(
+                              name = "test-importData_gpt3_validKeyFormat.txt",
+                              size = 10L,
+                              type = "text/plain",
+                              datapath = testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
+                            ),
+                            class = "data.frame",
+                            row.names = c(NA, -1L)
+                          ),
+                        temperature = 0.1,
+                        maxTokens = 100,
+                        n = 1,
+                        gptPrompt = "",
+                        applyPrompt = 1
+                      )
+
+                      testthat::expect_false(validConnection())
+                      testthat::expect_null(session$returned())
+                    })
+  })

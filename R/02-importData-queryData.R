@@ -291,7 +291,7 @@ gptServer <- function(id, autoCompleteList) {
   moduleServer(id,
                function(input, output, session) {
                  validConnection <- reactiveVal(FALSE)
-                 gptOut <- reactiveVal()
+                 gptOut <- reactiveVal(NULL)
                  sqlCommand <- reactiveVal(NULL)
 
                  observe({
@@ -322,7 +322,7 @@ gptServer <- function(id, autoCompleteList) {
                      connSuccess <- gpt3_test_completion() %>%
                        tryCatchWithWarningsAndErrors(messagePreError = "Access failed:")
 
-                     if (!is.null(connSuccess)) {
+                     if (!is.null(connSuccess) && !is.null(connSuccess[[1]][["gpt3"]])) {
                        validConnection(TRUE)
                      } else {
                        if (exists("api_key")) {
@@ -364,8 +364,10 @@ gptServer <- function(id, autoCompleteList) {
                    gptOut(res)
 
                    req(res[[1]][["gpt3"]])
-                   sqlCommand(res[[1]][["gpt3"]])
-                   #invisible(capture.output(rgpt3:::gpt3_endsession()))
+                   # remove preceding lines
+                   command <- res[[1]][["gpt3"]] %>%
+                     gsub(pattern = "^\n+", replacement = "")
+                   sqlCommand(command)
                  }) %>%
                    bindEvent(input$applyPrompt)
 
@@ -392,6 +394,15 @@ validateCompletion <- function(gptOut) {
 
   gptOut
 }
+
+removeOpenGptCon <- function() {
+  if (exists("api_key")) {
+    # remove gpt3 connection if exists
+    api_key <- NULL
+    invisible(capture.output(rgpt3:::gpt3_endsession()))
+  }
+}
+
 # TEST MODULE -------------------------------------------------------------
 
 uiGPT <- fluidPage(shinyjs::useShinyjs(),

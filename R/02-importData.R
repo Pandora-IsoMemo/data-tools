@@ -434,6 +434,8 @@ importDataServer <- function(id,
                  observeEvent(input$accept, {
                    logDebug("Updating input$accept")
                    removeModal()
+                   removeOpenGptCon()
+
                    values$data[[values$fileName]] <-
                      preparedData() %>%
                      formatForImport(
@@ -446,6 +448,7 @@ importDataServer <- function(id,
                  observeEvent(input$acceptMerged, {
                    logDebug("Updating input$acceptMerged")
                    removeModal()
+                   removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
                    values$data[["mergedData"]] <- joinedData() %>%
@@ -459,6 +462,7 @@ importDataServer <- function(id,
                  observeEvent(input$acceptQuery, {
                    logDebug("Updating input$acceptQuery")
                    removeModal()
+                   removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
                    values$data[["queriedData"]] <- queriedData() %>%
