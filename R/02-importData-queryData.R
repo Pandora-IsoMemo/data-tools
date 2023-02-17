@@ -31,7 +31,7 @@ queryDataUI <- function(id) {
         fontSize = 16,
         autoScrollEditorIntoView = TRUE,
         minLines = 3,
-        maxLines = 6,
+        maxLines = 5,
         autoComplete = "live"
       )
     ),
@@ -158,7 +158,7 @@ queryDataServer <- function(id, mergeList) {
                        paging = FALSE,
                        searching = FALSE,
                        scrollX = TRUE,
-                       scrollY = "150px"
+                       scrollY = "120px"
                      )
                    )
                  })
@@ -239,35 +239,40 @@ gptUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    fileInput(ns("apiKey"),
-              "To use GPT3 upload an API key file",
-              accept = "text/plain"),
+    fluidRow(
+      column(4,
+             style = "margin-top: 1em;",
+             fileInput(ns("apiKey"),
+                       "API key file for GPT3",
+                       accept = "text/plain")),
+      column(3,
+             style = "margin-top: 1em;",
+             numericInput(
+               ns("temperature"),
+               "Temperature",
+               value = 0.1,
+               min = 0
+             ) %>% hidden()
+             ),
+      column(3,
+             style = "margin-top: 1em;",
+             numericInput(
+               ns("maxTokens"),
+               "Max_tokens",
+               value = 100,
+               min = 0
+             ) %>% hidden()
+             ),
+      column(2,
+             style = "margin-top: 1em;",
+             numericInput(
+               ns("n"), "N", value = 1, min = 0
+             ) %>% hidden()
+             )
+    ),
     conditionalPanel(
       condition = "output.showGpt",
       ns = ns,
-      fluidRow(
-        column(3,
-               style = "margin-top: -1em;",
-               numericInput(
-                 ns("temperature"),
-                 "Temperature",
-                 value = 0.1,
-                 min = 0
-               )),
-        column(3,
-               style = "margin-top: -1em;",
-               numericInput(
-                 ns("maxTokens"),
-                 "Max_tokens",
-                 value = 100,
-                 min = 0
-               )),
-        column(3,
-               style = "margin-top: -1em;",
-               numericInput(
-                 ns("n"), "N", value = 1, min = 0
-               ))
-      ),
       div(style = "margin-bottom: 0.5em;",
           tags$html(
             HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
@@ -282,7 +287,7 @@ gptUI <- function(id) {
           fontSize = 16,
           autoScrollEditorIntoView = TRUE,
           minLines = 3,
-          maxLines = 6,
+          maxLines = 5,
           autoComplete = "live",
           placeholder = "... your natural language instructions"
         )
@@ -300,15 +305,17 @@ gptUI <- function(id) {
 #'
 #' Server function of the gpt3 module
 #' @param id id of module
-#' @param autoCompleteList
+#' @param autoCompleteList (list) word to be used for auto completion
 gptServer <- function(id, autoCompleteList) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
                  validConnection <- reactiveVal(FALSE)
                  gptOut <- reactiveVal(NULL)
                  sqlCommand <- reactiveVal(NULL)
 
                  observe({
+                   logDebug("update gptPrompt")
                    updateAceEditor(
                      session = session,
                      "gptPrompt",
@@ -321,7 +328,7 @@ gptServer <- function(id, autoCompleteList) {
                              ignoreInit = TRUE)
 
                  observe({
-                   logDebug("button input$apiKey")
+                   logDebug("update input$apiKey")
                    inFile <- input$apiKey
 
                    # check key format
@@ -340,17 +347,22 @@ gptServer <- function(id, autoCompleteList) {
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[[1]][["gpt3"]])) {
+                       show("temperature")
+                       show("maxTokens")
+                       show("n")
                        validConnection(TRUE)
                      } else {
                        if (exists("api_key")) {
                          api_key <- NULL
                        }
+                       hide("temperature")
+                       hide("maxTokens")
+                       hide("n")
                        validConnection(FALSE)
                      }
                    },
                    value = 0.75,
                    message = 'checking connection ...')
-
                  }) %>%
                    bindEvent(input$apiKey)
 

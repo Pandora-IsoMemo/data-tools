@@ -8,6 +8,8 @@ gptServer(id, autoCompleteList)
 }
 \arguments{
 \item{id}{id of module}
+
+\item{autoCompleteList}{(list) word to be used for auto completion}
 }
 \description{
 Server function of the gpt3 module

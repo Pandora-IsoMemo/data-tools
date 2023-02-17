@@ -9,7 +9,7 @@
 #' @importFrom rgpt3 gpt3_authenticate gpt3_single_completion gpt3_test_completion
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
-#' @importFrom shinyjs alert info reset runjs useShinyjs
+#' @importFrom shinyjs alert hide hidden info reset runjs show useShinyjs
 #' @importFrom shinyWidgets pickerInput updatePickerInput
 #' @importFrom stats setNames
 #' @importFrom templates tmpl
