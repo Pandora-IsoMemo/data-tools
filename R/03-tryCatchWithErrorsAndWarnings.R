@@ -41,20 +41,22 @@ tryCatchWithWarningsAndErrors <- function(expr,
   error = e.handler),
   warning = w.handler)
 
-  # give out error or warning
-  switch (
-    alertStyle,
-    "shinyjs" = shinyjs::alert(paste(
-      tryCatchMessage[["title"]],
-      tryCatchMessage[["text"]],
-      sep = "\n "
-    )),
-    "shinyalert" = shinyalert::shinyalert(
-      title = tryCatchMessage[["title"]],
-      text = tryCatchMessage[["text"]],
-      type = tryCatchMessage[["type"]]
+  if (!is.null(tryCatchMessage)) {
+    # give out error or warning
+    switch (
+      alertStyle,
+      "shinyjs" = shinyjs::alert(paste(
+        tryCatchMessage[["title"]],
+        tryCatchMessage[["text"]],
+        sep = "\n "
+      )),
+      "shinyalert" = shinyalert::shinyalert(
+        title = tryCatchMessage[["title"]],
+        text = tryCatchMessage[["text"]],
+        type = tryCatchMessage[["type"]]
+      )
     )
-  )
+  }
 
   # output result of expr
   res
@@ -76,37 +78,41 @@ serverTestTryCatch <- function(input, output, session) {
   testRes <- reactiveVal()
 
   observe({
-    tmpRes <- tryCatchWithWarningsAndErrors({
+    tmpRes <- {
       warning("test warning")
       5 + 4
-    }, errorTitle = "Modeling failed")
+    } %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
     testRes(tmpRes)
   }) %>%
     bindEvent(input$buttonWarn)
 
   observe({
-    tmpRes <- tryCatchWithWarningsAndErrors({
+    tmpRes <- {
       stop("test error")
       5 + 4
-    }, errorTitle = "Modeling failed")
+    } %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
     testRes(tmpRes)
   }) %>%
     bindEvent(input$buttonErr)
 
   observe({
-    tmpRes <- tryCatchWithWarningsAndErrors({
+    tmpRes <- {
       warning("test warning")
       5 + 4
-    }, warningTitle = "Warning", alertStyle = "shinyalert")
+    } %>%
+      tryCatchWithWarningsAndErrors(warningTitle = "Warning", alertStyle = "shinyalert")
     testRes(tmpRes)
   }) %>%
     bindEvent(input$buttonShinyalertWarn)
 
   observe({
-    tmpRes <- tryCatchWithWarningsAndErrors({
+    tmpRes <- {
       stop("test error")
       5 + 4
-    }, errorTitle = "Modeling failed", alertStyle = "shinyalert")
+    } %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
     testRes(tmpRes)
   }) %>%
     bindEvent(input$buttonShinyalertErr)
