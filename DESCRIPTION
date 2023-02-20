@@ -24,6 +24,7 @@ Imports:
   RSQLite,
   shiny,
   shinyAce,
+  shinyalert,
   shinyjs,
   shinyWidgets,
   templates,
