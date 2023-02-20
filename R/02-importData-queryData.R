@@ -329,7 +329,8 @@ gptServer <- function(id, autoCompleteList) {
                      # check connection
                      connSuccess <- NULL
                      connSuccess <- gpt3_test_completion() %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "Access failed")
+                       validateAccess() %>%
+                       tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT3 failed")
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[[1]][["gpt3"]])) {
@@ -395,7 +396,7 @@ validateKey <- function(filepath) {
   keyFile <- filepath %>% readLines()
 
   if (!(length(keyFile) == 1)) {
-    warning(
+    stop(
       paste0(
         "Wrong format. The file should only contain one line with the key.\n",
         "Please, check\n https://github.com/ben-aaron188/rgpt3#api-call-error\n",
@@ -405,6 +406,14 @@ validateKey <- function(filepath) {
   }
 
   filepath
+}
+
+validateAccess <- function(gptOut) {
+  if (is.null(gptOut[[1]][["gpt3"]])) {
+    stop("No output available for test prompt. Probably the key is not valid.")
+  }
+
+  gptOut
 }
 
 validateCompletion <- function(gptOut) {
