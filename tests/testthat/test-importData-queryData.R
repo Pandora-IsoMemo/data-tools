@@ -97,8 +97,9 @@ testthat::test_that("Test gptServer", {
   testthat::expect_error(validateKey(
     testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")
   ))
-  testthat::expect_no_warning(validateKey(
-    testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
+  testthat::expect_warning(validateKey(
+    testthat::test_path("test-importData_gpt3_validKeyFormat.txt"),
+    regexp = NA
   ))
 
   shiny::testServer(gptServer,
