@@ -237,7 +237,8 @@ gptUI <- function(id) {
                ns("temperature"),
                "Temperature",
                value = 0.1,
-               min = 0
+               min = 0,
+               max = 2,
              ) %>% hidden()
              ),
       column(3,
@@ -246,7 +247,8 @@ gptUI <- function(id) {
                ns("maxTokens"),
                "Max_tokens",
                value = 100,
-               min = 0
+               min = 0,
+               max = 4000,
              ) %>% hidden()
              ),
       column(2,
