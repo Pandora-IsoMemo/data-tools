@@ -10,6 +10,8 @@ Description: Helpful functions and modules that can be applied across the Isomem
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+Remotes:
+    github::ben-aaron188/rgpt3
 Imports:
   dplyr,
   DT,
@@ -30,6 +32,7 @@ Imports:
   templates,
   tidyr
 Suggests:
+  devtools,
   lintr (>= 1.0.2),
   testthat (>= 2.0.0),
   utils
