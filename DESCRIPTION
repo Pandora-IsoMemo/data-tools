@@ -11,7 +11,7 @@ License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
 Remotes:
-    github::ben-aaron188/rgpt3
+  github::ben-aaron188/rgpt3
 Imports:
   dplyr,
   DT,
