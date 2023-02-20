@@ -177,24 +177,10 @@ queryDataServer <- function(id, mergeList) {
 
                    result$data <- NULL
                    result$preview <- NULL
-                   result$warningsPopup <- list()
-                   result$errors <- list()
                    tmpDB <- inMemoryDB()
 
-                   result$data <-
-                     tryCatch({
-                       dbGetQuery(tmpDB, input$sqlCommand)
-                     },
-                     error = function(cond) {
-                       result$errors <- "Query failed."
-                       shinyjs::alert(paste("Query failed:", cond$message))
-                       return(NULL)
-                     },
-                     warning = function(cond) {
-                       result$warningsPopup <- cond$message
-                       return(NULL)
-                     },
-                     finally = NULL)
+                   result$data <- dbGetQuery(tmpDB, input$sqlCommand) %>%
+                     tryCatchWithWarningsAndErrors(errorTitle = "Query failed")
 
                    if (!is.null(result$data)) {
                      result$preview <-
@@ -334,7 +320,7 @@ gptServer <- function(id, autoCompleteList) {
                    # check key format
                    key <- inFile$datapath %>%
                      validateKey() %>%
-                     tryCatchWithWarningsAndErrors(messagePreError = "Invalid API key:")
+                     tryCatchWithWarningsAndErrors(errorTitle = "Invalid API key")
 
                    req(key)
                    withProgress({
@@ -343,7 +329,7 @@ gptServer <- function(id, autoCompleteList) {
                      # check connection
                      connSuccess <- NULL
                      connSuccess <- gpt3_test_completion() %>%
-                       tryCatchWithWarningsAndErrors(messagePreError = "Access failed:")
+                       tryCatchWithWarningsAndErrors(errorTitle = "Access failed")
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[[1]][["gpt3"]])) {
@@ -385,7 +371,7 @@ gptServer <- function(id, autoCompleteList) {
                        n = input$n
                      ) %>%
                        validateCompletion() %>%
-                       tryCatchWithWarningsAndErrors(messagePreError = "Prompt failed:")
+                       tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
                    message = 'sending request to gpt3 ...')

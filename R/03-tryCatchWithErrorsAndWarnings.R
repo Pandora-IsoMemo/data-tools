@@ -7,7 +7,7 @@
 #' @param errorTitle (character) error message title.
 #' @param warningTitle (character) warning message title.
 #' @param alertStyle (character) Either "shinyjs", or "shinyalert". Specifies how an error or a
-#'  warning is given out. If "shinyjs", shinyjs::alert is used. If "shinyalert",
+#'  warning is given out. If "shinyjs" than shinyjs::alert is used; if "shinyalert" than
 #'  shinyalert::shinyalert is used.
 #'
 #' @export
