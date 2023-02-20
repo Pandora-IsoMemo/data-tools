@@ -98,9 +98,8 @@ testthat::test_that("Test gptServer", {
     testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")
   ))
   testthat::expect_warning(validateKey(
-    testthat::test_path("test-importData_gpt3_validKeyFormat.txt"),
-    regexp = NA
-  ))
+    testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
+  ), regexp = NA)
 
   shiny::testServer(gptServer,
                     args = list(autoCompleteList = reactive(c("testA", "testB"))),
