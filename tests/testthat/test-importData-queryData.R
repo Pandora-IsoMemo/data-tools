@@ -51,12 +51,12 @@ testthat::test_that("Test queryDataServer", {
   dbWriteTable(testdb, "table1", testTable1)
   dbWriteTable(testdb, "table2", testTable2)
 
-  expect_equal(dbListTables(testdb), c("table1", "table2"))
+  testthat::expect_equal(dbListTables(testdb), c("table1", "table2"))
 
   testQuery <-
     "SELECT t1.`Human.Entry.ID`, t1.`Age.Category`, t1.`Site.Name` FROM table1 AS t1 LEFT JOIN table2 as t2 ON t1.`Age.Category` = t2.`Age.Category` AND t1.`Site.Name` = t2.`Site.Name`;"
 
-  expect_equal(
+  testthat::expect_equal(
     RSQLite::dbGetQuery(testdb, testQuery),
     structure(
       list(
@@ -74,7 +74,7 @@ testthat::test_that("Test queryDataServer", {
   testQueryFailure <-
     "SELECT `Human.Entry.ID`, `Age.Category`, `Site.Name` FROM table1 LEFT JOIN table2 ON `Age.Category` = `Age.Category` AND `Site.Name` = `Site.Name`;"
 
-  expect_warning(tryCatch({
+  testthat::expect_warning(tryCatch({
     RSQLite::dbGetQuery(testdb, testQueryFailure)
     #stop("test error")
     #warning("test warning")
@@ -94,10 +94,10 @@ testthat::test_that("Test queryDataServer", {
 
 
 testthat::test_that("Test gptServer", {
-  expect_warning(validateKey(
+  testthat::expect_error(validateKey(
     testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")
   ))
-  expect_no_warning(validateKey(
+  testthat::expect_no_warning(validateKey(
     testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
   ))
 
