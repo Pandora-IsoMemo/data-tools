@@ -16,34 +16,34 @@ test_that("Test module importData", {
                session$setInputs(
                  openPopup = TRUE,
                  source = "ckan",
-                 ckanRecord = "CIMA: Compendium Isotoporum Medii Aevi",
-                 ckanResource = "CIMA Humans 29.05.2021",
+                 ckanRecord = "AfriArch isotopic dataset",
+                 ckanResource = "Isotopic measurements in Excel format",
                  type = "xlsx",
                  sheet = "1",
                  withRownames = FALSE,
                  accept = TRUE
                )
 
-               expect_type(session$returned()[["cima-humans.xlsx"]], "list")
-               expect_equal(class(session$returned()[["cima-humans.xlsx"]]), "data.frame")
+               expect_type(session$returned()[["afriarch-isotopic-dataset.xlsx"]], "list")
+               expect_equal(class(session$returned()[["afriarch-isotopic-dataset.xlsx"]]), "data.frame")
                expect_true(all(
-                 c("Entry.ID", "Reference", "Link", "DOI") %in%
-                   names(session$returned()[["cima-humans.xlsx"]])
+                 c("ID", "Reference", "Kingdom", "X23") %in%
+                   names(session$returned()[["afriarch-isotopic-dataset.xlsx"]])
                ))
-               expect_true(nrow(session$returned()[["cima-humans.xlsx"]]) > 100)
+               expect_true(nrow(session$returned()[["afriarch-isotopic-dataset.xlsx"]]) > 100)
                expect_equal(
-                 colnames(session$returned()[["cima-humans.xlsx"]])[1:10],
+                 colnames(session$returned()[["afriarch-isotopic-dataset.xlsx"]])[1:10],
                  c(
-                   "Entry.ID",
-                   "Submitter.ID",
-                   "Context.ID",
-                   "Individual.ID",
-                   "Sample.ID",
-                   "Sex",
-                   "Age.Category",
-                   "Min..Age..yrs.",
-                   "Max..Age..yrs.",
-                   "Sampled.Element"
+                   "ID",
+                   "Site",
+                   "Locality.Notes",
+                   "Site.Country",
+                   "Latitude",
+                   "Longitude",
+                   "Radius",
+                   "Km.to.Coast",
+                   "Kingdom",
+                   "Class"
                  )
                )
              })
@@ -56,34 +56,34 @@ test_that("Test module importData", {
                session$setInputs(
                  openPopup = TRUE,
                  source = "ckan",
-                 ckanRecord = "CIMA: Compendium Isotoporum Medii Aevi",
-                 ckanResource = "CIMA Humans 29.05.2021",
+                 ckanRecord = "AfriArch isotopic dataset",
+                 ckanResource = "Isotopic measurements in Excel format",
                  type = "xlsx",
                  sheet = "1",
                  withRownames = TRUE,
                  accept = TRUE
                )
 
-               expect_type(session$returned()[["cima-humans.xlsx"]], "list")
-               expect_equal(class(session$returned()[["cima-humans.xlsx"]]), "data.frame")
+               expect_type(session$returned()[["afriarch-isotopic-dataset.xlsx"]], "list")
+               expect_equal(class(session$returned()[["afriarch-isotopic-dataset.xlsx"]]), "data.frame")
                expect_true(all(
-                 c("Reference", "Link", "DOI") %in%
-                   names(session$returned()[["cima-humans.xlsx"]])
+                 c("Taxon", "d13C.org", "Specimen.ID") %in%
+                   names(session$returned()[["afriarch-isotopic-dataset.xlsx"]])
                ))
-               expect_true(nrow(session$returned()[["cima-humans.xlsx"]]) > 100)
+               expect_true(nrow(session$returned()[["afriarch-isotopic-dataset.xlsx"]]) > 100)
                expect_equal(
-                 colnames(session$returned()[["cima-humans.xlsx"]])[1:10],
+                 colnames(session$returned()[["afriarch-isotopic-dataset.xlsx"]])[1:10],
                  c(
-                   "Submitter.ID",
-                   "Context.ID",
-                   "Individual.ID",
-                   "Sample.ID",
-                   "Sex",
-                   "Age.Category",
-                   "Min..Age..yrs.",
-                   "Max..Age..yrs.",
-                   "Sampled.Element",
-                   "Analysed.Component"
+                   "Site",
+                   "Locality.Notes",
+                   "Site.Country",
+                   "Latitude",
+                   "Longitude",
+                   "Radius",
+                   "Km.to.Coast",
+                   "Kingdom",
+                   "Class",
+                   "Order"
                  )
                )
              })
@@ -210,7 +210,7 @@ test_that("Test module importData", {
                    "FreshwaterFish"
                  )
                )
-               expect_equal(session$returned()[["sources.xlsx"]][1:3, ],
+               expect_equal(session$returned()[["sources.xlsx"]][1:3,],
                             structure(
                               c(
                                 -25,

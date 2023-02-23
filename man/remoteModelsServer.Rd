@@ -4,13 +4,19 @@
 \alias{remoteModelsServer}
 \title{Server function for Remote Models}
 \usage{
-remoteModelsServer(id, githubRepo = "bpred")
+remoteModelsServer(
+  id,
+  githubRepo = "bpred",
+  resetSelected = reactiveVal(FALSE)
+)
 }
 \arguments{
 \item{id}{namespace id}
 
 \item{githubRepo}{(character) name of the app's github repository, currently "bpred",
 "osteo-bior", "resources"}
+
+\item{resetSelected}{(reactive) if TRUE resets the selected remote model.}
 }
 \description{
 Backend for the remote models module
