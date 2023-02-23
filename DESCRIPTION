@@ -15,6 +15,7 @@ Remotes:
 Imports:
   dplyr,
   DT,
+  htmltools,
   httr,
   futile.logger,
   magrittr,
@@ -30,7 +31,8 @@ Imports:
   shinyjs,
   shinyWidgets,
   templates,
-  tidyr
+  tidyr,
+  zip
 Suggests:
   devtools,
   lintr (>= 1.0.2),
