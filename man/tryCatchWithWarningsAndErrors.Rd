@@ -4,12 +4,23 @@
 \alias{tryCatchWithWarningsAndErrors}
 \title{Try Catch with Warnings and Errors}
 \usage{
-tryCatchWithWarningsAndErrors(expr, messagePreError = "Modeling failed:")
+tryCatchWithWarningsAndErrors(
+  expr,
+  errorTitle = "Modeling failed",
+  warningTitle = "",
+  alertStyle = "shinyjs"
+)
 }
 \arguments{
 \item{expr}{expression to be evaluated.}
 
-\item{messagePreError}{(character) error message prefix.}
+\item{errorTitle}{(character) error message title.}
+
+\item{warningTitle}{(character) warning message title.}
+
+\item{alertStyle}{(character) Either "shinyjs", or "shinyalert". Specifies how an error or a
+warning is given out. If "shinyjs" than shinyjs::alert is used; if "shinyalert" than
+shinyalert::shinyalert is used.}
 }
 \description{
 Catches errors and warnings and forwards them as an alert. If an error occurs, NULL is returned.

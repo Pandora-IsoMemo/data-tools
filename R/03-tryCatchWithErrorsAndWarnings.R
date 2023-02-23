@@ -4,29 +4,61 @@
 #' If a warning occurs, the result is returned.
 #'
 #' @param expr expression to be evaluated.
-#' @param messagePreError (character) error message prefix.
+#' @param errorTitle (character) error message title.
+#' @param warningTitle (character) warning message title.
+#' @param alertStyle (character) Either "shinyjs", or "shinyalert". Specifies how an error or a
+#'  warning is given out. If "shinyjs" than shinyjs::alert is used; if "shinyalert" than
+#'  shinyalert::shinyalert is used.
 #'
 #' @export
-tryCatchWithWarningsAndErrors <- function(expr, messagePreError = "Modeling failed:") {
-  exprWarnings <- NULL
-  w.handler <- function(w){ # warning handler
-    exprWarnings <<- w
+tryCatchWithWarningsAndErrors <- function(expr,
+                                          errorTitle = "Modeling failed",
+                                          warningTitle = "",
+                                          alertStyle = "shinyjs") {
+  tryCatchMessage <- NULL
+
+  w.handler <- function(w) {
+    # warning handler
+    tryCatchMessage[["text"]] <<- w
+    tryCatchMessage[["text"]] <<-
+      paste0(tryCatchMessage[["text"]], collapse = "\n")
+    tryCatchMessage[["title"]] <<- warningTitle
+    tryCatchMessage[["type"]] <<- "warning"
     invokeRestart("muffleWarning")
+  }
+
+  e.handler <- function(e) {
+    # error handler
+    tryCatchMessage[["text"]] <<- e$message
+    tryCatchMessage[["title"]] <<- errorTitle
+    tryCatchMessage[["type"]] <<- "error"
+    return(NULL)
   }
 
   res <- withCallingHandlers(tryCatch({
     expr
   },
-  error = function(cond) {
-    shinyjs::alert(paste(messagePreError, cond$message))
-    return(NULL)
-  }),
+  error = e.handler),
   warning = w.handler)
 
-  if (!is.null(exprWarnings)) {
-    shinyjs::alert(paste0(exprWarnings, collapse = "\n"))
+  if (!is.null(tryCatchMessage)) {
+    # give out error or warning
+    switch (
+      alertStyle,
+      "shinyjs" = shinyjs::alert(paste(
+        tryCatchMessage[["title"]],
+        tryCatchMessage[["text"]],
+        sep = "\n "
+      )),
+      "shinyalert" = shinyalert::shinyalert(
+        title = tryCatchMessage[["title"]],
+        text = tryCatchMessage[["text"]],
+        type = tryCatchMessage[["type"]]
+      )
+    )
   }
 
+  # output result of expr
   res
 }
 
@@ -34,41 +66,59 @@ tryCatchWithWarningsAndErrors <- function(expr, messagePreError = "Modeling fail
 
 uiTestTryCatch <- fluidPage(
   shinyjs::useShinyjs(),
-  actionButton("buttonWarn", "Test warning"),
-  actionButton("buttonErr", "Test error"),
+  actionButton("buttonWarn", "Test shinyjs warning"),
+  actionButton("buttonErr", "Test shinyjs error"),
+  actionButton("buttonShinyalertWarn", "Test shinyalert warning"),
+  actionButton("buttonShinyalertErr", "Test shinyalert error"),
   tags$hr(),
-  textOutput("resWarn"),
-  textOutput("resErr")
+  textOutput("testRes")
 )
 
 serverTestTryCatch <- function(input, output, session) {
-  resWarn <- reactiveVal()
-  resErr <- reactiveVal()
+  testRes <- reactiveVal()
 
   observe({
-    tmpRes <- tryCatchWithWarningsAndErrors({
+    tmpRes <- {
       warning("test warning")
-      5+4
-      }, messagePreError = "Modeling failed:")
-    resWarn(tmpRes)
+      5 + 4
+    } %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
+    testRes(tmpRes)
   }) %>%
     bindEvent(input$buttonWarn)
 
   observe({
-    tmpRes <- tryCatchWithWarningsAndErrors({
+    tmpRes <- {
       stop("test error")
-      5+4
-    }, messagePreError = "Modeling failed:")
-    resErr(tmpRes)
+      5 + 4
+    } %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
+    testRes(tmpRes)
   }) %>%
     bindEvent(input$buttonErr)
 
-  output$resWarn <- renderText({
-    as.character(resWarn())
-  })
+  observe({
+    tmpRes <- {
+      warning("test warning")
+      5 + 4
+    } %>%
+      tryCatchWithWarningsAndErrors(warningTitle = "Warning", alertStyle = "shinyalert")
+    testRes(tmpRes)
+  }) %>%
+    bindEvent(input$buttonShinyalertWarn)
 
-  output$resErr <- renderText({
-    as.character(resErr())
+  observe({
+    tmpRes <- {
+      stop("test error")
+      5 + 4
+    } %>%
+      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
+    testRes(tmpRes)
+  }) %>%
+    bindEvent(input$buttonShinyalertErr)
+
+  output$testRes <- renderText({
+    as.character(testRes())
   })
 }
 

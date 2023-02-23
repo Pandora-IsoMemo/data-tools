@@ -149,16 +149,15 @@ importDataServer <- function(id,
                    bindEvent(input$ckanRecord)
 
                  ckanRecord <- reactive({
-                   logDebug("Setting ckanRecord")
                    req(input$ckanRecord)
+                   logDebug("Setting ckanRecord")
                    updateSelectInput(session = session, "sheet", selected = character(0))
                    ckanFiles()[[input$ckanRecord]]
                  })
 
                  ckanResources <- reactive({
-                   logDebug("Setting ckanResources()")
                    req(ckanRecord())
-
+                   logDebug("Setting ckanResources()")
                    resources <- names(ckanRecord()$resources)
                    labels <-
                      unlist(lapply(ckanRecord()$resources, function(x) {
@@ -202,7 +201,8 @@ importDataServer <- function(id,
                      file = resource$url,
                      filename = basename(resource$url)
                    ))
-                 })
+                 }) %>%
+                   bindEvent(input$ckanResource)
 
                  observeEvent(input$file, {
                    logDebug("Updating input$file")
@@ -234,9 +234,10 @@ importDataServer <- function(id,
                    # "filename" will be stored in values$fileName
                    dataSource(list(file = tmp, filename = basename(input$url)))
                    updateSelectInput(session = session, "sheet", selected = character(0))
-                 })
+                 }) %>%
+                   bindEvent(input$url)
 
-                 observeEvent(list(input$type, dataSource()$file), {
+                 observeEvent(list(input$type, dataSource()$file), ignoreInit = TRUE, {
                    logDebug("Updating dataSource()$file")
                    req(input$type)
 
@@ -258,9 +259,8 @@ importDataServer <- function(id,
                      customNames$withColnames
                    ),
                    {
-                     logDebug("Updating values$dataImport")
                      req(dataSource())
-
+                     logDebug("Updating values$dataImport")
                      # reset values
                      values$warnings <- list()
                      values$errors <- list()
@@ -403,7 +403,7 @@ importDataServer <- function(id,
                    mergeDataServer("dataMerger", mergeList = mergeList)
 
                  observe({
-                   logDebug("Updating joinedData()")
+                   logDebug("Updating button acceptMerged")
                    if (is.null(joinedData()) ||
                        nrow(joinedData()) == 0) {
                      shinyjs::disable(ns("acceptMerged"), asis = TRUE)
@@ -411,14 +411,14 @@ importDataServer <- function(id,
                      shinyjs::enable(ns("acceptMerged"), asis = TRUE)
                    }
                  }) %>%
-                   bindEvent(joinedData(), ignoreNULL = FALSE)
+                   bindEvent(joinedData(), ignoreNULL = FALSE, ignoreInit = TRUE)
 
                  ## button query data ----
                  queriedData <-
                    queryDataServer("dataQuerier", mergeList = mergeList)
 
                  observe({
-                   logDebug("Updating queriedData()")
+                   logDebug("Updating button acceptQuery")
                    if (is.null(queriedData()) ||
                        nrow(queriedData()) == 0) {
                      shinyjs::disable(ns("acceptQuery"), asis = TRUE)
@@ -426,12 +426,14 @@ importDataServer <- function(id,
                      shinyjs::enable(ns("acceptQuery"), asis = TRUE)
                    }
                  }) %>%
-                   bindEvent(queriedData(), ignoreNULL = FALSE)
+                   bindEvent(queriedData(), ignoreNULL = FALSE, ignoreInit = TRUE)
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
                    logDebug("Updating input$accept")
                    removeModal()
+                   removeOpenGptCon()
+
                    values$data[[values$fileName]] <-
                      preparedData() %>%
                      formatForImport(
@@ -444,6 +446,7 @@ importDataServer <- function(id,
                  observeEvent(input$acceptMerged, {
                    logDebug("Updating input$acceptMerged")
                    removeModal()
+                   removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
                    values$data[["mergedData"]] <- joinedData() %>%
@@ -457,6 +460,7 @@ importDataServer <- function(id,
                  observeEvent(input$acceptQuery, {
                    logDebug("Updating input$acceptQuery")
                    removeModal()
+                   removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
                    values$data[["queriedData"]] <- queriedData() %>%
