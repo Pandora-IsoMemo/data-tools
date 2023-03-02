@@ -179,7 +179,8 @@ queryDataServer <- function(id, mergeList) {
                    result$preview <- NULL
                    tmpDB <- inMemoryDB()
 
-                   result$data <- dbGetQuery(tmpDB, input$sqlCommand) %>%
+                   result$data <-
+                     dbGetQuery(tmpDB, input$sqlCommand) %>%
                      tryCatchWithWarningsAndErrors(errorTitle = "Query failed")
 
                    if (!is.null(result$data)) {
@@ -225,65 +226,89 @@ gptUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    fluidRow(
-      column(4,
-             style = "margin-top: 1em;",
-             fileInput(ns("apiKey"),
-                       "API key file for GPT3",
-                       accept = "text/plain")),
-      column(3,
-             style = "margin-top: 1em;",
-             numericInput(
-               ns("temperature"),
-               "Temperature",
-               value = 0.1,
-               min = 0,
-               max = 2,
-             ) %>% hidden()
-             ),
-      column(3,
-             style = "margin-top: 1em;",
-             numericInput(
-               ns("maxTokens"),
-               "Max_tokens",
-               value = 100,
-               min = 0,
-               max = 4000,
-             ) %>% hidden()
-             ),
-      column(2,
-             style = "margin-top: 1em;",
-             numericInput(
-               ns("n"), "N", value = 1, min = 0
-             ) %>% hidden()
-             )
-    ),
+    checkboxInput(ns("useGPT3"), HTML("<b>Use GPT-3 operations</b>")),
     conditionalPanel(
-      condition = "output.showGpt",
       ns = ns,
-      div(style = "margin-bottom: 0.5em;",
-          tags$html(
-            HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
-          )),
-      fluidRow(column(
-        10,
-        aceEditor(
-          ns("gptPrompt"),
-          value = NULL,
-          mode = "text",
-          theme = "cobalt",
-          fontSize = 16,
-          autoScrollEditorIntoView = TRUE,
-          minLines = 3,
-          maxLines = 5,
-          autoComplete = "live",
-          placeholder = "... your natural language instructions"
+      condition = "input.useGPT3 && !input.confirmUsingGPT3",
+      tags$html(
+        HTML(
+          "To employ GPT-3 operations you are required to upload your access key saved in a text file.
+      GPT-3 operations rely on the <a href='https://github.com/ben-aaron188/rgpt3' target='_blank'>rgpt3</a>
+      package that handles encryption. </br>
+      <a href='https://github.com/Pandora-IsoMemo' target='_blank'>Pandora & IsoMemo</a> are
+      not responsible for handling key security. Do not share your key.
+      GPT-3 operations consume OpenAI credit from the account associated with the key.</br></br>
+      To proceed please acknowledge that you are aware of the above and take full responsibility for any GPT-3 operation."
         )
       ),
-      column(2,
-             actionButton(
-               ns("applyPrompt"), "Apply"
-             ))),
+      checkboxInput(ns("confirmUsingGPT3"), "Confirm using GPT-3 operations")
+    ),
+    conditionalPanel(
+      ns = ns,
+      condition = "input.useGPT3 && input.confirmUsingGPT3",
+      fluidRow(
+        column(
+          4,
+          style = "margin-top: 1em;",
+          fileInput(ns("apiKey"),
+                    "API key file for GPT-3",
+                    accept = "text/plain")
+        ),
+        column(
+          3,
+          style = "margin-top: 1em;",
+          numericInput(
+            ns("temperature"),
+            "Temperature",
+            value = 0.1,
+            min = 0,
+            max = 2,
+          ) %>% hidden()
+        ),
+        column(
+          3,
+          style = "margin-top: 1em;",
+          numericInput(
+            ns("maxTokens"),
+            "Max_tokens",
+            value = 100,
+            min = 0,
+            max = 4000,
+          ) %>% hidden()
+        ),
+        column(2,
+               style = "margin-top: 1em;",
+               numericInput(
+                 ns("n"), "N", value = 1, min = 0
+               ) %>% hidden())
+      ),
+      conditionalPanel(
+        condition = "output.showGpt",
+        ns = ns,
+        div(style = "margin-bottom: 0.5em;",
+            tags$html(
+              HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
+            )),
+        fluidRow(column(
+          10,
+          aceEditor(
+            ns("gptPrompt"),
+            value = NULL,
+            mode = "text",
+            theme = "cobalt",
+            fontSize = 16,
+            autoScrollEditorIntoView = TRUE,
+            minLines = 3,
+            maxLines = 5,
+            autoComplete = "live",
+            placeholder = "... your natural language instructions"
+          )
+        ),
+        column(2,
+               actionButton(
+                 ns("applyPrompt"), "Apply"
+               )))
+      )
     )
   )
 }
