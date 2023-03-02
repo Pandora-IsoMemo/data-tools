@@ -1,9 +1,14 @@
 # DataTools
 
+## Version 23.03.1
+
+## Updates
+- _Import Data_ module in the tab _Query with SQL_: before using the GPT-3 feature a confirmation is required
+
 ## Version 23.02.8
 
 ### New Features
-- _Import Data_ module in the tab _Query with SQL_: option to use GPT3 for creation of SQL queries
+- _Import Data_ module in the tab _Query with SQL_: option to use GPT-3 for creation of SQL queries
 
 ## Version 23.02.7
 
