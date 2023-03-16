@@ -24,15 +24,15 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_type(session$returned()[["afriarch-isotopic-dataset.xlsx"]], "list")
-               expect_equal(class(session$returned()[["afriarch-isotopic-dataset.xlsx"]]), "data.frame")
+               expect_type(session$returned()[[dataSource()$filename]], "list")
+               expect_equal(class(session$returned()[[dataSource()$filename]]), "data.frame")
                expect_true(all(
                  c("ID", "Reference", "Kingdom", "X23") %in%
-                   names(session$returned()[["afriarch-isotopic-dataset.xlsx"]])
+                   names(session$returned()[[dataSource()$filename]])
                ))
-               expect_true(nrow(session$returned()[["afriarch-isotopic-dataset.xlsx"]]) > 100)
+               expect_true(nrow(session$returned()[[dataSource()$filename]]) > 100)
                expect_equal(
-                 colnames(session$returned()[["afriarch-isotopic-dataset.xlsx"]])[1:10],
+                 colnames(session$returned()[[dataSource()$filename]])[1:10],
                  c(
                    "ID",
                    "Site",
@@ -64,15 +64,15 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_type(session$returned()[["afriarch-isotopic-dataset.xlsx"]], "list")
-               expect_equal(class(session$returned()[["afriarch-isotopic-dataset.xlsx"]]), "data.frame")
+               expect_type(session$returned()[[dataSource()$filename]], "list")
+               expect_equal(class(session$returned()[[dataSource()$filename]]), "data.frame")
                expect_true(all(
                  c("Taxon", "d13C.org", "Specimen.ID") %in%
-                   names(session$returned()[["afriarch-isotopic-dataset.xlsx"]])
+                   names(session$returned()[[dataSource()$filename]])
                ))
-               expect_true(nrow(session$returned()[["afriarch-isotopic-dataset.xlsx"]]) > 100)
+               expect_true(nrow(session$returned()[[dataSource()$filename]]) > 100)
                expect_equal(
-                 colnames(session$returned()[["afriarch-isotopic-dataset.xlsx"]])[1:10],
+                 colnames(session$returned()[[dataSource()$filename]])[1:10],
                  c(
                    "Site",
                    "Locality.Notes",

@@ -10,5 +10,5 @@ gptUI(id)
 \item{id}{id of module}
 }
 \description{
-UI of the gpt3 module
+UI of the gpt module
 }

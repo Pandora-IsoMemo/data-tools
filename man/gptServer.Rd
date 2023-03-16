@@ -12,5 +12,5 @@ gptServer(id, autoCompleteList)
 \item{autoCompleteList}{(list) word to be used for auto completion}
 }
 \description{
-Server function of the gpt3 module
+Server function of the gpt module
 }

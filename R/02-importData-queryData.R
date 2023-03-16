@@ -14,7 +14,7 @@ queryDataUI <- function(id) {
     tags$br(),
     dataTableOutput(ns("inMemoryColumns")),
     tags$br(),
-    gptUI(ns("gpt3")),
+    gptUI(ns("gpt")),
     div(style = "margin-top: 1em; margin-bottom: 0.5em;",
         tags$html(
           HTML(
@@ -75,7 +75,7 @@ queryDataServer <- function(id, mergeList) {
                  )
 
                  sqlCommandFromGpt <-
-                   gptServer("gpt3", autoCompleteList = inMemColumns)
+                   gptServer("gpt", autoCompleteList = inMemColumns)
 
                  observe({
                    req(length(mergeList()) > 0)
@@ -219,39 +219,39 @@ queryDataServer <- function(id, mergeList) {
 
 #' GPT UI
 #'
-#' UI of the gpt3 module
+#' UI of the gpt module
 #'
 #' @param id id of module
 gptUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    checkboxInput(ns("useGPT3"), HTML("<b>Use GPT-3 operations</b>")),
+    checkboxInput(ns("useGPT"), HTML("<b>Use GPT operations</b>")),
     conditionalPanel(
       ns = ns,
-      condition = "input.useGPT3 && !input.confirmUsingGPT3",
+      condition = "input.useGPT && !input.confirmUsingGPT",
       tags$html(
         HTML(
-          "To employ GPT-3 operations you are required to upload your access key saved in a text file.
-      GPT-3 operations rely on the <a href='https://github.com/ben-aaron188/rgpt3' target='_blank'>rgpt3</a>
+          "To employ GPT operations you are required to upload your access key saved in a text file.
+      GPT operations rely on the <a href='https://github.com/ben-aaron188/rgpt3' target='_blank'>rgpt3</a>
       package that handles encryption. </br>
       <a href='https://github.com/Pandora-IsoMemo' target='_blank'>Pandora & IsoMemo</a> are
       not responsible for handling key security. Do not share your key.
-      GPT-3 operations consume OpenAI credit from the account associated with the key.</br></br>
-      To proceed please acknowledge that you are aware of the above and take full responsibility for any GPT-3 operation."
+      GPT operations consume OpenAI credit from the account associated with the key.</br></br>
+      To proceed please acknowledge that you are aware of the above and take full responsibility for any GPT operation."
         )
       ),
-      checkboxInput(ns("confirmUsingGPT3"), "Confirm using GPT-3 operations")
+      checkboxInput(ns("confirmUsingGPT"), "Confirm using GPT operations")
     ),
     conditionalPanel(
       ns = ns,
-      condition = "input.useGPT3 && input.confirmUsingGPT3",
+      condition = "input.useGPT && input.confirmUsingGPT",
       fluidRow(
         column(
           4,
           style = "margin-top: 1em;",
           fileInput(ns("apiKey"),
-                    "API key file for GPT-3",
+                    "API key file for GPT",
                     accept = "text/plain")
         ),
         column(
@@ -316,7 +316,7 @@ gptUI <- function(id) {
 
 #' GPT Server
 #'
-#' Server function of the gpt3 module
+#' Server function of the gpt module
 #' @param id id of module
 #' @param autoCompleteList (list) word to be used for auto completion
 gptServer <- function(id, autoCompleteList) {
@@ -357,7 +357,7 @@ gptServer <- function(id, autoCompleteList) {
                      connSuccess <- NULL
                      connSuccess <- gpt3_test_completion() %>%
                        validateAccess() %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT3 failed")
+                       tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[[1]][["gpt3"]])) {
@@ -402,7 +402,7 @@ gptServer <- function(id, autoCompleteList) {
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
-                   message = 'sending request to gpt3 ...')
+                   message = 'sending request to gpt ...')
 
                    # gptOut is only needed for tests
                    gptOut(res)
@@ -453,7 +453,7 @@ validateCompletion <- function(gptOut) {
 
 removeOpenGptCon <- function() {
   if (exists("api_key")) {
-    # remove gpt3 connection if exists
+    # remove gpt connection if exists
     api_key <- NULL
     invisible(capture.output(rgpt3:::gpt3_endsession()))
   }
@@ -462,10 +462,10 @@ removeOpenGptCon <- function() {
 # TEST MODULE -------------------------------------------------------------
 
 uiGPT <- fluidPage(shinyjs::useShinyjs(),
-                   gptUI(id = "gpt3"))
+                   gptUI(id = "gpt"))
 
 serverGPT <- function(input, output, session) {
-  gptServer("gpt3", autoCompleteList = reactive(c("testA", "testB")))
+  gptServer("gpt", autoCompleteList = reactive(c("testA", "testB")))
 }
 
 shinyApp(uiGPT, serverGPT)
