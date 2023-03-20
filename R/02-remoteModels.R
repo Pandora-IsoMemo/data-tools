@@ -3,18 +3,20 @@
 #' Displays a select input to choose a remote model and a button to load it
 #'
 #' @param id id of module
+#' @param selectLabel label of select input
+#' @param buttonLabel button label
 #' @export
-remoteModelsUI <- function(id) {
+remoteModelsUI <- function(id, selectLabel = "Load online model", buttonLabel = "Load") {
   ns <- NS(id)
 
   tagList(
     selectInput(
       ns("remoteModelChoice"),
-      label = "Select remote model",
+      label = selectLabel,
       choices = NULL,
       selected = NULL
     ),
-    actionButton(ns("loadRemoteModel"), "Load Remote Model")
+    actionButton(ns("loadRemoteModel"), buttonLabel)
   )
 
 }

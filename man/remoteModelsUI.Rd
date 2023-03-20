@@ -4,10 +4,14 @@
 \alias{remoteModelsUI}
 \title{Remote models module}
 \usage{
-remoteModelsUI(id)
+remoteModelsUI(id, selectLabel = "Load online model", buttonLabel = "Load")
 }
 \arguments{
 \item{id}{id of module}
+
+\item{selectLabel}{label of select input}
+
+\item{buttonLabel}{button label}
 }
 \description{
 Displays a select input to choose a remote model and a button to load it
