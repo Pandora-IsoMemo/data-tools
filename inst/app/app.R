@@ -2,7 +2,7 @@ ui <- fluidPage(
   useShinyjs(),  # Set up shinyjs
   tagList(
     navbarPage(
-      title = paste("Test App", packageVersion("DataTools")),
+      title = paste("Test App", utils::packageVersion("DataTools")),
       theme = shinythemes::shinytheme("flatly"),
       position = "fixed-top",
       collapsible = TRUE,

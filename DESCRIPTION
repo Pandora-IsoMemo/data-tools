@@ -30,10 +30,10 @@ Imports:
   shinyjs,
   shinyWidgets,
   templates,
-  tidyr
+  tidyr,
+  utils
 Suggests:
   devtools,
   lintr (>= 1.0.2),
-  testthat (>= 2.0.0),
-  utils
+  testthat (>= 2.0.0)
 RoxygenNote: 7.2.1
