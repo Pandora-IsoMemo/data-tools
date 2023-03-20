@@ -1,5 +1,7 @@
 #' Remote models module
 #'
+#' Displays a select input to choose a remote model and a button to load it
+#'
 #' @param id id of module
 #' @export
 remoteModelsUI <- function(id) {
@@ -13,7 +15,6 @@ remoteModelsUI <- function(id) {
       selected = NULL
     ),
     actionButton(ns("loadRemoteModel"), "Load Remote Model")
-    #helpText("Remote models are only available on on https://isomemoapp.com")
   )
 
 }
@@ -24,12 +25,13 @@ remoteModelsUI <- function(id) {
 #'
 #' @param id namespace id
 #' @param githubRepo (character) name of used github repository, e.g. "bpred"
-#' @param rPackageName (character) name of the package (as in the description file) where this
+#' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
 #' @param rPackageVersion (character) current version of the package where this module is applied,
-#'  e.g. packageVersion("mpiBpred")
+#'  e.g. utils::packageVersion("mpiBpred")
 #' @param pathToLocalModels (character) relative path in the package to the folder storing local
 #'  models
+#' @return (character) the path to the selected remote (github) or local model
 #' @export
 remoteModelsServer <- function(id,
                                githubRepo,
@@ -126,7 +128,6 @@ getRemoteModelsFromGithub <- function(githubRepo, rPackageName, rPackageVersion)
 #' Get content of api call to github folder
 #' @inheritParams remoteModelsServer
 getGithubContent <- function(githubRepo) {
-  # api.github.com/repos/Pandora-IsoMemo/bpred/contents/inst/app/predefinedModels
   res <- httr::GET(paste0(
     "api.github.com/repos/Pandora-IsoMemo/", githubRepo, "/contents/inst/app/predefinedModels"
   ))

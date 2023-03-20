@@ -10,5 +10,5 @@ remoteModelsUI(id)
 \item{id}{id of module}
 }
 \description{
-Remote models module
+Displays a select input to choose a remote model and a button to load it
 }

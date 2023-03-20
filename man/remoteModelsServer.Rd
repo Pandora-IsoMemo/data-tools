@@ -17,14 +17,17 @@ remoteModelsServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{rPackageName}{(character) name of the package (as in the description file) where this
+\item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
 
 \item{rPackageVersion}{(character) current version of the package where this module is applied,
-e.g. packageVersion("mpiBpred")}
+e.g. utils::packageVersion("mpiBpred")}
 
 \item{pathToLocalModels}{(character) relative path in the package to the folder storing local
 models}
+}
+\value{
+(character) the path to the selected remote (github) or local model
 }
 \description{
 Backend for the module
