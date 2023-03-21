@@ -6,19 +6,20 @@
 #' @param selectLabel label of select input
 #' @param buttonLabel button label
 #' @export
-remoteModelsUI <- function(id, selectLabel = "Load online model", buttonLabel = "Load") {
-  ns <- NS(id)
+remoteModelsUI <-
+  function(id,
+           selectLabel = "Load online model",
+           buttonLabel = "Load") {
+    ns <- NS(id)
 
-  tagList(
-    selectInput(
+    tagList(selectInput(
       ns("remoteModelChoice"),
       label = selectLabel,
       choices = c("No online models found ..." = "")
     ),
-    actionButton(ns("loadRemoteModel"), buttonLabel)
-  )
+    actionButton(ns("loadRemoteModel"), buttonLabel))
 
-}
+  }
 
 #' Server function for remote models
 #'
@@ -51,19 +52,22 @@ remoteModelsServer <- function(id,
 
                  observe({
                    # try getting online models
-                   choices <- try(getRemoteModelsFromGithub(githubRepo = githubRepo,
-                                                        rPackageName = rPackageName,
-                                                        rPackageVersion = rPackageVersion),
-                                  silent = TRUE)
-
-                   if (inherits(choices, "try-error") || length(choices) == 0 || onlyLocalModels()) {
-                     onlyLocalModels(TRUE)
-                     # try getting local models
-                     pathToLocal <- try(getLocalModelDir(
+                   choices <-
+                     try(getRemoteModelsFromGithub(
                        githubRepo = githubRepo,
-                       customPathToLocalModels = customPathToLocalModels
+                       rPackageName = rPackageName,
+                       rPackageVersion = rPackageVersion
                      ),
                      silent = TRUE)
+
+                   if (inherits(choices, "try-error") ||
+                       length(choices) == 0 || onlyLocalModels()) {
+                     onlyLocalModels(TRUE)
+                     # try getting local models
+                     pathToLocal <-
+                       try(getLocalModelDir(githubRepo = githubRepo,
+                                            customPathToLocalModels = customPathToLocalModels),
+                           silent = TRUE)
 
                      if (inherits(pathToLocal, "try-error")) {
                        choices <- c()
@@ -79,19 +83,22 @@ remoteModelsServer <- function(id,
                      choices <- c(c("Please select a model ..." = ""), choices)
                    }
 
-                   updateSelectInput(session = session, "remoteModelChoice",
+                   updateSelectInput(session = session,
+                                     "remoteModelChoice",
                                      choices = choices)
                  })
 
                  observe({
                    req(resetSelected())
-                   updateSelectInput(session = session,
-                                     "remoteModelChoice",
-                                     selected = c("Please select a model ..." = ""))
+                   updateSelectInput(
+                     session = session,
+                     "remoteModelChoice",
+                     selected = c("Please select a model ..." = "")
+                   )
                  }) %>%
                    bindEvent(resetSelected())
 
-                 observeEvent(input$loadRemoteModel, {
+                 observe({
                    req(input$remoteModelChoice)
                    tmpPath <- NULL
 
@@ -106,32 +113,39 @@ remoteModelsServer <- function(id,
                            input$remoteModelChoice,
                            ".zip"
                          ),
-                         destfile = tmpPath))
+                         destfile = tmpPath
+                       ))
                      })
                    }
 
-                   if (onlyLocalModels() || inherits(res, "try-error")) {
+                   if (onlyLocalModels() ||
+                       inherits(res, "try-error")) {
                      # FALL BACK IF NO INTERNET CONNECTION
-                     pathToLocal <- getLocalModelDir(
-                       githubRepo = githubRepo,
-                       customPathToLocalModels = customPathToLocalModels
-                     ) %>%
+                     pathToLocal <-
+                       getLocalModelDir(githubRepo = githubRepo,
+                                        customPathToLocalModels = customPathToLocalModels) %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "No local models!",
                                                      warningTitle = "No local models!")
 
                      if (!is.null(pathToLocal)) {
-                       tmpPath <- file.path(pathToLocal, paste0(input$remoteModelChoice, ".zip"))
+                       tmpPath <-
+                         file.path(pathToLocal,
+                                   paste0(input$remoteModelChoice, ".zip"))
                      }
                    }
 
                    resetSelected(FALSE)
                    pathToRemote(tmpPath)
-                 })
+                 }) %>%
+                   bindEvent(input$loadRemoteModel)
 
                  return(pathToRemote)
                })
 }
 
+#' Get Local Models
+#'
+#' @param pathToLocal (character) relative path to the folder storing local models
 getLocalModels <- function(pathToLocal) {
   if (is.null(pathToLocal)) {
     c()
@@ -145,51 +159,65 @@ getLocalModels <- function(pathToLocal) {
 #' Get Local Model Dir
 #'
 #' @inheritParams remoteModelsServer
-getLocalModelDir <- function(githubRepo, customPathToLocalModels = NULL) {
-  if (is.null(customPathToLocalModels)) {
-    pathToLocal <- file.path("..", githubRepo, "inst/app/predefinedModels")
-  } else {
-    pathToLocal <- customPathToLocalModels
-  }
+getLocalModelDir <-
+  function(githubRepo, customPathToLocalModels = NULL) {
+    if (is.null(customPathToLocalModels)) {
+      pathToLocal <-
+        file.path("..", githubRepo, "inst/app/predefinedModels")
+    } else {
+      pathToLocal <- customPathToLocalModels
+    }
 
-  if (length(dir(pathToLocal)) == 0) {
-    warning(paste("No models found at", pathToLocal))
-  }
+    if (length(dir(pathToLocal)) == 0) {
+      warning(paste("No models found at", pathToLocal))
+    }
 
-  pathToLocal
-}
+    pathToLocal
+  }
 
 #' Get Remote Models From Github
 #'
 #' Get remote models from github directory
 #' @inheritParams remoteModelsServer
-getRemoteModelsFromGithub <- function(githubRepo, rPackageName, rPackageVersion) {
-  res <- try({
-    apiOut <- getGithubContent(githubRepo = githubRepo)
-    lapply(apiOut, function(el) el$name) %>%
-      unlist() %>%
-      sub(pattern = '\\.zip$', replacement = '')
-  })
+getRemoteModelsFromGithub <-
+  function(githubRepo,
+           rPackageName,
+           rPackageVersion) {
+    res <- try({
+      apiOut <- getGithubContent(githubRepo = githubRepo)
+      lapply(apiOut, function(el)
+        el$name) %>%
+        unlist() %>%
+        sub(pattern = '\\.zip$', replacement = '')
+    })
 
-  if (inherits(res, "try-error")) {
-    stop(paste(
-      "No connection to the remote github folder. The 'remote models'",
-      "are taken from the models that were locally saved with version",
-      rPackageVersion, "of", rPackageName
-    ))
+    if (inherits(res, "try-error")) {
+      stop(
+        paste(
+          "No connection to the remote github folder. The 'remote models'",
+          "are taken from the models that were locally saved with version",
+          rPackageVersion,
+          "of",
+          rPackageName
+        )
+      )
+    }
+
+    res
   }
-
-  res
-}
 
 #' Get Github Content
 #'
 #' Get content of api call to github folder
 #' @inheritParams remoteModelsServer
 getGithubContent <- function(githubRepo) {
-  res <- httr::GET(paste0(
-    "api.github.com/repos/Pandora-IsoMemo/", githubRepo, "/contents/inst/app/predefinedModels"
-  ))
+  res <- httr::GET(
+    paste0(
+      "api.github.com/repos/Pandora-IsoMemo/",
+      githubRepo,
+      "/contents/inst/app/predefinedModels"
+    )
+  )
   httr::content(res)
 }
 
@@ -198,30 +226,34 @@ getGithubContent <- function(githubRepo) {
 
 uiRemotePath <- fluidPage(shinyjs::useShinyjs(),
                           fluidRow(
-                            column(width = 6,
-                                   remoteModelsUI(id = "remote"),
-                                   tags$hr(),
-                                   textOutput("path")
-                                   ),
-                            column(width = 6,
-                                   remoteModelsUI(id = "local"),
-                                   tags$hr(),
-                                   textOutput("pathLocal")
-                                   )
-                          )
-                          )
+                            column(
+                              width = 6,
+                              remoteModelsUI(id = "remote"),
+                              tags$hr(),
+                              textOutput("path")
+                            ),
+                            column(
+                              width = 6,
+                              remoteModelsUI(id = "local"),
+                              tags$hr(),
+                              textOutput("pathLocal")
+                            )
+                          ))
 
 serverRemotePath <- function(input, output, session) {
-  pathToModels <- remoteModelsServer("remote",
-                                     githubRepo = "bpred",
-                                     rPackageName = "mpiBpred",
-                                     rPackageVersion = "23.03.1")
-  pathToLocal <- remoteModelsServer("local",
-                                    githubRepo = "bpred",
-                                    rPackageName = "mpiBpred",
-                                    rPackageVersion = "23.03.1",
-                                    onlyLocalModels = reactiveVal(TRUE)
-                                    )
+  pathToModels <- remoteModelsServer(
+    "remote",
+    githubRepo = "bpred",
+    rPackageName = "mpiBpred",
+    rPackageVersion = "23.03.1"
+  )
+  pathToLocal <- remoteModelsServer(
+    "local",
+    githubRepo = "bpred",
+    rPackageName = "mpiBpred",
+    rPackageVersion = "23.03.1",
+    onlyLocalModels = reactiveVal(TRUE)
+  )
 
   output$path <- renderText(pathToModels())
   output$pathLocal <- renderText(pathToLocal())
