@@ -207,6 +207,8 @@ getGithubContent <- function(githubRepo) {
 
 # TEST MODULE -------------------------------------------------------------
 
+# note: this test app only works correctly if bpred is installed locally
+
 uiRemotePath <- fluidPage(shinyjs::useShinyjs(),
                           fluidRow(
                             column(
