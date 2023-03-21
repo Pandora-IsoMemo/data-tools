@@ -31,10 +31,7 @@ remoteModelsUI <-
 #'  module is applied, e.g. "mpiBpred"
 #' @param rPackageVersion (character) current version of the package where this module is applied,
 #'  e.g. utils::packageVersion("mpiBpred")
-#' @param customPathToLocalModels (character) custom relative path to the folder storing local models.
-#'  If assuming that the package 'DataTools' was installed into the same parent directory as the
-#'  the app's package in which this module should be applied, than the path for e.g. the package
-#'  "mpiBpred" would "../bpred/inst/app/predefinedModels"
+#' @param pathToLocal (character) relative path to the folder storing local models.
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote model.
 #' @return (character) the path to the selected remote (github) or local model
@@ -43,7 +40,7 @@ remoteModelsServer <- function(id,
                                githubRepo,
                                rPackageName,
                                rPackageVersion,
-                               customPathToLocalModels = NULL,
+                               pathToLocal = file.path(".", "predefinedModels"),
                                onlyLocalModels = reactiveVal(FALSE),
                                resetSelected = reactiveVal(FALSE)) {
   moduleServer(id,
@@ -65,8 +62,7 @@ remoteModelsServer <- function(id,
                      onlyLocalModels(TRUE)
                      # try getting local models
                      pathToLocal <-
-                       try(getLocalModelDir(githubRepo = githubRepo,
-                                            customPathToLocalModels = customPathToLocalModels),
+                       try(checkLocalModelDir(pathToLocal = pathToLocal),
                            silent = TRUE)
 
                      if (inherits(pathToLocal, "try-error")) {
@@ -122,10 +118,8 @@ remoteModelsServer <- function(id,
                        inherits(res, "try-error")) {
                      # FALL BACK IF NO INTERNET CONNECTION
                      pathToLocal <-
-                       getLocalModelDir(githubRepo = githubRepo,
-                                        customPathToLocalModels = customPathToLocalModels) %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "No local models!",
-                                                     warningTitle = "No local models!")
+                       checkLocalModelDir(pathToLocal = pathToLocal) %>%
+                       tryCatchWithWarningsAndErrors(errorTitle = "No local models!")
 
                      if (!is.null(pathToLocal)) {
                        tmpPath <-
@@ -145,31 +139,20 @@ remoteModelsServer <- function(id,
 
 #' Get Local Models
 #'
-#' @param pathToLocal (character) relative path to the folder storing local models
+#' @inheritParams remoteModelsServer
 getLocalModels <- function(pathToLocal) {
-  if (is.null(pathToLocal)) {
-    c()
-  } else {
-    pathToLocal %>%
+  pathToLocal %>%
       dir() %>%
       sub(pattern = '\\.zip$', replacement = '')
-  }
 }
 
-#' Get Local Model Dir
+#' Check Local Model Dir
 #'
 #' @inheritParams remoteModelsServer
-getLocalModelDir <-
-  function(githubRepo, customPathToLocalModels = NULL) {
-    if (is.null(customPathToLocalModels)) {
-      pathToLocal <-
-        file.path("..", githubRepo, "inst/app/predefinedModels")
-    } else {
-      pathToLocal <- customPathToLocalModels
-    }
-
-    if (length(dir(pathToLocal)) == 0) {
-      warning(paste("No models found at", pathToLocal))
+checkLocalModelDir <-
+  function(pathToLocal) {
+    if (is.null(pathToLocal) || !is.character(pathToLocal) || length(dir(pathToLocal)) == 0) {
+      stop(paste("No models found at", pathToLocal))
     }
 
     pathToLocal
@@ -245,14 +228,16 @@ serverRemotePath <- function(input, output, session) {
     "remote",
     githubRepo = "bpred",
     rPackageName = "mpiBpred",
-    rPackageVersion = "23.03.1"
+    rPackageVersion = "23.03.1",
+    pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
   pathToLocal <- remoteModelsServer(
     "local",
     githubRepo = "bpred",
     rPackageName = "mpiBpred",
     rPackageVersion = "23.03.1",
-    onlyLocalModels = reactiveVal(TRUE)
+    onlyLocalModels = reactiveVal(TRUE),
+    pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
 
   output$path <- renderText(pathToModels())
