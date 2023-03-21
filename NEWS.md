@@ -4,7 +4,7 @@
 
 ## New Features
 - _Remote Models_ module: UI and server functions for selecting a remote model and accessing the 
-remote (github) or local path to the selected model
+remote (github) path or the local path to the selected model
 
 ## Version 23.03.1
 

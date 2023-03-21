@@ -10,6 +10,16 @@ testthat::test_that("Test module remoteModels", {
                                                            rPackageName = "mpiBpred",
                                                            rPackageVersion = "23.03.1")))
 
+  testthat::expect_equal(
+    getLocalModelDir(githubRepo = "bpred"),
+    "../bpred/inst/app/predefinedModels"
+  )
+  testthat::expect_warning(getLocalModelDir(githubRepo = "xyz"))
+  testthat::expect_equal(
+    suppressWarnings(getLocalModelDir(githubRepo = "xyz")),
+    "../xyz/inst/app/predefinedModels"
+  )
+
   testModel <- getRemoteModelsFromGithub(githubRepo = "bpred",
                                          rPackageName = "mpiBpred",
                                          rPackageVersion = "23.03.1")[1]

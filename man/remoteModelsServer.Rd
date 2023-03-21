@@ -9,7 +9,9 @@ remoteModelsServer(
   githubRepo,
   rPackageName,
   rPackageVersion,
-  pathToLocalModels = "./predefinedModels"
+  customPathToLocalModels = NULL,
+  onlyLocalModels = reactiveVal(FALSE),
+  resetSelected = reactiveVal(FALSE)
 )
 }
 \arguments{
@@ -23,8 +25,14 @@ module is applied, e.g. "mpiBpred"}
 \item{rPackageVersion}{(character) current version of the package where this module is applied,
 e.g. utils::packageVersion("mpiBpred")}
 
-\item{pathToLocalModels}{(character) relative path in the package to the folder storing local
-models}
+\item{customPathToLocalModels}{(character) custom relative path to the folder storing local models.
+If assuming that the package 'DataTools' was installed into the same parent directory as the
+the app's package in which this module should be applied, than the path for e.g. the package
+"mpiBpred" would "../bpred/inst/app/predefinedModels"}
+
+\item{onlyLocalModels}{(reactive) if TRUE only local models are used}
+
+\item{resetSelected}{(reactive) if TRUE resets the selected remote model.}
 }
 \value{
 (character) the path to the selected remote (github) or local model
