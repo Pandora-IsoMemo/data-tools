@@ -49,25 +49,32 @@ remoteModelsServer <- function(id,
                function(input, output, session) {
                  pathToRemote <- reactiveVal(NULL)
 
-                 remoteChoices <- reactiveVal(
-                   getRemoteModelsFromGithub(githubRepo = githubRepo,
-                                             rPackageName = rPackageName,
-                                             rPackageVersion = rPackageVersion))
-
                  observe({
-                   if (!is.null(remoteChoices()) || !onlyLocalModels()) {
-                     choices <- remoteChoices()
-                   } else {
+                   # try getting online models
+                   choices <- try(getRemoteModelsFromGithub(githubRepo = githubRepo,
+                                                        rPackageName = rPackageName,
+                                                        rPackageVersion = rPackageVersion),
+                                  silent = TRUE)
+
+                   if (inherits(choices, "try-error") || length(choices) == 0 || onlyLocalModels()) {
                      onlyLocalModels(TRUE)
-                     choices <-
-                       getLocalModelDir(githubRepo = githubRepo,
-                                        customPathToLocalModels = customPathToLocalModels) %>%
-                       dir() %>%
-                       sub(pattern = '\\.zip$', replacement = '')
+                     # try getting local models
+                     pathToLocal <- try(getLocalModelDir(
+                       githubRepo = githubRepo,
+                       customPathToLocalModels = customPathToLocalModels
+                     ),
+                     silent = TRUE)
+
+                     if (inherits(pathToLocal, "try-error")) {
+                       choices <- c()
+                     } else {
+                       choices <- pathToLocal %>%
+                         getLocalModels()
+                     }
                    }
 
                    if (length(choices) == 0) {
-                     choices <- c("No remote models found ..." = "")
+                     choices <- c("No online models found ..." = "")
                    } else {
                      choices <- c(c("Please select a model ..." = ""), choices)
                    }
@@ -86,6 +93,7 @@ remoteModelsServer <- function(id,
 
                  observeEvent(input$loadRemoteModel, {
                    req(input$remoteModelChoice)
+                   tmpPath <- NULL
 
                    if (!onlyLocalModels()) {
                      tmpPath <- tempfile()
@@ -104,10 +112,16 @@ remoteModelsServer <- function(id,
 
                    if (onlyLocalModels() || inherits(res, "try-error")) {
                      # FALL BACK IF NO INTERNET CONNECTION
-                     tmpPath <-
-                       file.path(getLocalModelDir(githubRepo = githubRepo,
-                                                  customPathToLocalModels = customPathToLocalModels),
-                                 paste0(input$remoteModelChoice, ".zip"))
+                     pathToLocal <- getLocalModelDir(
+                       githubRepo = githubRepo,
+                       customPathToLocalModels = customPathToLocalModels
+                     ) %>%
+                       tryCatchWithWarningsAndErrors(errorTitle = "No local models!",
+                                                     warningTitle = "No local models!")
+
+                     if (!is.null(pathToLocal)) {
+                       tmpPath <- file.path(pathToLocal, paste0(input$remoteModelChoice, ".zip"))
+                     }
                    }
 
                    resetSelected(FALSE)
@@ -118,9 +132,14 @@ remoteModelsServer <- function(id,
                })
 }
 
-getLocalModelChoices <- function(localModelDir) {
-  dir(localModelDir) %>%
-    sub(pattern = '\\.zip$', replacement = '')
+getLocalModels <- function(pathToLocal) {
+  if (is.null(pathToLocal)) {
+    c()
+  } else {
+    pathToLocal %>%
+      dir() %>%
+      sub(pattern = '\\.zip$', replacement = '')
+  }
 }
 
 #' Get Local Model Dir
@@ -131,6 +150,10 @@ getLocalModelDir <- function(githubRepo, customPathToLocalModels = NULL) {
     pathToLocal <- file.path("..", githubRepo, "inst/app/predefinedModels")
   } else {
     pathToLocal <- customPathToLocalModels
+  }
+
+  if (length(dir(pathToLocal)) == 0) {
+    warning(paste("No models found at", pathToLocal))
   }
 
   pathToLocal
@@ -149,15 +172,14 @@ getRemoteModelsFromGithub <- function(githubRepo, rPackageName, rPackageVersion)
   })
 
   if (inherits(res, "try-error")) {
-    shinyjs::alert(paste(
+    stop(paste(
       "No connection to the remote github folder. The 'remote models'",
       "are taken from the models that were locally saved with version",
       rPackageVersion, "of", rPackageName
     ))
-    NULL
-  } else {
-    res
   }
+
+  res
 }
 
 #' Get Github Content
