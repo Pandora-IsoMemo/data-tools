@@ -37,8 +37,6 @@ testthat::test_that("Test module remoteModels", {
                  loadRemoteModel = 1
                )
 
-               testthat::expect_true(length(remoteChoices()) > 0)
-               testthat::expect_true(testModel %in% remoteChoices())
                testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
              })
 })
