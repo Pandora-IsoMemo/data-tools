@@ -1,7 +1,7 @@
 #' @rawNamespace import(shiny, except = c(renderDataTable, dataTableOutput))
 #' @importFrom dplyr full_join inner_join left_join right_join
 #' @importFrom DT datatable renderDataTable dataTableOutput
-#' @importFrom httr GET
+#' @importFrom httr GET content
 #' @importFrom openxlsx loadWorkbook read.xlsx
 #' @importFrom readODS read_ods
 #' @importFrom readr guess_encoding

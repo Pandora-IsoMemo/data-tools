@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 23.03.1.1
+Version: 23.03.2
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
@@ -30,10 +30,10 @@ Imports:
   shinyjs,
   shinyWidgets,
   templates,
-  tidyr
+  tidyr,
+  utils
 Suggests:
   devtools,
   lintr (>= 1.0.2),
-  testthat (>= 2.0.0),
-  utils
+  testthat (>= 2.0.0)
 RoxygenNote: 7.2.1
