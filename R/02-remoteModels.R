@@ -41,11 +41,12 @@ remoteModelsServer <- function(id,
                                rPackageName,
                                rPackageVersion,
                                pathToLocal = file.path(".", "predefinedModels"),
-                               onlyLocalModels = reactiveVal(FALSE),
-                               resetSelected = reactiveVal(FALSE)) {
+                               onlyLocalModels = reactive(FALSE),
+                               resetSelected = reactive(FALSE)) {
   moduleServer(id,
                function(input, output, session) {
                  pathToRemote <- reactiveVal(NULL)
+                 useLocalModels <- reactiveVal(FALSE)
 
                  observe({
                    # try getting online models
@@ -59,7 +60,7 @@ remoteModelsServer <- function(id,
 
                    if (inherits(choices, "try-error") ||
                        length(choices) == 0 || onlyLocalModels()) {
-                     onlyLocalModels(TRUE)
+                     useLocalModels(TRUE)
                      # try getting local models
                      pathToLocal <-
                        try(checkLocalModelDir(pathToLocal = pathToLocal),
@@ -98,7 +99,7 @@ remoteModelsServer <- function(id,
                    req(input$remoteModelChoice)
                    tmpPath <- NULL
 
-                   if (!onlyLocalModels()) {
+                   if (!useLocalModels()) {
                      tmpPath <- tempfile()
                      withProgress(message = "Downloading remote model ...", value = 0.9, {
                        res <- try(download.file(
@@ -128,7 +129,6 @@ remoteModelsServer <- function(id,
                      }
                    }
 
-                   resetSelected(FALSE)
                    pathToRemote(tmpPath)
                  }) %>%
                    bindEvent(input$loadRemoteModel)
@@ -238,7 +238,7 @@ serverRemotePath <- function(input, output, session) {
     githubRepo = "bpred",
     rPackageName = "mpiBpred",
     rPackageVersion = "23.03.1",
-    onlyLocalModels = reactiveVal(TRUE),
+    onlyLocalModels = reactive(TRUE),
     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
 

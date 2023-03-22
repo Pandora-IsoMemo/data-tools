@@ -10,8 +10,8 @@ remoteModelsServer(
   rPackageName,
   rPackageVersion,
   pathToLocal = file.path(".", "predefinedModels"),
-  onlyLocalModels = reactiveVal(FALSE),
-  resetSelected = reactiveVal(FALSE)
+  onlyLocalModels = reactive(FALSE),
+  resetSelected = reactive(FALSE)
 )
 }
 \arguments{
