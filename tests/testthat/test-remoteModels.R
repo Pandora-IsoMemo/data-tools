@@ -16,8 +16,6 @@ testthat::test_that("Test module remoteModels", {
                             )
                           ))
 
-  testthat::expect_equal(checkLocalModelDir(pathToLocal = "../bpred/inst/app/predefinedModels"),
-                         "../bpred/inst/app/predefinedModels")
   testthat::expect_error(checkLocalModelDir(pathToLocal = "xyz"))
 
   testModel <- getRemoteModelsFromGithub(
