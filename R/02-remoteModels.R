@@ -115,7 +115,7 @@ remoteModelsServer <- function(id,
                      })
                    }
 
-                   if (onlyLocalModels() ||
+                   if (useLocalModels() ||
                        inherits(res, "try-error")) {
                      # FALL BACK IF NO INTERNET CONNECTION
                      pathToLocal <-
