@@ -51,12 +51,14 @@ remoteModelsServer <- function(id,
                  observe({
                    # try getting online models
                    choices <-
-                     try(getRemoteModelsFromGithub(
+                     getRemoteModelsFromGithub(
                        githubRepo = githubRepo,
                        rPackageName = rPackageName,
                        rPackageVersion = rPackageVersion
-                     ),
-                     silent = TRUE)
+                     ) %>%
+                     tryCatchWithWarningsAndErrors(errorTitle = "Loading online models failed",
+                                                   warningTitle = "Loading online models failed",
+                                                   alertStyle = "shinyalert")
 
                    if (inherits(choices, "try-error") ||
                        length(choices) == 0 || onlyLocalModels()) {
@@ -166,27 +168,38 @@ getRemoteModelsFromGithub <-
   function(githubRepo,
            rPackageName,
            rPackageVersion) {
-    res <- try({
-      apiOut <- getGithubContent(githubRepo = githubRepo)
-      lapply(apiOut, function(el)
-        el$name) %>%
-        unlist() %>%
-        sub(pattern = '\\.zip$', replacement = '')
-    })
+    apiOut <- try(getGithubContent(githubRepo = githubRepo))
 
-    if (inherits(res, "try-error")) {
-      stop(
+    if (inherits(apiOut, "try-error")) {
+      warning(
         paste(
-          "No connection to the remote github folder. The 'remote models'",
+          "No connection to the remote github folder. The 'online models'",
           "are taken from the models that were locally saved with version",
           rPackageVersion,
           "of",
           rPackageName
         )
       )
+      return()
     }
 
-    res
+    if (!is.null(apiOut[["message"]]) && apiOut[["message"]] == "Not Found") {
+      warning(
+        paste(
+          "No online models found. The 'online models'",
+          "are taken from the models that were locally saved with version",
+          rPackageVersion,
+          "of",
+          rPackageName
+        )
+      )
+      return()
+    }
+
+    lapply(apiOut, function(el)
+        el$name) %>%
+        unlist() %>%
+        sub(pattern = '\\.zip$', replacement = '')
   }
 
 #' Get Github Content
@@ -212,16 +225,25 @@ getGithubContent <- function(githubRepo) {
 uiRemotePath <- fluidPage(shinyjs::useShinyjs(),
                           fluidRow(
                             column(
-                              width = 6,
+                              width = 4,
+                              tags$h3("Load from github"),
                               remoteModelsUI(id = "remote"),
                               tags$hr(),
                               textOutput("path")
                             ),
                             column(
-                              width = 6,
+                              width = 4,
+                              tags$h3("Load only from package"),
                               remoteModelsUI(id = "local"),
                               tags$hr(),
                               textOutput("pathLocal")
+                            ),
+                            column(
+                              width = 4,
+                              tags$h3("Load from package with warning"),
+                              remoteModelsUI(id = "warning"),
+                              tags$hr(),
+                              textOutput("pathWithWarning")
                             )
                           ))
 
@@ -241,9 +263,17 @@ serverRemotePath <- function(input, output, session) {
     onlyLocalModels = reactive(TRUE),
     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
+  pathWithWarning <- remoteModelsServer(
+    "warning",
+    githubRepo = "lalala",
+    rPackageName = "mpiBpred",
+    rPackageVersion = "23.03.1",
+    pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
+  )
 
   output$path <- renderText(pathToModels())
   output$pathLocal <- renderText(pathToLocal())
+  output$pathWithWarning <- renderText(pathWithWarning())
 }
 
 shinyApp(uiRemotePath, serverRemotePath)
