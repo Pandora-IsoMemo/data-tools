@@ -1,0 +1,332 @@
+#' Download model module
+#'
+#' UI function to download a zip file with notes and a list of models
+#'
+#' @param id id of module
+#' @param label label of module
+#'
+#' @export
+downloadModelUI <- function(id, label) {
+  ns <- NS(id)
+
+  tagList(
+    tags$h5(label),
+    textAreaInput(ns("exportNotes"), "Notes"),
+    conditionalPanel(
+      ns = ns,
+      condition = "output.onlySettings",
+      tags$br(),
+      downloadButton(ns("downloadModel"), "Download Settings"),
+      helpText(
+        "Currently download of model output is not possible! BMSC model output is too large."
+      )
+    ),
+    conditionalPanel(
+      ns = ns,
+      condition = "!output.onlySettings",
+      checkboxInput(ns("onlyInputs"), "Store only data and model options"),
+      downloadButton(ns("downloadModel"), "Download")
+    )
+  )
+}
+
+
+#' Server function download model
+#'
+#' Backend for download model module
+#'
+#' @param id namespace id
+#' @param dat (reactive) user data
+#' @param inputs (reactive) user inputs
+#' @param model (reactive) model output object
+#' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
+#' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
+#'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
+#'  file is a connection.
+#' @inheritParams remoteModelsServer
+#'
+#' @export
+downloadModelServer <-
+  function(id, dat, inputs, model, rPackageName, onlySettings = FALSE, compress = TRUE) {
+    moduleServer(id,
+                 function(input, output, session) {
+                   output$onlySettings <- reactive(onlySettings)
+                   outputOptions(output, "onlySettings", suspendWhenHidden = FALSE)
+
+                   output$downloadModel <- downloadHandler(
+                     filename = function() {
+                       paste(gsub("\ ", "_", Sys.time()), paste0(rPackageName, ".zip"), sep = "_")
+                     },
+                     content = function(file) {
+                       withProgress({
+                         zipdir <- tempdir()
+                         modelfile <- file.path(zipdir, "model.rds")
+                         notesfile <-
+                           file.path(zipdir, "README.txt")
+                         helpfile <- file.path(zipdir, "help.html")
+
+                         dataExport <- dat()
+                         inputExport <- reactiveValuesToList(inputs)
+
+                         if (input$onlyInputs || is.null(model)) {
+                           modelExport <- NULL
+                         } else {
+                           modelExport <- model()
+                         }
+
+                         saveRDS(
+                           list(
+                             data = dataExport,
+                             inputs = inputExport,
+                             model = modelExport,
+                             version = paste(rPackageName, packageVersion(rPackageName))
+                           ),
+                           file = modelfile,
+                           compress = compress
+                         )
+                         writeLines(input$exportNotes, notesfile)
+                         save_html(getHelp(id = ""), helpfile)
+                         zip::zipr(file, c(modelfile, notesfile, helpfile))
+                       },
+                       value = 0.8,
+                       message = "Downloading ...")
+                     }
+                   )
+                 })
+  }
+
+
+#' Upload model module
+#'
+#' UI function to upload a zip file with exportNotes and a list of models
+#'
+#' @param id id of module
+#' @param label label of module
+#'
+#' @export
+uploadModelUI <- function(id, label) {
+  ns <- NS(id)
+
+  tagList(
+    tags$h5(label),
+    fileInput(ns("uploadModel"), label = "Load local model"),
+    remoteModelsUI(ns("remoteModels")),
+    tags$br(),
+    tags$br()
+  )
+}
+
+
+#' Server function upload model
+#'
+#' Backend for upload model module
+#'
+#' @param id namespace id
+#' @param reset (reactive) resets the selection of the online model
+#' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
+#' @inheritParams remoteModelsServer
+#'
+#' @export
+uploadModelServer <-
+  function(id,
+           githubRepo,
+           rPackageName,
+           rPackageVersion,
+           onlySettings,
+           reset = reactive(FALSE)) {
+    moduleServer(id,
+                 function(input, output, session) {
+                   pathToModel <- reactiveVal(NULL)
+
+                   uploadedData <- reactiveValues(
+                     data = NULL,
+                     inputs = NULL,
+                     model = NULL
+                   )
+
+                   observeEvent(input$uploadModel, {
+                     pathToModel(input$uploadModel$datapath)
+                   })
+
+                   pathToRemote <- remoteModelsServer(
+                     "remoteModels",
+                     githubRepo = githubRepo,
+                     rPackageName = rPackageName,
+                     rPackageVersion = rPackageVersion %>%
+                       packageVersion() %>%
+                       as.character(),
+                     resetSelected = reset
+                   )
+
+                   observeEvent(pathToRemote(), {
+                     pathToModel(pathToRemote())
+                   })
+
+                   observeEvent(pathToModel(), {
+                     alertType <- "error"
+
+                     res <- try({
+                       zip::unzip(pathToModel())
+                       modelImport <- readRDS("model.rds")
+                     })
+
+                     if (inherits(res, "try-error")) {
+                       shinyalert(
+                         title = "Could not load file.",
+                         text = paste(
+                           "The file to be uploaded should be a .zip file",
+                           "that contains the following files:",
+                           "help.html, model.rds, README.txt. ",
+                           "If you download a model it will exactly have this format."
+                         ),
+                         type = alertType
+                       )
+                       return()
+                     }
+
+                     if (!exists("modelImport") ||
+                         !all(names(modelImport) %in% c("data", "inputs", "model", "version"))) {
+                       shinyalert(title = "Could not load file.",
+                                  text = "File format not valid for BMSC app modelling. Model object not found.",
+                                  type = alertType)
+                       return()
+                     }
+
+                     warning <- c()
+                     if (is.null(modelImport$data)) {
+                       warning[["data"]] <-
+                         "No input data found."
+
+                       alertType <- "warning"
+                     } else {
+                       warning[["data"]] <-
+                         "Input data loaded. "
+                       alertType <- "success"
+                     }
+
+                     if (is.null(modelImport$inputs)) {
+                       warning[["inputs"]] <-
+                         "No model selection parameters found."
+
+                       alertType <- "warning"
+                     } else {
+                       warning[["inputs"]] <-
+                         "Model selection parameters loaded. "
+                       alertType <- "success"
+                     }
+
+                     if (!onlySettings) {
+                       if (is.null(modelImport$model)) {
+                         warning[["model"]] <- "No model results found. "
+                         alertType <- "warning"
+                       } else {
+                         warning[["model"]] <- "Model results loaded. "
+                         # no update of alertType, do not overwrite a warning
+                       }
+                     }
+
+                     uploadedData$data <- modelImport$data
+                     uploadedData$inputs <- modelImport$inputs
+                     uploadedData$model <- modelImport$model
+
+                     if (!is.null(modelImport$version)) {
+                       uploadedVersion <- paste("Saved version:", modelImport$version, ".")
+                     } else {
+                       uploadedVersion <- ""
+                     }
+
+                     dataLoadedAlert(warning, uploadedVersion, alertType)
+
+                     # clean up
+                     if (file.exists("model.rds"))
+                       file.remove("model.rds")
+                     if (file.exists("README.txt"))
+                       file.remove("README.txt")
+                     if (file.exists("help.html"))
+                       file.remove("help.html")
+                   })
+
+                   return(uploadedData)
+                 })
+  }
+
+dataLoadedAlert <-
+  function(warnings,
+           uploadedVersion,
+           alertType) {
+    shinyalert(
+      title = "Upload finished",
+      text = HTML(paste0(
+        #"<div align='left'>",
+        "<p>",
+        paste(paste0(warnings, collapse = "<br/>"),
+              uploadedVersion,
+              sep = "</p><br/><p>"),
+        "</p>"#,
+        #"</div>"
+      )),
+      type = alertType,
+      html = TRUE
+    )
+  }
+
+
+# TEST MODULE -------------------------------------------------------------
+
+# uiDownUpload <- fluidPage(shinyjs::useShinyjs(),
+#                           fluidRow(
+#                             column(
+#                               width = 6,
+#                               numericInput("testInput",
+#                                            label = "Test input",
+#                                            value = 3,
+#                                            min = 1,
+#                                            max = 10),
+#                               tags$h3("Download"),
+#                               downloadModelUI("download", label = "Download"),
+#                               tags$hr(),
+#                               textOutput("path")
+#                             ),
+#                             column(
+#                               width = 6,
+#                               tags$h3("Upload"),
+#                               uploadModelUI(id = "upload", label = "Upload"),
+#                               tags$hr(),
+#                               textOutput("pathLocal")
+#                             )
+#                           ),
+#                           dataTableOutput("data"))
+#
+# serverdownUpload <- function(input, output, session) {
+#   downloadModelServer("download",
+#                       dat = mtcars,
+#                       inputs = input,
+#                       model = NULL,
+#                       rPackageName = "DataTools",
+#                       onlySettings = FALSE,
+#                       compress = TRUE)
+#
+#   uploadedData <- uploadModelServer("upload",
+#                                     githubRepo = "data-tools",
+#                                     rPackageName = "DataTools",
+#                                     rPackageVersion = "23.03.2",
+#                                     onlySettings = FALSE,
+#                                     reset = reactive(FALSE))
+#
+#   observe(priority = 500, {
+#     ## update data ----
+#     output$data <- renderDataTable(uploadedData$data)
+#   }) %>%
+#     bindEvent(uploadedData$data)
+#
+#   observe(priority = -100, {
+#     ## update inputs ----
+#     inputIDs <- names(uploadedData$inputs)
+#     for (i in 1:length(uploadedData$inputs)) {
+#       session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
+#     }
+#   }) %>%
+#     bindEvent(uploadedData$inputs)
+# }
+#
+# shinyApp(uiDownUpload, serverdownUpload)
