@@ -14,16 +14,16 @@ downloadModelUI <- function(id, label) {
     textAreaInput(ns("exportNotes"), "Notes"),
     conditionalPanel(
       ns = ns,
-      condition = "output.showSettings == true",
+      condition = "output.showSettings",
       tags$br(),
-      downloadButton(ns("downloadModel"), "Download Settings"),
+      downloadButton(ns("downloadSettings"), "Download Settings"),
       helpText(
         "Currently download of model output is not possible! BMSC model output is too large."
       )
     ),
     conditionalPanel(
       ns = ns,
-      condition = "output.showSettings == false",
+      condition = "!output.showSettings",
       checkboxInput(ns("onlyInputs"), "Store only data and model options"),
       downloadButton(ns("downloadModel"), "Download")
     )
@@ -39,61 +39,86 @@ downloadModelUI <- function(id, label) {
 #' @param dat (reactive) user data
 #' @param inputs (reactive) user inputs
 #' @param model (reactive) model output object
+#' @param rPackageName (character) name of the package (as in the description file) in which this
+#'  module is applied, e.g. "mpiBpred"
+#' @param helpHTML content of help function
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
-#' @inheritParams remoteModelsServer
 #'
 #' @export
 downloadModelServer <-
-  function(id, dat, inputs, model, rPackageName, onlySettings = reactive(FALSE), compress = TRUE) {
+  function(id, dat, inputs, model, rPackageName,
+           helpHTML = "", onlySettings = FALSE, compress = TRUE) {
     moduleServer(id,
                  function(input, output, session) {
-                   output$showSettings <- reactive({onlySettings()})
+                   output$showSettings <- reactive({onlySettings})
                    outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
 
-                   output$downloadModel <- downloadHandler(
-                     filename = function() {
-                       paste(gsub("\ ", "_", Sys.time()), paste0(rPackageName, ".zip"), sep = "_")
-                     },
-                     content = function(file) {
-                       withProgress({
-                         zipdir <- tempdir()
-                         modelfile <- file.path(zipdir, "model.rds")
-                         notesfile <-
-                           file.path(zipdir, "README.txt")
-                         helpfile <- file.path(zipdir, "help.html")
+                   output$downloadSettings <- downloadHandlerFun(dat = dat(),
+                                                                 inputs = inputs,
+                                                                 model = model(),
+                                                                 notes = input$exportNotes,
+                                                                 onlyInputs = input$onlyInputs,
+                                                                 helpHTML = helpHTML,
+                                                                 rPackageName = rPackageName,
+                                                                 compress = compress)
 
-                         dataExport <- dat()
-                         inputExport <- reactiveValuesToList(inputs)
-
-                         if (input$onlyInputs || is.null(model)) {
-                           modelExport <- NULL
-                         } else {
-                           modelExport <- model()
-                         }
-
-                         saveRDS(
-                           list(
-                             data = dataExport,
-                             inputs = inputExport,
-                             model = modelExport,
-                             version = paste(rPackageName, packageVersion(rPackageName))
-                           ),
-                           file = modelfile,
-                           compress = compress
-                         )
-                         writeLines(input$exportNotes, notesfile)
-                         save_html(getHelp(id = ""), helpfile)
-                         zip::zipr(file, c(modelfile, notesfile, helpfile))
-                       },
-                       value = 0.8,
-                       message = "Downloading ...")
-                     }
-                   )
+                   output$downloadModel <- downloadHandlerFun(dat = dat(),
+                                                              inputs = inputs,
+                                                              model = model(),
+                                                              notes = input$exportNotes,
+                                                              onlyInputs = input$onlyInputs,
+                                                              helpHTML = helpHTML,
+                                                              rPackageName = rPackageName,
+                                                              compress = compress)
                  })
   }
+
+
+downloadHandlerFun <- function(dat, inputs, model, notes, onlyInputs, helpHTML, rPackageName, compress) {
+  downloadHandler(
+    filename = function() {
+      paste(gsub("\ ", "_", Sys.time()), paste0(rPackageName, ".zip"), sep = "_")
+    },
+    content = function(file) {
+      withProgress({
+        zipdir <- tempdir()
+        modelfile <- file.path(zipdir, "model.rds")
+        notesfile <-
+          file.path(zipdir, "README.txt")
+        helpfile <- file.path(zipdir, "help.html")
+
+        dataExport <- dat
+        inputExport <- reactiveValuesToList(inputs)
+
+        if (onlyInputs || is.null(model)) {
+          modelExport <- NULL
+        } else {
+          modelExport <- model
+        }
+
+        saveRDS(
+          list(
+            data = dataExport,
+            inputs = inputExport,
+            model = modelExport,
+            version = paste(rPackageName, packageVersion(rPackageName))
+          ),
+          file = modelfile,
+          compress = compress
+        )
+        writeLines(notes, notesfile)
+        save_html(helpHTML, helpfile)
+        zip::zipr(file, c(modelfile, notesfile, helpfile))
+      },
+      value = 0.8,
+      message = "Downloading ...")
+    }
+  )
+}
+
 
 
 #' Upload model module

@@ -1,5 +1,4 @@
-ui <- fluidPage(useShinyjs(),
-                # Set up shinyjs
+ui <- fluidPage(useShinyjs(), # Set up shinyjs
                 tagList(
                   navbarPage(
                     title = paste("Test App", utils::packageVersion("DataTools")),
@@ -14,8 +13,7 @@ ui <- fluidPage(useShinyjs(),
                   ),
                   tags$head(
                     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
-                  ),
-                  shinyjs::useShinyjs()
+                  )
                 ))
 
 server <- function(input, output, session) {

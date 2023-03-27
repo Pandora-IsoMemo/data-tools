@@ -17,6 +17,9 @@ toolsImportUI <- function(id) {
     ),
     mainPanel(tags$h2("Imported data"),
         DT::dataTableOutput(ns("importedDataTable")),
+        tags$br(),
+        tags$br(),
+        tags$hr(),
         tags$h2("Imported batch data"),
         DT::dataTableOutput(ns("importedBatchTable"))
       )
@@ -92,12 +95,17 @@ toolsLoadUI <- function(id) {
                      min = 1,
                      max = 10
                    ),
-                   downloadModelUI(ns("download"), label = "Test download of data: `mtcars`")
+                   tags$hr(),
+                   downloadModelUI(ns("downloadModel"), label = "Test download of model: `mtcars`"),
+                   tags$hr(),
+                   downloadModelUI(ns("downloadSettings"), label = "Test download of settings: `mtcars`")
                  ),
                  column(width = 6,
-                        uploadModelUI(ns("upload"), label = "Upload some data"))
+                        uploadModelUI(ns("upload"), label = "Upload some data")
+                        )
                ),
-               dataTableOutput(ns("data")))
+              tags$h3("Data"),
+              dataTableOutput(ns("data")))
   )
 }
 
@@ -105,26 +113,34 @@ toolsLoadUI <- function(id) {
 #' Server function of toolsLoad module
 #'
 #' @param id module id
-#' @inheritParams importDataServer
 toolsLoadServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
+                 testData <- reactiveVal(mtcars)
+
                  downloadModelServer(
-                   "download",
-                   dat = reactive(mtcars),
+                   "downloadModel",
+                   dat = testData,
                    inputs = input,
-                   model = NULL,
+                   model = reactive(NULL),
                    rPackageName = "DataTools",
-                   onlySettings = reactive(FALSE),
-                   compress = TRUE
+                   onlySettings = FALSE
+                 )
+
+                 downloadModelServer(
+                   "downloadSettings",
+                   dat = testData,
+                   inputs = input,
+                   model = reactive(NULL),
+                   rPackageName = "DataTools",
+                   onlySettings = TRUE
                  )
 
                  uploadedData <- uploadModelServer(
                    "upload",
                    githubRepo = "data-tools",
                    rPackageName = "DataTools",
-                   rPackageVersion = "23.03.2",
-                   onlySettings = reactive(FALSE),
+                   onlySettings = FALSE,
                    reset = reactive(FALSE)
                  )
 
@@ -138,11 +154,11 @@ toolsLoadServer <- function(id) {
                  observe(priority = -100, {
                    ## update inputs ----
                    inputIDs <- names(uploadedData$inputs)
+                   #browser()
                    for (i in 1:length(uploadedData$inputs)) {
                      session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
                    }
                  }) %>%
                    bindEvent(uploadedData$inputs)
-
                })
 }

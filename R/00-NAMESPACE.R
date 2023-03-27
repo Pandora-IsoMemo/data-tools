@@ -1,6 +1,7 @@
 #' @rawNamespace import(shiny, except = c(renderDataTable, dataTableOutput))
 #' @importFrom dplyr full_join inner_join left_join right_join
 #' @importFrom DT datatable renderDataTable dataTableOutput
+#' @importFrom htmltools save_html
 #' @importFrom httr GET content
 #' @importFrom openxlsx loadWorkbook read.xlsx
 #' @importFrom readODS read_ods
@@ -15,5 +16,6 @@
 #' @importFrom stats setNames
 #' @importFrom templates tmpl
 #' @importFrom tidyr separate unite
-#' @importFrom utils capture.output download.file read.csv
+#' @importFrom utils capture.output download.file read.csv packageVersion
+#' @importFrom zip zipr
 NULL
