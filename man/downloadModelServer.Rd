@@ -10,7 +10,7 @@ downloadModelServer(
   inputs,
   model,
   rPackageName,
-  onlySettings = FALSE,
+  onlySettings = reactive(FALSE),
   compress = TRUE
 )
 }

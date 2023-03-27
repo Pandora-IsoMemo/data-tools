@@ -14,7 +14,7 @@ downloadModelUI <- function(id, label) {
     textAreaInput(ns("exportNotes"), "Notes"),
     conditionalPanel(
       ns = ns,
-      condition = "output.onlySettings == true",
+      condition = "output.showSettings == true",
       tags$br(),
       downloadButton(ns("downloadModel"), "Download Settings"),
       helpText(
@@ -23,7 +23,7 @@ downloadModelUI <- function(id, label) {
     ),
     conditionalPanel(
       ns = ns,
-      condition = "output.onlySettings == false",
+      condition = "output.showSettings == false",
       checkboxInput(ns("onlyInputs"), "Store only data and model options"),
       downloadButton(ns("downloadModel"), "Download")
     )
@@ -47,11 +47,11 @@ downloadModelUI <- function(id, label) {
 #'
 #' @export
 downloadModelServer <-
-  function(id, dat, inputs, model, rPackageName, onlySettings = FALSE, compress = TRUE) {
+  function(id, dat, inputs, model, rPackageName, onlySettings = reactive(FALSE), compress = TRUE) {
     moduleServer(id,
                  function(input, output, session) {
-                   output$onlySettings <- reactive(onlySettings)
-                   outputOptions(output, "onlySettings", suspendWhenHidden = FALSE)
+                   output$showSettings <- reactive({onlySettings()})
+                   outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
 
                    output$downloadModel <- downloadHandler(
                      filename = function() {

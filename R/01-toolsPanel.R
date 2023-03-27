@@ -86,18 +86,18 @@ toolsLoadUI <- function(id) {
                  column(
                    width = 6,
                    numericInput(
-                     "testInput",
+                     ns("testInput"),
                      label = "Some test input to be downloaded",
                      value = 3,
                      min = 1,
                      max = 10
                    ),
-                   downloadModelUI("download", label = "Test download of data: `mtcars`")
+                   downloadModelUI(ns("download"), label = "Test download of data: `mtcars`")
                  ),
                  column(width = 6,
-                        uploadModelUI("upload", label = "Upload some data"))
+                        uploadModelUI(ns("upload"), label = "Upload some data"))
                ),
-               dataTableOutput("data"))
+               dataTableOutput(ns("data")))
   )
 }
 
@@ -111,11 +111,11 @@ toolsLoadServer <- function(id) {
                function(input, output, session) {
                  downloadModelServer(
                    "download",
-                   dat = mtcars,
+                   dat = reactive(mtcars),
                    inputs = input,
                    model = NULL,
                    rPackageName = "DataTools",
-                   onlySettings = FALSE,
+                   onlySettings = reactive(FALSE),
                    compress = TRUE
                  )
 
@@ -124,7 +124,7 @@ toolsLoadServer <- function(id) {
                    githubRepo = "data-tools",
                    rPackageName = "DataTools",
                    rPackageVersion = "23.03.2",
-                   onlySettings = FALSE,
+                   onlySettings = reactive(FALSE),
                    reset = reactive(FALSE)
                  )
 
