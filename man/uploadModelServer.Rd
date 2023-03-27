@@ -8,7 +8,6 @@ uploadModelServer(
   id,
   githubRepo,
   rPackageName,
-  rPackageVersion,
   onlySettings,
   reset = reactive(FALSE)
 )
@@ -20,9 +19,6 @@ uploadModelServer(
 
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
-
-\item{rPackageVersion}{(character) current version of the package where this module is applied,
-e.g. utils::packageVersion("mpiBpred")}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 

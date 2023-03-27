@@ -10,11 +10,11 @@ downloadModelUI <- function(id, label) {
   ns <- NS(id)
 
   tagList(
-    tags$h5(label),
+    tags$h4(label),
     textAreaInput(ns("exportNotes"), "Notes"),
     conditionalPanel(
       ns = ns,
-      condition = "output.onlySettings",
+      condition = "output.onlySettings == true",
       tags$br(),
       downloadButton(ns("downloadModel"), "Download Settings"),
       helpText(
@@ -23,7 +23,7 @@ downloadModelUI <- function(id, label) {
     ),
     conditionalPanel(
       ns = ns,
-      condition = "!output.onlySettings",
+      condition = "output.onlySettings == false",
       checkboxInput(ns("onlyInputs"), "Store only data and model options"),
       downloadButton(ns("downloadModel"), "Download")
     )
@@ -108,7 +108,7 @@ uploadModelUI <- function(id, label) {
   ns <- NS(id)
 
   tagList(
-    tags$h5(label),
+    tags$h4(label),
     fileInput(ns("uploadModel"), label = "Load local model"),
     remoteModelsUI(ns("remoteModels")),
     tags$br(),
@@ -131,7 +131,6 @@ uploadModelServer <-
   function(id,
            githubRepo,
            rPackageName,
-           rPackageVersion,
            onlySettings,
            reset = reactive(FALSE)) {
     moduleServer(id,
@@ -152,7 +151,7 @@ uploadModelServer <-
                      "remoteModels",
                      githubRepo = githubRepo,
                      rPackageName = rPackageName,
-                     rPackageVersion = rPackageVersion %>%
+                     rPackageVersion = rPackageName %>%
                        packageVersion() %>%
                        as.character(),
                      resetSelected = reset
@@ -269,64 +268,3 @@ dataLoadedAlert <-
       html = TRUE
     )
   }
-
-
-# TEST MODULE -------------------------------------------------------------
-
-# uiDownUpload <- fluidPage(shinyjs::useShinyjs(),
-#                           fluidRow(
-#                             column(
-#                               width = 6,
-#                               numericInput("testInput",
-#                                            label = "Test input",
-#                                            value = 3,
-#                                            min = 1,
-#                                            max = 10),
-#                               tags$h3("Download"),
-#                               downloadModelUI("download", label = "Download"),
-#                               tags$hr(),
-#                               textOutput("path")
-#                             ),
-#                             column(
-#                               width = 6,
-#                               tags$h3("Upload"),
-#                               uploadModelUI(id = "upload", label = "Upload"),
-#                               tags$hr(),
-#                               textOutput("pathLocal")
-#                             )
-#                           ),
-#                           dataTableOutput("data"))
-#
-# serverdownUpload <- function(input, output, session) {
-#   downloadModelServer("download",
-#                       dat = mtcars,
-#                       inputs = input,
-#                       model = NULL,
-#                       rPackageName = "DataTools",
-#                       onlySettings = FALSE,
-#                       compress = TRUE)
-#
-#   uploadedData <- uploadModelServer("upload",
-#                                     githubRepo = "data-tools",
-#                                     rPackageName = "DataTools",
-#                                     rPackageVersion = "23.03.2",
-#                                     onlySettings = FALSE,
-#                                     reset = reactive(FALSE))
-#
-#   observe(priority = 500, {
-#     ## update data ----
-#     output$data <- renderDataTable(uploadedData$data)
-#   }) %>%
-#     bindEvent(uploadedData$data)
-#
-#   observe(priority = -100, {
-#     ## update inputs ----
-#     inputIDs <- names(uploadedData$inputs)
-#     for (i in 1:length(uploadedData$inputs)) {
-#       session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
-#     }
-#   }) %>%
-#     bindEvent(uploadedData$inputs)
-# }
-#
-# shinyApp(uiDownUpload, serverdownUpload)

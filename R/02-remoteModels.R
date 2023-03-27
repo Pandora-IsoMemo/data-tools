@@ -18,7 +18,6 @@ remoteModelsUI <-
       choices = c("No online models found ..." = "")
     ),
     actionButton(ns("loadRemoteModel"), buttonLabel))
-
   }
 
 #' Server function for remote models

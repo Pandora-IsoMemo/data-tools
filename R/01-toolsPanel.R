@@ -1,11 +1,11 @@
-#' UI function of toolsPanel module
+#' UI function of toolsImport module
 #'
 #' @param id module id
 #'
 #' @importFrom stats setNames
-#'
-toolsPanelUI <- function(id) {
+toolsImportUI <- function(id) {
   ns <- NS(id)
+
   sidebarLayout(
     sidebarPanel(
       width = 2,
@@ -15,25 +15,20 @@ toolsPanelUI <- function(id) {
       tags$br(),
       importDataUI(ns("batchData"), "Import Batch Data")
     ),
-    mainPanel(tabsetPanel(
-      tabPanel("imported data",
-               DT::dataTableOutput(ns(
-                 "importedDataTable"
-               ))),
-      tabPanel("imported batch data",
-               DT::dataTableOutput(ns(
-                 "importedBatchTable"
-               )))
-    ))
+    mainPanel(tags$h2("Imported data"),
+        DT::dataTableOutput(ns("importedDataTable")),
+        tags$h2("Imported batch data"),
+        DT::dataTableOutput(ns("importedBatchTable"))
+      )
   )
 }
 
 
-#' Server function of toolsPanel module
+#' Server function of toolsImport module
 #'
 #' @param id module id
 #' @inheritParams importDataServer
-toolsPanelServer <- function(id, defaultSource = "ckan") {
+toolsImportServer <- function(id, defaultSource = "ckan") {
   moduleServer(id,
                function(input, output, session) {
                  importedData <- importDataServer(
@@ -69,5 +64,85 @@ toolsPanelServer <- function(id, defaultSource = "ckan") {
                    req(length(importedBatchData()) > 0)
                    importedBatchData()[[1]]
                  })
+               })
+}
+
+
+#' UI function of toolsLoad module
+#'
+#' @param id module id
+#'
+#' @importFrom stats setNames
+#'
+toolsLoadUI <- function(id) {
+  ns <- NS(id)
+
+  sidebarLayout(
+    sidebarPanel(
+      width = 2,
+      style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%"
+    ),
+    mainPanel(fluidRow(
+                 column(
+                   width = 6,
+                   numericInput(
+                     "testInput",
+                     label = "Some test input to be downloaded",
+                     value = 3,
+                     min = 1,
+                     max = 10
+                   ),
+                   downloadModelUI("download", label = "Test download of data: `mtcars`")
+                 ),
+                 column(width = 6,
+                        uploadModelUI("upload", label = "Upload some data"))
+               ),
+               dataTableOutput("data"))
+  )
+}
+
+
+#' Server function of toolsLoad module
+#'
+#' @param id module id
+#' @inheritParams importDataServer
+toolsLoadServer <- function(id) {
+  moduleServer(id,
+               function(input, output, session) {
+                 downloadModelServer(
+                   "download",
+                   dat = mtcars,
+                   inputs = input,
+                   model = NULL,
+                   rPackageName = "DataTools",
+                   onlySettings = FALSE,
+                   compress = TRUE
+                 )
+
+                 uploadedData <- uploadModelServer(
+                   "upload",
+                   githubRepo = "data-tools",
+                   rPackageName = "DataTools",
+                   rPackageVersion = "23.03.2",
+                   onlySettings = FALSE,
+                   reset = reactive(FALSE)
+                 )
+
+                 observe(priority = 500, {
+                   ## update data ----
+                   output$data <-
+                     renderDataTable(uploadedData$data)
+                 }) %>%
+                   bindEvent(uploadedData$data)
+
+                 observe(priority = -100, {
+                   ## update inputs ----
+                   inputIDs <- names(uploadedData$inputs)
+                   for (i in 1:length(uploadedData$inputs)) {
+                     session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
+                   }
+                 }) %>%
+                   bindEvent(uploadedData$inputs)
+
                })
 }
