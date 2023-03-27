@@ -124,6 +124,7 @@ toolsLoadServer <- function(id) {
                    inputs = input,
                    model = reactive(NULL),
                    rPackageName = "DataTools",
+                   helpHTML = "",
                    onlySettings = FALSE
                  )
 
@@ -133,6 +134,7 @@ toolsLoadServer <- function(id) {
                    inputs = input,
                    model = reactive(NULL),
                    rPackageName = "DataTools",
+                   helpHTML = "",
                    onlySettings = TRUE
                  )
 
