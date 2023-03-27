@@ -82,7 +82,6 @@ downloadModelServer <-
 
                          dataExport <- dat()
                          inputExport <- reactiveValuesToList(inputs)
-                         print(inputExport)
 
                          if (input$onlyInputs ||
                              is.null(model()) || onlySettings) {

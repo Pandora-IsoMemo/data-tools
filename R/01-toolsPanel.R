@@ -145,9 +145,7 @@ toolsLoadServer <- function(id) {
                    ## update inputs ----
                    inputIDs <- names(uploadedData$inputs)
                    inputIDs <- inputIDs[inputIDs %in% names(input)]
-                   #browser()
                    for (i in 1:length(inputIDs)) {
-                     print(paste0(inputIDs[i], ": ", uploadedData$inputs[[inputIDs[i]]]))
                      session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
                    }
                  }) %>%
