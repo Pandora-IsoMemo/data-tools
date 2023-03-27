@@ -15,14 +15,15 @@ toolsImportUI <- function(id) {
       tags$br(),
       importDataUI(ns("batchData"), "Import Batch Data")
     ),
-    mainPanel(tags$h2("Imported data"),
-        DT::dataTableOutput(ns("importedDataTable")),
-        tags$br(),
-        tags$br(),
-        tags$hr(),
-        tags$h2("Imported batch data"),
-        DT::dataTableOutput(ns("importedBatchTable"))
-      )
+    mainPanel(
+      tags$h2("Imported data"),
+      DT::dataTableOutput(ns("importedDataTable")),
+      tags$br(),
+      tags$br(),
+      tags$hr(),
+      tags$h2("Imported batch data"),
+      DT::dataTableOutput(ns("importedBatchTable"))
+    )
   )
 }
 
@@ -81,31 +82,28 @@ toolsLoadUI <- function(id) {
   ns <- NS(id)
 
   sidebarLayout(
-    sidebarPanel(
-      width = 2,
-      style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%"
-    ),
-    mainPanel(fluidRow(
-                 column(
-                   width = 6,
-                   numericInput(
-                     ns("testInput"),
-                     label = "Some test input to be downloaded",
-                     value = 3,
-                     min = 1,
-                     max = 10
-                   ),
-                   tags$hr(),
-                   downloadModelUI(ns("downloadModel"), label = "Test download of model: `mtcars`"),
-                   tags$hr(),
-                   downloadModelUI(ns("downloadSettings"), label = "Test download of settings: `mtcars`")
-                 ),
-                 column(width = 6,
-                        uploadModelUI(ns("upload"), label = "Upload some data")
-                        )
-               ),
-              tags$h3("Data"),
-              dataTableOutput(ns("data")))
+    sidebarPanel(width = 2,
+                 style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%"),
+    mainPanel(
+      fluidRow(
+        column(
+          width = 6,
+          numericInput(
+            ns("testInput"),
+            label = "Some test input to be downloaded",
+            value = c(),
+            min = 1,
+            max = 100000000
+          ),
+          tags$hr(),
+          downloadModelUI(ns("download"), label = "Test download of model: `mtcars`")
+        ),
+        column(width = 6,
+               uploadModelUI(ns("upload"), label = "Upload some data"))
+      ),
+      tags$h3("Data"),
+      dataTableOutput(ns("data"))
+    )
   )
 }
 
@@ -119,23 +117,13 @@ toolsLoadServer <- function(id) {
                  testData <- reactiveVal(mtcars)
 
                  downloadModelServer(
-                   "downloadModel",
+                   "download",
                    dat = testData,
                    inputs = input,
                    model = reactive(NULL),
                    rPackageName = "DataTools",
                    helpHTML = "",
-                   onlySettings = FALSE
-                 )
-
-                 downloadModelServer(
-                   "downloadSettings",
-                   dat = testData,
-                   inputs = input,
-                   model = reactive(NULL),
-                   rPackageName = "DataTools",
-                   helpHTML = "",
-                   onlySettings = TRUE
+                   onlySettings = TRUE # FALSE
                  )
 
                  uploadedData <- uploadModelServer(
@@ -156,8 +144,10 @@ toolsLoadServer <- function(id) {
                  observe(priority = -100, {
                    ## update inputs ----
                    inputIDs <- names(uploadedData$inputs)
+                   inputIDs <- inputIDs[inputIDs %in% names(input)]
                    #browser()
-                   for (i in 1:length(uploadedData$inputs)) {
+                   for (i in 1:length(inputIDs)) {
+                     print(paste0(inputIDs[i], ": ", uploadedData$inputs[[inputIDs[i]]]))
                      session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
                    }
                  }) %>%

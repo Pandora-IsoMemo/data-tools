@@ -12,11 +12,7 @@ downloadModelUI <- function(id, label) {
   tagList(
     tags$h4(label),
     textAreaInput(ns("exportNotes"), "Notes"),
-    conditionalPanel(
-      ns = ns,
-      condition = "!output.showSettings",
-      checkboxInput(ns("onlyInputs"), "Store only data and model options")
-    ),
+    checkboxInput(ns("onlyInputs"), "Store only data and model options"),
     downloadButton(ns("download"), "Download"),
     conditionalPanel(
       ns = ns,
@@ -47,18 +43,34 @@ downloadModelUI <- function(id, label) {
 #'
 #' @export
 downloadModelServer <-
-  function(id, dat, inputs, model, rPackageName,
-           helpHTML = "", onlySettings = FALSE, compress = TRUE) {
+  function(id,
+           dat,
+           inputs,
+           model,
+           rPackageName,
+           helpHTML = "",
+           onlySettings = FALSE,
+           compress = TRUE) {
     moduleServer(id,
                  function(input, output, session) {
+                   observe({
+                     if (onlySettings) {
+                       shinyjs::hide("onlyInputs")
+                     } else {
+                       shinyjs::show("onlyInputs")
+                     }
+                   })
+
                    output$showSettings <- reactive({
                      onlySettings
-                     })
+                   })
                    outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
 
                    output$download <- downloadHandler(
                      filename = function() {
-                       paste(gsub("\ ", "_", Sys.time()), paste0(rPackageName, ".zip"), sep = "_")
+                       paste(gsub("\ ", "_", Sys.time()),
+                             paste0(rPackageName, ".zip"),
+                             sep = "_")
                      },
                      content = function(file) {
                        withProgress({
@@ -68,10 +80,12 @@ downloadModelServer <-
                            file.path(zipdir, "README.txt")
                          helpfile <- file.path(zipdir, "help.html")
 
-                         dataExport <- dat
+                         dataExport <- dat()
                          inputExport <- reactiveValuesToList(inputs)
+                         print(inputExport)
 
-                         if (onlyInputs || is.null(model) || onlySettings) {
+                         if (input$onlyInputs ||
+                             is.null(model()) || onlySettings) {
                            modelExport <- NULL
                          } else {
                            modelExport <- model
@@ -87,7 +101,7 @@ downloadModelServer <-
                            file = modelfile,
                            compress = compress
                          )
-                         writeLines(notes, notesfile)
+                         writeLines(input$exportNotes, notesfile)
                          save_html(helpHTML, helpfile)
                          zip::zipr(file, c(modelfile, notesfile, helpfile))
                        },
@@ -98,12 +112,6 @@ downloadModelServer <-
 
                  })
   }
-
-
-downloadHandlerFun <- function(dat, inputs, model, notes, onlyInputs, helpHTML, rPackageName, compress) {
-
-}
-
 
 
 #' Upload model module
@@ -147,11 +155,9 @@ uploadModelServer <-
                  function(input, output, session) {
                    pathToModel <- reactiveVal(NULL)
 
-                   uploadedData <- reactiveValues(
-                     data = NULL,
-                     inputs = NULL,
-                     model = NULL
-                   )
+                   uploadedData <- reactiveValues(data = NULL,
+                                                  inputs = NULL,
+                                                  model = NULL)
 
                    observeEvent(input$uploadModel, {
                      pathToModel(input$uploadModel$datapath)
@@ -172,7 +178,7 @@ uploadModelServer <-
                    })
 
                    observeEvent(pathToModel(), {
-                     alertType <- "error"
+                     alertType <- "success"
 
                      res <- try({
                        zip::unzip(pathToModel())
@@ -188,7 +194,7 @@ uploadModelServer <-
                            "help.html, model.rds, README.txt. ",
                            "If you download a model it will exactly have this format."
                          ),
-                         type = alertType
+                         type = "error"
                        )
                        return()
                      }
@@ -197,7 +203,7 @@ uploadModelServer <-
                          !all(names(modelImport) %in% c("data", "inputs", "model", "version"))) {
                        shinyalert(title = "Could not load file.",
                                   text = "File format not valid for BMSC app modelling. Model object not found.",
-                                  type = alertType)
+                                  type = "error")
                        return()
                      }
 
@@ -205,23 +211,23 @@ uploadModelServer <-
                      if (is.null(modelImport$data)) {
                        warning[["data"]] <-
                          "No input data found."
-
                        alertType <- "warning"
                      } else {
+                       uploadedData$data <- modelImport$data
                        warning[["data"]] <-
                          "Input data loaded. "
-                       alertType <- "success"
+                       # no update of alertType, do not overwrite a possible warning
                      }
 
                      if (is.null(modelImport$inputs)) {
                        warning[["inputs"]] <-
                          "No model selection parameters found."
-
                        alertType <- "warning"
                      } else {
+                       uploadedData$inputs <- modelImport$inputs
                        warning[["inputs"]] <-
                          "Model selection parameters loaded. "
-                       alertType <- "success"
+                       # no update of alertType, do not overwrite a possible warning
                      }
 
                      if (!onlySettings) {
@@ -229,14 +235,12 @@ uploadModelServer <-
                          warning[["model"]] <- "No model results found. "
                          alertType <- "warning"
                        } else {
-                         warning[["model"]] <- "Model results loaded. "
-                         # no update of alertType, do not overwrite a warning
+                         uploadedData$model <- modelImport$model
+                         warning[["model"]] <-
+                           "Model results loaded. "
+                         # no update of alertType, do not overwrite a possible warning
                        }
                      }
-
-                     uploadedData$data <- modelImport$data
-                     uploadedData$inputs <- modelImport$inputs
-                     uploadedData$model <- modelImport$model
 
                      if (!is.null(modelImport$version)) {
                        uploadedVersion <- paste("Saved version:", modelImport$version, ".")

@@ -8,7 +8,7 @@ ui <- fluidPage(useShinyjs(), # Set up shinyjs
                     id = "tab",
                     tabPanel(title = "Data Import",
                              toolsImportUI(id = "import_panel")),
-                    tabPanel(title = "Data Load",
+                    tabPanel(title = "Download Model",
                              toolsLoadUI(id = "load_panel"))
                   ),
                   tags$head(
