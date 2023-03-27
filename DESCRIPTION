@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 23.03.2.3
+Version: 23.03.3
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
@@ -15,6 +15,7 @@ Remotes:
 Imports:
   dplyr,
   DT,
+  htmltools,
   httr,
   futile.logger,
   magrittr,
@@ -31,7 +32,8 @@ Imports:
   shinyWidgets,
   templates,
   tidyr,
-  utils
+  utils,
+  zip
 Suggests:
   devtools,
   lintr (>= 1.0.2),
