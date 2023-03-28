@@ -66,20 +66,27 @@ importDataServer <- function(id,
                  )
 
                  ### Down- and Upload of user inputs ----
-                 uploadedInputs <- loadImportLinkServer("importLinker",
+                 uploadedData <- loadImportLinkServer("importLinker",
                                                      dat = mergeList,
                                                      inputs = input,
                                                      githubRepo = githubRepo,
                                                      rPackageName = rPackageName)
 
-                 # observe({
-                 #   inputID <- names(uploadedInputs)
-                 #   for (i in 1:length(inputID)) {
-                 #     #session$sendInputMessage()
-                 #   }
-                 #
-                 # }) %>%
-                 #   bindEvent(uploadedInputs())
+                 observe({
+                   ## update mergeList ----
+                   # use stored links to reproduce the data in mergeList
+
+                 }) %>%
+                   bindEvent(uploadedData$data)
+
+                 observe({
+                   inputIDs <- names(uploadedData$inputs)
+                   for (i in 1:length(inputIDs)) {
+                     session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]) )
+                   }
+
+                 }) %>%
+                   bindEvent(uploadedData$inputs)
 
 
                  observe({

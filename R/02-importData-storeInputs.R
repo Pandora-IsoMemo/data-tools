@@ -33,7 +33,6 @@ loadImportLinkServer <- function(id, dat, inputs, githubRepo, rPackageName) {
   moduleServer(id,
                function(input, output, session) {
                  linkList <- reactiveVal()
-                 storedInputs <- reactiveVal()
 
                  observe({
                    # remove data but keep file selection inputs
@@ -50,10 +49,12 @@ loadImportLinkServer <- function(id, dat, inputs, githubRepo, rPackageName) {
                                      onlySettings = TRUE,
                                      compress = TRUE)
 
-                 storedInputs <- uploadModelServer("uploadInputs",
-                                                   githubRepo,
-                                                   rPackageName,
-                                                   onlySettings = TRUE,
-                                                   reset = reactive(FALSE))
+                 storedData <- uploadModelServer("uploadInputs",
+                                                 githubRepo,
+                                                 rPackageName,
+                                                 onlySettings = TRUE,
+                                                 reset = reactive(FALSE))
+
+                 return(storedData)
                })
 }
