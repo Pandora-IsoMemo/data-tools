@@ -5,17 +5,20 @@
 #' @param id id of module
 #' @param selectLabel label of select input
 #' @param buttonLabel button label
+#' @param width width of inputs
 #' @export
 remoteModelsUI <-
   function(id,
            selectLabel = "Load online model",
-           buttonLabel = "Load") {
+           buttonLabel = "Load",
+           width = NULL) {
     ns <- NS(id)
 
     tagList(selectInput(
       ns("remoteModelChoice"),
       label = selectLabel,
-      choices = c("No online models found ..." = "")
+      choices = c("No online models found ..." = ""),
+      width = width
     ),
     actionButton(ns("loadRemoteModel"), buttonLabel))
   }

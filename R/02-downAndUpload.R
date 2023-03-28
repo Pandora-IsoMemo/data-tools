@@ -4,15 +4,16 @@
 #'
 #' @param id id of module
 #' @param label label of module
+#' @param width width of inputs in percent
 #'
 #' @export
-downloadModelUI <- function(id, label) {
+downloadModelUI <- function(id, label, width = NULL) {
   ns <- NS(id)
 
   tagList(
     tags$h4(label),
-    textAreaInput(ns("exportNotes"), "Notes"),
-    checkboxInput(ns("onlyInputs"), "Store only data and model options"),
+    textAreaInput(ns("exportNotes"), "Notes", width = width),
+    checkboxInput(ns("onlyInputs"), "Store only data and model options", width = width),
     downloadButton(ns("download"), "Download"),
     conditionalPanel(
       ns = ns,
@@ -35,7 +36,7 @@ downloadModelUI <- function(id, label) {
 #' @param model (reactive) model output object
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
-#' @param helpHTML content of help function
+#' @param helpHTML content of help function. If set to NULL the help file "help.html" will not be added
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
@@ -53,11 +54,13 @@ downloadModelServer <-
            compress = TRUE) {
     moduleServer(id,
                  function(input, output, session) {
+                   ns <- session$ns
+
                    observe({
                      if (onlySettings) {
-                       shinyjs::hide("onlyInputs")
+                       shinyjs::hide(ns("onlyInputs"), asis = TRUE)
                      } else {
-                       shinyjs::show("onlyInputs")
+                       shinyjs::show(ns("onlyInputs"), asis = TRUE)
                      }
                    })
 
@@ -75,11 +78,22 @@ downloadModelServer <-
                      content = function(file) {
                        withProgress({
                          zipdir <- tempdir()
-                         modelfile <- file.path(zipdir, "model.rds")
+
+                         # store notes
                          notesfile <-
                            file.path(zipdir, "README.txt")
-                         helpfile <- file.path(zipdir, "help.html")
+                         writeLines(input$exportNotes, notesfile)
 
+                         # store help
+                         if (!is.null(helpHTML)) {
+                           helpfile <- file.path(zipdir, "help.html")
+                           save_html(helpHTML, helpfile)
+                         } else {
+                           helpfile <- NULL
+                         }
+
+                         # store user data, user inputs and model
+                         modelfile <- file.path(zipdir, "model.rds")
                          dataExport <- dat()
                          inputExport <- reactiveValuesToList(inputs)
 
@@ -90,18 +104,24 @@ downloadModelServer <-
                            modelExport <- model
                          }
 
+                         if (!is.null(rPackageName) && rPackageName != "") {
+                           versionExport <- paste(rPackageName, packageVersion(rPackageName))
+                         } else {
+                           versionExport <- NULL
+                         }
+
                          saveRDS(
                            list(
                              data = dataExport,
                              inputs = inputExport,
                              model = modelExport,
-                             version = paste(rPackageName, packageVersion(rPackageName))
+                             version = versionExport
                            ),
                            file = modelfile,
                            compress = compress
                          )
-                         writeLines(input$exportNotes, notesfile)
-                         save_html(helpHTML, helpfile)
+
+                         # create zip
                          zip::zipr(file, c(modelfile, notesfile, helpfile))
                        },
                        value = 0.8,
@@ -121,13 +141,13 @@ downloadModelServer <-
 #' @param label label of module
 #'
 #' @export
-uploadModelUI <- function(id, label) {
+uploadModelUI <- function(id, label, width = NULL) {
   ns <- NS(id)
 
   tagList(
     tags$h4(label),
-    fileInput(ns("uploadModel"), label = "Load local model"),
-    remoteModelsUI(ns("remoteModels")),
+    fileInput(ns("uploadModel"), label = "Load local model", width = width),
+    remoteModelsUI(ns("remoteModels"), width = width),
     tags$br(),
     tags$br()
   )

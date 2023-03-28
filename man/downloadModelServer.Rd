@@ -27,7 +27,7 @@ downloadModelServer(
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
 
-\item{helpHTML}{content of help function}
+\item{helpHTML}{content of help function. If set to NULL the help file "help.html" will not be added}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 

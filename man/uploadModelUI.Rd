@@ -4,7 +4,7 @@
 \alias{uploadModelUI}
 \title{Upload model module}
 \usage{
-uploadModelUI(id, label)
+uploadModelUI(id, label, width = NULL)
 }
 \arguments{
 \item{id}{id of module}

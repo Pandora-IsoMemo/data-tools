@@ -4,12 +4,14 @@
 \alias{downloadModelUI}
 \title{Download model module}
 \usage{
-downloadModelUI(id, label)
+downloadModelUI(id, label, width = NULL)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{label}{label of module}
+
+\item{width}{width of inputs in percent}
 }
 \description{
 UI function to download a zip file with notes and a list of models

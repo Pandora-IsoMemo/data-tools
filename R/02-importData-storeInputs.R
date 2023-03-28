@@ -5,15 +5,19 @@
 #' UI of the module
 #'
 #' @param id id of module
-storeInputsUI <- function(id) {
+loadImportLinkUI <- function(id) {
   ns <- NS(id)
 
   tagList(
     fluidRow(
       column(width = 12,
-             downloadModelUI(ns("downloadInputs"), label = "Download User Inputs"),
              tags$br(),
-             uploadModelUI(ns("uploadInputs"), label = "Upload User Inputs")
+             helpText(paste("'Link' provides the option to upload user inputs from a formerly",
+                            "downloaded session. This includes inputs from 'Select', 'Merge' and",
+                            "'Query with SQL'.")),
+             uploadModelUI(ns("uploadInputs"), label = "Upload User Inputs", width = "100%"),
+             tags$br(),
+             downloadModelUI(ns("downloadInputs"), label = "Download User Inputs", width = "100%")
              )
     )
   )}
@@ -25,24 +29,31 @@ storeInputsUI <- function(id) {
 #' @param id id of module
 #' @inheritParams downloadModelServer
 #' @inheritParams uploadModelServer
-storeInputsServer <- function(id, inputs, githubRepo, rPackageName) {
+loadImportLinkServer <- function(id, dat, inputs, githubRepo, rPackageName) {
   moduleServer(id,
                function(input, output, session) {
-               storedInputs <- reactiveVal()
+                 linkList <- reactiveVal()
+                 storedInputs <- reactiveVal()
 
-               downloadModelServer(id,
-                                   dat = reactive(NULL),
-                                   inputs = inputs,
-                                   model = reactive(NULL),
-                                   rPackageName,
-                                   helpHTML = "",
-                                   onlySettings = TRUE,
-                                   compress = TRUE)
+                 observe({
+                   # remove data but keep file selection inputs
+                   linkList(dat())
+                 }) %>%
+                   bindEvent(dat())
 
-               storedInputs <- uploadModelServer(id,
-                                                 githubRepo,
-                                                 rPackageName,
-                                                 onlySettings = TRUE,
-                                                 reset = reactive(FALSE))
+                 downloadModelServer("downloadInputs",
+                                     dat = linkList,
+                                     inputs = inputs,
+                                     model = reactive(NULL),
+                                     rPackageName,
+                                     helpHTML = NULL,
+                                     onlySettings = TRUE,
+                                     compress = TRUE)
+
+                 storedInputs <- uploadModelServer("uploadInputs",
+                                                   githubRepo,
+                                                   rPackageName,
+                                                   onlySettings = TRUE,
+                                                   reset = reactive(FALSE))
                })
 }

@@ -10,6 +10,8 @@ prepareDataUI <- function(id) {
 
   tagList(
     tags$br(),
+    helpText(paste("'Prepare' provides a user interface to adjust 'selected' data.",
+                   "However, all changes within 'Prepare' steps cannot be stored under 'Link'.")),
     htmlOutput(ns("selectedFile")),
     renameColumnsUI(ns("renameCols")),
     tags$br(),

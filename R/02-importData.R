@@ -66,11 +66,12 @@ importDataServer <- function(id,
                  )
 
                  ### Down- and Upload of user inputs ----
-                 # uploadedInputs <- storeInputsServer("inputStorer",
-                 #                                     inputs = input,
-                 #                                     githubRepo = githubRepo,
-                 #                                     rPackageName = rPackageName)
-                 #
+                 uploadedInputs <- loadImportLinkServer("importLinker",
+                                                     dat = mergeList,
+                                                     inputs = input,
+                                                     githubRepo = githubRepo,
+                                                     rPackageName = rPackageName)
+
                  # observe({
                  #   inputID <- names(uploadedInputs)
                  #   for (i in 1:length(inputID)) {
@@ -546,8 +547,8 @@ importDataDialog <-
                  mergeDataUI(ns("dataMerger"))),
         tabPanel("Query with SQL",
                  queryDataUI(ns("dataQuerier"))),
-        tabPanel("Store",
-                 storeInputsUI(ns("inputStorer")))
+        tabPanel("Link",
+                 loadImportLinkUI(ns("importLinker")))
       )
     )
   }
@@ -564,6 +565,10 @@ selectDataTab <-
            outputAsMatrix = FALSE) {
     tagList(
       tags$br(),
+      helpText(HTML(paste("'Select' is a required step to either <i>Accept</i> the import, ",
+                          "or 'Prepare' the data before the import, ",
+                          "or <i>Send</i> the selected data to 'Merge' or 'Query with SQL' for",
+                          "joining data before the import."))),
       fluidRow(
         column(
           4,
