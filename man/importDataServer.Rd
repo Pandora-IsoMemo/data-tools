@@ -13,7 +13,9 @@ importDataServer(
   ignoreWarnings = FALSE,
   defaultSource = "ckan",
   batch = FALSE,
-  outputAsMatrix = FALSE
+  outputAsMatrix = FALSE,
+  githubRepo = "",
+  rPackageName = ""
 )
 }
 \arguments{
@@ -39,6 +41,11 @@ of data.
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources}
+
+\item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
+
+\item{rPackageName}{(character) name of the package (as in the description file) in which this
+module is applied, e.g. "mpiBpred"}
 }
 \description{
 Backend for data import module

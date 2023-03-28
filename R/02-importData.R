@@ -29,6 +29,9 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param batch (logical) use batch import
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
 #'  e.g. for batch = TRUE in Resources
+#' @param githubRepo (character) name of used github repository, e.g. "bpred"
+#' @param rPackageName (character) name of the package (as in the description file) in which this
+#'  module is applied, e.g. "mpiBpred"
 #' @export
 importDataServer <- function(id,
                              rowNames = reactiveVal(NULL),
@@ -38,7 +41,9 @@ importDataServer <- function(id,
                              ignoreWarnings = FALSE,
                              defaultSource = "ckan",
                              batch = FALSE,
-                             outputAsMatrix = FALSE) {
+                             outputAsMatrix = FALSE,
+                             githubRepo = "",
+                             rPackageName = "") {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -59,6 +64,22 @@ importDataServer <- function(id,
                    withColnames = TRUE,
                    colnames = colNames
                  )
+
+                 ### Down- and Upload of user inputs ----
+                 # uploadedInputs <- storeInputsServer("inputStorer",
+                 #                                     inputs = input,
+                 #                                     githubRepo = githubRepo,
+                 #                                     rPackageName = rPackageName)
+                 #
+                 # observe({
+                 #   inputID <- names(uploadedInputs)
+                 #   for (i in 1:length(inputID)) {
+                 #     #session$sendInputMessage()
+                 #   }
+                 #
+                 # }) %>%
+                 #   bindEvent(uploadedInputs())
+
 
                  observe({
                    req(!is.null(input$withRownames))
@@ -524,7 +545,9 @@ importDataDialog <-
         tabPanel("Merge",
                  mergeDataUI(ns("dataMerger"))),
         tabPanel("Query with SQL",
-                 queryDataUI(ns("dataQuerier")))
+                 queryDataUI(ns("dataQuerier"))),
+        tabPanel("Store",
+                 storeInputsUI(ns("inputStorer")))
       )
     )
   }
