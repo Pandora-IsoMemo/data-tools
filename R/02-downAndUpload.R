@@ -1,3 +1,51 @@
+#' downUploadButton module ui
+#'
+#' @param id module id
+#' @param label label for actionButton which will open a modal
+#' @export
+downUploadButtonUI <- function(id, label = "Download / Upload Model") {
+  ns <- NS(id)
+  tagList(
+    actionButton(ns("showModal"), label = label)
+  )
+}
+
+
+#' downUploadButton module server
+#'
+#' @param id module id
+#' @param inputData dataframe in which duplicates are searched for
+#' @export
+downUploadButtonServer <- function(id, inputData) {
+  moduleServer(
+    id,
+    function(input, output, session) {
+      # open modal when button is clicked and pass data to modal
+      observe({
+        showModal(
+          modalDialog(
+            title = "Duplicate Identifier",
+            easyClose = TRUE,
+            size = "l",
+            footer = tagList(
+              actionButton(
+                inputId = ns("transferDuplicates"),
+                label = "Accept"
+              ),
+              modalButton("Close")
+            ),
+            tagList(
+              downloadModelUI("download", label = NULL),
+              uploadModelUI("upload", label = NULL)
+            )
+          )
+        )
+      }) %>%
+        bindEvent(input[["showModal"]])
+    })
+}
+
+
 #' Download model module
 #'
 #' UI function to download a zip file with notes and a list of models
