@@ -14,34 +14,62 @@ downUploadButtonUI <- function(id, label = "Download / Upload Model") {
 #' downUploadButton module server
 #'
 #' @param id module id
-#' @param inputData dataframe in which duplicates are searched for
+#' @inheritParams downloadModelServer
+#' @inheritParams uploadModelServer
+#' @inheritParams remoteModelsServer
 #' @export
-downUploadButtonServer <- function(id, inputData) {
+downUploadButtonServer <- function(id,
+                                   dat,
+                                   inputs,
+                                   model,
+                                   rPackageName,
+                                   helpHTML = "",
+                                   onlySettings = FALSE,
+                                   compress = TRUE,
+                                   githubRepo,
+                                   folderOnGithub = "/predefinedModels",
+                                   silent = FALSE,
+                                   reset = reactive(FALSE)) {
   moduleServer(
     id,
     function(input, output, session) {
+      ns <- session$ns
       # open modal when button is clicked and pass data to modal
       observe({
         showModal(
           modalDialog(
-            title = "Duplicate Identifier",
+            title = "Download and Upload",
             easyClose = TRUE,
-            size = "l",
+            size = "m",
             footer = tagList(
-              actionButton(
-                inputId = ns("transferDuplicates"),
-                label = "Accept"
-              ),
               modalButton("Close")
             ),
             tagList(
-              downloadModelUI("download", label = NULL),
-              uploadModelUI("upload", label = NULL)
+              downloadModelUI(ns("download"), label = "Download model"),
+              tags$br(), tags$br(),
+              uploadModelUI(ns("upload"), label = "Upload model")
             )
           )
         )
       }) %>%
         bindEvent(input[["showModal"]])
+
+      downloadModelServer("download",
+                          dat = dat,
+                          inputs = inputs,
+                          model = model,
+                          rPackageName = rPackageName,
+                          helpHTML = helpHTML,
+                          onlySettings = onlySettings,
+                          compress = compress)
+
+      uploadedData <- uploadModelServer("upload",
+                                        githubRepo = githubRepo,
+                                        rPackageName = rPackageName,
+                                        onlySettings = onlySettings,
+                                        folderOnGithub = "/predefinedModels",
+                                        silent = FALSE,
+                                        reset = reactive(FALSE))
     })
 }
 
@@ -198,6 +226,7 @@ uploadModelServer <-
            rPackageName,
            onlySettings,
            folderOnGithub = "/predefinedModels",
+           silent = FALSE,
            reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
@@ -215,6 +244,7 @@ uploadModelServer <-
                      "remoteModels",
                      githubRepo = githubRepo,
                      folderOnGithub = folderOnGithub,
+                     silent = silent,
                      rPackageName = rPackageName,
                      rPackageVersion = rPackageName %>%
                        packageVersion() %>%

@@ -83,7 +83,8 @@ toolsLoadUI <- function(id) {
 
   sidebarLayout(
     sidebarPanel(width = 2,
-                 style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%"),
+                 style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
+                 downUploadButtonUI(ns("downUpload"))),
     mainPanel(
       fluidRow(
         column(
@@ -139,6 +140,8 @@ toolsLoadServer <- function(id) {
                    class = "data.frame"
                  ))
 
+                 downUploadButtonServer("downUpload")
+
                  downloadModelServer(
                    "download",
                    dat = testData,
@@ -151,9 +154,10 @@ toolsLoadServer <- function(id) {
 
                  uploadedData <- uploadModelServer(
                    "upload",
-                   githubRepo = "data-tools",
-                   rPackageName = "DataTools",
+                   githubRepo = "bpred",
+                   rPackageName = "Bpred",
                    onlySettings = FALSE,
+                   silent = TRUE,
                    reset = reactive(FALSE)
                  )
 

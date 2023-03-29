@@ -8,7 +8,8 @@ getRemoteModelsFromGithub(
   githubRepo,
   rPackageName,
   rPackageVersion,
-  folderOnGithub = "/predefinedModels"
+  folderOnGithub = "/predefinedModels",
+  silent = FALSE
 )
 }
 \arguments{
@@ -21,7 +22,10 @@ module is applied, e.g. "mpiBpred"}
 e.g. utils::packageVersion("mpiBpred")}
 
 \item{folderOnGithub}{(character) folder on github where remote models are stored. This should
-correspond to 'pathToLocal' since online and offline models should be the same and up-to-date.}
+correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
+
+\item{silent}{(logical) supress warning if there is no connetcion to the github folder and
+local models are used instead}
 }
 \description{
 Get remote models from github directory

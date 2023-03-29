@@ -10,7 +10,7 @@ getGithubContent(githubRepo, folderOnGithub = "/predefinedModels")
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
 \item{folderOnGithub}{(character) folder on github where remote models are stored. This should
-correspond to 'pathToLocal' since online and offline models should be the same and up-to-date.}
+correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
 }
 \description{
 Get content of api call to github folder

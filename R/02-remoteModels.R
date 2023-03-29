@@ -32,9 +32,11 @@ remoteModelsUI <-
 #'  e.g. utils::packageVersion("mpiBpred")
 #' @param pathToLocal (character) relative path to the folder storing local models.
 #' @param folderOnGithub (character) folder on github where remote models are stored. This should
-#' correspond to 'pathToLocal' since online and offline models should be the same and up-to-date.
+#' correspond to 'pathToLocal' since online and offline models should be the same and up-to-date
+#' @param silent (logical) supress warning if there is no connetcion to the github folder and
+#'  local models are used instead
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
-#' @param resetSelected (reactive) if TRUE resets the selected remote model.
+#' @param resetSelected (reactive) if TRUE resets the selected remote model
 #' @return (character) the path to the selected remote (github) or local model
 #' @export
 remoteModelsServer <- function(id,
@@ -43,6 +45,7 @@ remoteModelsServer <- function(id,
                                rPackageVersion,
                                pathToLocal = file.path(".", "predefinedModels"),
                                folderOnGithub = "/predefinedModels",
+                               silent = FALSE,
                                onlyLocalModels = reactive(FALSE),
                                resetSelected = reactive(FALSE)) {
   moduleServer(id,
@@ -57,7 +60,8 @@ remoteModelsServer <- function(id,
                        githubRepo = githubRepo,
                        folderOnGithub = folderOnGithub,
                        rPackageName = rPackageName,
-                       rPackageVersion = rPackageVersion
+                       rPackageVersion = rPackageVersion,
+                       silent = silent
                      ) %>%
                      tryCatchWithWarningsAndErrors(errorTitle = "Loading online models failed",
                                                    warningTitle = "Loading online models failed",
@@ -171,32 +175,39 @@ getRemoteModelsFromGithub <-
   function(githubRepo,
            rPackageName,
            rPackageVersion,
-           folderOnGithub = "/predefinedModels") {
+           folderOnGithub = "/predefinedModels",
+           silent = FALSE) {
     apiOut <- try(getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub))
 
     if (inherits(apiOut, "try-error")) {
-      warning(
-        paste(
-          "No connection to the remote github folder. The 'online models'",
-          "are taken from the models that were locally saved with version",
-          rPackageVersion,
-          "of",
-          rPackageName
+      if (!silent) {
+        warning(
+          paste(
+            "No connection to the remote github folder. The 'online models'",
+            "are taken from the models that were locally saved with version",
+            rPackageVersion,
+            "of",
+            rPackageName
+          )
         )
-      )
+      }
+
       return()
     }
 
     if (!is.null(apiOut[["message"]]) && apiOut[["message"]] == "Not Found") {
-      warning(
-        paste(
-          "No online models found. The 'online models'",
-          "are taken from the models that were locally saved with version",
-          rPackageVersion,
-          "of",
-          rPackageName
+      if (!silent) {
+        warning(
+          paste(
+            "No online models found. The 'online models'",
+            "are taken from the models that were locally saved with version",
+            rPackageVersion,
+            "of",
+            rPackageName
+          )
         )
-      )
+      }
+
       return()
     }
 
