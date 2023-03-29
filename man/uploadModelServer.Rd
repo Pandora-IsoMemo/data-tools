@@ -9,6 +9,7 @@ uploadModelServer(
   githubRepo,
   rPackageName,
   onlySettings,
+  folderOnGithub = "/predefinedModels",
   reset = reactive(FALSE)
 )
 }
@@ -21,6 +22,9 @@ uploadModelServer(
 module is applied, e.g. "mpiBpred"}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
+
+\item{folderOnGithub}{(character) folder on github where remote models are stored. This should
+correspond to 'pathToLocal' since online and offline models should be the same and up-to-date.}
 
 \item{reset}{(reactive) resets the selection of the online model}
 }

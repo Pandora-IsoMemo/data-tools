@@ -149,6 +149,7 @@ uploadModelServer <-
            githubRepo,
            rPackageName,
            onlySettings,
+           folderOnGithub = "/predefinedModels",
            reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
@@ -165,6 +166,7 @@ uploadModelServer <-
                    pathToRemote <- remoteModelsServer(
                      "remoteModels",
                      githubRepo = githubRepo,
+                     folderOnGithub = folderOnGithub,
                      rPackageName = rPackageName,
                      rPackageVersion = rPackageName %>%
                        packageVersion() %>%
