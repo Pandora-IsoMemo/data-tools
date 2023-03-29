@@ -2,6 +2,10 @@
 
 ## Version 23.03.4
 
+## New Features
+- new module _downUploadButton_: A button that opens a pop up with the download and upload UI for
+models
+
 ## Updates
 - `remoteModelsServer`: new parameter to set the folder for remote models on github if it differs
 from the default folder
