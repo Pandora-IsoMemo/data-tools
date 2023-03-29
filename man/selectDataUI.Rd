@@ -4,17 +4,17 @@
 \alias{selectDataUI}
 \title{Select Data UI}
 \usage{
-selectDataUI(ns, defaultSource = "ckan", batch = FALSE, outputAsMatrix = FALSE)
+selectDataUI(id, defaultSource = "ckan", batch = FALSE, outputAsMatrix = FALSE)
 }
 \arguments{
+\item{id}{id of module}
+
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{batch}{(logical) use batch import}
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources}
-
-\item{id}{id of module}
 }
 \description{
 UI of the module

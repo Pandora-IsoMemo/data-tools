@@ -6,10 +6,11 @@
 #'
 #' @param id id of module
 #' @inheritParams importDataServer
-selectDataUI <- function(ns,
+selectDataUI <- function(id,
                          defaultSource = "ckan",
                          batch = FALSE,
                          outputAsMatrix = FALSE) {
+  ns <- NS(id)
 
   tagList(
     tags$br(),
@@ -160,6 +161,7 @@ selectDataUI <- function(ns,
 selectDataServer <- function(id, customNames) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
 
                  values <- reactiveValues(
                    warnings = list(),
@@ -347,5 +349,7 @@ selectDataServer <- function(id, customNames) {
                      message = 'loading data ...')
                    }
                  )
+
+                 return(values)
                })
 }
