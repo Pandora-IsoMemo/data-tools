@@ -10,6 +10,7 @@ remoteModelsServer(
   rPackageName,
   rPackageVersion,
   pathToLocal = file.path(".", "predefinedModels"),
+  folderOnGithub = "/predefinedModels",
   onlyLocalModels = reactive(FALSE),
   resetSelected = reactive(FALSE)
 )
@@ -26,6 +27,9 @@ module is applied, e.g. "mpiBpred"}
 e.g. utils::packageVersion("mpiBpred")}
 
 \item{pathToLocal}{(character) relative path to the folder storing local models.}
+
+\item{folderOnGithub}{(character) folder on github where remote models are stored. This should
+correspond to 'pathToLocal' since online and offline models should be the same and up-to-date.}
 
 \item{onlyLocalModels}{(reactive) if TRUE only local models are used}
 

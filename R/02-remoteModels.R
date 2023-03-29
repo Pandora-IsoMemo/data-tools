@@ -31,6 +31,8 @@ remoteModelsUI <-
 #' @param rPackageVersion (character) current version of the package where this module is applied,
 #'  e.g. utils::packageVersion("mpiBpred")
 #' @param pathToLocal (character) relative path to the folder storing local models.
+#' @param folderOnGithub (character) folder on github where remote models are stored. This should
+#' correspond to 'pathToLocal' since online and offline models should be the same and up-to-date.
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote model.
 #' @return (character) the path to the selected remote (github) or local model
@@ -40,6 +42,7 @@ remoteModelsServer <- function(id,
                                rPackageName,
                                rPackageVersion,
                                pathToLocal = file.path(".", "predefinedModels"),
+                               folderOnGithub = "/predefinedModels",
                                onlyLocalModels = reactive(FALSE),
                                resetSelected = reactive(FALSE)) {
   moduleServer(id,
@@ -52,6 +55,7 @@ remoteModelsServer <- function(id,
                    choices <-
                      getRemoteModelsFromGithub(
                        githubRepo = githubRepo,
+                       folderOnGithub = folderOnGithub,
                        rPackageName = rPackageName,
                        rPackageVersion = rPackageVersion
                      ) %>%
@@ -165,9 +169,10 @@ checkLocalModelDir <-
 #' @inheritParams remoteModelsServer
 getRemoteModelsFromGithub <-
   function(githubRepo,
+           folderOnGithub,
            rPackageName,
            rPackageVersion) {
-    apiOut <- try(getGithubContent(githubRepo = githubRepo))
+    apiOut <- try(getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub))
 
     if (inherits(apiOut, "try-error")) {
       warning(
@@ -205,12 +210,13 @@ getRemoteModelsFromGithub <-
 #'
 #' Get content of api call to github folder
 #' @inheritParams remoteModelsServer
-getGithubContent <- function(githubRepo) {
+getGithubContent <- function(githubRepo, folderOnGithub = "/predefinedModels") {
   res <- httr::GET(
     paste0(
       "api.github.com/repos/Pandora-IsoMemo/",
       githubRepo,
-      "/contents/inst/app/predefinedModels"
+      "/contents/inst/app",
+      folderOnGithub
     )
   )
   httr::content(res)

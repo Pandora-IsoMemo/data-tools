@@ -1,5 +1,11 @@
 # DataTools
 
+## Version 23.03.4
+
+## Updates
+- `remoteModelsServer`: new parameter to set the folder for remote models on github if it differs
+from the default folder
+
 ## Version 23.03.3
 
 ## New Features
