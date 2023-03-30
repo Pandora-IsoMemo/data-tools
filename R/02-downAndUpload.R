@@ -176,7 +176,7 @@ downloadModelServer <-
                              is.null(model()) || onlySettings) {
                            modelExport <- NULL
                          } else {
-                           modelExport <- model
+                           modelExport <- model()
                          }
 
                          saveRDS(
