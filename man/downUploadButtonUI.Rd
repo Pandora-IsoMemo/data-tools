@@ -12,5 +12,5 @@ downUploadButtonUI(id, label = "Download / Upload Model")
 \item{label}{label for actionButton which will open a modal}
 }
 \description{
-downUploadButton module ui
+A button that opens a modal containing the UI to download or to upload model objects
 }
