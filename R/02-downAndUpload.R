@@ -1,5 +1,7 @@
 #' downUploadButton module ui
 #'
+#' A button that opens a modal containing the UI to download or to upload model objects
+#'
 #' @param id module id
 #' @param label label for actionButton which will open a modal
 #' @export
@@ -45,16 +47,16 @@ downUploadButtonServer <- function(id,
               modalButton("Close")
             ),
             tagList(
-              downloadModelUI(ns("download"), label = "Download model"),
+              downloadModelUI(ns("downloadData"), label = "Download model"),
               tags$br(), tags$br(),
-              uploadModelUI(ns("upload"), label = "Upload model")
+              uploadModelUI(ns("uploadData"), label = "Upload model")
             )
           )
         )
       }) %>%
         bindEvent(input[["showModal"]])
 
-      downloadModelServer("download",
+      downloadModelServer("downloadData",
                           dat = dat,
                           inputs = inputs,
                           model = model,
@@ -63,13 +65,15 @@ downUploadButtonServer <- function(id,
                           onlySettings = onlySettings,
                           compress = compress)
 
-      uploadedData <- uploadModelServer("upload",
+      uploadedData <- uploadModelServer("uploadData",
                                         githubRepo = githubRepo,
                                         rPackageName = rPackageName,
                                         onlySettings = onlySettings,
                                         folderOnGithub = "/predefinedModels",
                                         silent = FALSE,
                                         reset = reactive(FALSE))
+
+      return(uploadedData)
     })
 }
 
@@ -157,7 +161,10 @@ downloadModelServer <-
                          helpfile <- file.path(zipdir, "help.html")
 
                          dataExport <- dat()
+
                          inputExport <- reactiveValuesToList(inputs)
+                         # remove NULL values, they cause upload of inputs to fail without warnings
+                         inputExport <- inputExport[!sapply(inputExport, is.null)]
 
                          if (input$onlyInputs ||
                              is.null(model()) || onlySettings) {
