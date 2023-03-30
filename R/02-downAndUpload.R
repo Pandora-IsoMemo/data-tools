@@ -24,12 +24,13 @@ downUploadButtonServer <- function(id,
                                    inputs,
                                    model,
                                    rPackageName,
+                                   githubRepo,
+                                   folderOnGithub = "/predefinedModels",
+                                   pathToLocal = file.path(".", "predefinedModels"),
                                    helpHTML = "",
                                    onlySettings = FALSE,
                                    compress = TRUE,
                                    compressionLevel = 9,
-                                   githubRepo,
-                                   folderOnGithub = "/predefinedModels",
                                    reset = reactive(FALSE)) {
   moduleServer(id,
                function(input, output, session) {
@@ -68,8 +69,9 @@ downUploadButtonServer <- function(id,
                  uploadedData <- uploadModelServer(
                    "uploadData",
                    githubRepo = githubRepo,
-                   onlySettings = onlySettings,
                    folderOnGithub = folderOnGithub,
+                   pathToLocal = pathToLocal,
+                   onlySettings = onlySettings,
                    reset = reactive(FALSE)
                  )
 
@@ -236,8 +238,9 @@ uploadModelUI <- function(id, label, width = NULL) {
 uploadModelServer <-
   function(id,
            githubRepo,
-           onlySettings = FALSE,
            folderOnGithub = "/predefinedModels",
+           pathToLocal = file.path(".", "predefinedModels"),
+           onlySettings = FALSE,
            reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
@@ -255,6 +258,7 @@ uploadModelServer <-
                      "remoteModels",
                      githubRepo = githubRepo,
                      folderOnGithub = folderOnGithub,
+                     pathToLocal = pathToLocal,
                      resetSelected = reset
                    )
 

@@ -7,8 +7,9 @@
 uploadModelServer(
   id,
   githubRepo,
-  onlySettings = FALSE,
   folderOnGithub = "/predefinedModels",
+  pathToLocal = file.path(".", "predefinedModels"),
+  onlySettings = FALSE,
   reset = reactive(FALSE)
 )
 }
@@ -17,10 +18,12 @@ uploadModelServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
-
 \item{folderOnGithub}{(character) folder on github where remote models are stored. This should
 correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
+
+\item{pathToLocal}{(character) relative path to the folder storing local models.}
+
+\item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 
 \item{reset}{(reactive) resets the selection of the online model}
 }

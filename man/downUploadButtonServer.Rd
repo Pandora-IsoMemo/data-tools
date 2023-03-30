@@ -10,12 +10,13 @@ downUploadButtonServer(
   inputs,
   model,
   rPackageName,
+  githubRepo,
+  folderOnGithub = "/predefinedModels",
+  pathToLocal = file.path(".", "predefinedModels"),
   helpHTML = "",
   onlySettings = FALSE,
   compress = TRUE,
   compressionLevel = 9,
-  githubRepo,
-  folderOnGithub = "/predefinedModels",
   reset = reactive(FALSE)
 )
 }
@@ -31,6 +32,13 @@ downUploadButtonServer(
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
 
+\item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
+
+\item{folderOnGithub}{(character) folder on github where remote models are stored. This should
+correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
+
+\item{pathToLocal}{(character) relative path to the folder storing local models.}
+
 \item{helpHTML}{content of help function}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
@@ -41,11 +49,6 @@ file is a connection.}
 
 \item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
 longest.}
-
-\item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
-
-\item{folderOnGithub}{(character) folder on github where remote models are stored. This should
-correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
 
 \item{reset}{(reactive) resets the selection of the online model}
 }
