@@ -38,7 +38,6 @@ downUploadButtonServer <- function(id,
                  # open modal when button is clicked and pass data to modal
                  observe({
                    showModal(
-                     session = session,
                      modalDialog(
                        title = "Download and Upload",
                        easyClose = FALSE,
@@ -72,8 +71,17 @@ downUploadButtonServer <- function(id,
                    folderOnGithub = folderOnGithub,
                    pathToLocal = pathToLocal,
                    onlySettings = onlySettings,
-                   reset = reactive(FALSE)
+                   reloadChoices = reactive(input[["showModal"]] == 1)
                  )
+
+
+                 observe({
+                   if (!is.null(uploadedData$data) ||
+                       !is.null(uploadedData$inputs) ||
+                       !is.null(uploadedData$model)) {
+                     removeModal()
+                   }
+                 })
 
                  return(uploadedData)
                })
@@ -241,7 +249,8 @@ uploadModelServer <-
            folderOnGithub = "/predefinedModels",
            pathToLocal = file.path(".", "predefinedModels"),
            onlySettings = FALSE,
-           reset = reactive(FALSE)) {
+           reset = reactive(FALSE),
+           reloadChoices = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
                    pathToModel <- reactiveVal(NULL)
@@ -259,7 +268,8 @@ uploadModelServer <-
                      githubRepo = githubRepo,
                      folderOnGithub = folderOnGithub,
                      pathToLocal = pathToLocal,
-                     resetSelected = reset
+                     resetSelected = reset,
+                     reloadChoices = reloadChoices
                    )
 
                    observeEvent(pathToRemote(), {

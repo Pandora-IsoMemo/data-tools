@@ -41,11 +41,12 @@ remoteModelsUI <-
 #' correspond to 'pathToLocal' since online and offline models should be the same and up-to-date
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote model
-#' @return (character) the path to the selected remote (github) or local model
+#' @param reloadChoices (reactive) trigger access to  github and reload choices of remote models
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
 #' @param rPackageVersion (character) current version of the package where this module is applied,
 #'  e.g. utils::packageVersion("mpiBpred")
+#' @return (character) the path to the selected remote (github) or local model
 #' @export
 remoteModelsServer <- function(id,
                                githubRepo,
@@ -53,6 +54,7 @@ remoteModelsServer <- function(id,
                                folderOnGithub = "/predefinedModels",
                                onlyLocalModels = reactive(FALSE),
                                resetSelected = reactive(FALSE),
+                               reloadChoices = reactive(FALSE),
                                rPackageName = NULL,
                                rPackageVersion = NULL) {
   moduleServer(id,
@@ -64,9 +66,13 @@ remoteModelsServer <- function(id,
                  observe({
                    shinyjs::hide(ns("noConn"), asis = TRUE)
                    # try getting online models
-                   choices <-
-                     getRemoteModelsFromGithub(githubRepo = githubRepo,
-                                               folderOnGithub = folderOnGithub)
+                   if (reloadChoices() || githubRepo != "") {
+                     choices <-
+                       getRemoteModelsFromGithub(githubRepo = githubRepo,
+                                                 folderOnGithub = folderOnGithub)
+                   } else {
+                     choices <- c()
+                   }
 
                    if (inherits(choices, "try-error") ||
                        length(choices) == 0 || onlyLocalModels()) {
@@ -76,6 +82,7 @@ remoteModelsServer <- function(id,
                      pathToLocal <-
                        try(checkLocalModelDir(pathToLocal = pathToLocal),
                            silent = TRUE)
+                     print(paste("ns =", ns(""), ":", pathToLocal))
 
                      if (inherits(pathToLocal, "try-error")) {
                        choices <- c()
@@ -85,6 +92,7 @@ remoteModelsServer <- function(id,
                      }
                    }
 
+                   print(paste("ns =", ns(""), ":", choices))
                    if (length(choices) == 0) {
                      choices <- c("No online models found ..." = "")
                    } else {

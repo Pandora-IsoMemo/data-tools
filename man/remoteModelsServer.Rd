@@ -11,6 +11,7 @@ remoteModelsServer(
   folderOnGithub = "/predefinedModels",
   onlyLocalModels = reactive(FALSE),
   resetSelected = reactive(FALSE),
+  reloadChoices = reactive(FALSE),
   rPackageName = NULL,
   rPackageVersion = NULL
 )
@@ -28,6 +29,8 @@ correspond to 'pathToLocal' since online and offline models should be the same a
 \item{onlyLocalModels}{(reactive) if TRUE only local models are used}
 
 \item{resetSelected}{(reactive) if TRUE resets the selected remote model}
+
+\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
 
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
