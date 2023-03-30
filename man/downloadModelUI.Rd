@@ -4,7 +4,7 @@
 \alias{downloadModelUI}
 \title{Download model module}
 \usage{
-downloadModelUI(id, label)
+downloadModelUI(id, label, width = NULL)
 }
 \arguments{
 \item{id}{id of module}

@@ -12,7 +12,8 @@ downloadModelServer(
   rPackageName,
   helpHTML = "",
   onlySettings = FALSE,
-  compress = TRUE
+  compress = TRUE,
+  compressionLevel = 9
 )
 }
 \arguments{
@@ -34,6 +35,9 @@ module is applied, e.g. "mpiBpred"}
 \item{compress}{a logical specifying whether saving to a named file is to use "gzip" compression,
 or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 file is a connection.}
+
+\item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
+longest.}
 }
 \description{
 Backend for download model module

@@ -5,12 +5,11 @@
 #' @param id module id
 #' @param label label for actionButton which will open a modal
 #' @export
-downUploadButtonUI <- function(id, label = "Download / Upload Model") {
-  ns <- NS(id)
-  tagList(
-    actionButton(ns("showModal"), label = label)
-  )
-}
+downUploadButtonUI <-
+  function(id, label = "Download / Upload Model") {
+    ns <- NS(id)
+    tagList(actionButton(ns("showModal"), label = label))
+  }
 
 
 #' downUploadButton module server
@@ -28,53 +27,54 @@ downUploadButtonServer <- function(id,
                                    helpHTML = "",
                                    onlySettings = FALSE,
                                    compress = TRUE,
+                                   compressionLevel = 9,
                                    githubRepo,
                                    folderOnGithub = "/predefinedModels",
-                                   silent = FALSE,
                                    reset = reactive(FALSE)) {
-  moduleServer(
-    id,
-    function(input, output, session) {
-      ns <- session$ns
-      # open modal when button is clicked and pass data to modal
-      observe({
-        showModal(
-          modalDialog(
-            title = "Download and Upload",
-            easyClose = TRUE,
-            size = "m",
-            footer = tagList(
-              modalButton("Close")
-            ),
-            tagList(
-              downloadModelUI(ns("downloadData"), label = "Download model"),
-              tags$br(), tags$br(),
-              uploadModelUI(ns("uploadData"), label = "Upload model")
-            )
-          )
-        )
-      }) %>%
-        bindEvent(input[["showModal"]])
+  moduleServer(id,
+               function(input, output, session) {
+                 ns <- session$ns
+                 # open modal when button is clicked and pass data to modal
+                 observe({
+                   showModal(
+                     session = session,
+                     modalDialog(
+                       title = "Download and Upload",
+                       easyClose = FALSE,
+                       size = "m",
+                       footer = tagList(modalButton("Close")),
+                       tagList(
+                         uploadModelUI(ns("uploadData"), label = "Upload model", width = "100%"),
+                         tags$br(),
+                         downloadModelUI(ns("downloadData"), label = "Download model", width = "100%")
+                       )
+                     )
+                   )
+                 }) %>%
+                   bindEvent(input[["showModal"]])
 
-      downloadModelServer("downloadData",
-                          dat = dat,
-                          inputs = inputs,
-                          model = model,
-                          rPackageName = rPackageName,
-                          helpHTML = helpHTML,
-                          onlySettings = onlySettings,
-                          compress = compress)
+                 downloadModelServer(
+                   "downloadData",
+                   dat = dat,
+                   inputs = inputs,
+                   model = model,
+                   rPackageName = rPackageName,
+                   helpHTML = helpHTML,
+                   onlySettings = onlySettings,
+                   compress = compress,
+                   compressionLevel = compressionLevel
+                 )
 
-      uploadedData <- uploadModelServer("uploadData",
-                                        githubRepo = githubRepo,
-                                        rPackageName = rPackageName,
-                                        onlySettings = onlySettings,
-                                        folderOnGithub = "/predefinedModels",
-                                        silent = FALSE,
-                                        reset = reactive(FALSE))
+                 uploadedData <- uploadModelServer(
+                   "uploadData",
+                   githubRepo = githubRepo,
+                   onlySettings = onlySettings,
+                   folderOnGithub = folderOnGithub,
+                   reset = reactive(FALSE)
+                 )
 
-      return(uploadedData)
-    })
+                 return(uploadedData)
+               })
 }
 
 
@@ -86,13 +86,13 @@ downUploadButtonServer <- function(id,
 #' @param label label of module
 #'
 #' @export
-downloadModelUI <- function(id, label) {
+downloadModelUI <- function(id, label, width = NULL) {
   ns <- NS(id)
 
   tagList(
     tags$h4(label),
-    textAreaInput(ns("exportNotes"), "Notes"),
-    checkboxInput(ns("onlyInputs"), "Store only data and model options"),
+    textAreaInput(ns("exportNotes"), "Notes", width = width),
+    checkboxInput(ns("onlyInputs"), "Store only data and model options", width = width),
     downloadButton(ns("download"), "Download"),
     conditionalPanel(
       ns = ns,
@@ -120,6 +120,8 @@ downloadModelUI <- function(id, label) {
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
+#' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
+#'  longest.
 #'
 #' @export
 downloadModelServer <-
@@ -130,7 +132,8 @@ downloadModelServer <-
            rPackageName,
            helpHTML = "",
            onlySettings = FALSE,
-           compress = TRUE) {
+           compress = TRUE,
+           compressionLevel = 9) {
     moduleServer(id,
                  function(input, output, session) {
                    observe({
@@ -164,7 +167,8 @@ downloadModelServer <-
 
                          inputExport <- reactiveValuesToList(inputs)
                          # remove NULL values, they cause upload of inputs to fail without warnings
-                         inputExport <- inputExport[!sapply(inputExport, is.null)]
+                         inputExport <-
+                           inputExport[!sapply(inputExport, is.null)]
 
                          if (input$onlyInputs ||
                              is.null(model()) || onlySettings) {
@@ -185,7 +189,9 @@ downloadModelServer <-
                          )
                          writeLines(input$exportNotes, notesfile)
                          save_html(helpHTML, helpfile)
-                         zip::zipr(file, c(modelfile, notesfile, helpfile))
+                         zip::zipr(file,
+                                   c(modelfile, notesfile, helpfile),
+                                   compression_level = compressionLevel)
                        },
                        value = 0.8,
                        message = "Downloading ...")
@@ -204,13 +210,13 @@ downloadModelServer <-
 #' @param label label of module
 #'
 #' @export
-uploadModelUI <- function(id, label) {
+uploadModelUI <- function(id, label, width = NULL) {
   ns <- NS(id)
 
   tagList(
     tags$h4(label),
-    fileInput(ns("uploadModel"), label = "Load local model"),
-    remoteModelsUI(ns("remoteModels")),
+    fileInput(ns("uploadModel"), label = "Load local model", width = width),
+    remoteModelsUI(ns("remoteModels"), width = width),
     tags$br(),
     tags$br()
   )
@@ -230,10 +236,8 @@ uploadModelUI <- function(id, label) {
 uploadModelServer <-
   function(id,
            githubRepo,
-           rPackageName,
-           onlySettings,
+           onlySettings = FALSE,
            folderOnGithub = "/predefinedModels",
-           silent = FALSE,
            reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
@@ -251,11 +255,6 @@ uploadModelServer <-
                      "remoteModels",
                      githubRepo = githubRepo,
                      folderOnGithub = folderOnGithub,
-                     silent = silent,
-                     rPackageName = rPackageName,
-                     rPackageVersion = rPackageName %>%
-                       packageVersion() %>%
-                       as.character(),
                      resetSelected = reset
                    )
 

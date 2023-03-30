@@ -13,9 +13,9 @@ downUploadButtonServer(
   helpHTML = "",
   onlySettings = FALSE,
   compress = TRUE,
+  compressionLevel = 9,
   githubRepo,
   folderOnGithub = "/predefinedModels",
-  silent = FALSE,
   reset = reactive(FALSE)
 )
 }
@@ -39,13 +39,13 @@ module is applied, e.g. "mpiBpred"}
 or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 file is a connection.}
 
+\item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
+longest.}
+
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
 \item{folderOnGithub}{(character) folder on github where remote models are stored. This should
 correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
-
-\item{silent}{(logical) supress warning if there is no connetcion to the github folder and
-local models are used instead}
 
 \item{reset}{(reactive) resets the selection of the online model}
 }

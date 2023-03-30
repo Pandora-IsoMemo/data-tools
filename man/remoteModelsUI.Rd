@@ -4,7 +4,12 @@
 \alias{remoteModelsUI}
 \title{Remote models module}
 \usage{
-remoteModelsUI(id, selectLabel = "Load online model", buttonLabel = "Load")
+remoteModelsUI(
+  id,
+  selectLabel = "Load online model",
+  buttonLabel = "Load",
+  width = NULL
+)
 }
 \arguments{
 \item{id}{id of module}

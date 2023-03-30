@@ -147,13 +147,7 @@ toolsLoadServer <- function(id) {
                    inputs = input,
                    model = reactive(NULL),
                    rPackageName = "DataTools",
-                   helpHTML = "",
-                   onlySettings = FALSE,
-                   compress = TRUE,
-                   githubRepo = "bpred",
-                   folderOnGithub = "/predefinedModels",
-                   silent = FALSE,
-                   reset = reactive(FALSE))
+                   githubRepo = "data-tools")
 
                  observe({
                    ## update data ----
@@ -190,11 +184,7 @@ toolsLoadServer <- function(id) {
 
                  uploadedData <- uploadModelServer(
                    "uploadDat",
-                   githubRepo = "data-tools",
-                   rPackageName = "DataTools",
-                   onlySettings = FALSE,
-                   silent = TRUE,
-                   reset = reactive(FALSE)
+                   githubRepo = "data-tools"
                  )
 
                  observe({
