@@ -190,8 +190,8 @@ toolsLoadServer <- function(id) {
 
                  uploadedData <- uploadModelServer(
                    "uploadDat",
-                   githubRepo = "bpred",
-                   rPackageName = "Bpred",
+                   githubRepo = "data-tools",
+                   rPackageName = "DataTools",
                    onlySettings = FALSE,
                    silent = TRUE,
                    reset = reactive(FALSE)
