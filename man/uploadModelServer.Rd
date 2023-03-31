@@ -9,9 +9,9 @@ uploadModelServer(
   githubRepo,
   folderOnGithub = "/predefinedModels",
   pathToLocal = file.path(".", "predefinedModels"),
+  reloadChoices = reactive(FALSE),
   onlySettings = FALSE,
-  reset = reactive(FALSE),
-  reloadChoices = reactive(FALSE)
+  reset = reactive(FALSE)
 )
 }
 \arguments{
@@ -24,11 +24,11 @@ correspond to 'pathToLocal' since online and offline models should be the same a
 
 \item{pathToLocal}{(character) relative path to the folder storing local models.}
 
+\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
+
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 
 \item{reset}{(reactive) resets the selection of the online model}
-
-\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
 }
 \description{
 Backend for upload model module

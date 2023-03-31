@@ -1,28 +1,12 @@
 testthat::test_that("Test module remoteModels", {
   testthat::expect_true(length(getGithubContent(githubRepo = "bpred")) > 0)
-  testthat::expect_true(length(
-    getRemoteModelsFromGithub(
-      githubRepo = "bpred",
-      rPackageName = "mpiBpred",
-      rPackageVersion = "23.03.1"
-    )
-  ) > 0)
+  testthat::expect_true(length(getRemoteModelsFromGithub(githubRepo = "bpred")) > 0)
   testthat::expect_true(length(getGithubContent(githubRepo = "bpred")) ==
-                          length(
-                            getRemoteModelsFromGithub(
-                              githubRepo = "bpred",
-                              rPackageName = "mpiBpred",
-                              rPackageVersion = "23.03.1"
-                            )
-                          ))
+                          length(getRemoteModelsFromGithub(githubRepo = "bpred")))
 
   testthat::expect_error(checkLocalModelDir(pathToLocal = "xyz"))
 
-  testModel <- getRemoteModelsFromGithub(
-    githubRepo = "bpred",
-    rPackageName = "mpiBpred",
-    rPackageVersion = "23.03.1"
-  )[1]
+  testModel <- getRemoteModelsFromGithub(githubRepo = "bpred")[1]
 
   testServer(
     remoteModelsServer,

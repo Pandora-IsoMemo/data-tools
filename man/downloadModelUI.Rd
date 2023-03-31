@@ -10,6 +10,8 @@ downloadModelUI(id, label, width = NULL)
 \item{id}{id of module}
 
 \item{label}{label of module}
+
+\item{width}{width of inputs in percent}
 }
 \description{
 UI function to download a zip file with notes and a list of models

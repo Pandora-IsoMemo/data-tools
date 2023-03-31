@@ -160,7 +160,7 @@ toolsLoadServer <- function(id) {
                    ## update inputs ----
                    inputIDs <- names(uploadedDataButton$inputs)
                    inputIDs <- inputIDs[inputIDs %in% names(input)]
-                   print("--- uploadedDataButton$inputs ---")
+                   print("--- testing uploadedDataButton$inputs ... ---")
                    for (i in 1:length(inputIDs)) {
                      if (!is.null(uploadedDataButton$inputs[[inputIDs[i]]])) {
                        print(paste("Updating", inputIDs[i], ": value =", uploadedDataButton$inputs[[inputIDs[i]]]))
@@ -198,7 +198,7 @@ toolsLoadServer <- function(id) {
                    ## update inputs ----
                    inputIDs <- names(uploadedData$inputs)
                    inputIDs <- inputIDs[inputIDs %in% names(input)]
-                   print("--- uploadedData$inputs ---")
+                   print("--- testing uploadedData$inputs ... ---")
                    for (i in 1:length(inputIDs)) {
                      if (!is.null(uploadedData$inputs[[inputIDs[i]]])) {
                        print(paste("Updating", inputIDs[i], ": value =", uploadedData$inputs[[inputIDs[i]]]))

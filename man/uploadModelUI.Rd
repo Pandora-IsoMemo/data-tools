@@ -10,6 +10,8 @@ uploadModelUI(id, label, width = NULL)
 \item{id}{id of module}
 
 \item{label}{label of module}
+
+\item{width}{width of inputs in percent}
 }
 \description{
 UI function to upload a zip file with exportNotes and a list of models

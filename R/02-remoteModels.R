@@ -5,6 +5,7 @@
 #' @param id id of module
 #' @param selectLabel label of select input
 #' @param buttonLabel button label
+#' @param width width of inputs in percent
 #' @export
 remoteModelsUI <-
   function(id,
@@ -13,21 +14,22 @@ remoteModelsUI <-
            width = NULL) {
     ns <- NS(id)
 
-    tagList(selectInput(
-      ns("remoteModelChoice"),
-      label = selectLabel,
-      choices = c("No online models found ..." = ""),
-      width = width
-    ),
-    div(
-      id = ns("noConn"),
-      helpText(
-        paste(
-          "No access to the Github folder. 'Online models'",
-          "are taken from the app's model folder.")
-      )
-    ),
-    actionButton(ns("loadRemoteModel"), buttonLabel))
+    tagList(
+      selectInput(
+        ns("remoteModelChoice"),
+        label = selectLabel,
+        choices = c("No online models found ..." = ""),
+        width = width
+      ),
+      div(id = ns("noConn"),
+          helpText(
+            paste(
+              "No access to the Github folder. 'Online models'",
+              "are taken from the app's model folder."
+            )
+          )),
+      actionButton(ns("loadRemoteModel"), buttonLabel)
+    )
   }
 
 #' Server function for remote models
@@ -42,10 +44,10 @@ remoteModelsUI <-
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote model
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote models
-#' @param rPackageName (character) name of the package (as in the description file) in which this
-#'  module is applied, e.g. "mpiBpred"
-#' @param rPackageVersion (character) current version of the package where this module is applied,
-#'  e.g. utils::packageVersion("mpiBpred")
+#' @param rPackageName (character) DEPRECATED (not in use anymore): name of the package (as in the
+#'  description file) in which this module is applied, e.g. "mpiBpred"
+#' @param rPackageVersion (character) DEPRECATED (not in use anymore): current version of the
+#'  package where this module is applied, e.g. utils::packageVersion("mpiBpred")
 #' @return (character) the path to the selected remote (github) or local model
 #' @export
 remoteModelsServer <- function(id,
@@ -82,7 +84,6 @@ remoteModelsServer <- function(id,
                      pathToLocal <-
                        try(checkLocalModelDir(pathToLocal = pathToLocal),
                            silent = TRUE)
-                     print(paste("ns =", ns(""), ":", pathToLocal))
 
                      if (inherits(pathToLocal, "try-error")) {
                        choices <- c()
@@ -92,7 +93,6 @@ remoteModelsServer <- function(id,
                      }
                    }
 
-                   print(paste("ns =", ns(""), ":", choices))
                    if (length(choices) == 0) {
                      choices <- c("No online models found ..." = "")
                    } else {
@@ -161,8 +161,8 @@ remoteModelsServer <- function(id,
 #' @inheritParams remoteModelsServer
 getLocalModels <- function(pathToLocal) {
   pathToLocal %>%
-      dir() %>%
-      sub(pattern = '\\.zip$', replacement = '')
+    dir() %>%
+    sub(pattern = '\\.zip$', replacement = '')
 }
 
 #' Check Local Model Dir
@@ -170,7 +170,8 @@ getLocalModels <- function(pathToLocal) {
 #' @inheritParams remoteModelsServer
 checkLocalModelDir <-
   function(pathToLocal) {
-    if (is.null(pathToLocal) || !is.character(pathToLocal) || length(dir(pathToLocal)) == 0) {
+    if (is.null(pathToLocal) ||
+        !is.character(pathToLocal) || length(dir(pathToLocal)) == 0) {
       stop(paste("No models found at", pathToLocal))
     }
 
@@ -183,37 +184,40 @@ checkLocalModelDir <-
 #' @inheritParams remoteModelsServer
 getRemoteModelsFromGithub <-
   function(githubRepo, folderOnGithub = "/predefinedModels") {
-    apiOut <- try(getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub))
+    apiOut <-
+      try(getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub))
 
     if (inherits(apiOut, "try-error")) {
       return()
     }
 
-    if (!is.null(apiOut[["message"]]) && apiOut[["message"]] == "Not Found") {
+    if (!is.null(apiOut[["message"]]) &&
+        apiOut[["message"]] == "Not Found") {
       return()
     }
 
     lapply(apiOut, function(el)
-        el$name) %>%
-        unlist() %>%
-        sub(pattern = '\\.zip$', replacement = '')
+      el$name) %>%
+      unlist() %>%
+      sub(pattern = '\\.zip$', replacement = '')
   }
 
 #' Get Github Content
 #'
 #' Get content of api call to github folder
 #' @inheritParams remoteModelsServer
-getGithubContent <- function(githubRepo, folderOnGithub = "/predefinedModels") {
-  res <- httr::GET(
-    paste0(
-      "api.github.com/repos/Pandora-IsoMemo/",
-      githubRepo,
-      "/contents/inst/app",
-      folderOnGithub
+getGithubContent <-
+  function(githubRepo, folderOnGithub = "/predefinedModels") {
+    res <- httr::GET(
+      paste0(
+        "api.github.com/repos/Pandora-IsoMemo/",
+        githubRepo,
+        "/contents/inst/app",
+        folderOnGithub
+      )
     )
-  )
-  httr::content(res)
-}
+    httr::content(res)
+  }
 
 
 # TEST MODULE -------------------------------------------------------------

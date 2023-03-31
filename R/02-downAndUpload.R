@@ -15,6 +15,8 @@ downUploadButtonUI <-
 #' downUploadButton module server
 #'
 #' @param id module id
+#' @param rPackageName (character) name of the package (as in the description file) in which this
+#'  module is applied, e.g. "mpiBpred"
 #' @inheritParams downloadModelServer
 #' @inheritParams uploadModelServer
 #' @inheritParams remoteModelsServer
@@ -94,6 +96,7 @@ downUploadButtonServer <- function(id,
 #'
 #' @param id id of module
 #' @param label label of module
+#' @param width width of inputs in percent
 #'
 #' @export
 downloadModelUI <- function(id, label, width = NULL) {
@@ -218,6 +221,7 @@ downloadModelServer <-
 #'
 #' @param id id of module
 #' @param label label of module
+#' @param width width of inputs in percent
 #'
 #' @export
 uploadModelUI <- function(id, label, width = NULL) {
@@ -248,9 +252,9 @@ uploadModelServer <-
            githubRepo,
            folderOnGithub = "/predefinedModels",
            pathToLocal = file.path(".", "predefinedModels"),
+           reloadChoices = reactive(FALSE),
            onlySettings = FALSE,
-           reset = reactive(FALSE),
-           reloadChoices = reactive(FALSE)) {
+           reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
                    pathToModel <- reactiveVal(NULL)

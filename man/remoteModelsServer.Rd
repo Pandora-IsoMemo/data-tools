@@ -32,11 +32,11 @@ correspond to 'pathToLocal' since online and offline models should be the same a
 
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
 
-\item{rPackageName}{(character) name of the package (as in the description file) in which this
-module is applied, e.g. "mpiBpred"}
+\item{rPackageName}{(character) DEPRECATED (not in use anymore): name of the package (as in the
+description file) in which this module is applied, e.g. "mpiBpred"}
 
-\item{rPackageVersion}{(character) current version of the package where this module is applied,
-e.g. utils::packageVersion("mpiBpred")}
+\item{rPackageVersion}{(character) DEPRECATED (not in use anymore): current version of the
+package where this module is applied, e.g. utils::packageVersion("mpiBpred")}
 }
 \value{
 (character) the path to the selected remote (github) or local model

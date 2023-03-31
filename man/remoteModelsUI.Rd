@@ -17,6 +17,8 @@ remoteModelsUI(
 \item{selectLabel}{label of select input}
 
 \item{buttonLabel}{button label}
+
+\item{width}{width of inputs in percent}
 }
 \description{
 Displays a select input to choose a remote model and a button to load it
