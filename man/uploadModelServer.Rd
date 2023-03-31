@@ -21,13 +21,13 @@ uploadModelServer(
 
 \item{modelFolder}{(character) folder containing all predefined models}
 
+\item{modelSubFolder}{(character) possible subfolder containing predefined models}
+
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 
 \item{reset}{(reactive) resets the selection of the online model}
-
-\item{subFolder}{(character) possible subfolder containing predefined models}
 }
 \description{
 Backend for upload model module

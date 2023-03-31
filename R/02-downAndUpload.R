@@ -17,8 +17,6 @@ downUploadButtonUI <-
 #' @param id module id
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
-#' @param modelFolder (character) folder containing all predefined models
-#' @param subFolder (character) possible subfolder containing predefined models
 #' @inheritParams downloadModelServer
 #' @inheritParams uploadModelServer
 #' @inheritParams remoteModelsServer
@@ -247,7 +245,7 @@ uploadModelUI <- function(id, label, width = NULL) {
 #' @param reset (reactive) resets the selection of the online model
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param modelFolder (character) folder containing all predefined models
-#' @param subFolder (character) possible subfolder containing predefined models
+#' @param modelSubFolder (character) possible subfolder containing predefined models
 #' @inheritParams remoteModelsServer
 #'
 #' @export

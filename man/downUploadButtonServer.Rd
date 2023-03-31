@@ -36,6 +36,8 @@ module is applied, e.g. "mpiBpred"}
 
 \item{modelFolder}{(character) folder containing all predefined models}
 
+\item{modelSubFolder}{(character) possible subfolder containing predefined models}
+
 \item{helpHTML}{content of help function}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
@@ -48,8 +50,6 @@ file is a connection.}
 longest.}
 
 \item{reset}{(reactive) resets the selection of the online model}
-
-\item{subFolder}{(character) possible subfolder containing predefined models}
 }
 \description{
 downUploadButton module server
