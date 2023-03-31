@@ -4,7 +4,8 @@
 
 ## New Features
 - new module _downUploadButton_: A button that opens a pop up with the download and upload UI for
-models
+models. The upload contains upload from local files (3) or upload from a remote github folder. If
+there is no access to the github folder, a note is displayed.
 
 ## Updates
 - `remoteModelsServer`: new parameter to set the folder for remote models on github if it differs
