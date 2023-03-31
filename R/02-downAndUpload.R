@@ -72,10 +72,8 @@ downUploadButtonServer <- function(id,
                  uploadedData <- uploadModelServer(
                    "uploadData",
                    githubRepo = githubRepo,
-                   folderOnGithub = paste0("/", paste(c(modelFolder, modelSubFolder), collapse = "/")),
-                   pathToLocal =
-                     list(".", modelFolder, modelSubFolder)[!sapply(list(".", modelFolder, modelSubFolder), is.null)] %>%
-                     do.call(what = file.path),
+                   modelFolder = modelFolder,
+                   modelSubFolder = modelSubFolder,
                    onlySettings = onlySettings,
                    reloadChoices = reactive(input[["showModal"]] == 1)
                  )
@@ -248,14 +246,16 @@ uploadModelUI <- function(id, label, width = NULL) {
 #' @param id namespace id
 #' @param reset (reactive) resets the selection of the online model
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
+#' @param modelFolder (character) folder containing all predefined models
+#' @param subFolder (character) possible subfolder containing predefined models
 #' @inheritParams remoteModelsServer
 #'
 #' @export
 uploadModelServer <-
   function(id,
            githubRepo,
-           folderOnGithub = "/predefinedModels",
-           pathToLocal = file.path(".", "predefinedModels"),
+           modelFolder = "predefinedModels",
+           modelSubFolder = NULL,
            reloadChoices = reactive(FALSE),
            onlySettings = FALSE,
            reset = reactive(FALSE)) {
@@ -274,8 +274,10 @@ uploadModelServer <-
                    pathToRemote <- remoteModelsServer(
                      "remoteModels",
                      githubRepo = githubRepo,
-                     folderOnGithub = folderOnGithub,
-                     pathToLocal = pathToLocal,
+                     folderOnGithub = paste0("/", paste(c(modelFolder, modelSubFolder), collapse = "/")),
+                     pathToLocal =
+                       list(".", modelFolder, modelSubFolder)[!sapply(list(".", modelFolder, modelSubFolder), is.null)] %>%
+                       do.call(what = file.path),
                      resetSelected = reset,
                      reloadChoices = reloadChoices
                    )
