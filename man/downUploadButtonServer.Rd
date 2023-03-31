@@ -11,8 +11,8 @@ downUploadButtonServer(
   model,
   rPackageName,
   githubRepo,
-  folderOnGithub = "/predefinedModels",
-  pathToLocal = file.path(".", "predefinedModels"),
+  modelFolder = "predefinedModels",
+  modelSubFolder = NULL,
   helpHTML = "",
   onlySettings = FALSE,
   compress = TRUE,
@@ -34,10 +34,7 @@ module is applied, e.g. "mpiBpred"}
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{folderOnGithub}{(character) folder on github where remote models are stored. This should
-correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
-
-\item{pathToLocal}{(character) relative path to the folder storing local models.}
+\item{modelFolder}{(character) folder containing all predefined models}
 
 \item{helpHTML}{content of help function}
 
@@ -51,6 +48,8 @@ file is a connection.}
 longest.}
 
 \item{reset}{(reactive) resets the selection of the online model}
+
+\item{subFolder}{(character) possible subfolder containing predefined models}
 }
 \description{
 downUploadButton module server

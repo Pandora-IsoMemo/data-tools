@@ -17,6 +17,8 @@ downUploadButtonUI <-
 #' @param id module id
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
+#' @param modelFolder (character) folder containing all predefined models
+#' @param subFolder (character) possible subfolder containing predefined models
 #' @inheritParams downloadModelServer
 #' @inheritParams uploadModelServer
 #' @inheritParams remoteModelsServer
@@ -27,8 +29,8 @@ downUploadButtonServer <- function(id,
                                    model,
                                    rPackageName,
                                    githubRepo,
-                                   folderOnGithub = "/predefinedModels",
-                                   pathToLocal = file.path(".", "predefinedModels"),
+                                   modelFolder = "predefinedModels",
+                                   modelSubFolder = NULL,
                                    helpHTML = "",
                                    onlySettings = FALSE,
                                    compress = TRUE,
@@ -70,8 +72,10 @@ downUploadButtonServer <- function(id,
                  uploadedData <- uploadModelServer(
                    "uploadData",
                    githubRepo = githubRepo,
-                   folderOnGithub = folderOnGithub,
-                   pathToLocal = pathToLocal,
+                   folderOnGithub = paste0("/", paste(c(modelFolder, modelSubFolder), collapse = "/")),
+                   pathToLocal =
+                     list(".", modelFolder, modelSubFolder)[!sapply(list(".", modelFolder, modelSubFolder), is.null)] %>%
+                     do.call(what = file.path),
                    onlySettings = onlySettings,
                    reloadChoices = reactive(input[["showModal"]] == 1)
                  )
