@@ -4,12 +4,14 @@
 \alias{uploadModelUI}
 \title{Upload model module}
 \usage{
-uploadModelUI(id, label)
+uploadModelUI(id, label, width = NULL)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{label}{label of module}
+
+\item{width}{width of inputs in percent}
 }
 \description{
 UI function to upload a zip file with exportNotes and a list of models

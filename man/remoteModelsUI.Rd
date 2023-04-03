@@ -4,7 +4,12 @@
 \alias{remoteModelsUI}
 \title{Remote models module}
 \usage{
-remoteModelsUI(id, selectLabel = "Load online model", buttonLabel = "Load")
+remoteModelsUI(
+  id,
+  selectLabel = "Load online model",
+  buttonLabel = "Load",
+  width = NULL
+)
 }
 \arguments{
 \item{id}{id of module}
@@ -12,6 +17,8 @@ remoteModelsUI(id, selectLabel = "Load online model", buttonLabel = "Load")
 \item{selectLabel}{label of select input}
 
 \item{buttonLabel}{button label}
+
+\item{width}{width of inputs in percent}
 }
 \description{
 Displays a select input to choose a remote model and a button to load it

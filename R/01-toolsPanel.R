@@ -82,8 +82,14 @@ toolsLoadUI <- function(id) {
   ns <- NS(id)
 
   sidebarLayout(
-    sidebarPanel(width = 2,
-                 style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%"),
+    sidebarPanel(
+      width = 2,
+      style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
+      downUploadButtonUI(ns("downUpload")),
+      textAreaInput(ns("modelNotes"),
+                    label = NULL,
+                    placeholder = "Model description ...")
+    ),
     mainPanel(
       fluidRow(
         column(
@@ -96,10 +102,10 @@ toolsLoadUI <- function(id) {
             max = 100000000
           ),
           tags$hr(),
-          downloadModelUI(ns("download"), label = "Test download of model: `mtcars`")
+          downloadModelUI(ns("downloadDat"), label = "Test download of model: `mtcars`")
         ),
         column(width = 6,
-               uploadModelUI(ns("upload"), label = "Upload some data"))
+               uploadModelUI(ns("uploadDat"), label = "Upload some data"))
       ),
       tags$h3("Data"),
       dataTableOutput(ns("data"))
@@ -139,8 +145,47 @@ toolsLoadServer <- function(id) {
                    class = "data.frame"
                  ))
 
+                 # test button ----
+                 uploadedDataButton <- downUploadButtonServer(
+                   "downUpload",
+                   dat = testData,
+                   inputs = input,
+                   model = reactive(NULL),
+                   rPackageName = "DataTools",
+                   githubRepo = "data-tools",
+                   modelNotes = reactive(input$modelNotes)
+                 )
+
+                 observe({
+                   ## update data ----
+                   output$data <-
+                     renderDataTable(uploadedDataButton$data)
+                 }) %>%
+                   bindEvent(uploadedDataButton$data)
+
+                 observe({
+                   ## update inputs ----
+                   inputIDs <- names(uploadedDataButton$inputs)
+                   inputIDs <- inputIDs[inputIDs %in% names(input)]
+                   print("--- testing uploadedDataButton$inputs ... ---")
+                   for (i in 1:length(inputIDs)) {
+                     if (!is.null(uploadedDataButton$inputs[[inputIDs[i]]])) {
+                       print(paste(
+                         "Updating",
+                         inputIDs[i],
+                         ": value =",
+                         uploadedDataButton$inputs[[inputIDs[i]]]
+                       ))
+                       session$sendInputMessage(inputIDs[i],  list(value = uploadedDataButton$inputs[[inputIDs[i]]]))
+                     }
+                   }
+                 }) %>%
+                   bindEvent(uploadedDataButton$inputs)
+
+                 # test UI fields ---
+
                  downloadModelServer(
-                   "download",
+                   "downloadDat",
                    dat = testData,
                    inputs = input,
                    model = reactive(NULL),
@@ -149,27 +194,31 @@ toolsLoadServer <- function(id) {
                    onlySettings = TRUE # FALSE
                  )
 
-                 uploadedData <- uploadModelServer(
-                   "upload",
-                   githubRepo = "data-tools",
-                   rPackageName = "DataTools",
-                   onlySettings = FALSE,
-                   reset = reactive(FALSE)
-                 )
+                 uploadedData <- uploadModelServer("uploadDat",
+                                                   githubRepo = "data-tools")
 
-                 observe(priority = 500, {
+                 observe({
                    ## update data ----
                    output$data <-
                      renderDataTable(uploadedData$data)
                  }) %>%
                    bindEvent(uploadedData$data)
 
-                 observe(priority = -100, {
+                 observe({
                    ## update inputs ----
                    inputIDs <- names(uploadedData$inputs)
                    inputIDs <- inputIDs[inputIDs %in% names(input)]
+                   print("--- testing uploadedData$inputs ... ---")
                    for (i in 1:length(inputIDs)) {
-                     session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
+                     if (!is.null(uploadedData$inputs[[inputIDs[i]]])) {
+                       print(paste(
+                         "Updating",
+                         inputIDs[i],
+                         ": value =",
+                         uploadedData$inputs[[inputIDs[i]]]
+                       ))
+                       session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
+                     }
                    }
                  }) %>%
                    bindEvent(uploadedData$inputs)

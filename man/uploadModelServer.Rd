@@ -7,8 +7,11 @@
 uploadModelServer(
   id,
   githubRepo,
-  rPackageName,
-  onlySettings,
+  modelFolder = "predefinedModels",
+  modelSubFolder = NULL,
+  rPackageName = NULL,
+  reloadChoices = reactive(FALSE),
+  onlySettings = FALSE,
   reset = reactive(FALSE)
 )
 }
@@ -17,8 +20,14 @@ uploadModelServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{rPackageName}{(character) name of the package (as in the description file) in which this
-module is applied, e.g. "mpiBpred"}
+\item{modelFolder}{(character) folder containing all predefined models}
+
+\item{modelSubFolder}{(character) possible subfolder containing predefined models}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded model must come from this R
+package}
+
+\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 

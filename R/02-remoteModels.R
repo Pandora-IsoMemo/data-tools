@@ -5,19 +5,31 @@
 #' @param id id of module
 #' @param selectLabel label of select input
 #' @param buttonLabel button label
+#' @param width width of inputs in percent
 #' @export
 remoteModelsUI <-
   function(id,
            selectLabel = "Load online model",
-           buttonLabel = "Load") {
+           buttonLabel = "Load",
+           width = NULL) {
     ns <- NS(id)
 
-    tagList(selectInput(
-      ns("remoteModelChoice"),
-      label = selectLabel,
-      choices = c("No online models found ..." = "")
-    ),
-    actionButton(ns("loadRemoteModel"), buttonLabel))
+    tagList(
+      selectInput(
+        ns("remoteModelChoice"),
+        label = selectLabel,
+        choices = c("No online models found ..." = ""),
+        width = width
+      ),
+      div(id = ns("noConn"),
+          helpText(
+            paste(
+              "Access to the Github API failed. 'Online models'",
+              "are taken from the app's model folder."
+            )
+          )),
+      actionButton(ns("loadRemoteModel"), buttonLabel)
+    )
   }
 
 #' Server function for remote models
@@ -26,42 +38,48 @@ remoteModelsUI <-
 #'
 #' @param id namespace id
 #' @param githubRepo (character) name of used github repository, e.g. "bpred"
-#' @param rPackageName (character) name of the package (as in the description file) in which this
-#'  module is applied, e.g. "mpiBpred"
-#' @param rPackageVersion (character) current version of the package where this module is applied,
-#'  e.g. utils::packageVersion("mpiBpred")
 #' @param pathToLocal (character) relative path to the folder storing local models.
+#' @param folderOnGithub (character) folder on github where remote models are stored. This should
+#' correspond to 'pathToLocal' since online and offline models should be the same and up-to-date
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
-#' @param resetSelected (reactive) if TRUE resets the selected remote model.
+#' @param resetSelected (reactive) if TRUE resets the selected remote model
+#' @param reloadChoices (reactive) trigger access to  github and reload choices of remote models
+#' @param rPackageName (character) DEPRECATED (will be removed in future): name of the package (as in the
+#'  description file) in which this module is applied, e.g. "mpiBpred"
+#' @param rPackageVersion (character) DEPRECATED (will be removed in future): current version of the
+#'  package where this module is applied, e.g. utils::packageVersion("mpiBpred")
 #' @return (character) the path to the selected remote (github) or local model
 #' @export
 remoteModelsServer <- function(id,
                                githubRepo,
-                               rPackageName,
-                               rPackageVersion,
                                pathToLocal = file.path(".", "predefinedModels"),
+                               folderOnGithub = "/predefinedModels",
                                onlyLocalModels = reactive(FALSE),
-                               resetSelected = reactive(FALSE)) {
+                               resetSelected = reactive(FALSE),
+                               reloadChoices = reactive(FALSE),
+                               rPackageName = NULL,
+                               rPackageVersion = NULL) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
 
                  observe({
+                   shinyjs::hide(ns("noConn"), asis = TRUE)
                    # try getting online models
-                   choices <-
-                     getRemoteModelsFromGithub(
-                       githubRepo = githubRepo,
-                       rPackageName = rPackageName,
-                       rPackageVersion = rPackageVersion
-                     ) %>%
-                     tryCatchWithWarningsAndErrors(errorTitle = "Loading online models failed",
-                                                   warningTitle = "Loading online models failed",
-                                                   alertStyle = "shinyalert")
+                   if (reloadChoices() || githubRepo != "") {
+                     choices <-
+                       getRemoteModelsFromGithub(githubRepo = githubRepo,
+                                                 folderOnGithub = folderOnGithub)
+                   } else {
+                     choices <- c()
+                   }
 
                    if (inherits(choices, "try-error") ||
                        length(choices) == 0 || onlyLocalModels()) {
                      useLocalModels(TRUE)
+                     shinyjs::show(ns("noConn"), asis = TRUE)
                      # try getting local models
                      pathToLocal <-
                        try(checkLocalModelDir(pathToLocal = pathToLocal),
@@ -143,8 +161,8 @@ remoteModelsServer <- function(id,
 #' @inheritParams remoteModelsServer
 getLocalModels <- function(pathToLocal) {
   pathToLocal %>%
-      dir() %>%
-      sub(pattern = '\\.zip$', replacement = '')
+    dir() %>%
+    sub(pattern = '\\.zip$', replacement = '')
 }
 
 #' Check Local Model Dir
@@ -152,7 +170,9 @@ getLocalModels <- function(pathToLocal) {
 #' @inheritParams remoteModelsServer
 checkLocalModelDir <-
   function(pathToLocal) {
-    if (is.null(pathToLocal) || !is.character(pathToLocal) || length(dir(pathToLocal)) == 0) {
+    if (is.null(pathToLocal) ||
+        !is.character(pathToLocal) ||
+        length(dir(pathToLocal)) == 0) {
       stop(paste("No models found at", pathToLocal))
     }
 
@@ -164,57 +184,41 @@ checkLocalModelDir <-
 #' Get remote models from github directory
 #' @inheritParams remoteModelsServer
 getRemoteModelsFromGithub <-
-  function(githubRepo,
-           rPackageName,
-           rPackageVersion) {
-    apiOut <- try(getGithubContent(githubRepo = githubRepo))
+  function(githubRepo, folderOnGithub = "/predefinedModels") {
+    apiOut <-
+      try(getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub))
 
     if (inherits(apiOut, "try-error")) {
-      warning(
-        paste(
-          "No connection to the remote github folder. The 'online models'",
-          "are taken from the models that were locally saved with version",
-          rPackageVersion,
-          "of",
-          rPackageName
-        )
-      )
       return()
     }
 
-    if (!is.null(apiOut[["message"]]) && apiOut[["message"]] == "Not Found") {
-      warning(
-        paste(
-          "No online models found. The 'online models'",
-          "are taken from the models that were locally saved with version",
-          rPackageVersion,
-          "of",
-          rPackageName
-        )
-      )
+    if (!is.null(apiOut[["message"]])) {
+      # if there is a message than an error occurred
       return()
     }
 
     lapply(apiOut, function(el)
-        el$name) %>%
-        unlist() %>%
-        sub(pattern = '\\.zip$', replacement = '')
+      el$name) %>%
+      unlist() %>%
+      sub(pattern = '\\.zip$', replacement = '')
   }
 
 #' Get Github Content
 #'
 #' Get content of api call to github folder
 #' @inheritParams remoteModelsServer
-getGithubContent <- function(githubRepo) {
-  res <- httr::GET(
-    paste0(
-      "api.github.com/repos/Pandora-IsoMemo/",
-      githubRepo,
-      "/contents/inst/app/predefinedModels"
+getGithubContent <-
+  function(githubRepo, folderOnGithub = "/predefinedModels") {
+    res <- httr::GET(
+      paste0(
+        "api.github.com/repos/Pandora-IsoMemo/",
+        githubRepo,
+        "/contents/inst/app",
+        folderOnGithub
+      )
     )
-  )
-  httr::content(res)
-}
+    httr::content(res)
+  }
 
 
 # TEST MODULE -------------------------------------------------------------
@@ -250,23 +254,17 @@ serverRemotePath <- function(input, output, session) {
   pathToModels <- remoteModelsServer(
     "remote",
     githubRepo = "bpred",
-    rPackageName = "mpiBpred",
-    rPackageVersion = "23.03.1",
     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
   pathToLocal <- remoteModelsServer(
     "local",
     githubRepo = "bpred",
-    rPackageName = "mpiBpred",
-    rPackageVersion = "23.03.1",
     onlyLocalModels = reactive(TRUE),
     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
   pathWithWarning <- remoteModelsServer(
     "warning",
     githubRepo = "lalala",
-    rPackageName = "mpiBpred",
-    rPackageVersion = "23.03.1",
     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
   )
 
