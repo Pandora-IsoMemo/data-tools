@@ -70,7 +70,7 @@ downUploadButtonServer <- function(id,
                    onlySettings = onlySettings,
                    compress = compress,
                    compressionLevel = compressionLevel,
-                   triggerUpdate = reactive(input[["showModal"]] == 1)
+                   triggerUpdate = reactive(input[["showModal"]] > 0)
                  )
 
                  uploadedData <- uploadModelServer(
@@ -80,7 +80,7 @@ downUploadButtonServer <- function(id,
                    modelSubFolder = modelSubFolder,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
-                   reloadChoices = reactive(input[["showModal"]] == 1)
+                   reloadChoices = reactive(input[["showModal"]] > 0)
                  )
 
 
