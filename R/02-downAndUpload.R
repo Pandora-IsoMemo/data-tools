@@ -61,6 +61,7 @@ downUploadButtonServer <- function(id,
                    inputs = inputs,
                    model = model,
                    rPackageName = rPackageName,
+                   modelSubFolder = modelSubFolder,
                    helpHTML = helpHTML,
                    onlySettings = onlySettings,
                    compress = compress,
@@ -128,6 +129,7 @@ downloadModelUI <- function(id, label, width = NULL) {
 #' @param model (reactive) model output object
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
+#' @param modelSubFolder (character) possible subfolder containing predefined models
 #' @param helpHTML content of help function
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
@@ -143,6 +145,7 @@ downloadModelServer <-
            inputs,
            model,
            rPackageName,
+           modelSubFolder = NULL,
            helpHTML = "",
            onlySettings = FALSE,
            compress = TRUE,
@@ -165,7 +168,9 @@ downloadModelServer <-
                    output$download <- downloadHandler(
                      filename = function() {
                        paste(gsub("\ ", "_", Sys.time()),
-                             paste0(rPackageName, ".zip"),
+                             paste0(paste0(
+                               c(rPackageName, modelSubFolder), collapse = "_"
+                             ), ".zip"),
                              sep = "_")
                      },
                      content = function(file) {
@@ -272,7 +277,9 @@ uploadModelServer <-
                    pathToRemote <- remoteModelsServer(
                      "remoteModels",
                      githubRepo = githubRepo,
-                     folderOnGithub = paste0("/", paste(c(modelFolder, modelSubFolder), collapse = "/")),
+                     folderOnGithub = paste0("/", paste(
+                       c(modelFolder, modelSubFolder), collapse = "/"
+                     )),
                      pathToLocal =
                        list(".", modelFolder, modelSubFolder)[!sapply(list(".", modelFolder, modelSubFolder), is.null)] %>%
                        do.call(what = file.path),

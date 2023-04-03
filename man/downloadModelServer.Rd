@@ -10,6 +10,7 @@ downloadModelServer(
   inputs,
   model,
   rPackageName,
+  modelSubFolder = NULL,
   helpHTML = "",
   onlySettings = FALSE,
   compress = TRUE,
@@ -27,6 +28,8 @@ downloadModelServer(
 
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
+
+\item{modelSubFolder}{(character) possible subfolder containing predefined models}
 
 \item{helpHTML}{content of help function}
 
