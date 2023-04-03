@@ -78,6 +78,7 @@ downUploadButtonServer <- function(id,
                    githubRepo = githubRepo,
                    modelFolder = modelFolder,
                    modelSubFolder = modelSubFolder,
+                   rPackageName = rPackageName,
                    onlySettings = onlySettings,
                    reloadChoices = reactive(input[["showModal"]] == 1)
                  )
@@ -214,12 +215,15 @@ downloadModelServer <-
                            modelExport <- model()
                          }
 
+                         versionExport <-
+                           getModelVersion(rPackageName, modelSubFolder)
+
                          saveRDS(
                            list(
                              data = dataExport,
                              inputs = inputExport,
                              model = modelExport,
-                             version = paste(rPackageName, packageVersion(rPackageName))
+                             version = versionExport
                            ),
                            file = modelfile,
                            compress = compress
@@ -241,6 +245,16 @@ downloadModelServer <-
 
                  })
   }
+
+
+getModelVersion <- function(rPackageName, modelSubFolder) {
+  version <- paste(rPackageName, packageVersion(rPackageName))
+  if (!is.null(modelSubFolder) && modelSubFolder != "") {
+    version <- paste(version, modelSubFolder, sep = " - ")
+  }
+
+  version
+}
 
 
 #' Upload model module
@@ -274,6 +288,8 @@ uploadModelUI <- function(id, label, width = NULL) {
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param modelFolder (character) folder containing all predefined models
 #' @param modelSubFolder (character) possible subfolder containing predefined models
+#' @param rPackageName (character) If not NULL, than the uploaded model must come from this R
+#'  package
 #' @inheritParams remoteModelsServer
 #'
 #' @export
@@ -282,6 +298,7 @@ uploadModelServer <-
            githubRepo,
            modelFolder = "predefinedModels",
            modelSubFolder = NULL,
+           rPackageName = NULL,
            reloadChoices = reactive(FALSE),
            onlySettings = FALSE,
            reset = reactive(FALSE)) {
@@ -339,8 +356,35 @@ uploadModelServer <-
                      if (!exists("modelImport") ||
                          !all(names(modelImport) %in% c("data", "inputs", "model", "version"))) {
                        shinyalert(title = "Could not load file.",
-                                  text = "File format not valid for BMSC app modelling. Model object not found.",
+                                  text = "File format not valid. Model object not found.",
                                   type = "error")
+                       return()
+                     }
+
+                     if (!is.null(rPackageName) &&
+                         !grepl(rPackageName, modelImport$version)) {
+                       shinyalert(
+                         title = "Wrong model loaded.",
+                         text = paste(
+                           "Model not valid for this app. Make sure to upload",
+                           "a model that was saved exactly with this app before."
+                         ),
+                         type = "error"
+                       )
+                       return()
+                     }
+
+                     if (!is.null(modelSubFolder) &&
+                         !grepl(modelSubFolder, modelImport$version)) {
+                       shinyalert(
+                         title = "Wrong model loaded.",
+                         text = paste(
+                           "Model not valid for this tab of the app. Make sure",
+                           "to upload a model that was saved exactly within",
+                           "this tab of the app before."
+                         ),
+                         type = "error"
+                       )
                        return()
                      }
 

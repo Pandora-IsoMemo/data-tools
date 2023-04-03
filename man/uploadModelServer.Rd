@@ -9,6 +9,7 @@ uploadModelServer(
   githubRepo,
   modelFolder = "predefinedModels",
   modelSubFolder = NULL,
+  rPackageName = NULL,
   reloadChoices = reactive(FALSE),
   onlySettings = FALSE,
   reset = reactive(FALSE)
@@ -22,6 +23,9 @@ uploadModelServer(
 \item{modelFolder}{(character) folder containing all predefined models}
 
 \item{modelSubFolder}{(character) possible subfolder containing predefined models}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded model must come from this R
+package}
 
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
 
