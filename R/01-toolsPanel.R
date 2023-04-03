@@ -82,9 +82,14 @@ toolsLoadUI <- function(id) {
   ns <- NS(id)
 
   sidebarLayout(
-    sidebarPanel(width = 2,
-                 style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
-                 downUploadButtonUI(ns("downUpload"))),
+    sidebarPanel(
+      width = 2,
+      style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
+      downUploadButtonUI(ns("downUpload")),
+      textAreaInput(ns("modelNotes"),
+                    label = NULL,
+                    placeholder = "Model description ...")
+    ),
     mainPanel(
       fluidRow(
         column(
@@ -147,7 +152,9 @@ toolsLoadServer <- function(id) {
                    inputs = input,
                    model = reactive(NULL),
                    rPackageName = "DataTools",
-                   githubRepo = "data-tools")
+                   githubRepo = "data-tools",
+                   modelNotes = reactive(input$modelNotes)
+                 )
 
                  observe({
                    ## update data ----
@@ -163,7 +170,12 @@ toolsLoadServer <- function(id) {
                    print("--- testing uploadedDataButton$inputs ... ---")
                    for (i in 1:length(inputIDs)) {
                      if (!is.null(uploadedDataButton$inputs[[inputIDs[i]]])) {
-                       print(paste("Updating", inputIDs[i], ": value =", uploadedDataButton$inputs[[inputIDs[i]]]))
+                       print(paste(
+                         "Updating",
+                         inputIDs[i],
+                         ": value =",
+                         uploadedDataButton$inputs[[inputIDs[i]]]
+                       ))
                        session$sendInputMessage(inputIDs[i],  list(value = uploadedDataButton$inputs[[inputIDs[i]]]))
                      }
                    }
@@ -182,10 +194,8 @@ toolsLoadServer <- function(id) {
                    onlySettings = TRUE # FALSE
                  )
 
-                 uploadedData <- uploadModelServer(
-                   "uploadDat",
-                   githubRepo = "data-tools"
-                 )
+                 uploadedData <- uploadModelServer("uploadDat",
+                                                   githubRepo = "data-tools")
 
                  observe({
                    ## update data ----
@@ -201,7 +211,12 @@ toolsLoadServer <- function(id) {
                    print("--- testing uploadedData$inputs ... ---")
                    for (i in 1:length(inputIDs)) {
                      if (!is.null(uploadedData$inputs[[inputIDs[i]]])) {
-                       print(paste("Updating", inputIDs[i], ": value =", uploadedData$inputs[[inputIDs[i]]]))
+                       print(paste(
+                         "Updating",
+                         inputIDs[i],
+                         ": value =",
+                         uploadedData$inputs[[inputIDs[i]]]
+                       ))
                        session$sendInputMessage(inputIDs[i],  list(value = uploadedData$inputs[[inputIDs[i]]]))
                      }
                    }

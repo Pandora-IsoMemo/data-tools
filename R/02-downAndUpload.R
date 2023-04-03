@@ -8,7 +8,9 @@
 downUploadButtonUI <-
   function(id, label = "Download / Upload Model") {
     ns <- NS(id)
-    tagList(actionButton(ns("showModal"), label = label))
+    tagList(actionButton(ns("showModal"), label = label),
+            tags$br(),
+            tags$br())
   }
 
 
@@ -67,7 +69,8 @@ downUploadButtonServer <- function(id,
                    modelNotes = modelNotes,
                    onlySettings = onlySettings,
                    compress = compress,
-                   compressionLevel = compressionLevel
+                   compressionLevel = compressionLevel,
+                   triggerUpdate = reactive(input[["showModal"]] == 1)
                  )
 
                  uploadedData <- uploadModelServer(
@@ -110,7 +113,7 @@ downloadModelUI <- function(id, label, width = NULL) {
     textAreaInput(
       ns("exportNotes"),
       "Notes",
-      placeholder = "Description of the model ...",
+      placeholder = "Model description ...",
       width = width
     ),
     checkboxInput(ns("onlyInputs"), "Store only data and model options", width = width),
@@ -145,6 +148,7 @@ downloadModelUI <- function(id, label, width = NULL) {
 #'  file is a connection.
 #' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
+#' @param triggerUpdate trigger update of local input of model notes
 #'
 #' @export
 downloadModelServer <-
@@ -158,7 +162,8 @@ downloadModelServer <-
            modelNotes = reactive(""),
            onlySettings = FALSE,
            compress = TRUE,
-           compressionLevel = 9) {
+           compressionLevel = 9,
+           triggerUpdate = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
                    observe({
@@ -174,8 +179,10 @@ downloadModelServer <-
                    })
                    outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
 
-                   observe(updateTextAreaInput(session, "exportNotes", value = modelNotes())) %>%
-                     bindEvent(modelNotes())
+                   observe({
+                     req(triggerUpdate())
+                     updateTextAreaInput(session, "exportNotes", value = modelNotes())
+                   })
 
                    output$download <- downloadHandler(
                      filename = function() {

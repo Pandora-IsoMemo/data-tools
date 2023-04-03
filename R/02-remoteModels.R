@@ -44,9 +44,9 @@ remoteModelsUI <-
 #' @param onlyLocalModels (reactive) if TRUE only local models are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote model
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote models
-#' @param rPackageName (character) DEPRECATED (not in use anymore): name of the package (as in the
+#' @param rPackageName (character) DEPRECATED (will be removed in future): name of the package (as in the
 #'  description file) in which this module is applied, e.g. "mpiBpred"
-#' @param rPackageVersion (character) DEPRECATED (not in use anymore): current version of the
+#' @param rPackageVersion (character) DEPRECATED (will be removed in future): current version of the
 #'  package where this module is applied, e.g. utils::packageVersion("mpiBpred")
 #' @return (character) the path to the selected remote (github) or local model
 #' @export
@@ -171,7 +171,8 @@ getLocalModels <- function(pathToLocal) {
 checkLocalModelDir <-
   function(pathToLocal) {
     if (is.null(pathToLocal) ||
-        !is.character(pathToLocal) || length(dir(pathToLocal)) == 0) {
+        !is.character(pathToLocal) ||
+        length(dir(pathToLocal)) == 0) {
       stop(paste("No models found at", pathToLocal))
     }
 

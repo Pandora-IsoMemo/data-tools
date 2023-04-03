@@ -15,7 +15,8 @@ downloadModelServer(
   modelNotes = reactive(""),
   onlySettings = FALSE,
   compress = TRUE,
-  compressionLevel = 9
+  compressionLevel = 9,
+  triggerUpdate = reactive(FALSE)
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ file is a connection.}
 
 \item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
 longest.}
+
+\item{triggerUpdate}{trigger update of local input of model notes}
 }
 \description{
 Backend for download model module
