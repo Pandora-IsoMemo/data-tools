@@ -24,7 +24,7 @@ remoteModelsUI <-
       div(id = ns("noConn"),
           helpText(
             paste(
-              "No access to the Github folder. 'Online models'",
+              "Access to the Github API failed. 'Online models'",
               "are taken from the app's model folder."
             )
           )),
@@ -192,8 +192,8 @@ getRemoteModelsFromGithub <-
       return()
     }
 
-    if (!is.null(apiOut[["message"]]) &&
-        apiOut[["message"]] == "Not Found") {
+    if (!is.null(apiOut[["message"]])) {
+      # if there is a message than an error occurred
       return()
     }
 
