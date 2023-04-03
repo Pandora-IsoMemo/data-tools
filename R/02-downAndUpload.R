@@ -366,7 +366,8 @@ uploadModelServer <-
                        shinyalert(
                          title = "Wrong model loaded.",
                          text = paste(
-                           "Model not valid for this app. Make sure to upload",
+                           "Trying to upload", modelImport$version,
+                           ". Model not valid for", rPackageName, ". Make sure to upload",
                            "a model that was saved exactly with this app before."
                          ),
                          type = "error"
@@ -374,12 +375,15 @@ uploadModelServer <-
                        return()
                      }
 
-                     if (!is.null(modelSubFolder) &&
+                     if (!is.null(rPackageName) &&
+                         !is.null(modelSubFolder) &&
                          !grepl(modelSubFolder, modelImport$version)) {
                        shinyalert(
                          title = "Wrong model loaded.",
                          text = paste(
-                           "Model not valid for this tab of the app. Make sure",
+                           "Trying to upload", modelImport$version,
+                           ". Model not valid for the tab", modelSubFolder, "of",
+                           rPackageName, ". Make sure",
                            "to upload a model that was saved exactly within",
                            "this tab of the app before."
                          ),
