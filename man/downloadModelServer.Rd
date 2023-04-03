@@ -12,6 +12,7 @@ downloadModelServer(
   rPackageName,
   modelSubFolder = NULL,
   helpHTML = "",
+  modelNotes = reactive(""),
   onlySettings = FALSE,
   compress = TRUE,
   compressionLevel = 9
@@ -32,6 +33,8 @@ module is applied, e.g. "mpiBpred"}
 \item{modelSubFolder}{(character) possible subfolder containing predefined models}
 
 \item{helpHTML}{content of help function}
+
+\item{modelNotes}{(reactive) notes regarding the model to be saved and displayed when uploaded}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 

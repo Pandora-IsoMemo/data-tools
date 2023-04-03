@@ -30,6 +30,7 @@ downUploadButtonServer <- function(id,
                                    modelFolder = "predefinedModels",
                                    modelSubFolder = NULL,
                                    helpHTML = "",
+                                   modelNotes = reactive(""),
                                    onlySettings = FALSE,
                                    compress = TRUE,
                                    compressionLevel = 9,
@@ -63,6 +64,7 @@ downUploadButtonServer <- function(id,
                    rPackageName = rPackageName,
                    modelSubFolder = modelSubFolder,
                    helpHTML = helpHTML,
+                   modelNotes = modelNotes,
                    onlySettings = onlySettings,
                    compress = compress,
                    compressionLevel = compressionLevel
@@ -105,7 +107,12 @@ downloadModelUI <- function(id, label, width = NULL) {
 
   tagList(
     tags$h4(label),
-    textAreaInput(ns("exportNotes"), "Notes", width = width),
+    textAreaInput(
+      ns("exportNotes"),
+      "Notes",
+      placeholder = "Description of the model ...",
+      width = width
+    ),
     checkboxInput(ns("onlyInputs"), "Store only data and model options", width = width),
     downloadButton(ns("download"), "Download"),
     conditionalPanel(
@@ -131,6 +138,7 @@ downloadModelUI <- function(id, label, width = NULL) {
 #'  module is applied, e.g. "mpiBpred"
 #' @param modelSubFolder (character) possible subfolder containing predefined models
 #' @param helpHTML content of help function
+#' @param modelNotes (reactive) notes regarding the model to be saved and displayed when uploaded
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
@@ -147,6 +155,7 @@ downloadModelServer <-
            rPackageName,
            modelSubFolder = NULL,
            helpHTML = "",
+           modelNotes = reactive(""),
            onlySettings = FALSE,
            compress = TRUE,
            compressionLevel = 9) {
@@ -164,6 +173,9 @@ downloadModelServer <-
                      onlySettings
                    })
                    outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
+
+                   observe(updateTextAreaInput(session, "exportNotes", value = modelNotes())) %>%
+                     bindEvent(modelNotes())
 
                    output$download <- downloadHandler(
                      filename = function() {
