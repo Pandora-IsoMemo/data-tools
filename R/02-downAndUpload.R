@@ -225,9 +225,13 @@ downloadModelServer <-
                            compress = compress
                          )
                          writeLines(input$exportNotes, notesfile)
-                         save_html(helpHTML, helpfile)
+                         filesToZip <- c(modelfile, notesfile)
+                         if (!is.null(helpHTML)) {
+                           save_html(helpHTML, helpfile)
+                           filesToZip <- c(filesToZip, helpfile)
+                         }
                          zip::zipr(file,
-                                   c(modelfile, notesfile, helpfile),
+                                   filesToZip,
                                    compression_level = compressionLevel)
                        },
                        value = 0.8,
