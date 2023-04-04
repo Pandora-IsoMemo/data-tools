@@ -58,6 +58,10 @@ longest.}
 \item{reset}{(reactive) resets the selection of the online files}
 
 \item{title}{title used inside the modal}
+
+\item{labelRemote}{label of the input for remote files}
+
+\item{labelLocal}{label of the input for local files}
 }
 \description{
 downUploadButton module server

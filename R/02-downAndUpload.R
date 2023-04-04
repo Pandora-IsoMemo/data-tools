@@ -23,6 +23,7 @@ downUploadButtonUI <-
 #'  module is applied, e.g. "mpiBpred"
 #' @param title title used inside the modal
 #' @inheritParams downloadModelServer
+#' @inheritParams uploadModelUI
 #' @inheritParams uploadModelServer
 #' @inheritParams remoteModelsServer
 #' @export
