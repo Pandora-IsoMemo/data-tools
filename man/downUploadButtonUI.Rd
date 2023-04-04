@@ -4,10 +4,12 @@
 \alias{downUploadButtonUI}
 \title{downUploadButton module ui}
 \usage{
-downUploadButtonUI(id, label = "Download / Upload Model")
+downUploadButtonUI(id, title = NULL, label = "Download / Upload Model")
 }
 \arguments{
 \item{id}{module id}
+
+\item{title}{title of the module}
 
 \item{label}{label for actionButton which will open a modal}
 }

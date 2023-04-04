@@ -3,12 +3,14 @@
 #' A button that opens a modal containing the UI to download or to upload model objects
 #'
 #' @param id module id
+#' @param title title of the module
 #' @param label label for actionButton which will open a modal
 #' @export
 downUploadButtonUI <-
-  function(id, label = "Download / Upload Model") {
+  function(id, title = NULL, label = "Download / Upload Model") {
     ns <- NS(id)
-    tagList(actionButton(ns("showModal"), label = label),
+    tagList(tags$h4(title),
+            actionButton(ns("showModal"), label = label),
             tags$br(),
             tags$br())
   }
@@ -19,6 +21,7 @@ downUploadButtonUI <-
 #' @param id module id
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
+#' @param title title used inside the modal
 #' @inheritParams downloadModelServer
 #' @inheritParams uploadModelServer
 #' @inheritParams remoteModelsServer
@@ -29,14 +32,17 @@ downUploadButtonServer <- function(id,
                                    model,
                                    rPackageName,
                                    githubRepo,
-                                   modelFolder = "predefinedModels",
-                                   modelSubFolder = NULL,
+                                   mainFolder = "predefinedModels",
+                                   subFolder = NULL,
                                    helpHTML = "",
                                    modelNotes = reactive(""),
                                    onlySettings = FALSE,
                                    compress = TRUE,
                                    compressionLevel = 9,
-                                   reset = reactive(FALSE)) {
+                                   reset = reactive(FALSE),
+                                   title = "Download and Upload of Models",
+                                   labelRemote = "Load online model",
+                                   labelLocal = "Load local model") {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -44,14 +50,20 @@ downUploadButtonServer <- function(id,
                  observe({
                    showModal(
                      modalDialog(
-                       title = "Download and Upload",
+                       title = title,
                        easyClose = FALSE,
                        size = "m",
                        footer = tagList(modalButton("Close")),
                        tagList(
-                         uploadModelUI(ns("uploadData"), label = "Upload model", width = "100%"),
+                         uploadModelUI(
+                           ns("uploadData"),
+                           label = "Upload",
+                           labelRemote = labelRemote,
+                           labelLocal = labelLocal,
+                           width = "100%"
+                         ),
                          tags$br(),
-                         downloadModelUI(ns("downloadData"), label = "Download model", width = "100%")
+                         downloadModelUI(ns("downloadData"), label = "Download", width = "100%")
                        )
                      )
                    )
@@ -64,7 +76,7 @@ downUploadButtonServer <- function(id,
                    inputs = inputs,
                    model = model,
                    rPackageName = rPackageName,
-                   modelSubFolder = modelSubFolder,
+                   subFolder = subFolder,
                    helpHTML = helpHTML,
                    modelNotes = modelNotes,
                    onlySettings = onlySettings,
@@ -76,8 +88,8 @@ downUploadButtonServer <- function(id,
                  uploadedData <- uploadModelServer(
                    "uploadData",
                    githubRepo = githubRepo,
-                   modelFolder = modelFolder,
-                   modelSubFolder = modelSubFolder,
+                   mainFolder = mainFolder,
+                   subFolder = subFolder,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
                    reloadChoices = reactive(input[["showModal"]] > 0)
@@ -102,7 +114,7 @@ downUploadButtonServer <- function(id,
 #' UI function to download a zip file with notes and a list of models
 #'
 #' @param id id of module
-#' @param label label of module
+#' @param label title of module
 #' @param width width of inputs in percent
 #'
 #' @export
@@ -114,17 +126,15 @@ downloadModelUI <- function(id, label, width = NULL) {
     textAreaInput(
       ns("exportNotes"),
       "Notes",
-      placeholder = "Model description ...",
+      placeholder = "Description ...",
       width = width
     ),
-    checkboxInput(ns("onlyInputs"), "Store only data and model options", width = width),
+    checkboxInput(ns("onlyInputs"), "Store only data and user inputs", width = width),
     downloadButton(ns("download"), "Download"),
     conditionalPanel(
       ns = ns,
       condition = "output.showSettings",
-      helpText(
-        "Download of model output is not possible! Model output of this app is too large."
-      )
+      helpText("Currently, download of model output is enabled.")
     )
   )
 }
@@ -140,16 +150,16 @@ downloadModelUI <- function(id, label, width = NULL) {
 #' @param model (reactive) model output object
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
-#' @param modelSubFolder (character) possible subfolder containing predefined models
+#' @param subFolder (character) name of the (optional) subfolder containing loadable .zip files
 #' @param helpHTML content of help function
-#' @param modelNotes (reactive) notes regarding the model to be saved and displayed when uploaded
+#' @param modelNotes (reactive) notes regarding the object to be saved and displayed when uploaded
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
 #' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
-#' @param triggerUpdate trigger update of local input of model notes
+#' @param triggerUpdate trigger update of local input of notes
 #'
 #' @export
 downloadModelServer <-
@@ -158,7 +168,7 @@ downloadModelServer <-
            inputs,
            model,
            rPackageName,
-           modelSubFolder = NULL,
+           subFolder = NULL,
            helpHTML = "",
            modelNotes = reactive(""),
            onlySettings = FALSE,
@@ -189,7 +199,7 @@ downloadModelServer <-
                      filename = function() {
                        paste(gsub("\ ", "_", Sys.time()),
                              paste0(paste0(
-                               c(rPackageName, modelSubFolder), collapse = "_"
+                               c(rPackageName, subFolder), collapse = "_"
                              ), ".zip"),
                              sep = "_")
                      },
@@ -216,7 +226,7 @@ downloadModelServer <-
                          }
 
                          versionExport <-
-                           getModelVersion(rPackageName, modelSubFolder)
+                           getModelVersion(rPackageName, subFolder)
 
                          saveRDS(
                            list(
@@ -247,10 +257,10 @@ downloadModelServer <-
   }
 
 
-getModelVersion <- function(rPackageName, modelSubFolder) {
+getModelVersion <- function(rPackageName, subFolder) {
   version <- paste(rPackageName, packageVersion(rPackageName))
-  if (!is.null(modelSubFolder) && modelSubFolder != "") {
-    version <- paste(version, modelSubFolder, sep = " - ")
+  if (!is.null(subFolder) && subFolder != "") {
+    version <- paste(version, subFolder, sep = " - ")
   }
 
   version
@@ -262,17 +272,27 @@ getModelVersion <- function(rPackageName, modelSubFolder) {
 #' UI function to upload a zip file with exportNotes and a list of models
 #'
 #' @param id id of module
-#' @param label label of module
+#' @param label title of module
+#' @param labelRemote label of the input for remote files
+#' @param labelLocal label of the input for local files
 #' @param width width of inputs in percent
 #'
 #' @export
-uploadModelUI <- function(id, label, width = NULL) {
+uploadModelUI <- function(id,
+                          label,
+                          labelRemote = "Load online model",
+                          labelLocal = "Load local model",
+                          width = NULL) {
   ns <- NS(id)
 
   tagList(
     tags$h4(label),
-    fileInput(ns("uploadModel"), label = "Load local model", width = width),
-    remoteModelsUI(ns("remoteModels"), width = width),
+    fileInput(ns("uploadModel"), label = labelLocal, width = width),
+    remoteModelsUI(
+      ns("remoteModels"),
+      selectLabel = labelRemote,
+      width = width
+    ),
     tags$br(),
     tags$br()
   )
@@ -284,11 +304,11 @@ uploadModelUI <- function(id, label, width = NULL) {
 #' Backend for upload model module
 #'
 #' @param id namespace id
-#' @param reset (reactive) resets the selection of the online model
+#' @param reset (reactive) resets the selection of the online files
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
-#' @param modelFolder (character) folder containing all predefined models
-#' @param modelSubFolder (character) possible subfolder containing predefined models
-#' @param rPackageName (character) If not NULL, than the uploaded model must come from this R
+#' @param mainFolder (character) folder containing all loadable .zip files
+#' @param subFolder (character) (optional) subfolder containing loadable .zip files
+#' @param rPackageName (character) If not NULL, than the uploaded file must come from this R
 #'  package
 #' @inheritParams remoteModelsServer
 #'
@@ -296,8 +316,8 @@ uploadModelUI <- function(id, label, width = NULL) {
 uploadModelServer <-
   function(id,
            githubRepo,
-           modelFolder = "predefinedModels",
-           modelSubFolder = NULL,
+           mainFolder = "predefinedModels",
+           subFolder = NULL,
            rPackageName = NULL,
            reloadChoices = reactive(FALSE),
            onlySettings = FALSE,
@@ -317,11 +337,11 @@ uploadModelServer <-
                    pathToRemote <- remoteModelsServer(
                      "remoteModels",
                      githubRepo = githubRepo,
-                     folderOnGithub = paste0("/", paste(
-                       c(modelFolder, modelSubFolder), collapse = "/"
-                     )),
+                     folderOnGithub = paste0("/", paste(c(
+                       mainFolder, subFolder
+                     ), collapse = "/")),
                      pathToLocal =
-                       list(".", modelFolder, modelSubFolder)[!sapply(list(".", modelFolder, modelSubFolder), is.null)] %>%
+                       list(".", mainFolder, subFolder)[!sapply(list(".", mainFolder, subFolder), is.null)] %>%
                        do.call(what = file.path),
                      resetSelected = reset,
                      reloadChoices = reloadChoices
@@ -366,8 +386,11 @@ uploadModelServer <-
                        shinyalert(
                          title = "Wrong model loaded.",
                          text = paste(
-                           "Trying to upload", modelImport$version,
-                           ". Model not valid for", rPackageName, ". Make sure to upload",
+                           "Trying to upload",
+                           modelImport$version,
+                           ". Model not valid for",
+                           rPackageName,
+                           ". Make sure to upload",
                            "a model that was saved exactly with this app before."
                          ),
                          type = "error"
@@ -376,14 +399,18 @@ uploadModelServer <-
                      }
 
                      if (!is.null(rPackageName) &&
-                         !is.null(modelSubFolder) &&
-                         !grepl(modelSubFolder, modelImport$version)) {
+                         !is.null(subFolder) &&
+                         !grepl(subFolder, modelImport$version)) {
                        shinyalert(
                          title = "Wrong model loaded.",
                          text = paste(
-                           "Trying to upload", modelImport$version,
-                           ". Model not valid for the tab", modelSubFolder, "of",
-                           rPackageName, ". Make sure",
+                           "Trying to upload",
+                           modelImport$version,
+                           ". Model not valid for the tab",
+                           subFolder,
+                           "of",
+                           rPackageName,
+                           ". Make sure",
                            "to upload a model that was saved exactly within",
                            "this tab of the app before."
                          ),

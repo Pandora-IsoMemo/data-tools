@@ -21,16 +21,16 @@ remoteModelsServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{pathToLocal}{(character) relative path to the folder storing local models.}
+\item{pathToLocal}{(character) relative path to the folder storing local files}
 
-\item{folderOnGithub}{(character) folder on github where remote models are stored. This should
-correspond to 'pathToLocal' since online and offline models should be the same and up-to-date}
+\item{folderOnGithub}{(character) folder on github where remote files are stored. This should
+correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
 
-\item{onlyLocalModels}{(reactive) if TRUE only local models are used}
+\item{onlyLocalModels}{(reactive) if TRUE only local files are used}
 
-\item{resetSelected}{(reactive) if TRUE resets the selected remote model}
+\item{resetSelected}{(reactive) if TRUE resets the selected remote file}
 
-\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
+\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote files}
 
 \item{rPackageName}{(character) DEPRECATED (will be removed in future): name of the package (as in the
 description file) in which this module is applied, e.g. "mpiBpred"}
@@ -39,7 +39,7 @@ description file) in which this module is applied, e.g. "mpiBpred"}
 package where this module is applied, e.g. utils::packageVersion("mpiBpred")}
 }
 \value{
-(character) the path to the selected remote (github) or local model
+(character) the path to the selected remote (github) or local file
 }
 \description{
 Backend for the module

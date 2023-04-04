@@ -18,14 +18,14 @@ remoteModelsUI <-
       selectInput(
         ns("remoteModelChoice"),
         label = selectLabel,
-        choices = c("No online models found ..." = ""),
+        choices = c("No online files found ..." = ""),
         width = width
       ),
       div(id = ns("noConn"),
           helpText(
-            paste(
-              "Access to the Github API failed. 'Online models'",
-              "are taken from the app's model folder."
+            paste0(
+              "Access to the Github API failed. Online files ",
+              "are taken from the app's folder for uploadable files."
             )
           )),
       actionButton(ns("loadRemoteModel"), buttonLabel)
@@ -38,17 +38,17 @@ remoteModelsUI <-
 #'
 #' @param id namespace id
 #' @param githubRepo (character) name of used github repository, e.g. "bpred"
-#' @param pathToLocal (character) relative path to the folder storing local models.
-#' @param folderOnGithub (character) folder on github where remote models are stored. This should
-#' correspond to 'pathToLocal' since online and offline models should be the same and up-to-date
-#' @param onlyLocalModels (reactive) if TRUE only local models are used
-#' @param resetSelected (reactive) if TRUE resets the selected remote model
-#' @param reloadChoices (reactive) trigger access to  github and reload choices of remote models
+#' @param pathToLocal (character) relative path to the folder storing local files
+#' @param folderOnGithub (character) folder on github where remote files are stored. This should
+#' correspond to 'pathToLocal' since online and offline files should be the same and up-to-date
+#' @param onlyLocalModels (reactive) if TRUE only local files are used
+#' @param resetSelected (reactive) if TRUE resets the selected remote file
+#' @param reloadChoices (reactive) trigger access to  github and reload choices of remote files
 #' @param rPackageName (character) DEPRECATED (will be removed in future): name of the package (as in the
 #'  description file) in which this module is applied, e.g. "mpiBpred"
 #' @param rPackageVersion (character) DEPRECATED (will be removed in future): current version of the
 #'  package where this module is applied, e.g. utils::packageVersion("mpiBpred")
-#' @return (character) the path to the selected remote (github) or local model
+#' @return (character) the path to the selected remote (github) or local file
 #' @export
 remoteModelsServer <- function(id,
                                githubRepo,
@@ -94,9 +94,9 @@ remoteModelsServer <- function(id,
                    }
 
                    if (length(choices) == 0) {
-                     choices <- c("No online models found ..." = "")
+                     choices <- c("No online files found ..." = "")
                    } else {
-                     choices <- c(c("Please select a model ..." = ""), choices)
+                     choices <- c(c("Please select a file ..." = ""), choices)
                    }
 
                    updateSelectInput(session = session,
@@ -109,7 +109,7 @@ remoteModelsServer <- function(id,
                    updateSelectInput(
                      session = session,
                      "remoteModelChoice",
-                     selected = c("Please select a model ..." = "")
+                     selected = c("Please select a file ..." = "")
                    )
                  }) %>%
                    bindEvent(resetSelected())
@@ -120,7 +120,7 @@ remoteModelsServer <- function(id,
 
                    if (!useLocalModels()) {
                      tmpPath <- tempfile()
-                     withProgress(message = "Downloading remote model ...", value = 0.9, {
+                     withProgress(message = "Downloading remote file ...", value = 0.9, {
                        res <- try(download.file(
                          paste0(
                            "https://github.com/Pandora-IsoMemo/",
@@ -139,7 +139,7 @@ remoteModelsServer <- function(id,
                      # FALL BACK IF NO INTERNET CONNECTION
                      pathToLocal <-
                        checkLocalModelDir(pathToLocal = pathToLocal) %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "No local models!")
+                       tryCatchWithWarningsAndErrors(errorTitle = "No local files!")
 
                      if (!is.null(pathToLocal)) {
                        tmpPath <-
@@ -173,7 +173,7 @@ checkLocalModelDir <-
     if (is.null(pathToLocal) ||
         !is.character(pathToLocal) ||
         length(dir(pathToLocal)) == 0) {
-      stop(paste("No models found at", pathToLocal))
+      stop(paste("No files found at", pathToLocal))
     }
 
     pathToLocal

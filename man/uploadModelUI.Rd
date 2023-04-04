@@ -4,12 +4,22 @@
 \alias{uploadModelUI}
 \title{Upload model module}
 \usage{
-uploadModelUI(id, label, width = NULL)
+uploadModelUI(
+  id,
+  label,
+  labelRemote = "Load online model",
+  labelLocal = "Load local model",
+  width = NULL
+)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{label}{label of module}
+\item{label}{title of module}
+
+\item{labelRemote}{label of the input for remote files}
+
+\item{labelLocal}{label of the input for local files}
 
 \item{width}{width of inputs in percent}
 }

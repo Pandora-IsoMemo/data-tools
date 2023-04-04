@@ -10,7 +10,7 @@ downloadModelServer(
   inputs,
   model,
   rPackageName,
-  modelSubFolder = NULL,
+  subFolder = NULL,
   helpHTML = "",
   modelNotes = reactive(""),
   onlySettings = FALSE,
@@ -31,11 +31,11 @@ downloadModelServer(
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
 
-\item{modelSubFolder}{(character) possible subfolder containing predefined models}
+\item{subFolder}{(character) name of the (optional) subfolder containing loadable .zip files}
 
 \item{helpHTML}{content of help function}
 
-\item{modelNotes}{(reactive) notes regarding the model to be saved and displayed when uploaded}
+\item{modelNotes}{(reactive) notes regarding the object to be saved and displayed when uploaded}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 
@@ -46,7 +46,7 @@ file is a connection.}
 \item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
 longest.}
 
-\item{triggerUpdate}{trigger update of local input of model notes}
+\item{triggerUpdate}{trigger update of local input of notes}
 }
 \description{
 Backend for download model module

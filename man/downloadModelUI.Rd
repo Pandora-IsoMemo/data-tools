@@ -9,7 +9,7 @@ downloadModelUI(id, label, width = NULL)
 \arguments{
 \item{id}{id of module}
 
-\item{label}{label of module}
+\item{label}{title of module}
 
 \item{width}{width of inputs in percent}
 }

@@ -7,8 +7,8 @@
 uploadModelServer(
   id,
   githubRepo,
-  modelFolder = "predefinedModels",
-  modelSubFolder = NULL,
+  mainFolder = "predefinedModels",
+  subFolder = NULL,
   rPackageName = NULL,
   reloadChoices = reactive(FALSE),
   onlySettings = FALSE,
@@ -20,18 +20,18 @@ uploadModelServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{modelFolder}{(character) folder containing all predefined models}
+\item{mainFolder}{(character) folder containing all loadable .zip files}
 
-\item{modelSubFolder}{(character) possible subfolder containing predefined models}
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 
-\item{rPackageName}{(character) If not NULL, than the uploaded model must come from this R
+\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
 package}
 
-\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote models}
+\item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote files}
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 
-\item{reset}{(reactive) resets the selection of the online model}
+\item{reset}{(reactive) resets the selection of the online files}
 }
 \description{
 Backend for upload model module

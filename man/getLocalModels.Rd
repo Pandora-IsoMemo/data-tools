@@ -7,7 +7,7 @@
 getLocalModels(pathToLocal)
 }
 \arguments{
-\item{pathToLocal}{(character) relative path to the folder storing local models.}
+\item{pathToLocal}{(character) relative path to the folder storing local files}
 }
 \description{
 Get Local Models
