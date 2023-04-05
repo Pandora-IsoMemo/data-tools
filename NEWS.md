@@ -1,5 +1,9 @@
 # DataTools
 
+## Version 23.04.2
+## Updates
+- module _downUploadButton_: update of titles, progress bar for upload, close pop up after download
+
 ## Version 23.04.1
 
 ## New Features

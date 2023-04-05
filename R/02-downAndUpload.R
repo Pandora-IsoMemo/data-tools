@@ -251,6 +251,8 @@ downloadModelServer <-
                        },
                        value = 0.8,
                        message = "Downloading ...")
+
+                       removeModal()
                      }
                    )
 
@@ -353,12 +355,16 @@ uploadModelServer <-
                    })
 
                    observeEvent(pathToModel(), {
-                     alertType <- "success"
+                     withProgress({
+                       alertType <- "success"
 
-                     res <- try({
-                       zip::unzip(pathToModel())
-                       modelImport <- readRDS("model.rds")
-                     })
+                       res <- try({
+                         zip::unzip(pathToModel())
+                         modelImport <- readRDS("model.rds")
+                       })
+                     },
+                     value = 0.8,
+                     message = "Uploading ...")
 
                      if (inherits(res, "try-error")) {
                        shinyalert(
