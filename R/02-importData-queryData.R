@@ -18,7 +18,8 @@ queryDataUI <- function(id) {
     div(style = "margin-top: 1em; margin-bottom: 0.5em;",
         tags$html(
           HTML(
-            "<b>SQL query</b> &nbsp;&nbsp; (Please, use the table ID to name tables)"
+            "<b>SQL query</b> &nbsp;&nbsp; (Please, use the table IDs as table names and surround
+            field names with square brackets. See example below.)"
           )
         )),
     fluidRow(column(
@@ -97,7 +98,7 @@ queryDataServer <- function(id, mergeList) {
                    inMemColumns(inMemCols)
 
                    if (!is.null(inMemCols[["t1"]])) {
-                     colSel <- paste0("`", inMemCols[["t1"]][1], "`")
+                     colSel <- paste0("[", inMemCols[["t1"]][1], "]")
                    } else {
                      colSel <- "*"
                    }
@@ -226,19 +227,19 @@ gptUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    checkboxInput(ns("useGPT"), HTML("<b>Use GPT operations</b>")),
+    checkboxInput(ns("useGPT"), HTML("<b>Use AI PEITHO data operations</b>")),
     conditionalPanel(
       ns = ns,
       condition = "input.useGPT && !input.confirmUsingGPT",
       tags$html(
         HTML(
-          "To employ GPT operations you are required to upload your access key saved in a text file.
+          "AI PEITHO relies on the large language model GPT. To employ GPT operations you are
+          required to upload your access key saved in a text file.
       GPT operations rely on the <a href='https://github.com/ben-aaron188/rgpt3' target='_blank'>rgpt3</a>
       package that handles encryption. </br>
       <a href='https://github.com/Pandora-IsoMemo' target='_blank'>Pandora & IsoMemo</a> are
       not responsible for handling key security. Do not share your key.
-      GPT operations consume OpenAI credit from the account associated with the key.</br></br>
-      To proceed please acknowledge that you are aware of the above and take full responsibility for any GPT operation."
+      GPT operations consume OpenAI credit from the account associated with the key."
         )
       ),
       checkboxInput(ns("confirmUsingGPT"), "Confirm using GPT operations")
