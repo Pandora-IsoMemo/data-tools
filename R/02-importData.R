@@ -385,7 +385,7 @@ importDataServer <- function(id,
                      tmpMergeList[[values$fileName]] <- tmpData
                      mergeList(tmpMergeList)
                      notifications <- c(notifications,
-                                        "File was send already and was updated successfully.")
+                                        "File was send before and was updated successfully now.")
                    } else {
                      mergeList(c(mergeList(),
                                  setNames(list(tmpData),
