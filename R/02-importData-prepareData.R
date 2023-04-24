@@ -42,6 +42,7 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
   moduleServer(id,
                function(input, output, session) {
                  preparedData <- reactiveVal(NULL)
+                 #prepareHistory <- reactiveVal(list())
 
                  observeEvent(selectedData(), ignoreNULL = FALSE, {
                    preparedData(selectedData())
@@ -60,14 +61,14 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                    HTML(paste0(prefix, text))
                  })
 
-                 newColNames <- renameColumnsServer("renameCols",
-                                                    columnNames = reactive(colnames(preparedData())))
+                 renamedData <- renameColumnsServer("renameCols", preparedData)
 
-                 observeEvent(newColNames(), {
-                   req(newColNames())
-                   tmpData <- preparedData()
-                   colnames(tmpData) <- newColNames()
-                   preparedData(tmpData)
+                 observeEvent(renamedData()$data, {
+                   req(renamedData()$data)
+                   preparedData(renamedData()$data)
+                   # prepareHistory(c(prepareHistory(),
+                   #                  list(fun = renameColumns,
+                   #                       userInputs = newColNames()$userInputs)))
                  })
 
                  reducedData <-
@@ -150,35 +151,42 @@ renameColumnsUI <- function(id) {
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param columnNames (reactive) column names
-renameColumnsServer <- function(id, columnNames) {
+#' @param preparedData (reactive) selected data, possibly already modified
+renameColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newColumnNames <- reactiveVal()
+                 newData <- reactiveVal()
+                 result  <- reactiveVal(list())
 
-                 observeEvent(columnNames(), ignoreNULL = FALSE, {
-                   if (is.null(columnNames())) {
+                 observeEvent(preparedData(), ignoreNULL = FALSE, {
+                   currentColNames <- colnames(preparedData())
+                   if (is.null(currentColNames)) {
                      choices <- c("Select data ..." = "")
                    } else {
-                     choices <- columnNames()
+                     choices <- currentColNames
                    }
                    updateSelectInput(session, "columnToRename", choices = choices)
                    updateTextInput(session, "newName", value = "")
 
-                   # by default return current column names
-                   newColumnNames(columnNames())
+                   # by default return current data
+                   newData(preparedData())
                  })
 
                  observeEvent(input$setColName, {
-                   req(columnNames(), input$newName)
+                   req(preparedData(), input$newName)
 
-                   tmpNames <- columnNames()
-                   tmpNames[tmpNames == input$columnToRename] <-
-                     input$newName
-                   newColumnNames(tmpNames)
+                   newData(preparedData() %>%
+                             renameColumns(oldColName = input$columnToRename,
+                                           newColName = input$newName))
                  })
 
-                 newColumnNames
+                 observe({
+                   req(newData())
+                   result(list(userInputs = reactiveValuesToList(input)[names(input)],
+                               data = newData()))
+                 }) %>% bindEvent(newData())
+
+                 result
                })
 }
 
@@ -428,4 +436,15 @@ splitColumnsServer <- function(id, preparedData) {
 
                  newData
                })
+}
+
+# helper functions ----
+
+renameColumns <- function(data, oldColName, newColName) {
+  tmpNames <- colnames(data)
+  if (is.null(tmpNames)) return(data)
+
+  tmpNames[tmpNames == oldColName] <- newColName
+  colnames(data) <- tmpNames
+  data
 }
