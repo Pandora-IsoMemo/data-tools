@@ -39,4 +39,4 @@ Suggests:
   devtools,
   lintr (>= 1.0.2),
   testthat (>= 2.0.0)
-RoxygenNote: 7.2.1
+RoxygenNote: 7.2.3
