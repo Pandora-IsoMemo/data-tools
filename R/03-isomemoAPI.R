@@ -27,6 +27,9 @@ callAPI <- function(action, ...) {
   }
 }
 
+#' Get Database List
+#'
+#' @export
 getDatabaseList <- function() {
   res <- callAPI("dbsources")
   if (!is.null(res)) res$dbsource
@@ -83,4 +86,3 @@ handleDescription <- function(isoData, maxChar = 20){
   isoData
 
 }
-
