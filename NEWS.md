@@ -1,35 +1,41 @@
 # DataTools
 
+## Version 23.04.3
+
+### New Features
+- new functions to reach the isomemo API that were extracted from the iso-app
+
 ## Version 23.04.2
-## Updates
+
+### Updates
 - module _downUploadButton_: update of titles, progress bar for upload, close pop up after download
 
 ## Version 23.04.1
 
-## New Features
+### New Features
 - new module _downUploadButton_: A button that opens a pop up with the download and upload UI for
 models. The upload contains upload from local files (3) or upload from a remote github folder. If
 there is no access to the github folder, a note is displayed.
 
-## Updates
+### Updates
 - `remoteModelsServer`: new parameter to set the folder for remote models on github if it differs
 from the default folder
 
 ## Version 23.03.3
 
-## New Features
+### New Features
 - _Down- and Upload of Models_ module: UI and server functions for down and upload of user data, 
 user inputs and model output
 
 ## Version 23.03.2
 
-## New Features
+### New Features
 - _Remote Models_ module: UI and server functions for selecting a remote (or local) model and
 obtaining the remote path on github (or the local path) to the file of the selected model
 
 ## Version 23.03.1
 
-## Updates
+### Updates
 - _Import Data_ module in the tab _Query with SQL_: before using the GPT-3 feature a confirmation 
 is required (#15)
 
