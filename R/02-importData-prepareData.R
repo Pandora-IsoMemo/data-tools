@@ -41,11 +41,13 @@ prepareDataUI <- function(id) {
 prepareDataServer <- function(id, selectedData, nameOfSelected) {
   moduleServer(id,
                function(input, output, session) {
-                 preparedData <- reactiveVal(NULL)
-                 #prepareHistory <- reactiveVal(list())
+                 preparedData <- reactiveValues(
+                   data = NULL,
+                   history = list()
+                   )
 
                  observeEvent(selectedData(), ignoreNULL = FALSE, {
-                   preparedData(selectedData())
+                   preparedData$data <- selectedData()
                  })
 
                  output$selectedFile <- renderText({
@@ -61,45 +63,46 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                    HTML(paste0(prefix, text))
                  })
 
-                 renamedData <- renameColumnsServer("renameCols", preparedData)
+                 renamedData <- renameColumnsServer("renameCols", reactive(preparedData$data))
 
-                 observeEvent(renamedData()$data, {
-                   req(renamedData()$data)
-                   preparedData(renamedData()$data)
-                   # prepareHistory(c(prepareHistory(),
-                   #                  list(fun = renameColumns,
-                   #                       userInputs = newColNames()$userInputs)))
+                 observeEvent(renamedData$data, {
+                   req(renamedData$data)
+                   preparedData$data <- renamedData$data
+                   req(length(renamedData$userInputs) > 0)
+                   preparedData$history <- c(preparedData$history,
+                                             list(fun = renameColumns,
+                                                  parameter = renamedData$userInputs))
                  })
 
                  reducedData <-
-                   deleteColumnsServer("deleteCols", preparedData)
+                   deleteColumnsServer("deleteCols", reactive(preparedData$data))
 
                  observeEvent(reducedData(), {
                    req(reducedData())
-                   preparedData(reducedData())
+                   preparedData$data <- reducedData()
                  })
 
                  joinedData <-
-                   joinColumnsServer("joinCols", preparedData)
+                   joinColumnsServer("joinCols", reactive(preparedData$data))
 
                  observeEvent(joinedData(), {
                    req(joinedData())
-                   preparedData(joinedData())
+                   preparedData$data <- joinedData()
                  })
 
                  splittedData <-
-                   splitColumnsServer("splitCols", preparedData)
+                   splitColumnsServer("splitCols", reactive(preparedData$data))
 
                  observeEvent(splittedData(), {
                    req(splittedData())
-                   preparedData(splittedData())
+                   preparedData$data <- splittedData()
                  })
 
                  output$preview <- renderDataTable({
-                   req(preparedData())
+                   req(preparedData$data)
 
                    previewData <-
-                     cutAllLongStrings(preparedData(), cutAt = 20)
+                     cutAllLongStrings(preparedData$data, cutAt = 20)
                    DT::datatable(
                      previewData,
                      filter = "none",
@@ -132,10 +135,10 @@ renameColumnsUI <- function(id) {
   tagList(tags$br(),
           fluidRow(
             column(5, selectInput(
-              ns("columnToRename"), "Rename a column", choices = NULL
+              ns("oldColName"), "Rename a column", choices = NULL
             )),
             column(5, style = "margin-top: 18px;", textInput(
-              ns("newName"), label = NULL, placeholder = "New name"
+              ns("newColName"), label = NULL, placeholder = "New name"
             )),
             column(
               2,
@@ -155,8 +158,10 @@ renameColumnsUI <- function(id) {
 renameColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
-                 result  <- reactiveVal(list())
+                 newData <- reactiveValues(
+                   data = NULL,
+                   userInputs = list()
+                 )
 
                  observeEvent(preparedData(), ignoreNULL = FALSE, {
                    currentColNames <- colnames(preparedData())
@@ -165,28 +170,24 @@ renameColumnsServer <- function(id, preparedData) {
                    } else {
                      choices <- currentColNames
                    }
-                   updateSelectInput(session, "columnToRename", choices = choices)
-                   updateTextInput(session, "newName", value = "")
+                   updateSelectInput(session, "oldColName", choices = choices)
+                   updateTextInput(session, "newColName", value = "")
 
                    # by default return current data
-                   newData(preparedData())
+                   newData$data <- preparedData()
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  observeEvent(input$setColName, {
-                   req(preparedData(), input$newName)
+                   req(preparedData(), input$newColName)
 
-                   newData(preparedData() %>%
-                             renameColumns(oldColName = input$columnToRename,
-                                           newColName = input$newName))
+                   newData$data <- preparedData() %>%
+                     renameColumns(oldColName = input$oldColName,
+                                   newColName = input$newColName)
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
-                 observe({
-                   req(newData())
-                   result(list(userInputs = reactiveValuesToList(input)[names(input)],
-                               data = newData()))
-                 }) %>% bindEvent(newData())
-
-                 result
+                 return(newData)
                })
 }
 

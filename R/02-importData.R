@@ -304,18 +304,18 @@ importDataServer <- function(id,
                    nameOfSelected = reactive(values$fileName)
                  )
 
-                 observeEvent(preparedData(), {
-                   logDebug("Updating preparedData()")
+                 observeEvent(preparedData$data, {
+                   logDebug("Updating preparedData")
                    #values$dataImport <- preparedData()
                    values$preview <-
-                     cutAllLongStrings(preparedData(), cutAt = 20)
+                     cutAllLongStrings(preparedData$data, cutAt = 20)
 
                    ## Import valid?
                    values$warnings$import <- list()
                    values$errors$import <- list()
 
                    values <- checkImport(values,
-                                         df = preparedData() %>%
+                                         df = preparedData$data %>%
                                            formatForImport(
                                              outputAsMatrix = outputAsMatrix,
                                              includeSd = input$includeSd,
@@ -371,7 +371,7 @@ importDataServer <- function(id,
                  ## button add data ----
                  observeEvent(input$addData, {
                    logDebug("Updating input$addData")
-                   tmpData <- preparedData()
+                   tmpData <- preparedData$data
                    ### format column names for import ----
                    colnames(tmpData) <- colnames(tmpData) %>%
                      formatColumnNames()
@@ -435,7 +435,7 @@ importDataServer <- function(id,
                    removeOpenGptCon()
 
                    values$data[[values$fileName]] <-
-                     preparedData() %>%
+                     preparedData$data %>%
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = input$includeSd,
