@@ -11,6 +11,7 @@ prepareDataUI <- function(id) {
   tagList(
     tags$br(),
     htmlOutput(ns("selectedFile")),
+    # TO DO: replace with selectInput to choose a file from mergeList() ----
     renameColumnsUI(ns("renameCols")),
     tags$br(),
     joinColumnsUI(ns("joinCols")),
