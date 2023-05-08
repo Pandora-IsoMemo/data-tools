@@ -70,16 +70,20 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                    preparedData$data <- renamedData$data
                    req(length(renamedData$userInputs) > 0)
                    preparedData$history <- c(preparedData$history,
-                                             list(fun = renameColumns,
+                                             list(fun = "renameColumns",
                                                   parameter = renamedData$userInputs))
                  })
 
                  reducedData <-
                    deleteColumnsServer("deleteCols", reactive(preparedData$data))
 
-                 observeEvent(reducedData(), {
-                   req(reducedData())
-                   preparedData$data <- reducedData()
+                 observeEvent(reducedData$data, {
+                   req(reducedData$data)
+                   preparedData$data <- reducedData$data
+                   req(length(reducedData$userInputs) > 0)
+                   preparedData$history <- c(preparedData$history,
+                                             list(fun = "deleteColumns",
+                                                  parameter = reducedData$userInputs))
                  })
 
                  joinedData <-
@@ -238,7 +242,10 @@ deleteColumnsUI <- function(id) {
 deleteColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
+                 newData <- reactiveValues(
+                   data = NULL,
+                   userInputs = list()
+                 )
 
                  observeEvent(preparedData(), ignoreNULL = FALSE, {
                    if (is.null(preparedData())) {
@@ -252,16 +259,16 @@ deleteColumnsServer <- function(id, preparedData) {
                                      selected = c())
 
                    # by default return current data
-                   newData(preparedData())
+                   newData$data <- preparedData()
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  observeEvent(input$deleteCol, {
                    req(preparedData(), input$columnsToDelete)
 
-                   tmpData <- preparedData()
-                   tmpData <-
-                     tmpData[, !(colnames(tmpData) %in% input$columnsToDelete)]
-                   newData(tmpData)
+                   newData$data <- preparedData() %>%
+                     deleteColumns(columnsToDelete = input$columnsToDelete)
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  newData
@@ -448,4 +455,8 @@ renameColumns <- function(data, oldColName, newColName) {
   tmpNames[tmpNames == oldColName] <- newColName
   colnames(data) <- tmpNames
   data
+}
+
+deleteColumns <- function(data, columnsToDelete) {
+  data[, !(colnames(data) %in% columnsToDelete)]
 }
