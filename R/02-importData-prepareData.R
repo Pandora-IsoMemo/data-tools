@@ -89,17 +89,25 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                  joinedData <-
                    joinColumnsServer("joinCols", reactive(preparedData$data))
 
-                 observeEvent(joinedData(), {
-                   req(joinedData())
-                   preparedData$data <- joinedData()
+                 observeEvent(joinedData$data, {
+                   req(joinedData$data)
+                   preparedData$data <- joinedData$data
+                   req(length(joinedData$userInputs) > 0)
+                   preparedData$history <- c(preparedData$history,
+                                             list(fun = "joinColumns",
+                                                  parameter = joinedData$userInputs))
                  })
 
                  splittedData <-
                    splitColumnsServer("splitCols", reactive(preparedData$data))
 
-                 observeEvent(splittedData(), {
-                   req(splittedData())
-                   preparedData$data <- splittedData()
+                 observeEvent(splittedData$data, {
+                   req(splittedData$data)
+                   preparedData$data <- splittedData$data
+                   req(length(splittedData$userInputs) > 0)
+                   preparedData$history <- c(preparedData$history,
+                                             list(fun = "splitColumn",
+                                                  parameter = splittedData$userInputs))
                  })
 
                  output$preview <- renderDataTable({
@@ -307,7 +315,7 @@ joinColumnsUI <- function(id) {
       4,
       offset = 1,
       style = "margin-top: 14px;",
-      checkboxInput(ns("keepOrigColumns"), "Keep input columns", value = TRUE)
+      checkboxInput(ns("keepOrig"), "Keep input columns", value = TRUE)
     ),
     column(2, align = "right",
            actionButton(ns("join"), "Join", width = "100%"))
@@ -323,7 +331,10 @@ joinColumnsUI <- function(id) {
 joinColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
+                 newData <- reactiveValues(
+                   data = NULL,
+                   userInputs = list()
+                 )
 
                  observeEvent(preparedData(), ignoreNULL = FALSE, {
                    if (is.null(preparedData())) {
@@ -338,7 +349,8 @@ joinColumnsServer <- function(id, preparedData) {
                    updateTextInput(session, "newName", value = "")
 
                    # by default return current data
-                   newData(preparedData())
+                   newData$data <- preparedData()
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  observeEvent(input$join, {
@@ -347,16 +359,13 @@ joinColumnsServer <- function(id, preparedData) {
                        input$column2ToJoin,
                        input$newName)
 
-                   tmpData <- preparedData() %>%
-                     unite(
-                       !!input$newName,
-                       c(input$column1ToJoin, input$column2ToJoin),
-                       sep = input$sep,
-                       remove = !input$keepOrigColumns,
-                       na.rm = TRUE
-                     )
-
-                   newData(tmpData)
+                   newData$data <- preparedData() %>%
+                     joinColumns(newName = input$newName,
+                                 column1ToJoin = input$column1ToJoin,
+                                 column2ToJoin = input$column2ToJoin,
+                                 sep = input$sep,
+                                 keepOrig = input$keepOrig)
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  newData
@@ -384,7 +393,7 @@ splitColumnsUI <- function(id) {
            )),
     column(4, style = "margin-top: 30px;",
            checkboxInput(
-             ns("keepOrigColumn"), "Keep input column", value = TRUE
+             ns("keepOrig"), "Keep input column", value = TRUE
            )),
   ),
   fluidRow(
@@ -408,7 +417,10 @@ splitColumnsUI <- function(id) {
 splitColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
+                 newData <- reactiveValues(
+                   data = NULL,
+                   userInputs = list()
+                 )
 
                  observeEvent(preparedData(), ignoreNULL = FALSE, {
                    if (is.null(preparedData())) {
@@ -422,7 +434,8 @@ splitColumnsServer <- function(id, preparedData) {
                    updateTextInput(session, "newName2", value = "")
 
                    # by default return current data
-                   newData(preparedData())
+                   newData$data <- preparedData()
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  observeEvent(input$split, {
@@ -431,15 +444,13 @@ splitColumnsServer <- function(id, preparedData) {
                        input$newName1,
                        input$newName2)
 
-                   tmpData <- preparedData() %>%
-                     separate(
-                       !!input$columnToSplit,
-                       c(input$newName1, input$newName2),
-                       sep = input$sep,
-                       remove = !input$keepOrigColumn
-                     )
-
-                   newData(tmpData)
+                   newData$data <- preparedData() %>%
+                     splitColumn(columnToSplit = input$columnToSplit,
+                                 newName1 = input$newName1,
+                                 newName2 = input$newName2,
+                                 sep = input$sep,
+                                 keepOrig = input$keepOrig)
+                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  newData
@@ -459,4 +470,25 @@ renameColumns <- function(data, oldColName, newColName) {
 
 deleteColumns <- function(data, columnsToDelete) {
   data[, !(colnames(data) %in% columnsToDelete)]
+}
+
+joinColumns <- function(data, newName, column1ToJoin, column2ToJoin, sep, keepOrig) {
+  data %>%
+    unite(
+      !!newName,
+      c(column1ToJoin, column2ToJoin),
+      sep = sep,
+      remove = !keepOrig,
+      na.rm = TRUE
+    )
+}
+
+splitColumn <- function(data, columnToSplit, newName1, newName2, sep, keepOrig) {
+  data %>%
+    separate(
+      !!columnToSplit,
+      c(newName1, newName2),
+      sep = sep,
+      remove = !keepOrig
+    )
 }
