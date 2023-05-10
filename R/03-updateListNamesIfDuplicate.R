@@ -89,8 +89,6 @@ renameDuplicates <- function(newList, newNames, oldNames, assignNameFun) {
 #' If the name has no index, add a new index: "(1)". If an index already exists, increase it by one.
 #'
 #' @param name (character) name
-#'
-#' @export
 incIndexOfName <- function(name) {
   # extract index
   currentIndex <-
