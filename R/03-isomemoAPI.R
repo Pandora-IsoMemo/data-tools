@@ -15,6 +15,7 @@ callAPI <- function(action, ...) {
     apiBaseURL <- Sys.getenv("API_BASE_URL")
   } else {
     apiBaseURL <- Sys.getenv("API_BASE_URL_DEFAULT")
+  }
 
   url <- paste(apiBaseURL, action, "?", paramString, sep = "")
   data <- fromJSON(url)
