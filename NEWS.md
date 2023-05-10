@@ -1,5 +1,11 @@
 # DataTools
 
+## Version 23.05.0
+
+### New Features
+- new function to update names of lists if the names occur in another list, 
+  see `updateListNamesIfDuplicate()`
+
 ## Version 23.04.3
 
 ### New Features
