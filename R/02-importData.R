@@ -56,57 +56,55 @@ importDataServer <- function(id,
                      )
                    )
 
-                   #shinyjs::disable(ns("addData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
+                   shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::disable(ns("acceptMerged"), asis = TRUE)
                    shinyjs::disable(ns("acceptQuery"), asis = TRUE)
+                   shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                  })
 
                  observeEvent(input$tabImport, {
                    logDebug("Updating input$tabImport")
-                   if (input$tabImport == "Merge") {
-                     #shinyjs::hide(ns("addData"), asis = TRUE)
+                   if (input$tabImport == "Prepare") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
+                     shinyjs::show(ns("acceptPrepare"), asis = TRUE)
+                     shinyjs::hide(ns("acceptMerged"), asis = TRUE)
+                     shinyjs::hide(ns("acceptQuery"), asis = TRUE)
+                   } else if (input$tabImport == "Merge") {
+                     shinyjs::hide(ns("accept"), asis = TRUE)
+                     shinyjs::hide(ns("acceptPrepare"), asis = TRUE)
                      shinyjs::show(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    } else if (input$tabImport == "Query with SQL") {
-                     #shinyjs::hide(ns("addData"), asis = TRUE)
                      shinyjs::hide(ns("accept"), asis = TRUE)
+                     shinyjs::hide(ns("acceptPrepare"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::show(ns("acceptQuery"), asis = TRUE)
                    } else {
-                     #shinyjs::show(ns("addData"), asis = TRUE)
                      shinyjs::show(ns("accept"), asis = TRUE)
+                     shinyjs::hide(ns("acceptPrepare"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    }
                  })
 
-                 values <- selectDataServer(
-                   "dataSelector",
-                   mergeList = mergeList
-                 )
+                 values <- selectDataServer("dataSelector",
+                                            mergeList = mergeList)
 
-                 preparedData <- prepareDataServer(
-                   "dataPreparer",
-                   selectedData = reactive(values$dataImport),
-                   nameOfSelected = reactive(values$fileName)
-                 )
+                 preparedData <- prepareDataServer("dataPreparer",
+                                                   mergeList = mergeList)
 
-                 observeEvent(preparedData$data, {
+                 observeEvent(values$dataImport, {
                    logDebug("Updating preparedData")
-                   #values$dataImport <- preparedData()
-                   values$preview <-
-                     cutAllLongStrings(preparedData$data, cutAt = 20)
 
                    ## Import valid?
                    values$warnings$import <- list()
                    values$errors$import <- list()
 
                    values <- checkImport(values,
-                                         df = preparedData$data %>%
+                                         df = values$dataImport %>%
                                            formatForImport(
                                              outputAsMatrix = outputAsMatrix,
                                              includeSd = input$includeSd,
@@ -116,11 +114,9 @@ importDataServer <- function(id,
                                          customErrorChecks)
 
                    if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                     #shinyjs::disable(ns("addData"), asis = TRUE)
                      shinyjs::disable(ns("accept"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
-                     #shinyjs::enable(ns("addData"), asis = TRUE)
                      shinyjs::enable(ns("accept"), asis = TRUE)
                      values$fileImportSuccess <-
                        "Data import successful"
@@ -165,6 +161,22 @@ importDataServer <- function(id,
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
                    logDebug("Updating input$accept")
+                   removeModal()
+                   removeOpenGptCon()
+
+                   req(values$dataImport)
+                   values$data[[values$fileName]] <-
+                     values$dataImport %>%
+                     formatForImport(
+                       outputAsMatrix = outputAsMatrix,
+                       includeSd = input$includeSd,
+                       dfNames = customNames
+                     )
+                 })
+
+                 observeEvent(input$acceptPrepared, {
+                   browser()
+                   logDebug("Updating input$acceptPrepared")
                    removeModal()
                    removeOpenGptCon()
 
@@ -222,7 +234,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = "Import Data",
-      style = 'height: 940px',
+      style = 'height: 1000px',
       footer = tagList(fluidRow(
         column(4,
                align = "left",
@@ -236,7 +248,7 @@ importDataDialog <-
           8,
           align = "right",
           actionButton(ns("accept"), "Accept"),
-          #actionButton(ns("addData"), "Send to Merge / Query"),
+          actionButton(ns("acceptPrepared"), "Accept"),
           actionButton(ns("acceptMerged"), "Accept Merged"),
           actionButton(ns("acceptQuery"), "Accept Query"),
           actionButton(ns("cancel"), "Cancel")

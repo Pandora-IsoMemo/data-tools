@@ -15,7 +15,7 @@ selectDataServer(
 \arguments{
 \item{id}{id of module}
 
-\item{mergeList}{(list) list of (previously) selected data}
+\item{mergeList}{(list) list of selected data}
 
 \item{rowNames}{(reactive) use this for rownames of imported data}
 

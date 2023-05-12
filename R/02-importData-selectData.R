@@ -36,20 +36,19 @@ selectDataUI <- function(id,
       )
     },
     div(
-      style = if (batch) "height: 10em" else  "height: 14em",
+      style = if (batch) "height: 10em" else  "height: 16em",
       div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
       div(class = "text-success", textOutput(ns("success")))
     ),
     div(
-      align = "right",
-      actionButton(ns("keepData"),
-                   "Select for data preparation")
+      #align = "right",
+      actionButton(ns("keepData"), "Select for data preparation")
     ),
     tags$hr(),
     tags$html(
       HTML(
-        "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
+        "<b>Preview data</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
       )
     ),
     fluidRow(column(12,
@@ -63,7 +62,7 @@ selectDataUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param mergeList (list) list of (previously) selected data
+#' @param mergeList (list) list of selected data
 #' @inheritParams importDataServer
 selectDataServer <- function(id,
                              mergeList,

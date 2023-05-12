@@ -10,8 +10,9 @@ prepareDataUI <- function(id) {
 
   tagList(
     tags$br(),
-    htmlOutput(ns("selectedFile")),
-    # TO DO: replace with selectInput to choose a file from mergeList() ----
+    selectInput(ns("dataToPrep"),
+                "Select a File",
+                choices = c("Please select data under 'Select' ..." = "")),
     renameColumnsUI(ns("renameCols")),
     tags$br(),
     joinColumnsUI(ns("joinCols")),
@@ -19,10 +20,14 @@ prepareDataUI <- function(id) {
     splitColumnsUI(ns("splitCols")),
     tags$br(),
     deleteColumnsUI(ns("deleteCols")),
+    div(
+      #align = "right",
+      actionButton(ns("updateData"), "Update data")
+    ),
     tags$hr(),
     tags$html(
       HTML(
-        "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
+        "<b>Preview prepared data</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
       )
     ),
     fluidRow(column(12,
@@ -37,9 +42,8 @@ prepareDataUI <- function(id) {
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param selectedData (reactive) selected data
-#' @param nameOfSelected (reactive) filename of selected data
-prepareDataServer <- function(id, selectedData, nameOfSelected) {
+#' @param mergeList (list) list of selected data
+prepareDataServer <- function(id, mergeList) {
   moduleServer(id,
                function(input, output, session) {
                  preparedData <- reactiveValues(
@@ -47,22 +51,22 @@ prepareDataServer <- function(id, selectedData, nameOfSelected) {
                    history = list()
                    )
 
-                 observeEvent(selectedData(), ignoreNULL = FALSE, {
-                   preparedData$data <- selectedData()
+                 observeEvent(mergeList(), {
+                   req(length(mergeList()) > 0)
+
+                   fileList <- names(mergeList())
+                   updateSelectInput(session, "dataToPrep",
+                                     choices = fileList,
+                                     selected = fileList[length(fileList)])
                  })
 
-                 output$selectedFile <- renderText({
-                   prefix <- "<b>Selected file:</b> &nbsp;&nbsp;"
-                   if (is.null(nameOfSelected()) ||
-                       is.na(nameOfSelected()) ||
-                       nameOfSelected() == "") {
-                     text <- "Please select a file first."
-                   } else {
-                     text <- nameOfSelected()
-                   }
+                 observe({
+                   preparedData$data <- NULL
 
-                   HTML(paste0(prefix, text))
-                 })
+                   req(input$dataToPrep)
+                   preparedData$data <- mergeList()[[input$dataToPrep]]
+                 }) %>%
+                   bindEvent(input$dataToPrep)
 
                  renamedData <- renameColumnsServer("renameCols", reactive(preparedData$data))
 
