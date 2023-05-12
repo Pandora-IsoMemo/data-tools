@@ -63,13 +63,17 @@ selectDataUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
+#' @param mergeList (list) list of (previously) selected data
 #' @inheritParams importDataServer
 selectDataServer <- function(id,
                              mergeList,
                              rowNames = reactiveVal(NULL),
-                             colNames = reactiveVal(NULL)) {
+                             colNames = reactiveVal(NULL),
+                             ignoreWarnings = FALSE) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
+
                  values <- reactiveValues(
                    warnings = list(),
                    errors = list(),
@@ -135,31 +139,31 @@ selectDataServer <- function(id,
                      values$preview <- NULL
                      values$data <- list()
 
-                     withProgress({
-                       values <- loadDataWrapper(
-                         values = values,
-                         filepath = dataSource()$file,
-                         filename = dataSource()$filename,
-                         type = input[["fileType-type"]],
-                         sep = input[["fileType-colSep"]],
-                         dec = input[["fileType-decSep"]],
-                         withRownames = customNames$withRownames,
-                         withColnames = customNames$withColnames,
-                         sheetId = as.numeric(input[["fileType-sheet"]])
-                       )
+                     withProgress(
+                       value = 0.75,
+                       message = 'loading data ...', {
+                         values <- loadDataWrapper(
+                           values = values,
+                           filepath = dataSource()$file,
+                           filename = dataSource()$filename,
+                           type = input[["fileType-type"]],
+                           sep = input[["fileType-colSep"]],
+                           dec = input[["fileType-decSep"]],
+                           withRownames = customNames$withRownames,
+                           withColnames = customNames$withColnames,
+                           sheetId = as.numeric(input[["fileType-sheet"]])
+                         )
 
-                       # if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                       #   shinyjs::disable(ns("addData"), asis = TRUE)
-                       #   shinyjs::disable(ns("accept"), asis = TRUE)
-                       # } else {
-                       #   shinyjs::enable(ns("addData"), asis = TRUE)
-                       #   shinyjs::enable(ns("accept"), asis = TRUE)
-                       #   values$fileImportSuccess <-
-                       #     "Data import successful"
-                       # }
-                     },
-                     value = 0.75,
-                     message = 'loading data ...')
+                         if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                           shinyjs::disable(ns("keepData"), asis = TRUE)
+                         } else {
+                           shinyjs::enable(ns("keepData"), asis = TRUE)
+                           values$fileImportSuccess <-
+                             "Data import successful"
+                           values$preview <-
+                             cutAllLongStrings(values$dataImport, cutAt = 20)
+                         }
+                       })
                    }
                  )
 
@@ -233,6 +237,7 @@ selectDataServer <- function(id,
 #' UI of the module
 #'
 #' @param id id of module
+#' @inheritParams importDataServer
 selectSourceUI <- function(id,
                            defaultSource) {
   ns <- NS(id)
@@ -463,6 +468,7 @@ selectFileTypeUI <- function(id) {
 #'
 #' Server function of the module
 #' @param id id of module
+#' @param dataSource (reactive) data source from selectSourceServer()
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
@@ -484,10 +490,20 @@ uiSelect <- fluidPage(shinyjs::useShinyjs(),
                       selectDataUI(id = "selDat",
                                    defaultSource = "cKan",
                                    batch = FALSE,
-                                   outputAsMatrix = FALSE))
+                                   outputAsMatrix = FALSE),
+                      tags$h3("Import"),
+                      dataTableOutput("import")
+                      )
 
 serverSelect <- function(input, output, session) {
-  selectDataServer("selDat")
+  dat <- selectDataServer("selDat")
+
+  output$import <- renderDataTable({
+    req(dat$dataImport)
+    DT::datatable(
+      dat$dataImport
+    )
+  })
 }
 
 shinyApp(uiSelect, serverSelect)
