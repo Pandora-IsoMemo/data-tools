@@ -14,7 +14,7 @@ selectDataUI <- function(id,
 
   tagList(
     tags$br(),
-    selectSourceUI(ns("sourceSelector"), defaultSource),
+    selectSourceUI(ns("fileSource"), defaultSource),
     tags$hr(),
     selectFileTypeUI(ns("fileType")),
     checkboxInput(
@@ -101,10 +101,10 @@ selectDataServer <- function(id,
                    customNames$withColnames <- input$withColnames
                  })
 
-                 dataSource <- selectSourceServer("sourceSelector")
+                 dataSource <- selectSourceServer("fileSource")
                  selectFileTypeServer("fileType", dataSource)
 
-                 observeEvent(dataSource(), {
+                 observeEvent(dataSource$file, {
                    logDebug("Updating input$source")
                    # reset values
                    values$warnings <- list()
@@ -119,7 +119,7 @@ selectDataServer <- function(id,
                  # specify file server ----
                  observeEvent(
                    list(
-                     dataSource(),
+                     dataSource$file,
                      input[["fileType-type"]],
                      input[["fileType-colSep"]],
                      input[["fileType-decSep"]],
@@ -128,7 +128,7 @@ selectDataServer <- function(id,
                      customNames$withColnames
                    ),
                    {
-                     req(dataSource())
+                     req(dataSource$file)
                      logDebug("Updating values$dataImport")
                      # reset values
                      values$warnings <- list()
@@ -144,8 +144,8 @@ selectDataServer <- function(id,
                        message = 'loading data ...', {
                          values <- loadDataWrapper(
                            values = values,
-                           filepath = dataSource()$file,
-                           filename = dataSource()$filename,
+                           filepath = dataSource$file,
+                           filename = dataSource$filename,
                            type = input[["fileType-type"]],
                            sep = input[["fileType-colSep"]],
                            dec = input[["fileType-decSep"]],
@@ -310,7 +310,10 @@ selectSourceServer <- function(id) {
                    getCKANFiles()
                  })
 
-                 dataSource <- reactiveVal(NULL)
+                 dataSource <- reactiveValues(
+                   file = NULL,
+                   fileName = NULL
+                   )
 
                  observe({
                    # some initialization ....
@@ -322,7 +325,8 @@ selectSourceServer <- function(id) {
                      choices = c("Select Pandora dataset ..." = "", titles),
                      selected = c("Select Pandora dataset ..." = "")
                    )
-                 })
+                 }) %>%
+                   bindEvent(input$source, once = TRUE)
 
                  # important for custom options of selectizeInput of ckanRecord:
                  # forces update after selection (even with 'Enter') and
@@ -369,10 +373,8 @@ selectSourceServer <- function(id) {
 
                    # "file" will be used to load the file
                    # "filename" will be stored in values$fileName
-                   dataSource(list(
-                     file = resource$url,
-                     filename = basename(resource$url)
-                   ))
+                   dataSource$file <- resource$url
+                   dataSource$filename <- basename(resource$url)
                  }) %>%
                    bindEvent(input$ckanResource)
 
@@ -389,7 +391,8 @@ selectSourceServer <- function(id) {
 
                    # "file" will be used to load the file
                    # "filename" will be stored in values$fileName
-                   dataSource(list(file = inFile$datapath, filename = inFile$name))
+                   dataSource$file <- inFile$datapath
+                   dataSource$filename <- inFile$name
                    updateSelectInput(session = session, "sheet", selected = character(0))
                  })
 
@@ -408,7 +411,8 @@ selectSourceServer <- function(id) {
 
                    # "file" will be used to load the file
                    # "filename" will be stored in values$fileName
-                   dataSource(list(file = tmp, filename = basename(input$url)))
+                   dataSource$file <- tmp
+                   dataSource$filename <- basename(input$url)
                    updateSelectInput(session = session, "sheet", selected = character(0))
                  }) %>%
                    bindEvent(input$url)
@@ -472,13 +476,13 @@ selectFileTypeUI <- function(id) {
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
-                 observeEvent(list(input$type, dataSource()), ignoreInit = TRUE, {
-                   logDebug("Updating dataSource()$file")
+                 observeEvent(list(input$type, dataSource$file), ignoreInit = TRUE, {
+                   logDebug("Updating dataSource$file")
                    req(input$type)
 
                    if (input$type %in% c("xls", "xlsx")) {
                      updateSelectInput(session, "sheet",
-                                       choices = getSheetSelection(dataSource()$file))
+                                       choices = getSheetSelection(dataSource$file))
                    }
                  })
                })
@@ -529,8 +533,8 @@ uiSelectSource <- fluidPage(shinyjs::useShinyjs(),
 serverSelectSource <- function(input, output, session) {
   datSource <- selectSourceServer("selSource")
 
-  output$file <- renderText(datSource()$file)
-  output$filename <- renderText(datSource()$filename)
+  output$file <- renderText(datSource$file)
+  output$filename <- renderText(datSource$filename)
 }
 
 shinyApp(uiSelectSource, serverSelectSource)
