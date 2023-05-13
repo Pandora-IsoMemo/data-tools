@@ -316,7 +316,6 @@ selectSourceServer <- function(id) {
                    )
 
                  observe({
-                   # some initialization ....
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
                    updateSelectizeInput(
@@ -326,9 +325,7 @@ selectSourceServer <- function(id) {
                      selected = c("Select Pandora dataset ..." = "")
                    )
                  }) %>%
-                   bindEvent(input$source, once = TRUE)
-                 # once is only once in whole session!!
-                 # extract to outer module??
+                   bindEvent(input$source)
 
                  # important for custom options of selectizeInput of ckanRecord:
                  # forces update after selection (even with 'Enter') and
