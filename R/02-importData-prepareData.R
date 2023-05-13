@@ -57,22 +57,22 @@ prepareDataServer <- function(id, mergeList) {
                  })
 
                  observe({
+                   # changes of mergeList & changes of input$dataToPrep
                    preparedData$data <- NULL
 
                    req(input$dataToPrep)
                    preparedData$data <- mergeList()[[input$dataToPrep]]$data
-                 }) %>%
-                   bindEvent(input$dataToPrep)
+                   preparedData$history <- mergeList()[[input$dataToPrep]]$history
+                 })
 
-                 renamedData <- renameColumnsServer("renameCols", reactive(preparedData$data))
+                 renamedData <- renameColumnsServer("renameCols", preparedData)
 
                  observeEvent(renamedData$data, {
                    req(renamedData$data)
-                   preparedData$data <- renamedData$data
-                   req(length(renamedData$userInputs) > 0)
-                   preparedData$history <- c(preparedData$history,
-                                             list(fun = "renameColumns",
-                                                  parameter = renamedData$userInputs))
+                   newMergeList <- mergeList()
+                   newMergeList[[input$dataToPrep]] <- list(data = renamedData$data,
+                                                            history = renamedData$history)
+                   mergeList(newMergeList)
                  })
 
                  reducedData <-
@@ -176,8 +176,8 @@ renameColumnsServer <- function(id, preparedData) {
                    userInputs = list()
                  )
 
-                 observeEvent(preparedData(), ignoreNULL = FALSE, {
-                   currentColNames <- colnames(preparedData())
+                 observeEvent(preparedData$data, ignoreNULL = FALSE, {
+                   currentColNames <- colnames(preparedData$data)
                    if (is.null(currentColNames)) {
                      choices <- c("Select data ..." = "")
                    } else {
@@ -187,17 +187,19 @@ renameColumnsServer <- function(id, preparedData) {
                    updateTextInput(session, "newColName", value = "")
 
                    # by default return current data
-                   newData$data <- preparedData()
+                   newData$data <- preparedData$data
                    newData$userInputs <- reactiveValuesToList(input)[names(input)]
                  })
 
                  observeEvent(input$setColName, {
-                   req(preparedData(), input$newColName)
+                   req(preparedData$data, input$newColName)
 
-                   newData$data <- preparedData() %>%
+                   newData$data <- preparedData$data %>%
                      renameColumns(oldColName = input$oldColName,
                                    newColName = input$newColName)
-                   newData$userInputs <- reactiveValuesToList(input)[names(input)]
+                   newData$history = c(preparedData$history,
+                                       list(fun = "renameColumns",
+                                            parameter = reactiveValuesToList(input)[names(input)]))
                  })
 
                  return(newData)
