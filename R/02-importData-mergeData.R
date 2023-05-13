@@ -109,7 +109,7 @@ mergeDataServer <- function(id, mergeList) {
 
                  observe({
                    req(input$tableX)
-                   tableXData(mergeList()[[input$tableX]])
+                   tableXData(mergeList()[[input$tableX]]$data)
                  })
 
                  output$nRowsTableX <- renderText({
@@ -119,7 +119,7 @@ mergeDataServer <- function(id, mergeList) {
 
                  observe({
                    req(input$tableY)
-                   tableYData(mergeList()[[input$tableY]])
+                   tableYData(mergeList()[[input$tableY]]$data)
                  })
 
                  output$nRowsTableY <- renderText({
@@ -158,7 +158,7 @@ mergeDataServer <- function(id, mergeList) {
                      ## create data.frames to merge ----
                      for (i in c(input$tableX, input$tableY)) {
                        assign(tableIds()[i],
-                              mergeList()[[i]])
+                              mergeList()[[i]]$data)
                      }
 
                      ## match column types ----

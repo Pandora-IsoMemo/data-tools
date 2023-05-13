@@ -83,14 +83,14 @@ queryDataServer <- function(id, mergeList) {
 
                    tmpDB <- inMemoryDB()
                    for (i in 1:length(mergeList())) {
-                     dbWriteTable(tmpDB, paste0("t", i), mergeList()[[i]], overwrite = TRUE)
+                     dbWriteTable(tmpDB, paste0("t", i), mergeList()[[i]]$data, overwrite = TRUE)
                    }
                    inMemoryDB(tmpDB)
                    tableIds(dbListTables(tmpDB))
 
                    inMemCols <-
                      lapply(mergeList(), function(table) {
-                       table %>%
+                       table$data %>%
                          colnames()
                      })
                    names(inMemCols) <- tableIds()

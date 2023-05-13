@@ -196,9 +196,10 @@ selectDataServer <- function(id,
                  ## button keep data ----
                  observeEvent(input$keepData, {
                    logDebug("Updating input$keepData")
-                   tmpData <- values$dataImport
+                   newData <- list(data = values$dataImport,
+                                   history = list())
                    ### format column names for import ----
-                   colnames(tmpData) <- colnames(tmpData) %>%
+                   colnames(newData$data) <- colnames(newData$data) %>%
                      formatColumnNames()
 
                    notifications <- c()
@@ -210,13 +211,13 @@ selectDataServer <- function(id,
                    # update mergeList()
                    if (values$fileName %in% names(mergeList())) {
                      tmpMergeList <- mergeList()
-                     tmpMergeList[[values$fileName]] <- tmpData
+                     tmpMergeList[[values$fileName]] <- newData
                      mergeList(tmpMergeList)
                      notifications <- c(notifications,
                                         "File was already selected and reloaded successfully now.")
                    } else {
                      mergeList(c(mergeList(),
-                                 setNames(list(tmpData),
+                                 setNames(list(newData),
                                           values$fileName)))
                    }
 
@@ -326,6 +327,8 @@ selectSourceServer <- function(id) {
                    )
                  }) %>%
                    bindEvent(input$source, once = TRUE)
+                 # once is only once in whole session!!
+                 # extract to outer module??
 
                  # important for custom options of selectizeInput of ckanRecord:
                  # forces update after selection (even with 'Enter') and

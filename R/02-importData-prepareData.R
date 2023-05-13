@@ -20,10 +20,6 @@ prepareDataUI <- function(id) {
     splitColumnsUI(ns("splitCols")),
     tags$br(),
     deleteColumnsUI(ns("deleteCols")),
-    div(
-      #align = "right",
-      actionButton(ns("updateData"), "Update data")
-    ),
     tags$hr(),
     tags$html(
       HTML(
@@ -64,7 +60,7 @@ prepareDataServer <- function(id, mergeList) {
                    preparedData$data <- NULL
 
                    req(input$dataToPrep)
-                   preparedData$data <- mergeList()[[input$dataToPrep]]
+                   preparedData$data <- mergeList()[[input$dataToPrep]]$data
                  }) %>%
                    bindEvent(input$dataToPrep)
 
