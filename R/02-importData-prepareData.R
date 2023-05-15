@@ -92,6 +92,7 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(reducedData$data, {
                    logDebug("Updating reducedData")
                    req(reducedData$data)
+
                    mergeList(
                      updateMergeList(
                        mergeList = mergeList(),
@@ -199,7 +200,7 @@ renameColumnsServer <- function(id, preparedData) {
                    logDebug("Updating inputs to rename")
                    currentColNames <- colnames(preparedData$data)
                    if (is.null(currentColNames)) {
-                     choices <- c("Select data ..." = "")
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
                      choices <- currentColNames
                    }
@@ -278,7 +279,7 @@ deleteColumnsServer <- function(id, preparedData) {
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to delete")
                    if (is.null(preparedData$data)) {
-                     choices <- c("Select data ..." = "")
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
                      choices <- colnames(preparedData$data)
                    }
@@ -291,14 +292,17 @@ deleteColumnsServer <- function(id, preparedData) {
                  observeEvent(input$deleteCol, {
                    logDebug("Apply delete")
                    req(preparedData$data, input$columnsToDelete)
-
-                   newData$data <- preparedData$data %>%
-                     deleteColumns(columnsToDelete = input$columnsToDelete)
-                   newData$history <- c(
-                     preparedData$history,
-                     list(fun = "deleteColumns",
-                          parameter = reactiveValuesToList(input)[names(input)])
-                   )
+                   if(all(colnames(preparedData$data) %in% input$columnsToDelete)) {
+                     shinyjs::info("Cannot remove all columns!")
+                   } else {
+                     newData$data <- preparedData$data %>%
+                       deleteColumns(columnsToDelete = input$columnsToDelete)
+                     newData$history <- c(
+                       preparedData$history,
+                       list(fun = "deleteColumns",
+                            parameter = reactiveValuesToList(input)[names(input)])
+                     )
+                   }
                  })
 
                  return(newData)
@@ -359,7 +363,7 @@ joinColumnsServer <- function(id, preparedData) {
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to join")
                    if (is.null(preparedData$data)) {
-                     choices <- c("Select data ..." = "")
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
                      choices <- colnames(preparedData$data)
                    }
@@ -447,7 +451,7 @@ splitColumnsServer <- function(id, preparedData) {
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to split")
                    if (is.null(preparedData$data)) {
-                     choices <- c("Select data ..." = "")
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
                      choices <- colnames(preparedData$data)
                    }
