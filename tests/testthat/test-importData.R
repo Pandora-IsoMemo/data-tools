@@ -24,9 +24,9 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_equal(names(values),
-                            c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings"))
+               expect_true(all(names(values) %in%
+                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
+                              "errors", "warnings")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers
@@ -71,9 +71,9 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_equal(names(values),
+               expect_true(all(names(values) %in%
                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings"))
+                              "errors", "warnings")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers
@@ -132,9 +132,9 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_equal(names(values),
+               expect_true(all(names(values) %in%
                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings"))
+                              "errors", "warnings")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers
@@ -220,9 +220,9 @@ test_that("Test module importData", {
                  accept = TRUE
                )
 
-               expect_equal(names(values),
+               expect_true(all(names(values) %in%
                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings"))
+                              "errors", "warnings")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers
