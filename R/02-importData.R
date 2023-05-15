@@ -127,17 +127,22 @@ importDataServer <- function(id,
                    values$warnings$import <- list()
                    values$errors$import <- list()
 
-                   values <- checkImport(values,
-                                         df = values$dataImport %>%
-                                           formatForImport(
-                                             outputAsMatrix = outputAsMatrix,
-                                             includeSd = input$includeSd,
-                                             dfNames = customNames
-                                           ),
-                                         customWarningChecks,
-                                         customErrorChecks)
+                   checkResult <- checkImport(warnings = values$warnings,
+                                              errors = values$errors,
+                                              df = values$dataImport %>%
+                                                formatForImport(
+                                                  outputAsMatrix = outputAsMatrix,
+                                                  includeSd = input$includeSd,
+                                                  dfNames = customNames
+                                                ),
+                                              customWarningChecks,
+                                              customErrorChecks)
 
-                   if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                   values$warnings <- checkResult$warnings
+                   values$errors <- checkResult$errors
+
+                   if (nrow(values$dataImport) == 0 ||
+                       isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
@@ -158,18 +163,25 @@ importDataServer <- function(id,
                    values$warnings$prepareData <- list()
                    values$errors$prepareData <- list()
 
-                   values <- checkImport(values,
-                                         df = values$dataImport %>%
-                                           formatForImport(
-                                             outputAsMatrix = outputAsMatrix,
-                                             includeSd = input$includeSd,
-                                             dfNames = customNames
-                                           ),
-                                         customWarningChecks,
-                                         customErrorChecks,
-                                         type = "prepareData")
+                   checkResult <- checkImport(warnings = values$warnings,
+                                              errors = values$errors,
+                                              df = preparedData$data %>%
+                                                formatForImport(
+                                                  outputAsMatrix = outputAsMatrix,
+                                                  includeSd = input$includeSd,
+                                                  dfNames = customNames
+                                                ),
+                                              customWarningChecks,
+                                              customErrorChecks)
 
-                   if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                   # do not display warnings of prepare data in select data
+                   # -> do not return result
+                   #values$warnings <- checkResult$warnings
+                   #values$errors <- checkResult$errors
+
+                   if (is.null(preparedData$data) ||
+                       nrow(preparedData$data) == 0 ||
+                       isNotValid(checkResult$errors, checkResult$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptPrepared"), asis = TRUE)
@@ -387,32 +399,33 @@ loadDataWrapper <- function(values,
   values
 }
 
-
-checkImport <- function(values,
+checkImport <- function(warnings,
+                        errors,
                         df,
                         customWarningChecks,
                         customErrorChecks,
                         type = "import") {
   ## Import valid?
-  if (length(values$errors$load) == 0) {
-    lapply(customWarningChecks, function(fun) {
-      res <- fun()(df)
+  if (length(errors$load) == 0) {
+    for (i in seq_along(customWarningChecks)) {
+      res <- customWarningChecks[[i]]()(df)
       if (!isTRUE(res)) {
-        values$warnings[[type]] <- c(values$warnings[[type]], res)
+        warnings[[type]] <- c(warnings[[type]], res)
       }
-    })
+    }
   }
 
-  if (length(values$errors$load) == 0) {
-    lapply(customErrorChecks, function(fun) {
-      res <- fun()(df)
+  if (length(errors$load) == 0) {
+    for (i in seq_along(customErrorChecks)) {
+      res <- customErrorChecks[[i]]()(df)
       if (!isTRUE(res)) {
-        values$errors[[type]] <- c(values$errors[[type]], res)
+        errors[[type]] <- c(errors[[type]], res)
       }
-    })
+    }
   }
 
-  values
+  list(warnings = warnings,
+       errors = errors)
 }
 
 isNotValid <- function(errors, warnings, ignoreWarnings) {
