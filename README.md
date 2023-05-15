@@ -13,7 +13,7 @@
 
 Access to uploads from file, url, and the Pandora Platform. Optionally, merge data before the import via UI or SQL.
 
-UI function:
+UI function :
 
 ```R
 DataTools::importDataUI(id, label = "Import Data")
