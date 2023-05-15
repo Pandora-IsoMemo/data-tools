@@ -36,15 +36,18 @@ selectDataUI <- function(id,
       )
     },
     div(
-      style = if (batch) "height: 10em" else  "height: 16em",
+      style = if (batch)
+        "height: 10em"
+      else
+        "height: 16em",
       div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
       div(class = "text-success", textOutput(ns("success")))
     ),
-    div(
-      #align = "right",
-      actionButton(ns("keepData"), "Submit for data preparation")
-    ),
+    div(#align = "right",
+      actionButton(
+        ns("keepData"), "Submit for data preparation"
+      )),
     tags$hr(),
     tags$html(
       HTML(
@@ -140,31 +143,30 @@ selectDataServer <- function(id,
                      values$preview <- NULL
                      values$data <- list()
 
-                     withProgress(
-                       value = 0.75,
-                       message = 'loading data ...', {
-                         values <- loadDataWrapper(
-                           values = values,
-                           filepath = dataSource$file,
-                           filename = dataSource$filename,
-                           type = input[["fileType-type"]],
-                           sep = input[["fileType-colSep"]],
-                           dec = input[["fileType-decSep"]],
-                           withRownames = customNames$withRownames,
-                           withColnames = customNames$withColnames,
-                           sheetId = as.numeric(input[["fileType-sheet"]])
-                         )
+                     withProgress(value = 0.75,
+                                  message = 'loading data ...', {
+                                    values <- loadDataWrapper(
+                                      values = values,
+                                      filepath = dataSource$file,
+                                      filename = dataSource$filename,
+                                      type = input[["fileType-type"]],
+                                      sep = input[["fileType-colSep"]],
+                                      dec = input[["fileType-decSep"]],
+                                      withRownames = customNames$withRownames,
+                                      withColnames = customNames$withColnames,
+                                      sheetId = as.numeric(input[["fileType-sheet"]])
+                                    )
 
-                         if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                           shinyjs::disable(ns("keepData"), asis = TRUE)
-                         } else {
-                           shinyjs::enable(ns("keepData"), asis = TRUE)
-                           values$fileImportSuccess <-
-                             "Data import successful"
-                           values$preview <-
-                             cutAllLongStrings(values$dataImport, cutAt = 20)
-                         }
-                       })
+                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                                      shinyjs::disable(ns("keepData"), asis = TRUE)
+                                    } else {
+                                      shinyjs::enable(ns("keepData"), asis = TRUE)
+                                      values$fileImportSuccess <-
+                                        "Data import successful"
+                                      values$preview <-
+                                        cutAllLongStrings(values$dataImport, cutAt = 20)
+                                    }
+                                  })
                    }
                  )
 
@@ -201,7 +203,8 @@ selectDataServer <- function(id,
                    newData <- list(data = values$dataImport,
                                    history = list())
                    ### format column names for import ----
-                   colnames(newData$data) <- colnames(newData$data) %>%
+                   colnames(newData$data) <-
+                     colnames(newData$data) %>%
                      formatColumnNames()
 
                    notifications <- c()
@@ -244,61 +247,59 @@ selectSourceUI <- function(id,
                            defaultSource) {
   ns <- NS(id)
 
-  tagList(
-    tags$br(),
-    fluidRow(
-      column(
-        4,
-        selectInput(
-          ns("source"),
-          "Source",
-          choices = c(
-            "Pandora Platform" = "ckan",
-            "File" = "file",
-            "URL" = "url"
-          ),
-          selected = defaultSource
-        )
-      ),
-      column(
-        8,
-        conditionalPanel(
-          condition = "input.source == 'ckan'",
-          ns = ns,
-          selectizeInput(
-            ns("ckanRecord"),
-            "Pandora dataset",
-            choices = c("No Pandora dataset available" = ""),
-            width = "100%",
-            options = list(
-              onFocus = I(
-                "function() {currentVal = this.getValue(); this.clear(true); }"
+  tagList(tags$br(),
+          fluidRow(
+            column(
+              4,
+              selectInput(
+                ns("source"),
+                "Source",
+                choices = c(
+                  "Pandora Platform" = "ckan",
+                  "File" = "file",
+                  "URL" = "url"
+                ),
+                selected = defaultSource
+              )
+            ),
+            column(
+              8,
+              conditionalPanel(
+                condition = "input.source == 'ckan'",
+                ns = ns,
+                selectizeInput(
+                  ns("ckanRecord"),
+                  "Pandora dataset",
+                  choices = c("No Pandora dataset available" = ""),
+                  width = "100%",
+                  options = list(
+                    onFocus = I(
+                      "function() {currentVal = this.getValue(); this.clear(true); }"
+                    ),
+                    onBlur = I(
+                      "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                    )
+                  )
+                ),
+                selectizeInput(
+                  ns("ckanResource"),
+                  "Pandora dataset resource",
+                  choices = c("Select Pandora dataset ..." = ""),
+                  width = "100%"
+                )
               ),
-              onBlur = I(
-                "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+              conditionalPanel(
+                condition = "input.source == 'file'",
+                ns = ns,
+                fileInput(ns("file"), "File", width = "100%")
+              ),
+              conditionalPanel(
+                condition = "input.source == 'url'",
+                ns = ns,
+                textInput(ns("url"), "URL", width = "100%")
               )
             )
-          ),
-          selectizeInput(
-            ns("ckanResource"),
-            "Pandora dataset resource",
-            choices = c("Select Pandora dataset ..." = ""),
-            width = "100%"
-          )
-        ),
-        conditionalPanel(
-          condition = "input.source == 'file'",
-          ns = ns,
-          fileInput(ns("file"), "File", width = "100%")
-        ),
-        conditionalPanel(
-          condition = "input.source == 'url'",
-          ns = ns,
-          textInput(ns("url"), "URL", width = "100%")
-        )
-      )
-    )
-  )
+          ))
 }
 
 #' Select Source Server
@@ -312,10 +313,8 @@ selectSourceServer <- function(id) {
                    getCKANFiles()
                  })
 
-                 dataSource <- reactiveValues(
-                   file = NULL,
-                   fileName = NULL
-                   )
+                 dataSource <- reactiveValues(file = NULL,
+                                              fileName = NULL)
 
                  observe({
                    logDebug("Updating input ckanRecord")
@@ -431,43 +430,41 @@ selectSourceServer <- function(id) {
 selectFileTypeUI <- function(id) {
   ns <- NS(id)
 
-  tagList(
-    fluidRow(
-      column(4,
-             selectInput(
-               ns("type"),
-               "File type",
-               choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
-               selected = "xlsx"
-             )),
-      column(
-        8,
-        conditionalPanel(
-          condition = paste0("input.type == 'csv' || input.type == 'txt'"),
-          ns = ns,
-          fluidRow(column(
-            width = 5,
-            textInput(ns("colSep"), "column separator:", value = ",")
-          ),
-          column(
-            width = 5,
-            textInput(ns("decSep"), "decimal separator:", value = ".")
-          ))
+  tagList(fluidRow(
+    column(4,
+           selectInput(
+             ns("type"),
+             "File type",
+             choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
+             selected = "xlsx"
+           )),
+    column(
+      8,
+      conditionalPanel(
+        condition = paste0("input.type == 'csv' || input.type == 'txt'"),
+        ns = ns,
+        fluidRow(column(
+          width = 5,
+          textInput(ns("colSep"), "column separator:", value = ",")
         ),
-        conditionalPanel(
-          condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
-          ns = ns,
-          selectInput(
-            ns("sheet"),
-            "Sheet",
-            selected = 1,
-            choices = 1:10,
-            width = "100%"
-          )
+        column(
+          width = 5,
+          textInput(ns("decSep"), "decimal separator:", value = ".")
+        ))
+      ),
+      conditionalPanel(
+        condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
+        ns = ns,
+        selectInput(
+          ns("sheet"),
+          "Sheet",
+          selected = 1,
+          choices = 1:10,
+          width = "100%"
         )
       )
     )
-  )
+  ))
 }
 
 #' Select File Type Server
@@ -492,44 +489,45 @@ selectFileTypeServer <- function(id, dataSource) {
 
 # TEST MODULE -------------------------------------------------------------
 
-uiSelect <- fluidPage(shinyjs::useShinyjs(),
-                      selectDataUI(id = "selDat",
-                                   defaultSource = "cKan",
-                                   batch = FALSE,
-                                   outputAsMatrix = FALSE),
-                      tags$h3("Import"),
-                      dataTableOutput("import")
-                      )
+uiSelect <- fluidPage(
+  shinyjs::useShinyjs(),
+  selectDataUI(
+    id = "selDat",
+    defaultSource = "cKan",
+    batch = FALSE,
+    outputAsMatrix = FALSE
+  ),
+  tags$h3("Import"),
+  dataTableOutput("import")
+)
 
 serverSelect <- function(input, output, session) {
   dat <- selectDataServer("selDat")
 
   output$import <- renderDataTable({
     req(dat$dataImport)
-    DT::datatable(
-      dat$dataImport
-    )
+    DT::datatable(dat$dataImport)
   })
 }
 
 shinyApp(uiSelect, serverSelect)
 
-uiSelectSource <- fluidPage(shinyjs::useShinyjs(),
-                            selectSourceUI(id = "selSource",
-                                           defaultSource = "cKan"),
-                            fluidRow(
-                              column(
-                                width = 6,
-                                tags$h3("file"),
-                                tags$hr(),
-                                textOutput("file")
-                              ),
-                              column(
-                                width = 6,
-                                tags$h3("filepath"),
-                                tags$hr(),
-                                textOutput("filename")
-                              ))
+uiSelectSource <- fluidPage(
+  shinyjs::useShinyjs(),
+  selectSourceUI(id = "selSource",
+                 defaultSource = "cKan"),
+  fluidRow(
+    column(width = 6,
+           tags$h3("file"),
+           tags$hr(),
+           textOutput("file")),
+    column(
+      width = 6,
+      tags$h3("filepath"),
+      tags$hr(),
+      textOutput("filename")
+    )
+  )
 )
 
 serverSelectSource <- function(input, output, session) {

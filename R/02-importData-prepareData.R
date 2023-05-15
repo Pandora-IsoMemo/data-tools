@@ -7,13 +7,15 @@
 #' @param id id of module
 prepareDataUI <- function(id) {
   ns <- NS(id)
-#
+
   tagList(
     tags$br(),
-    selectInput(ns("dataToPrep"),
-                "Select a File",
-                choices = c("Please submit data under 'Select' ..." = ""),
-                width = "75%"),
+    selectInput(
+      ns("dataToPrep"),
+      "Select a File",
+      choices = c("Please submit data under 'Select' ..." = ""),
+      width = "75%"
+    ),
     renameColumnsUI(ns("renameCols")),
     tags$br(),
     joinColumnsUI(ns("joinCols")),
@@ -43,17 +45,16 @@ prepareDataUI <- function(id) {
 prepareDataServer <- function(id, mergeList) {
   moduleServer(id,
                function(input, output, session) {
-                 preparedData <- reactiveValues(
-                   data = NULL,
-                   history = list()
-                   )
+                 preparedData <- reactiveValues(data = NULL,
+                                                history = list())
 
                  observeEvent(mergeList(), {
                    logDebug("Updating input select from mergeList")
                    req(length(mergeList()) > 0)
 
                    fileList <- names(mergeList())
-                   updateSelectInput(session, "dataToPrep",
+                   updateSelectInput(session,
+                                     "dataToPrep",
                                      choices = fileList,
                                      selected = fileList[length(fileList)])
                  })
@@ -64,48 +65,70 @@ prepareDataServer <- function(id, mergeList) {
                    preparedData$data <- NULL
 
                    req(input$dataToPrep)
-                   preparedData$data <- mergeList()[[input$dataToPrep]]$data
-                   preparedData$history <- mergeList()[[input$dataToPrep]]$history
+                   preparedData$data <-
+                     mergeList()[[input$dataToPrep]]$data
+                   preparedData$history <-
+                     mergeList()[[input$dataToPrep]]$history
                  })
 
-                 renamedData <- renameColumnsServer("renameCols", preparedData)
+                 renamedData <-
+                   renameColumnsServer("renameCols", preparedData)
 
                  observeEvent(renamedData$data, {
                    logDebug("Updating renamedData")
                    req(renamedData$data)
-                   mergeList(updateMergeList(mergeList = mergeList(),
-                                             fileName = input$dataToPrep,
-                                             newData = renamedData))
+                   mergeList(
+                     updateMergeList(
+                       mergeList = mergeList(),
+                       fileName = input$dataToPrep,
+                       newData = renamedData
+                     )
+                   )
                  })
 
-                 reducedData <-deleteColumnsServer("deleteCols", preparedData)
+                 reducedData <-
+                   deleteColumnsServer("deleteCols", preparedData)
 
                  observeEvent(reducedData$data, {
                    logDebug("Updating reducedData")
                    req(reducedData$data)
-                   mergeList(updateMergeList(mergeList = mergeList(),
-                                             fileName = input$dataToPrep,
-                                             newData = reducedData))
+                   mergeList(
+                     updateMergeList(
+                       mergeList = mergeList(),
+                       fileName = input$dataToPrep,
+                       newData = reducedData
+                     )
+                   )
                  })
 
-                 joinedData <- joinColumnsServer("joinCols", preparedData)
+                 joinedData <-
+                   joinColumnsServer("joinCols", preparedData)
 
                  observeEvent(joinedData$data, {
                    logDebug("Updating joinedData")
                    req(joinedData$data)
-                   mergeList(updateMergeList(mergeList = mergeList(),
-                                             fileName = input$dataToPrep,
-                                             newData = joinedData))
+                   mergeList(
+                     updateMergeList(
+                       mergeList = mergeList(),
+                       fileName = input$dataToPrep,
+                       newData = joinedData
+                     )
+                   )
                  })
 
-                 splittedData <- splitColumnsServer("splitCols", preparedData)
+                 splittedData <-
+                   splitColumnsServer("splitCols", preparedData)
 
                  observeEvent(splittedData$data, {
                    logDebug("Updating splittedData")
                    req(splittedData$data)
-                   mergeList(updateMergeList(mergeList = mergeList(),
-                                             fileName = input$dataToPrep,
-                                             newData = splittedData))
+                   mergeList(
+                     updateMergeList(
+                       mergeList = mergeList(),
+                       fileName = input$dataToPrep,
+                       newData = splittedData
+                     )
+                   )
                  })
 
                  output$preview <- renderDataTable({
@@ -169,10 +192,8 @@ renameColumnsUI <- function(id) {
 renameColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveValues(
-                   data = NULL,
-                   history = list()
-                 )
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to rename")
@@ -193,9 +214,11 @@ renameColumnsServer <- function(id, preparedData) {
                    newData$data <- preparedData$data %>%
                      renameColumns(oldColName = input$oldColName,
                                    newColName = input$newColName)
-                   newData$history = c(preparedData$history,
-                                       list(fun = "renameColumns",
-                                            parameter = reactiveValuesToList(input)[names(input)]))
+                   newData$history = c(
+                     preparedData$history,
+                     list(fun = "renameColumns",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
                  return(newData)
@@ -249,10 +272,8 @@ deleteColumnsUI <- function(id) {
 deleteColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveValues(
-                   data = NULL,
-                   history = list()
-                 )
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to delete")
@@ -273,10 +294,11 @@ deleteColumnsServer <- function(id, preparedData) {
 
                    newData$data <- preparedData$data %>%
                      deleteColumns(columnsToDelete = input$columnsToDelete)
-                   newData$history <- c(preparedData$history,
-                                        list(fun = "deleteColumns",
-                                             parameter = reactiveValuesToList(input)[names(input)]
-                                        ))
+                   newData$history <- c(
+                     preparedData$history,
+                     list(fun = "deleteColumns",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
                  return(newData)
@@ -331,10 +353,8 @@ joinColumnsUI <- function(id) {
 joinColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveValues(
-                   data = NULL,
-                   history = list()
-                 )
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to join")
@@ -358,15 +378,18 @@ joinColumnsServer <- function(id, preparedData) {
                        input$newName)
 
                    newData$data <- preparedData$data %>%
-                     joinColumns(newName = input$newName,
-                                 column1ToJoin = input$column1ToJoin,
-                                 column2ToJoin = input$column2ToJoin,
-                                 sep = input$sep,
-                                 keepOrig = input$keepOrig)
-                   newData$history <- c(preparedData$history,
-                                        list(fun = "joinColumns",
-                                             parameter = reactiveValuesToList(input)[names(input)]
-                                        ))
+                     joinColumns(
+                       newName = input$newName,
+                       column1ToJoin = input$column1ToJoin,
+                       column2ToJoin = input$column2ToJoin,
+                       sep = input$sep,
+                       keepOrig = input$keepOrig
+                     )
+                   newData$history <- c(
+                     preparedData$history,
+                     list(fun = "joinColumns",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
                  newData
@@ -418,10 +441,8 @@ splitColumnsUI <- function(id) {
 splitColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveValues(
-                   data = NULL,
-                   history = list()
-                 )
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
                  observeEvent(preparedData$data, ignoreNULL = FALSE, {
                    logDebug("Updating inputs to split")
@@ -444,15 +465,18 @@ splitColumnsServer <- function(id, preparedData) {
                        input$newName2)
 
                    newData$data <- preparedData$data %>%
-                     splitColumn(columnToSplit = input$columnToSplit,
-                                 newName1 = input$newName1,
-                                 newName2 = input$newName2,
-                                 sep = input$sep,
-                                 keepOrig = input$keepOrig)
-                   newData$history <- c(preparedData$history,
-                                        list(fun = "splitColumn",
-                                             parameter = reactiveValuesToList(input)[names(input)]
-                                        ))
+                     splitColumn(
+                       columnToSplit = input$columnToSplit,
+                       newName1 = input$newName1,
+                       newName2 = input$newName2,
+                       sep = input$sep,
+                       keepOrig = input$keepOrig
+                     )
+                   newData$history <- c(
+                     preparedData$history,
+                     list(fun = "splitColumn",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
                  newData
@@ -470,7 +494,8 @@ updateMergeList <- function(mergeList, fileName, newData) {
 
 renameColumns <- function(data, oldColName, newColName) {
   tmpNames <- colnames(data)
-  if (is.null(tmpNames)) return(data)
+  if (is.null(tmpNames))
+    return(data)
 
   tmpNames[tmpNames == oldColName] <- newColName
   colnames(data) <- tmpNames
@@ -481,23 +506,35 @@ deleteColumns <- function(data, columnsToDelete) {
   data[, !(colnames(data) %in% columnsToDelete)]
 }
 
-joinColumns <- function(data, newName, column1ToJoin, column2ToJoin, sep, keepOrig) {
-  data %>%
-    unite(
-      !!newName,
-      c(column1ToJoin, column2ToJoin),
-      sep = sep,
-      remove = !keepOrig,
-      na.rm = TRUE
-    )
-}
+joinColumns <-
+  function(data,
+           newName,
+           column1ToJoin,
+           column2ToJoin,
+           sep,
+           keepOrig) {
+    data %>%
+      unite(
+        !!newName,
+        c(column1ToJoin, column2ToJoin),
+        sep = sep,
+        remove = !keepOrig,
+        na.rm = TRUE
+      )
+  }
 
-splitColumn <- function(data, columnToSplit, newName1, newName2, sep, keepOrig) {
-  data %>%
-    separate(
-      !!columnToSplit,
-      c(newName1, newName2),
-      sep = sep,
-      remove = !keepOrig
-    )
-}
+splitColumn <-
+  function(data,
+           columnToSplit,
+           newName1,
+           newName2,
+           sep,
+           keepOrig) {
+    data %>%
+      separate(
+        !!columnToSplit,
+        c(newName1, newName2),
+        sep = sep,
+        remove = !keepOrig
+      )
+  }
