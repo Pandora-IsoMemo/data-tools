@@ -44,6 +44,25 @@ importDataServer <- function(id,
                  ns <- session$ns
                  mergeList <- reactiveVal(list())
 
+                 customNames <- reactiveValues(
+                   withRownames = FALSE,
+                   rownames = rowNames,
+                   withColnames = TRUE,
+                   colnames = colNames
+                 )
+
+                 observe({
+                   logDebug("Update withRownames")
+                   req(!is.null(input[["dataSelector-withRownames"]]))
+                   customNames$withRownames <- input[["dataSelector-withRownames"]]
+                 })
+
+                 observe({
+                   logDebug("Update withRownames")
+                   req(!is.null(input[["dataSelector-withColnames"]]))
+                   customNames$withColnames <- input[["dataSelector-withColnames"]]
+                 })
+
                  observeEvent(input$openPopup, ignoreNULL = TRUE, {
                    logDebug("Updating input$openPopup")
 
@@ -69,35 +88,40 @@ importDataServer <- function(id,
                    logDebug("Updating input$tabImport")
                    if (input$tabImport == "Prepare") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
-                     shinyjs::show(ns("acceptPrepare"), asis = TRUE)
+                     shinyjs::show(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    } else if (input$tabImport == "Merge") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
-                     shinyjs::hide(ns("acceptPrepare"), asis = TRUE)
+                     shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::show(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    } else if (input$tabImport == "Query with SQL") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
-                     shinyjs::hide(ns("acceptPrepare"), asis = TRUE)
+                     shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::show(ns("acceptQuery"), asis = TRUE)
                    } else {
                      shinyjs::show(ns("accept"), asis = TRUE)
-                     shinyjs::hide(ns("acceptPrepare"), asis = TRUE)
+                     shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    }
                  })
 
+                 ## button cancel ----
+                 observeEvent(input$cancel, {
+                   removeModal()
+                 })
+
                  values <- selectDataServer("dataSelector",
-                                            mergeList = mergeList)
+                                            mergeList = mergeList,
+                                            customNames = customNames,
+                                            ignoreWarnings = ignoreWarnings)
 
-                 preparedData <- prepareDataServer("dataPreparer",
-                                                   mergeList = mergeList)
-
+                 ## disable button accept ----
                  observeEvent(values$dataImport, {
-                   logDebug("Updating preparedData")
+                   logDebug("Updating values$dataImport")
 
                    ## Import valid?
                    values$warnings$import <- list()
@@ -123,12 +147,36 @@ importDataServer <- function(id,
                    }
                  })
 
-                 ## button cancel ----
-                 observeEvent(input$cancel, {
-                   removeModal()
+                 preparedData <- prepareDataServer("dataPreparer",
+                                                   mergeList = mergeList)
+
+                 ## disable button accept prepared data ----
+                 observeEvent(preparedData$data, {
+                   logDebug("Updating values$dataImport")
+
+                   ## Import valid?
+                   values$warnings$prepareData <- list()
+                   values$errors$prepareData <- list()
+
+                   values <- checkImport(values,
+                                         df = values$dataImport %>%
+                                           formatForImport(
+                                             outputAsMatrix = outputAsMatrix,
+                                             includeSd = input$includeSd,
+                                             dfNames = customNames
+                                           ),
+                                         customWarningChecks,
+                                         customErrorChecks,
+                                         type = "prepareData")
+
+                   if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                     shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
+                   } else {
+                     shinyjs::enable(ns("acceptPrepared"), asis = TRUE)
+                   }
                  })
 
-                 ## button merge data ----
+                 ## disable button merge data ----
                  joinedData <-
                    mergeDataServer("dataMerger", mergeList = mergeList)
 
@@ -143,7 +191,7 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(joinedData(), ignoreNULL = FALSE, ignoreInit = TRUE)
 
-                 ## button query data ----
+                 ## disable button query data ----
                  queriedData <-
                    queryDataServer("dataQuerier", mergeList = mergeList)
 
@@ -233,7 +281,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = "Import Data",
-      style = 'height: 1000px',
+      style = 'height: 950px',
       footer = tagList(fluidRow(
         column(4,
                align = "left",
@@ -343,13 +391,14 @@ loadDataWrapper <- function(values,
 checkImport <- function(values,
                         df,
                         customWarningChecks,
-                        customErrorChecks) {
+                        customErrorChecks,
+                        type = "import") {
   ## Import valid?
   if (length(values$errors$load) == 0) {
     lapply(customWarningChecks, function(fun) {
       res <- fun()(df)
       if (!isTRUE(res)) {
-        values$warnings$import <- c(values$warnings$import, res)
+        values$warnings[[type]] <- c(values$warnings[[type]], res)
       }
     })
   }
@@ -358,7 +407,7 @@ checkImport <- function(values,
     lapply(customErrorChecks, function(fun) {
       res <- fun()(df)
       if (!isTRUE(res)) {
-        values$errors$import <- c(values$errors$import, res)
+        values$errors[[type]] <- c(values$errors[[type]], res)
       }
     })
   }

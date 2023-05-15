@@ -37,9 +37,9 @@ selectDataUI <- function(id,
     },
     div(
       style = if (batch)
-        "height: 10em"
+        "height: 9em"
       else
-        "height: 16em",
+        "height: 12em",
       div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
       div(class = "text-success", textOutput(ns("success")))
@@ -66,11 +66,11 @@ selectDataUI <- function(id,
 #' Server function of the module
 #' @param id id of module
 #' @param mergeList (list) list of selected data
+#' @param customNames settings for custom column and row names
 #' @inheritParams importDataServer
 selectDataServer <- function(id,
                              mergeList,
-                             rowNames = reactiveVal(NULL),
-                             colNames = reactiveVal(NULL),
+                             customNames,
                              ignoreWarnings = FALSE) {
   moduleServer(id,
                function(input, output, session) {
@@ -85,25 +85,6 @@ selectDataServer <- function(id,
                    preview = NULL,
                    data = list()
                  )
-
-                 customNames <- reactiveValues(
-                   withRownames = FALSE,
-                   rownames = rowNames,
-                   withColnames = TRUE,
-                   colnames = colNames
-                 )
-
-                 observe({
-                   logDebug("Update withRownames")
-                   req(!is.null(input$withRownames))
-                   customNames$withRownames <- input$withRownames
-                 })
-
-                 observe({
-                   logDebug("Update withRownames")
-                   req(!is.null(input$withColnames))
-                   customNames$withColnames <- input$withColnames
-                 })
 
                  dataSource <- selectSourceServer("fileSource")
                  selectFileTypeServer("fileType", dataSource)

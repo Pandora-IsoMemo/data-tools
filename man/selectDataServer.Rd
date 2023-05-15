@@ -4,22 +4,14 @@
 \alias{selectDataServer}
 \title{Select Data Server}
 \usage{
-selectDataServer(
-  id,
-  mergeList,
-  rowNames = reactiveVal(NULL),
-  colNames = reactiveVal(NULL),
-  ignoreWarnings = FALSE
-)
+selectDataServer(id, mergeList, customNames, ignoreWarnings = FALSE)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{mergeList}{(list) list of selected data}
 
-\item{rowNames}{(reactive) use this for rownames of imported data}
-
-\item{colNames}{(reactive) use this for colnames of imported data}
+\item{customNames}{settings for custom column and row names}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 }
