@@ -43,7 +43,7 @@ selectDataUI <- function(id,
     ),
     div(
       #align = "right",
-      actionButton(ns("keepData"), "Select for data preparation")
+      actionButton(ns("keepData"), "Submit for data preparation")
     ),
     tags$hr(),
     tags$html(
@@ -91,11 +91,13 @@ selectDataServer <- function(id,
                  )
 
                  observe({
+                   logDebug("Update withRownames")
                    req(!is.null(input$withRownames))
                    customNames$withRownames <- input$withRownames
                  })
 
                  observe({
+                   logDebug("Update withRownames")
                    req(!is.null(input$withColnames))
                    customNames$withColnames <- input$withColnames
                  })
@@ -127,8 +129,8 @@ selectDataServer <- function(id,
                      customNames$withColnames
                    ),
                    {
-                     req(dataSource$file)
                      logDebug("Updating values$dataImport")
+                     req(dataSource$file)
                      # reset values
                      values$warnings <- list()
                      values$errors <- list()
@@ -316,6 +318,7 @@ selectSourceServer <- function(id) {
                    )
 
                  observe({
+                   logDebug("Updating input ckanRecord")
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
                    updateSelectizeInput(

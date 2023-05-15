@@ -1,52 +1,63 @@
 testthat::test_that("Test queryDataServer", {
-  testMergeList <-
-    readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
+  testFile1 <- read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
+  testFile2 <- read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
+
+  testMergeList <- list(
+    `table1` = list(data = testFile1,
+                    history = list()),
+    `table2` = list(data = testFile2,
+                    history = list())
+  )
 
   shiny::testServer(queryDataServer,
-                    args = list(mergeList = reactive(
-                      list(
-                        table1 = testMergeList[[1]]$dataImport,
-                        table2 = testMergeList[[2]]$dataImport
-                      )
-                    )),
+                    args = list(mergeList = reactive(testMergeList)),
                     {
                       # Arrange
                       print("test queryDataServer")
                       # Act
                       session$setInputs(sqlCommand = paste0("select t1.* from t1;"),
                                         applyQuery = 0)
+
                       testthat::expect_equal(dbListTables(inMemoryDB()),
                                              c("t1", "t2"))
                       testthat::expect_null(session$returned())
                       testthat::expect_equal(tableIds(),
                                              c("t1", "t2"))
                       testthat::expect_equal(inMemColumns()[["t1"]][1:3],
-                                             c("Human.Entry.ID", "Submitter.ID", "Context.ID"))
+                                             c("Sample.ID", "Sample.date", "Species"))
                       testthat::expect_equal(inMemColumns()[["t2"]][1:3],
-                                             c("Entry.ID", "Submitter.ID", "Context.ID"))
+                                             c("Sample.date", "Species", "Location"))
                       testthat::expect_true(is.character(output$inMemoryTables))
                       testthat::expect_length(is.character(output$inMemoryTables), 1)
                       testthat::expect_true(is.character(output$inMemoryColumns))
                       testthat::expect_length(is.character(output$inMemoryColumns), 1)
 
-                      session$setInputs(
-                        sqlCommand = paste0("select t1.`Human.Entry.ID` from t1;"),
-                        applyQuery = 1
-                      )
+                      session$setInputs(sqlCommand = paste0("select t1.`Species` from t1;"),
+                                        applyQuery = 1)
 
-                      testthat::expect_equal(session$returned(),
-                                             structure(
-                                               list(Human.Entry.ID = c(1, 2, 3)),
-                                               class = "data.frame",
-                                               row.names = c(NA,
-                                                             -3L)
-                                             ))
+                      testthat::expect_equal(
+                        session$returned() %>% head(),
+                        structure(
+                          list(
+                            Species = c(
+                              "Bothriochloa ischaemum",
+                              "Stipa bungeana",
+                              "Agropyron cristatum",
+                              "Artemisia",
+                              "no identification",
+                              "Lespedeza davurica"
+                            )
+                          ),
+                          row.names = c(NA, 6L),
+                          class = "data.frame"
+                        )
+                      )
                     })
 
   testdb <- dbConnect(SQLite(), "file::memory:")
 
-  testTable1 <- testMergeList[[1]]$dataImport
-  testTable2 <- testMergeList[[2]]$dataImport
+  testTable1 <- testMergeList[[1]]$data
+  testTable2 <- testMergeList[[2]]$data
 
   dbWriteTable(testdb, "table1", testTable1)
   dbWriteTable(testdb, "table2", testTable2)
@@ -54,30 +65,48 @@ testthat::test_that("Test queryDataServer", {
   testthat::expect_equal(dbListTables(testdb), c("table1", "table2"))
 
   testQuery <-
-    "SELECT t1.`Human.Entry.ID`, t1.`Age.Category`, t1.`Site.Name` FROM table1 AS t1 LEFT JOIN table2 as t2 ON t1.`Age.Category` = t2.`Age.Category` AND t1.`Site.Name` = t2.`Site.Name`;"
+    "SELECT t1.`Species`, t1.`Latitude`, t1.`Longitude` FROM table1 AS t1 LEFT JOIN table2 as t2 ON t1.`Species` = t2.`Species` AND t1.`Latitude` = t2.`Latitude`;"
 
   testthat::expect_equal(
-    RSQLite::dbGetQuery(testdb, testQuery),
+    RSQLite::dbGetQuery(testdb, testQuery) %>% head(),
     structure(
       list(
-        Human.Entry.ID = c(1, 2, 3),
-        Age.Category = c("Young Middle Adult",
-                         "Young Middle Adult", "Infant"),
-        Site.Name = c("Tertiveri", "Tertiveri",
-                      "Tertiveri")
+        Species = c(
+          "Bothriochloa ischaemum",
+          "Stipa bungeana",
+          "Agropyron cristatum",
+          "Artemisia",
+          "no identification",
+          "Lespedeza davurica"
+        ),
+        Latitude = c(
+          "34°14′N",
+          "34°25′N",
+          "34°25′N",
+          "34°15′N",
+          "34°16′N",
+          "34°17′N"
+        ),
+        Longitude = c(
+          "109°7′E",
+          "109°18′E",
+          "109°18′E",
+          "109°8′E",
+          "109°9′E",
+          "109°10′E"
+        )
       ),
-      class = "data.frame",
-      row.names = c(NA, -3L)
+      row.names = c(NA,
+                    6L),
+      class = "data.frame"
     )
   )
 
   testQueryFailure <-
-    "SELECT `Human.Entry.ID`, `Age.Category`, `Site.Name` FROM table1 LEFT JOIN table2 ON `Age.Category` = `Age.Category` AND `Site.Name` = `Site.Name`;"
+    "SELECT `Species`, `Latitude`, `Longitude` FROM table1 LEFT JOIN table2 ON `Species` = `Species` AND `Latitude` = `Latitude`;"
 
   testthat::expect_warning(tryCatch({
     RSQLite::dbGetQuery(testdb, testQueryFailure)
-    #stop("test error")
-    #warning("test warning")
   },
   error = function(cond) {
     warning(cond$message)

@@ -113,8 +113,10 @@ queryDataServer <- function(id, mergeList) {
                    bindEvent(mergeList())
 
                  output$inMemoryTables <- renderDataTable({
-                   validate(need(!is.null(tableIds()),
-                                 "In-memory tables: Send files ..."))
+                   validate(need(
+                     !is.null(tableIds()),
+                     "In-memory tables: Please submit data under 'Select' ..."
+                   ))
 
                    req(tableIds())
                    DT::datatable(
@@ -136,8 +138,10 @@ queryDataServer <- function(id, mergeList) {
                  })
 
                  output$inMemoryColumns <- renderDataTable({
-                   validate(need(!is.null(tableIds()),
-                                 "In-memory columns: Send files ..."))
+                   validate(need(
+                     !is.null(tableIds()),
+                     "In-memory columns: Please submit data under 'Select' ..."
+                   ))
 
                    req(tableIds())
                    inMemColsPasted <-

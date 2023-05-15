@@ -12,27 +12,27 @@ mergeDataUI <- function(id) {
     tags$br(),
     fluidRow(
       column(
-        8,
+        9,
         selectInput(
           ns("tableX"),
           "Select table x",
-          choices = c("Send files ..." = ""),
+          choices = c("Please submit data under 'Select' ..." = ""),
           width = "100%"
         )
       ),
-      column(4, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableX")))
+      column(3, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableX")))
     ),
     fluidRow(
       column(
-        8,
+        9,
         selectInput(
           ns("tableY"),
           "Select table y",
-          choices = c("Send files ..." = ""),
+          choices = c("Please submit data under 'Select' ..." = ""),
           width = "100%"
         )
       ),
-      column(4, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableY")))
+      column(3, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableY")))
     ),
     mergeSettingsUI(ns("mergerViaUI")),
     fluidRow(column(
@@ -46,7 +46,7 @@ mergeDataUI <- function(id) {
       ns = ns
     ),
     div(style = 'height: 76px',
-        htmlOutput(ns("mergeWarnings")), ),
+        htmlOutput(ns("mergeWarnings"))),
     fluidRow(
       column(3, actionButton(ns("applyMerge"), "Apply Merge")),
       column(9, align = "right", style = "margin-top: 12px;", textOutput(ns(

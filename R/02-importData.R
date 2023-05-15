@@ -175,7 +175,6 @@ importDataServer <- function(id,
                  })
 
                  observeEvent(input$acceptPrepared, {
-                   browser()
                    logDebug("Updating input$acceptPrepared")
                    removeModal()
                    removeOpenGptCon()
