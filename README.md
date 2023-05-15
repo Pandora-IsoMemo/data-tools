@@ -5,7 +5,7 @@
 - functions and modules that can be applied across the Isomemo Apps, and
 - an app to test the modules.
 
-### Release notes:
+### Release notes :
 - see `NEWS.md`
 
 
