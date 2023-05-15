@@ -133,7 +133,8 @@ importDataServer <- function(id,
                                                 formatForImport(
                                                   outputAsMatrix = outputAsMatrix,
                                                   includeSd = input$includeSd,
-                                                  dfNames = customNames
+                                                  dfNames = customNames,
+                                                  silent = FALSE
                                                 ),
                                               customWarningChecks,
                                               customErrorChecks)
@@ -169,7 +170,8 @@ importDataServer <- function(id,
                                                 formatForImport(
                                                   outputAsMatrix = outputAsMatrix,
                                                   includeSd = input$includeSd,
-                                                  dfNames = customNames
+                                                  dfNames = customNames,
+                                                  silent = TRUE
                                                 ),
                                               customWarningChecks,
                                               customErrorChecks)
@@ -230,7 +232,8 @@ importDataServer <- function(id,
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = input$includeSd,
-                       dfNames = customNames
+                       dfNames = customNames,
+                       silent = TRUE
                      )
                  })
 
@@ -245,7 +248,8 @@ importDataServer <- function(id,
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = input$includeSd,
-                       dfNames = customNames
+                       dfNames = customNames,
+                       silent = TRUE
                      )
                  })
 
@@ -619,13 +623,14 @@ formatForImport <-
   function(df,
            outputAsMatrix,
            includeSd,
-           dfNames) {
+           dfNames,
+           silent = FALSE) {
     if (is.null(df))
       return (df)
 
     ### format column names for import ----
     colnames(df) <- colnames(df) %>%
-      formatColumnNames()
+      formatColumnNames(silent = silent)
 
     if (outputAsMatrix) {
       df <- as.matrix(df)
@@ -658,12 +663,12 @@ formatForImport <-
 #' Replaces all not alpha-numeric characters in the names of columns with a dot.
 #'
 #' @param vNames (character) names of the imported data's columns
-#' @param isTest (logical) set TRUE if function is used in tests
-formatColumnNames <- function(vNames, isTest = FALSE) {
+#' @param silent (logical) set TRUE prevent notification of warnings
+formatColumnNames <- function(vNames, silent = FALSE) {
   message <- NULL
 
   if (any(grepl("[^[:alnum:] | ^\\. | ^\\_]", vNames))) {
-    if (!isTest) {
+    if (!silent) {
       message <-
         paste(
           "Warning: One or more column names contain non-alphanumeric characters,",
@@ -677,7 +682,7 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
   }
 
   if (any(grepl("^[0-9]{1,}$", substr(vNames, 1, 1)))) {
-    if (!isTest) {
+    if (!silent) {
       message <- paste(
         c(
           message,
@@ -695,7 +700,7 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
   if (any(duplicated(vNames))) {
     isDuplicate <- duplicated(vNames)
 
-    if (!isTest) {
+    if (!silent) {
       message <- paste(c(
         message,
         paste0(
@@ -715,7 +720,7 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
     }
   }
 
-  if (!isTest && !is.null(message)) {
+  if (!silent && !is.null(message)) {
     shinyjs::alert(message)
   }
 

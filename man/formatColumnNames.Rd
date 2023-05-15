@@ -4,12 +4,12 @@
 \alias{formatColumnNames}
 \title{Format Column Names}
 \usage{
-formatColumnNames(vNames, isTest = FALSE)
+formatColumnNames(vNames, silent = FALSE)
 }
 \arguments{
 \item{vNames}{(character) names of the imported data's columns}
 
-\item{isTest}{(logical) set TRUE if function is used in tests}
+\item{silent}{(logical) set TRUE prevent notification of warnings}
 }
 \description{
 Replaces all not alpha-numeric characters in the names of columns with a dot.

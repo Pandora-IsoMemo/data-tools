@@ -186,7 +186,7 @@ selectDataServer <- function(id,
                    ### format column names for import ----
                    colnames(newData$data) <-
                      colnames(newData$data) %>%
-                     formatColumnNames()
+                     formatColumnNames(silent = TRUE)
 
                    notifications <- c()
                    if (customNames$withRownames) {
@@ -207,11 +207,15 @@ selectDataServer <- function(id,
                                           values$fileName)))
                    }
 
+                   notifications <- c(notifications,
+                                      sprintf("Submitted files: \n - %s",
+                                              paste(names(mergeList()), collapse = ",\n - ")))
+
                    if (length(notifications) > 0) {
                      shinyjs::info(paste0(notifications, collapse = "\n"))
                    }
                    # disable "keepData" to prevent loading data twice
-                   #shinyjs::disable(ns("keepData"), asis = TRUE)
+                   shinyjs::disable(ns("keepData"), asis = TRUE)
                  })
 
                  values

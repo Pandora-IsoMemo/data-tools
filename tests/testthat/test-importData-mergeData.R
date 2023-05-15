@@ -5,7 +5,7 @@ testthat::test_that("Test module mergeSettings", {
   for (i in 1:length(testMergeList)) {
     colnames(testMergeList[[i]]$dataImport) <-
       colnames(testMergeList[[i]]$dataImport) %>%
-      formatColumnNames(isTest = TRUE)
+      formatColumnNames(silent = TRUE)
   }
 
   # to create new testCommonColumns use:

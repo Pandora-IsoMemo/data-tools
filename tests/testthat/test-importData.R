@@ -425,7 +425,7 @@ test_that("Test formatColumnNames()", {
   vNames <- c("_abc", "12h_gf", "#j.f", "jg-$jhfl+4", "abc.(237)")
 
   expect_equal(
-    formatColumnNames(vNames, isTest = TRUE),
+    formatColumnNames(vNames, silent = TRUE),
     c(".abc", "x12h_gf", ".j.f", "jg..jhfl.4", "abc..237.")
   )
 })
