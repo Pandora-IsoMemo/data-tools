@@ -662,7 +662,7 @@ formatForImport <-
 formatColumnNames <- function(vNames, isTest = FALSE) {
   message <- NULL
 
-  if (any(grepl("[^[:alnum:] | ^\\.]", vNames))) {
+  if (any(grepl("[^[:alnum:] | ^\\. | ^\\_]", vNames))) {
     if (!isTest) {
       message <-
         paste(
@@ -671,9 +671,9 @@ formatColumnNames <- function(vNames, isTest = FALSE) {
         )
     }
     # replace non-alphanum characters with dot
-    vNames <- gsub("[^[:alnum:] | ^\\.]", ".", vNames)
-    # remove dots at the beginning of a column name
-    vNames <- gsub("^\\.", "", vNames)
+    vNames <- gsub("[^[:alnum:] | ^\\. | ^\\_]", ".", vNames)
+    # replace underscores at the beginning of a column name
+    vNames <- gsub("^\\_", ".", vNames)
   }
 
   if (any(grepl("^[0-9]{1,}$", substr(vNames, 1, 1)))) {
