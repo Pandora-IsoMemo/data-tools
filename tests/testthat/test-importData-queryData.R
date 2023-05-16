@@ -10,7 +10,7 @@ testthat::test_that("Test queryDataServer", {
   )
 
   shiny::testServer(queryDataServer,
-                    args = list(mergeList = reactive(testMergeList)),
+                    args = list(mergeList = reactiveVal(testMergeList)),
                     {
                       # Arrange
                       print("test queryDataServer")
@@ -33,10 +33,11 @@ testthat::test_that("Test queryDataServer", {
                       testthat::expect_length(is.character(output$inMemoryColumns), 1)
 
                       session$setInputs(sqlCommand = paste0("select t1.`Species` from t1;"),
+                                        fileNameQueried = "newQuery",
                                         applyQuery = 1)
 
                       testthat::expect_equal(
-                        session$returned() %>% head(),
+                        session$returned()[["newQuery"]] %>% head(),
                         structure(
                           list(
                             Species = c(

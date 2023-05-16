@@ -196,8 +196,8 @@ importDataServer <- function(id,
 
                  observe({
                    logDebug("Updating button acceptMerged")
-                   if (is.null(joinedData()) ||
-                       nrow(joinedData()) == 0) {
+                   if (is.null(joinedData()) || is.null(joinedData()[[1]]) ||
+                       nrow(joinedData()[[1]]) == 0) {
                      shinyjs::disable(ns("acceptMerged"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptMerged"), asis = TRUE)
@@ -211,8 +211,8 @@ importDataServer <- function(id,
 
                  observe({
                    logDebug("Updating button acceptQuery")
-                   if (is.null(queriedData()) ||
-                       nrow(queriedData()) == 0) {
+                   if (is.null(queriedData()) || is.null(queriedData()[[1]]) ||
+                       nrow(queriedData()[[1]]) == 0) {
                      shinyjs::disable(ns("acceptQuery"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptQuery"), asis = TRUE)
@@ -259,7 +259,7 @@ importDataServer <- function(id,
                    removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
-                   values$data[["mergedData"]] <- joinedData() %>%
+                   values$data[[names(joinedData())[1]]] <- joinedData()[[1]] %>%
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = FALSE,
@@ -273,7 +273,7 @@ importDataServer <- function(id,
                    removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
-                   values$data[["queriedData"]] <- queriedData() %>%
+                   values$data[[names(queriedData())[1]]] <- queriedData()[[1]] %>%
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = FALSE,

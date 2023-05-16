@@ -77,13 +77,10 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(renamedData$data, {
                    logDebug("Updating renamedData")
                    req(renamedData$data)
-                   mergeList(
-                     updateMergeList(
-                       mergeList = mergeList(),
-                       fileName = input$dataToPrep,
-                       newData = renamedData
-                     )
-                   )
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = renamedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  reducedData <-
@@ -93,13 +90,10 @@ prepareDataServer <- function(id, mergeList) {
                    logDebug("Updating reducedData")
                    req(reducedData$data)
 
-                   mergeList(
-                     updateMergeList(
-                       mergeList = mergeList(),
-                       fileName = input$dataToPrep,
-                       newData = reducedData
-                     )
-                   )
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = reducedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  joinedData <-
@@ -108,13 +102,10 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(joinedData$data, {
                    logDebug("Updating joinedData")
                    req(joinedData$data)
-                   mergeList(
-                     updateMergeList(
-                       mergeList = mergeList(),
-                       fileName = input$dataToPrep,
-                       newData = joinedData
-                     )
-                   )
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = joinedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  splittedData <-
@@ -123,13 +114,10 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(splittedData$data, {
                    logDebug("Updating splittedData")
                    req(splittedData$data)
-                   mergeList(
-                     updateMergeList(
-                       mergeList = mergeList(),
-                       fileName = input$dataToPrep,
-                       newData = splittedData
-                     )
-                   )
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = splittedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  output$preview <- renderDataTable({
@@ -489,11 +477,24 @@ splitColumnsServer <- function(id, preparedData) {
 
 # helper functions ----
 
-updateMergeList <- function(mergeList, fileName, newData) {
-  newMergeList <- mergeList
-  newMergeList[[fileName]] <- list(data = newData$data,
-                                   history = newData$history)
-  newMergeList
+#' Update Merge List
+#'
+#' @param mergeList list of files that were submitted for data preparation
+#' @param fileName (character) name of the file to be updated or added to the merge list
+#' @param newData (list) data and history of the data source and the changes
+#' @param notifications (character) previous notifications
+updateMergeList <- function(mergeList, fileName, newData, notifications = "") {
+  if (length(mergeList) > 0 && fileName %in% names(mergeList)) {
+    mergeList[[fileName]] <- list(data = newData$data,
+                                  history = newData$history)
+    notifications <- c(notifications,
+                       "File was already selected and reloaded successfully now.")
+  } else {
+    mergeList <- c(mergeList, setNames(list(newData), fileName))
+  }
+
+  list(mergeList = mergeList,
+       notifications = notifications)
 }
 
 renameColumns <- function(data, oldColName, newColName) {

@@ -194,22 +194,18 @@ selectDataServer <- function(id,
                                         "Rownames are not preserved when applying data preparation.")
                    }
 
-                   # update mergeList()
-                   if (values$fileName %in% names(mergeList())) {
-                     tmpMergeList <- mergeList()
-                     tmpMergeList[[values$fileName]] <- newData
-                     mergeList(tmpMergeList)
-                     notifications <- c(notifications,
-                                        "File was already selected and reloaded successfully now.")
-                   } else {
-                     mergeList(c(mergeList(),
-                                 setNames(list(newData),
-                                          values$fileName)))
-                   }
+                   # update mergeList() ----
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = values$fileName,
+                                                   newData = newData,
+                                                   notifications = notifications)
+                   mergeList(newMergeList$mergeList)
+                   notifications <- newMergeList$notifications
 
-                   notifications <- c(notifications,
-                                      sprintf("Submitted files: \n - %s",
-                                              paste(names(mergeList()), collapse = ",\n - ")))
+                   showNotification(
+                     HTML(sprintf("Submitted files: <br>%s",
+                                  paste(names(mergeList()), collapse = ",<br>"))),
+                     type = "message")
 
                    if (length(notifications) > 0) {
                      shinyjs::info(paste0(notifications, collapse = "\n"))
