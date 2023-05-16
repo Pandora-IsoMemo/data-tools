@@ -31,12 +31,13 @@ queryDataUI <- function(id) {
         theme = "cobalt",
         fontSize = 16,
         autoScrollEditorIntoView = TRUE,
-        minLines = 3,
-        maxLines = 5,
+        minLines = 8,
+        maxLines = 8,
         autoComplete = "live"
       )
     ),
     column(3,
+           style = "margin-top: -0.5em",
            textInput(ns("fileNameQueried"), "New file name", value = "queriedFile"),
            actionButton(
              ns("applyQuery"), "Apply"

@@ -1,5 +1,15 @@
 # DataTools
 
+## Version 23.05.01
+
+### New Features
+- _Import Data_ module
+  - in the tab _Prepare_: option to select the file that should be updated
+  - in the tab _Merge_: option to merge several files
+    - merge two files, save with a new file name, select the new file and another table, merge,
+    repeat, ...
+  - in the tab _Query with SQL_: option to keep a new file and do some data preparation in other tabs
+
 ## Version 23.05.0
 
 ### New Features
