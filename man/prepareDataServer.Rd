@@ -4,14 +4,12 @@
 \alias{prepareDataServer}
 \title{Prepare Data Server}
 \usage{
-prepareDataServer(id, selectedData, nameOfSelected)
+prepareDataServer(id, mergeList)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{selectedData}{(reactive) selected data}
-
-\item{nameOfSelected}{(reactive) filename of selected data}
+\item{mergeList}{(list) list of selected data}
 }
 \description{
 Server function of the module

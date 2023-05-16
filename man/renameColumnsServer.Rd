@@ -4,12 +4,12 @@
 \alias{renameColumnsServer}
 \title{Rename Columns Server}
 \usage{
-renameColumnsServer(id, columnNames)
+renameColumnsServer(id, preparedData)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{columnNames}{(reactive) column names}
+\item{preparedData}{(reactive) selected data, possibly already modified}
 }
 \description{
 Server function of the module

@@ -10,7 +10,12 @@ prepareDataUI <- function(id) {
 
   tagList(
     tags$br(),
-    htmlOutput(ns("selectedFile")),
+    selectInput(
+      ns("dataToPrep"),
+      "Select a File",
+      choices = c("Please submit data under 'Select' ..." = ""),
+      width = "75%"
+    ),
     renameColumnsUI(ns("renameCols")),
     tags$br(),
     joinColumnsUI(ns("joinCols")),
@@ -21,7 +26,7 @@ prepareDataUI <- function(id) {
     tags$hr(),
     tags$html(
       HTML(
-        "<b>Preview</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
+        "<b>Preview prepared data</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
       )
     ),
     fluidRow(column(12,
@@ -36,69 +41,91 @@ prepareDataUI <- function(id) {
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param selectedData (reactive) selected data
-#' @param nameOfSelected (reactive) filename of selected data
-prepareDataServer <- function(id, selectedData, nameOfSelected) {
+#' @param mergeList (list) list of selected data
+prepareDataServer <- function(id, mergeList) {
   moduleServer(id,
                function(input, output, session) {
-                 preparedData <- reactiveVal(NULL)
+                 preparedData <- reactiveValues(data = NULL,
+                                                history = list())
 
-                 observeEvent(selectedData(), ignoreNULL = FALSE, {
-                   preparedData(selectedData())
+                 observeEvent(mergeList(), {
+                   logDebug("Updating input select from mergeList")
+                   req(length(mergeList()) > 0)
+
+                   fileList <- names(mergeList())
+                   updateSelectInput(session,
+                                     "dataToPrep",
+                                     choices = fileList,
+                                     selected = fileList[length(fileList)])
                  })
 
-                 output$selectedFile <- renderText({
-                   prefix <- "<b>Selected file:</b> &nbsp;&nbsp;"
-                   if (is.null(nameOfSelected()) ||
-                       is.na(nameOfSelected()) ||
-                       nameOfSelected() == "") {
-                     text <- "Please select a file first."
-                   } else {
-                     text <- nameOfSelected()
-                   }
+                 observe({
+                   logDebug("Updating preparedData")
+                   # update here changes of mergeList & changes of input$dataToPrep
+                   preparedData$data <- NULL
 
-                   HTML(paste0(prefix, text))
+                   req(input$dataToPrep)
+                   preparedData$data <-
+                     mergeList()[[input$dataToPrep]]$data
+                   preparedData$history <-
+                     mergeList()[[input$dataToPrep]]$history
                  })
 
-                 newColNames <- renameColumnsServer("renameCols",
-                                                    columnNames = reactive(colnames(preparedData())))
+                 renamedData <-
+                   renameColumnsServer("renameCols", preparedData)
 
-                 observeEvent(newColNames(), {
-                   req(newColNames())
-                   tmpData <- preparedData()
-                   colnames(tmpData) <- newColNames()
-                   preparedData(tmpData)
+                 observeEvent(renamedData$data, {
+                   logDebug("Updating renamedData")
+                   req(renamedData$data)
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = renamedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  reducedData <-
                    deleteColumnsServer("deleteCols", preparedData)
 
-                 observeEvent(reducedData(), {
-                   req(reducedData())
-                   preparedData(reducedData())
+                 observeEvent(reducedData$data, {
+                   logDebug("Updating reducedData")
+                   req(reducedData$data)
+
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = reducedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  joinedData <-
                    joinColumnsServer("joinCols", preparedData)
 
-                 observeEvent(joinedData(), {
-                   req(joinedData())
-                   preparedData(joinedData())
+                 observeEvent(joinedData$data, {
+                   logDebug("Updating joinedData")
+                   req(joinedData$data)
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = joinedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  splittedData <-
                    splitColumnsServer("splitCols", preparedData)
 
-                 observeEvent(splittedData(), {
-                   req(splittedData())
-                   preparedData(splittedData())
+                 observeEvent(splittedData$data, {
+                   logDebug("Updating splittedData")
+                   req(splittedData$data)
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$dataToPrep,
+                                                   newData = splittedData)
+                   mergeList(newMergeList$mergeList)
                  })
 
                  output$preview <- renderDataTable({
-                   req(preparedData())
+                   logDebug("Render preparedData")
+                   req(preparedData$data)
 
                    previewData <-
-                     cutAllLongStrings(preparedData(), cutAt = 20)
+                     cutAllLongStrings(preparedData$data, cutAt = 20)
                    DT::datatable(
                      previewData,
                      filter = "none",
@@ -131,10 +158,10 @@ renameColumnsUI <- function(id) {
   tagList(tags$br(),
           fluidRow(
             column(5, selectInput(
-              ns("columnToRename"), "Rename a column", choices = NULL
+              ns("oldColName"), "Rename a column", choices = NULL
             )),
             column(5, style = "margin-top: 18px;", textInput(
-              ns("newName"), label = NULL, placeholder = "New name"
+              ns("newColName"), label = NULL, placeholder = "New name"
             )),
             column(
               2,
@@ -150,35 +177,40 @@ renameColumnsUI <- function(id) {
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param columnNames (reactive) column names
-renameColumnsServer <- function(id, columnNames) {
+#' @param preparedData (reactive) selected data, possibly already modified
+renameColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newColumnNames <- reactiveVal()
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
-                 observeEvent(columnNames(), ignoreNULL = FALSE, {
-                   if (is.null(columnNames())) {
-                     choices <- c("Select data ..." = "")
+                 observeEvent(preparedData$data, ignoreNULL = FALSE, {
+                   logDebug("Updating inputs to rename")
+                   currentColNames <- colnames(preparedData$data)
+                   if (is.null(currentColNames)) {
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
-                     choices <- columnNames()
+                     choices <- currentColNames
                    }
-                   updateSelectInput(session, "columnToRename", choices = choices)
-                   updateTextInput(session, "newName", value = "")
-
-                   # by default return current column names
-                   newColumnNames(columnNames())
+                   updateSelectInput(session, "oldColName", choices = choices)
+                   updateTextInput(session, "newColName", value = "")
                  })
 
                  observeEvent(input$setColName, {
-                   req(columnNames(), input$newName)
+                   logDebug("Apply rename")
+                   req(preparedData$data, input$newColName)
 
-                   tmpNames <- columnNames()
-                   tmpNames[tmpNames == input$columnToRename] <-
-                     input$newName
-                   newColumnNames(tmpNames)
+                   newData$data <- preparedData$data %>%
+                     renameColumns(oldColName = input$oldColName,
+                                   newColName = input$newColName)
+                   newData$history = c(
+                     preparedData$history,
+                     list(fun = "renameColumns",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
-                 newColumnNames
+                 return(newData)
                })
 }
 
@@ -229,33 +261,39 @@ deleteColumnsUI <- function(id) {
 deleteColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
-                 observeEvent(preparedData(), ignoreNULL = FALSE, {
-                   if (is.null(preparedData())) {
-                     choices <- c("Select data ..." = "")
+                 observeEvent(preparedData$data, ignoreNULL = FALSE, {
+                   logDebug("Updating inputs to delete")
+                   if (is.null(preparedData$data)) {
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
-                     choices <- colnames(preparedData())
+                     choices <- colnames(preparedData$data)
                    }
                    updatePickerInput(session,
                                      "columnsToDelete",
                                      choices = choices,
                                      selected = c())
-
-                   # by default return current data
-                   newData(preparedData())
                  })
 
                  observeEvent(input$deleteCol, {
-                   req(preparedData(), input$columnsToDelete)
-
-                   tmpData <- preparedData()
-                   tmpData <-
-                     tmpData[, !(colnames(tmpData) %in% input$columnsToDelete)]
-                   newData(tmpData)
+                   logDebug("Apply delete")
+                   req(preparedData$data, input$columnsToDelete)
+                   if(all(colnames(preparedData$data) %in% input$columnsToDelete)) {
+                     shinyjs::info("Cannot remove all columns!")
+                   } else {
+                     newData$data <- preparedData$data %>%
+                       deleteColumns(columnsToDelete = input$columnsToDelete)
+                     newData$history <- c(
+                       preparedData$history,
+                       list(fun = "deleteColumns",
+                            parameter = reactiveValuesToList(input)[names(input)])
+                     )
+                   }
                  })
 
-                 newData
+                 return(newData)
                })
 }
 
@@ -291,7 +329,7 @@ joinColumnsUI <- function(id) {
       4,
       offset = 1,
       style = "margin-top: 14px;",
-      checkboxInput(ns("keepOrigColumns"), "Keep input columns", value = TRUE)
+      checkboxInput(ns("keepOrig"), "Keep input columns", value = TRUE)
     ),
     column(2, align = "right",
            actionButton(ns("join"), "Join", width = "100%"))
@@ -307,40 +345,43 @@ joinColumnsUI <- function(id) {
 joinColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
-                 observeEvent(preparedData(), ignoreNULL = FALSE, {
-                   if (is.null(preparedData())) {
-                     choices <- c("Select data ..." = "")
+                 observeEvent(preparedData$data, ignoreNULL = FALSE, {
+                   logDebug("Updating inputs to join")
+                   if (is.null(preparedData$data)) {
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
-                     choices <- colnames(preparedData())
+                     choices <- colnames(preparedData$data)
                    }
                    updateSelectInput(session, "column1ToJoin",
                                      choices = choices)
                    updateSelectInput(session, "column2ToJoin",
                                      choices = choices)
                    updateTextInput(session, "newName", value = "")
-
-                   # by default return current data
-                   newData(preparedData())
                  })
 
                  observeEvent(input$join, {
-                   req(preparedData(),
+                   logDebug("Apply join")
+                   req(preparedData$data,
                        input$column1ToJoin,
                        input$column2ToJoin,
                        input$newName)
 
-                   tmpData <- preparedData() %>%
-                     unite(
-                       !!input$newName,
-                       c(input$column1ToJoin, input$column2ToJoin),
+                   newData$data <- preparedData$data %>%
+                     joinColumns(
+                       newName = input$newName,
+                       column1ToJoin = input$column1ToJoin,
+                       column2ToJoin = input$column2ToJoin,
                        sep = input$sep,
-                       remove = !input$keepOrigColumns,
-                       na.rm = TRUE
+                       keepOrig = input$keepOrig
                      )
-
-                   newData(tmpData)
+                   newData$history <- c(
+                     preparedData$history,
+                     list(fun = "joinColumns",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
                  newData
@@ -368,7 +409,7 @@ splitColumnsUI <- function(id) {
            )),
     column(4, style = "margin-top: 30px;",
            checkboxInput(
-             ns("keepOrigColumn"), "Keep input column", value = TRUE
+             ns("keepOrig"), "Keep input column", value = TRUE
            )),
   ),
   fluidRow(
@@ -392,40 +433,113 @@ splitColumnsUI <- function(id) {
 splitColumnsServer <- function(id, preparedData) {
   moduleServer(id,
                function(input, output, session) {
-                 newData <- reactiveVal()
+                 newData <- reactiveValues(data = NULL,
+                                           history = list())
 
-                 observeEvent(preparedData(), ignoreNULL = FALSE, {
-                   if (is.null(preparedData())) {
-                     choices <- c("Select data ..." = "")
+                 observeEvent(preparedData$data, ignoreNULL = FALSE, {
+                   logDebug("Updating inputs to split")
+                   if (is.null(preparedData$data)) {
+                     choices <- c("Please submit data under 'Select' ..." = "")
                    } else {
-                     choices <- colnames(preparedData())
+                     choices <- colnames(preparedData$data)
                    }
                    updateSelectInput(session, "columnToSplit",
                                      choices = choices)
                    updateTextInput(session, "newName1", value = "")
                    updateTextInput(session, "newName2", value = "")
-
-                   # by default return current data
-                   newData(preparedData())
                  })
 
                  observeEvent(input$split, {
-                   req(preparedData(),
+                   logDebug("Apply split")
+                   req(preparedData$data,
                        input$columnToSplit,
                        input$newName1,
                        input$newName2)
 
-                   tmpData <- preparedData() %>%
-                     separate(
-                       !!input$columnToSplit,
-                       c(input$newName1, input$newName2),
+                   newData$data <- preparedData$data %>%
+                     splitColumn(
+                       columnToSplit = input$columnToSplit,
+                       newName1 = input$newName1,
+                       newName2 = input$newName2,
                        sep = input$sep,
-                       remove = !input$keepOrigColumn
+                       keepOrig = input$keepOrig
                      )
-
-                   newData(tmpData)
+                   newData$history <- c(
+                     preparedData$history,
+                     list(fun = "splitColumn",
+                          parameter = reactiveValuesToList(input)[names(input)])
+                   )
                  })
 
                  newData
                })
 }
+
+# helper functions ----
+
+#' Update Merge List
+#'
+#' @param mergeList list of files that were submitted for data preparation
+#' @param fileName (character) name of the file to be updated or added to the merge list
+#' @param newData (list) data and history of the data source and the changes
+#' @param notifications (character) previous notifications
+updateMergeList <- function(mergeList, fileName, newData, notifications = "") {
+  if (length(mergeList) > 0 && fileName %in% names(mergeList)) {
+    mergeList[[fileName]] <- list(data = newData$data,
+                                  history = newData$history)
+    notifications <- c(notifications,
+                       "File was already selected and reloaded successfully now.")
+  } else {
+    mergeList <- c(mergeList, setNames(list(newData), fileName))
+  }
+
+  list(mergeList = mergeList,
+       notifications = notifications)
+}
+
+renameColumns <- function(data, oldColName, newColName) {
+  tmpNames <- colnames(data)
+  if (is.null(tmpNames))
+    return(data)
+
+  tmpNames[tmpNames == oldColName] <- newColName
+  colnames(data) <- tmpNames
+  data
+}
+
+deleteColumns <- function(data, columnsToDelete) {
+  data[, !(colnames(data) %in% columnsToDelete)]
+}
+
+joinColumns <-
+  function(data,
+           newName,
+           column1ToJoin,
+           column2ToJoin,
+           sep,
+           keepOrig) {
+    data %>%
+      unite(
+        !!newName,
+        c(column1ToJoin, column2ToJoin),
+        sep = sep,
+        remove = !keepOrig,
+        na.rm = TRUE
+      )
+  }
+
+splitColumn <-
+  function(data,
+           columnToSplit,
+           newName1,
+           newName2,
+           sep,
+           keepOrig) {
+    data %>%
+      separate(
+        !!columnToSplit,
+        c(newName1, newName2),
+        sep = sep,
+        remove = !keepOrig
+      )
+  }

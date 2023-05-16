@@ -5,7 +5,7 @@ testthat::test_that("Test module mergeSettings", {
   for (i in 1:length(testMergeList)) {
     colnames(testMergeList[[i]]$dataImport) <-
       colnames(testMergeList[[i]]$dataImport) %>%
-      formatColumnNames(isTest = TRUE)
+      formatColumnNames(silent = TRUE)
   }
 
   # to create new testCommonColumns use:
@@ -179,16 +179,18 @@ test_that("matchColClasses/equalColClasses function", {
 
 
 testthat::test_that("Test module mergeDataServer", {
-  testMergeList <-
-    readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
+  testFile1 <- read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
+  testFile2 <- read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
+
+  testMergeList <- list(
+    `table1` = list(data = testFile1,
+                    history = list()),
+    `table2` = list(data = testFile2,
+                    history = list())
+  )
 
   shiny::testServer(mergeDataServer,
-                    args = list(mergeList = reactive(
-                      list(
-                        table1 = testMergeList[[1]]$dataImport,
-                        table2 = testMergeList[[2]]$dataImport
-                      )
-                    )),
+                    args = list(mergeList = reactive(testMergeList)),
                     {
                       # Arrange
                       print("test mergeDataServer")
@@ -199,37 +201,50 @@ testthat::test_that("Test module mergeDataServer", {
 
                       testthat::expect_equal(tableIds(),
                                              c(table1 = "table1", table2 = "table2"))
-                      testthat::expect_equal(tableXData() %>% nrow(), 3)
-                      testthat::expect_equal(tableXData() %>% ncol(), 51)
-                      testthat::expect_equal(tableYData() %>% nrow(), 3)
-                      testthat::expect_equal(tableYData() %>% ncol(), 81)
+                      testthat::expect_equal(tableXData() %>% nrow(), 88)
+                      testthat::expect_equal(tableXData() %>% ncol(), 12)
+                      testthat::expect_equal(tableYData() %>% nrow(), 518)
+                      testthat::expect_equal(tableYData() %>% ncol(), 14)
                       testthat::expect_equal(
-                        extractCommon(colnames(tableXData()), colnames(tableYData()))[1:3],
-                        c("Submitter.ID", "Context.ID", "Individual.ID")
+                        extractCommon(colnames(tableXData()), colnames(tableYData()))[1:5],
+                        c(
+                          "Sample.date",
+                          "Species",
+                          "Location",
+                          "Latitude",
+                          "Longitude"
                         )
+                      )
                       testthat::expect_equal(
-                        extractJoinString(c("Submitter.ID", "Context.ID", "Individual.ID"),
-                                          c("Submitter.ID", "Context.ID", "Individual.ID")),
-                        "c(\"Submitter.ID\"=\"Submitter.ID\", \"Context.ID\"=\"Context.ID\", \"Individual.ID\"=\"Individual.ID\")"
+                        extractJoinString(
+                          c("Species", "Location", "Latitude", "Longitude"),
+                          c("Species", "Location", "Latitude", "Longitude")
+                        ),
+                        "c(\"Species\"=\"Species\", \"Location\"=\"Location\", \"Latitude\"=\"Latitude\", \"Longitude\"=\"Longitude\")"
                       )
                       # cannot test directly on joinedResult$data since it depends on the output
                       # of a sub-module
-                      testthat::expect_equal(
-                        tableXData() %>%
-                            dplyr::left_join(
-                              tableYData(),
-                              by = c("Submitter.ID" = "Submitter.ID",
-                                     "Individual.ID" = "Individual.ID")) %>%
-                          nrow(),
-                        3
-                        )
-                      testthat::expect_equal(
-                        tableXData() %>%
-                          dplyr::left_join(
-                            tableYData(),
-                            by = c("Submitter.ID" = "Submitter.ID",
-                                   "Individual.ID" = "Individual.ID")) %>%
-                          ncol(),
-                        130)
+                      testthat::expect_equal(tableXData() %>%
+                                               dplyr::left_join(
+                                                 tableYData(),
+                                                 by = c(
+                                                   "Latitude" = "Latitude",
+                                                   "Longitude" = "Longitude",
+                                                   "Species" = "Species"
+                                                 )
+                                               ) %>%
+                                               nrow(),
+                                             88)
+                      testthat::expect_equal(tableXData() %>%
+                                               dplyr::left_join(
+                                                 tableYData(),
+                                                 by = c(
+                                                   "Latitude" = "Latitude",
+                                                   "Longitude" = "Longitude",
+                                                   "Species" = "Species"
+                                                 )
+                                               ) %>%
+                                               ncol(),
+                                             23)
                     })
 })

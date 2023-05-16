@@ -5,7 +5,7 @@
 - functions and modules that can be applied across the Isomemo Apps, and
 - an app to test the modules.
 
-### Release notes:
+### Release notes :
 - see `NEWS.md`
 
 
@@ -13,7 +13,7 @@
 
 Access to uploads from file, url, and the Pandora Platform. Optionally, merge data before the import via UI or SQL.
 
-UI function:
+UI function :
 
 ```R
 DataTools::importDataUI(id, label = "Import Data")
@@ -57,3 +57,5 @@ Lower number indicate that the functions are closer to the functionality of the 
 01: Main shiny modules (basically tabs in the app)  
 02: Helper shiny modules (files include ui + server component)  
 03: Helper functions
+
+

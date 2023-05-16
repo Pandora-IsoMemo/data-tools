@@ -12,27 +12,27 @@ mergeDataUI <- function(id) {
     tags$br(),
     fluidRow(
       column(
-        8,
+        9,
         selectInput(
           ns("tableX"),
           "Select table x",
-          choices = c("Send files ..." = ""),
+          choices = c("Please submit data under 'Select' ..." = ""),
           width = "100%"
         )
       ),
-      column(4, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableX")))
+      column(3, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableX")))
     ),
     fluidRow(
       column(
-        8,
+        9,
         selectInput(
           ns("tableY"),
           "Select table y",
-          choices = c("Send files ..." = ""),
+          choices = c("Please submit data under 'Select' ..." = ""),
           width = "100%"
         )
       ),
-      column(4, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableY")))
+      column(3, align = "right", style = "margin-top: 32px;", textOutput(ns("nRowsTableY")))
     ),
     mergeSettingsUI(ns("mergerViaUI")),
     fluidRow(column(
@@ -46,14 +46,29 @@ mergeDataUI <- function(id) {
       ns = ns
     ),
     div(style = 'height: 76px',
-        htmlOutput(ns("mergeWarnings")), ),
+        htmlOutput(ns("mergeWarnings"))),
     fluidRow(
-      column(3, actionButton(ns("applyMerge"), "Apply Merge")),
-      column(9, align = "right", style = "margin-top: 12px;", textOutput(ns(
+      column(6, textInput(ns("fileNameJoined"), "New file name", value = "joinedFile")),
+      column(
+        3, style = "margin-top: 1.75em;",
+        actionButton(
+          ns("applyMerge"),
+          HTML(paste("Apply Merge &nbsp",
+                showInfoUI(
+                  infoText = paste("How to merge several files:",
+                                   "Merge two files,",
+                                   "Select the new file under 'table x' or 'table y',",
+                                   "Merge the new file with another file,",
+                                   "If desired, repeat",
+                                   sep = " \n - "),
+                  color = "#ffffff")
+                )
+          ))
+      ),
+      column(3, align = "right", style = "margin-top: 2.5em;", textOutput(ns(
         "nRowsJoinedData"
       )))
     ),
-    #actionButton(ns("addMerge"), "Add Table"),
     tags$hr(),
     tags$html(
       HTML(
@@ -109,7 +124,7 @@ mergeDataServer <- function(id, mergeList) {
 
                  observe({
                    req(input$tableX)
-                   tableXData(mergeList()[[input$tableX]])
+                   tableXData(mergeList()[[input$tableX]]$data)
                  })
 
                  output$nRowsTableX <- renderText({
@@ -119,7 +134,7 @@ mergeDataServer <- function(id, mergeList) {
 
                  observe({
                    req(input$tableY)
-                   tableYData(mergeList()[[input$tableY]])
+                   tableYData(mergeList()[[input$tableY]]$data)
                  })
 
                  output$nRowsTableY <- renderText({
@@ -158,7 +173,7 @@ mergeDataServer <- function(id, mergeList) {
                      ## create data.frames to merge ----
                      for (i in c(input$tableX, input$tableY)) {
                        assign(tableIds()[i],
-                              mergeList()[[i]])
+                              mergeList()[[i]]$data)
                      }
 
                      ## match column types ----
@@ -245,6 +260,11 @@ mergeDataServer <- function(id, mergeList) {
                      }
 
                      # return result
+                     ### format column names for import ----
+                     colnames(joinedData) <-
+                       colnames(joinedData) %>%
+                       formatColumnNames(silent = TRUE)
+
                      joinedResult$data <- joinedData
                      joinedResult$preview <-
                        cutAllLongStrings(joinedData[1:2, , drop = FALSE], cutAt = 20)
@@ -252,11 +272,22 @@ mergeDataServer <- function(id, mergeList) {
                    },
                    value = 0.75,
                    message = 'merging data ...')
+
+                   # UPDATE MERGELIST ----
+                   # TO DO: keep inputs ----
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$fileNameJoined,
+                                                   newData = list(data = joinedResult$data,
+                                                                  history = list()))
+                   mergeList(newMergeList$mergeList)
+
+                   # keep filename
+                   joinedResult$import <- setNames(list(joinedResult$data), input$fileNameJoined)
                  })
 
                  output$nRowsJoinedData <- renderText({
                    req(joinedResult$data)
-                   paste("Merged data has ", NROW(joinedResult$data), "rows")
+                   paste(NROW(joinedResult$data), "rows")
                  })
 
                  output$mergeWarnings <- renderText({
@@ -280,7 +311,7 @@ mergeDataServer <- function(id, mergeList) {
                  })
 
                  # return value for parent module: ----
-                 return(reactive(joinedResult$data))
+                 return(reactive(joinedResult$import))
                })
 }
 

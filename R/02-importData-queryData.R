@@ -23,7 +23,7 @@ queryDataUI <- function(id) {
           )
         )),
     fluidRow(column(
-      10,
+      9,
       aceEditor(
         ns("sqlCommand"),
         value = NULL,
@@ -31,12 +31,14 @@ queryDataUI <- function(id) {
         theme = "cobalt",
         fontSize = 16,
         autoScrollEditorIntoView = TRUE,
-        minLines = 3,
-        maxLines = 5,
+        minLines = 8,
+        maxLines = 8,
         autoComplete = "live"
       )
     ),
-    column(2,
+    column(3,
+           style = "margin-top: -0.5em",
+           textInput(ns("fileNameQueried"), "New file name", value = "queriedFile"),
            actionButton(
              ns("applyQuery"), "Apply"
            ))),
@@ -70,6 +72,7 @@ queryDataServer <- function(id, mergeList) {
                  result <- reactiveValues(
                    data = NULL,
                    preview = NULL,
+                   import = NULL,
                    warnings = list(),
                    warningsPopup = list(),
                    errors = list()
@@ -83,14 +86,14 @@ queryDataServer <- function(id, mergeList) {
 
                    tmpDB <- inMemoryDB()
                    for (i in 1:length(mergeList())) {
-                     dbWriteTable(tmpDB, paste0("t", i), mergeList()[[i]], overwrite = TRUE)
+                     dbWriteTable(tmpDB, paste0("t", i), mergeList()[[i]]$data, overwrite = TRUE)
                    }
                    inMemoryDB(tmpDB)
                    tableIds(dbListTables(tmpDB))
 
                    inMemCols <-
                      lapply(mergeList(), function(table) {
-                       table %>%
+                       table$data %>%
                          colnames()
                      })
                    names(inMemCols) <- tableIds()
@@ -113,8 +116,10 @@ queryDataServer <- function(id, mergeList) {
                    bindEvent(mergeList())
 
                  output$inMemoryTables <- renderDataTable({
-                   validate(need(!is.null(tableIds()),
-                                 "In-memory tables: Send files ..."))
+                   validate(need(
+                     !is.null(tableIds()),
+                     "In-memory tables: Please submit data under 'Select' ..."
+                   ))
 
                    req(tableIds())
                    DT::datatable(
@@ -136,8 +141,10 @@ queryDataServer <- function(id, mergeList) {
                  })
 
                  output$inMemoryColumns <- renderDataTable({
-                   validate(need(!is.null(tableIds()),
-                                 "In-memory columns: Send files ..."))
+                   validate(need(
+                     !is.null(tableIds()),
+                     "In-memory columns: Please submit data under 'Select' ..."
+                   ))
 
                    req(tableIds())
                    inMemColsPasted <-
@@ -178,6 +185,7 @@ queryDataServer <- function(id, mergeList) {
 
                    result$data <- NULL
                    result$preview <- NULL
+                   result$import <- NULL
                    tmpDB <- inMemoryDB()
 
                    result$data <-
@@ -185,9 +193,25 @@ queryDataServer <- function(id, mergeList) {
                      tryCatchWithWarningsAndErrors(errorTitle = "Query failed")
 
                    if (!is.null(result$data)) {
+                     ### format column names for import ----
+                     colnames(result$data) <-
+                       colnames(result$data) %>%
+                       formatColumnNames(silent = TRUE)
+
                      result$preview <-
                        cutAllLongStrings(result$data[1:2, , drop = FALSE], cutAt = 20)
                    }
+
+                   # UPDATE MERGELIST ----
+                   # TO DO: keep inputs ----
+                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                                                   fileName = input$fileNameQueried,
+                                                   newData = list(data = result$data,
+                                                                  history = list()))
+                   mergeList(newMergeList$mergeList)
+
+                   # keep filename
+                   result$import <- setNames(list(result$data), input$fileNameQueried)
                  }) %>%
                    bindEvent(input$applyQuery)
 
@@ -212,7 +236,7 @@ queryDataServer <- function(id, mergeList) {
                    )
                  })
 
-                 return(reactive(result$data))
+                 return(reactive(result$import))
                })
 }
 
