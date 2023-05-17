@@ -1,8 +1,9 @@
 #' @rawNamespace import(shiny, except = c(renderDataTable, dataTableOutput))
+#' @importFrom curl has_internet
 #' @importFrom dplyr full_join inner_join left_join right_join
 #' @importFrom DT datatable renderDataTable dataTableOutput
 #' @importFrom htmltools save_html
-#' @importFrom httr GET content
+#' @importFrom httr GET content timeout
 #' @importFrom jsonlite fromJSON
 #' @importFrom openxlsx loadWorkbook read.xlsx
 #' @importFrom readODS read_ods

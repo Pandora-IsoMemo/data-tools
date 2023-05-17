@@ -45,8 +45,10 @@ keyBy <- function(l, key) {
 }
 
 tryGET <- function(path) {
+  if (!has_internet()) return(NULL)
+
   res <- try({
-    httr::GET(path)
+    httr::GET(path, timeout(1))
   }, silent = TRUE)
 
   if (inherits(res, "try-error") || res$status_code == 500 || !is.null(res[["message"]])) {
