@@ -1,5 +1,10 @@
 # DataTools
 
+## Version: 23.05.1.1
+
+### Bug Fixes
+- fixes an error when trying to reach the isomemo API without internet connection
+
 ## Version 23.05.01
 
 ### New Features
