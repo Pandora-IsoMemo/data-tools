@@ -8,7 +8,8 @@ tryCatchWithWarningsAndErrors(
   expr,
   errorTitle = "Modeling failed",
   warningTitle = "",
-  alertStyle = "shinyjs"
+  alertStyle = "shinyjs",
+  silent = FALSE
 )
 }
 \arguments{
@@ -21,6 +22,9 @@ tryCatchWithWarningsAndErrors(
 \item{alertStyle}{(character) Either "shinyjs", or "shinyalert". Specifies how an error or a
 warning is given out. If "shinyjs" than shinyjs::alert is used; if "shinyalert" than
 shinyalert::shinyalert is used.}
+
+\item{silent}{(logical) if TRUE prevents an alert, instead a warning will be displayed. Use this
+when not applied within a Shiny session.}
 }
 \description{
 Catches errors and warnings and forwards them as an alert. If an error occurs, NULL is returned.

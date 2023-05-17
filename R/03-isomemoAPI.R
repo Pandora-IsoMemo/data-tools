@@ -18,10 +18,15 @@ callAPI <- function(action, ...) {
   }
 
   url <- paste(apiBaseURL, action, "?", paramString, sep = "")
-  data <- fromJSON(url)
 
-  if (data$status == 200) data
-  else if (!is.null(data$message)) {
+  data <- try({ fromJSON(url) }, silent = TRUE)
+
+  if (inherits(data, "try-error")) {
+    warning(data[[1]])
+    NULL
+  } else if (data$status == 200) {
+    data
+  } else if (!is.null(data$message)) {
     warning(data$message)
     NULL
   } else if (!is.null(data$error)) {

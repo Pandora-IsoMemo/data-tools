@@ -9,12 +9,15 @@
 #' @param alertStyle (character) Either "shinyjs", or "shinyalert". Specifies how an error or a
 #'  warning is given out. If "shinyjs" than shinyjs::alert is used; if "shinyalert" than
 #'  shinyalert::shinyalert is used.
+#' @param silent (logical) if TRUE prevents an alert, instead a warning will be displayed. Use this
+#'  when not applied within a Shiny session.
 #'
 #' @export
 tryCatchWithWarningsAndErrors <- function(expr,
                                           errorTitle = "Modeling failed",
                                           warningTitle = "",
-                                          alertStyle = "shinyjs") {
+                                          alertStyle = "shinyjs",
+                                          silent = FALSE) {
   tryCatchMessage <- NULL
 
   w.handler <- function(w) {
@@ -41,7 +44,7 @@ tryCatchWithWarningsAndErrors <- function(expr,
   error = e.handler),
   warning = w.handler)
 
-  if (!is.null(tryCatchMessage)) {
+  if (!is.null(tryCatchMessage) && !silent) {
     # give out error or warning
     switch (
       alertStyle,
@@ -56,6 +59,11 @@ tryCatchWithWarningsAndErrors <- function(expr,
         type = tryCatchMessage[["type"]]
       )
     )
+  }
+
+  if (!is.null(tryCatchMessage) && silent) {
+    # give out error or warning
+    warning(paste0(tryCatchMessage[["title"]], tryCatchMessage[["text"]]), call. = FALSE)
   }
 
   # output result of expr

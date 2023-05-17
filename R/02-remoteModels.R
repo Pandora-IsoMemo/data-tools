@@ -115,6 +115,10 @@ remoteModelsServer <- function(id,
                    bindEvent(resetSelected())
 
                  observe({
+                   if (is.null(input$remoteModelChoice) || input$remoteModelChoice == "") {
+                     pathToRemote(NULL)
+                   }
+
                    req(input$remoteModelChoice)
                    tmpPath <- NULL
 

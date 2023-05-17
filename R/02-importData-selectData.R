@@ -251,7 +251,7 @@ selectSourceUI <- function(id,
                 selectizeInput(
                   ns("ckanRecord"),
                   "Pandora dataset",
-                  choices = c("No Pandora dataset available" = ""),
+                  choices = c("No dataset found, please check your connection ..." = ""),
                   width = "100%",
                   options = list(
                     onFocus = I(
@@ -301,12 +301,14 @@ selectSourceServer <- function(id) {
                    logDebug("Updating input ckanRecord")
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
-                   updateSelectizeInput(
-                     session,
-                     "ckanRecord",
-                     choices = c("Select Pandora dataset ..." = "", titles),
-                     selected = c("Select Pandora dataset ..." = "")
-                   )
+                   if (!is.null(titles)) {
+                     updateSelectizeInput(
+                       session,
+                       "ckanRecord",
+                       choices = c("Select Pandora dataset ..." = "", titles),
+                       selected = c("Select Pandora dataset ..." = "")
+                     )
+                   }
                  }) %>%
                    bindEvent(input$source)
 
