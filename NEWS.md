@@ -1,11 +1,11 @@
 # DataTools
 
-## Version: 23.05.1.1
+## Version: 23.05.2
 
 ### Bug Fixes
-- fixes an error when trying to reach the isomemo API without internet connection
+- fixes issues when trying to reach the isomemo, github and pandorra API without internet connection
 
-## Version 23.05.01
+## Version 23.05.1
 
 ### New Features
 - _Import Data_ module

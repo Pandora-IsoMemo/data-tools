@@ -1,14 +1,16 @@
 getCKANFiles <- function () {
   res <- try({
-    list <- getCKANFileList()
-    filterCKANFileList(list)
-  })
+    getCKANFileList()
+  }, silent = TRUE)
 
   if (inherits(res, "try-error")) {
     shinyjs::alert("Could not retrieve file metadata from pandoradata.earth")
     list()
+  } else if (!is.null(res[["message"]])) {
+    # if there is a message than an error occurred
+    list()
   } else {
-    res
+    filterCKANFileList(res)
   }
 }
 

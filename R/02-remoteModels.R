@@ -189,8 +189,9 @@ checkLocalModelDir <-
 #' @inheritParams remoteModelsServer
 getRemoteModelsFromGithub <-
   function(githubRepo, folderOnGithub = "/predefinedModels") {
-    apiOut <-
-      try(getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub))
+    apiOut <- try({
+      getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
+      }, silent = TRUE)
 
     if (inherits(apiOut, "try-error")) {
       return()
