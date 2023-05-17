@@ -251,7 +251,7 @@ selectSourceUI <- function(id,
                 selectizeInput(
                   ns("ckanRecord"),
                   "Pandora dataset",
-                  choices = c("No dataset found, please check your connection ..." = ""),
+                  choices = c("No dataset found, please check connection ..." = ""),
                   width = "100%",
                   options = list(
                     onFocus = I(
@@ -277,7 +277,8 @@ selectSourceUI <- function(id,
               conditionalPanel(
                 condition = "input.source == 'url'",
                 ns = ns,
-                textInput(ns("url"), "URL", width = "100%")
+                textInput(ns("url"), "URL", width = "100%"),
+                actionButton(ns("loadUrl"), "Load")
               )
             )
           ))
@@ -399,7 +400,7 @@ selectSourceServer <- function(id) {
                    dataSource$filename <- basename(input$url)
                    updateSelectInput(session = session, "sheet", selected = character(0))
                  }) %>%
-                   bindEvent(input$url)
+                   bindEvent(input$loadUrl)
 
                  dataSource
                })

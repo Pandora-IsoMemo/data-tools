@@ -189,18 +189,9 @@ checkLocalModelDir <-
 #' @inheritParams remoteModelsServer
 getRemoteModelsFromGithub <-
   function(githubRepo, folderOnGithub = "/predefinedModels") {
-    apiOut <- try({
-      getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
-      }, silent = TRUE)
+    apiOut <- getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
 
-    if (inherits(apiOut, "try-error")) {
-      return()
-    }
-
-    if (!is.null(apiOut[["message"]])) {
-      # if there is a message than an error occurred
-      return()
-    }
+    if (is.null(apiOut)) return(c())
 
     lapply(apiOut, function(el)
       el$name) %>%
@@ -214,15 +205,9 @@ getRemoteModelsFromGithub <-
 #' @inheritParams remoteModelsServer
 getGithubContent <-
   function(githubRepo, folderOnGithub = "/predefinedModels") {
-    res <- httr::GET(
-      paste0(
-        "api.github.com/repos/Pandora-IsoMemo/",
-        githubRepo,
-        "/contents/inst/app",
-        folderOnGithub
-      )
-    )
-    httr::content(res)
+    tryGET(path = sprintf("api.github.com/repos/Pandora-IsoMemo/%s/contents/inst/app%s",
+                          githubRepo,
+                          folderOnGithub))
   }
 
 
