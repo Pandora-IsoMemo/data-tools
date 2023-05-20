@@ -1,5 +1,10 @@
 callAPI <- function(action, ...) {
-  # return(NULL)
+
+  if (!has_internet()) {
+    warning("No internet connection.")
+    return(NULL)
+  }
+
   params <- list(...)
   paramString <- paste(names(params), params, sep = "=", collapse = "&")
 
