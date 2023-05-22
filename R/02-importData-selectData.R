@@ -112,8 +112,8 @@ selectDataServer <- function(id,
                      customNames$withRownames,
                      customNames$withColnames
                    ),
-                   {
-                     logDebug("Updating values$dataImport")
+                   ignoreInit = TRUE, {
+                     logDebug("Entering values$dataImport")
                      req(dataSource$file)
                      # reset values
                      values$warnings <- list()
@@ -124,31 +124,33 @@ selectDataServer <- function(id,
                      values$preview <- NULL
                      values$data <- list()
 
-                     withProgress(value = 0.75,
-                                  message = 'loading data ...', {
-                                    values <- loadDataWrapper(
-                                      values = values,
-                                      filepath = dataSource$file,
-                                      filename = dataSource$filename,
-                                      type = input[["fileType-type"]],
-                                      sep = input[["fileType-colSep"]],
-                                      dec = input[["fileType-decSep"]],
-                                      withRownames = customNames$withRownames,
-                                      withColnames = customNames$withColnames,
-                                      sheetId = as.numeric(input[["fileType-sheet"]])
-                                    )
+                     logDebug("Updating values$dataImport")
+                     withProgress(
+                       value = 0.75,
+                       message = 'loading data ...', {
+                         values <- loadDataWrapper(
+                           values = values,
+                           filepath = dataSource$file,
+                           filename = dataSource$filename,
+                           type = input[["fileType-type"]],
+                           sep = input[["fileType-colSep"]],
+                           dec = input[["fileType-decSep"]],
+                           withRownames = customNames$withRownames,
+                           withColnames = customNames$withColnames,
+                           sheetId = as.numeric(input[["fileType-sheet"]])
+                         )
 
-                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                                      shinyjs::disable(ns("keepData"), asis = TRUE)
-                                    } else {
-                                      shinyjs::enable(ns("keepData"), asis = TRUE)
-                                      values$fileImportSuccess <-
-                                        "Data import successful"
-                                      values$preview <-
-                                        cutAllLongStrings(values$dataImport, cutAt = 20)
-                                    }
-                                  })
-                   }
+                         if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                           shinyjs::disable(ns("keepData"), asis = TRUE)
+                         } else {
+                           shinyjs::enable(ns("keepData"), asis = TRUE)
+                           values$fileImportSuccess <-
+                             "Data import successful"
+                           values$preview <-
+                             cutAllLongStrings(values$dataImport, cutAt = 20)
+                         }
+                       }
+                       )}
                  )
 
                  output$warning <-
@@ -299,22 +301,19 @@ selectSourceServer <- function(id) {
                                               fileName = NULL)
 
                  observe({
-                   req(input$source)
+                   logDebug("Updating input source if no internet")
                    if (!has_internet()) {
                      updateSelectInput(session, "source", selected = "file")
+                     updateTextInput(session, "url", placeholder = "No internet connection!")
                    }
                  }) %>%
                    bindEvent(input$source, once = TRUE)
 
                  observe({
-                   logDebug("Updating input ckanRecord")
+                   logDebug("Updating inputs url, ckanRecord")
                    reset("file")
 
-                   if (input$source == "url" && !has_internet()) {
-                     updateTextInput(session, "url", placeholder = "No internet connection!")
-                   }
-
-                   req(has_internet())
+                   req(has_internet(), input$source == "ckan")
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
                    if (!is.null(titles)) {
@@ -341,7 +340,9 @@ selectSourceServer <- function(id) {
                  ckanRecord <- reactive({
                    req(input$ckanRecord)
                    logDebug("Setting ckanRecord")
+                   # reset sheet
                    updateSelectInput(session = session, "sheet", selected = character(0))
+
                    ckanFiles()[[input$ckanRecord]]
                  })
 

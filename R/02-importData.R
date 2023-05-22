@@ -53,15 +53,15 @@ importDataServer <- function(id,
 
                  observe({
                    logDebug("Update withRownames")
-                   req(!is.null(input[["dataSelector-withRownames"]]))
                    customNames$withRownames <- input[["dataSelector-withRownames"]]
-                 })
+                 }) %>%
+                   bindEvent(input[["dataSelector-withRownames"]])
 
                  observe({
-                   logDebug("Update withRownames")
-                   req(!is.null(input[["dataSelector-withColnames"]]))
+                   logDebug("Update withColnames")
                    customNames$withColnames <- input[["dataSelector-withColnames"]]
-                 })
+                 }) %>%
+                   bindEvent(input[["dataSelector-withColnames"]])
 
                  observeEvent(input$openPopup, ignoreNULL = TRUE, {
                    logDebug("Updating input$openPopup")
@@ -121,7 +121,7 @@ importDataServer <- function(id,
 
                  ## disable button accept ----
                  observeEvent(values$dataImport, {
-                   logDebug("Updating values$dataImport")
+                   logDebug("Enable/Disable Accept button")
 
                    ## Import valid?
                    values$warnings$import <- list()
@@ -158,7 +158,7 @@ importDataServer <- function(id,
 
                  ## disable button accept prepared data ----
                  observeEvent(preparedData$data, {
-                   logDebug("Updating values$dataImport")
+                   logDebug("Enable/Disable AcceptPrepared button")
 
                    ## Import valid?
                    values$warnings$prepareData <- list()
