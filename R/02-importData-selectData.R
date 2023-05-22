@@ -299,7 +299,22 @@ selectSourceServer <- function(id) {
                                               fileName = NULL)
 
                  observe({
+                   req(input$source)
+                   if (!has_internet()) {
+                     updateSelectInput(session, "source", selected = "file")
+                   }
+                 }) %>%
+                   bindEvent(input$source, once = TRUE)
+
+                 observe({
                    logDebug("Updating input ckanRecord")
+                   reset("file")
+
+                   if (input$source == "url" && !has_internet()) {
+                     updateTextInput(session, "url", placeholder = "No internet connection!")
+                   }
+
+                   req(has_internet())
                    titles <-
                      unlist(lapply(ckanFiles(), `[[`, "title"))
                    if (!is.null(titles)) {
@@ -363,10 +378,6 @@ selectSourceServer <- function(id) {
                  }) %>%
                    bindEvent(input$ckanResource)
 
-                 observe({
-                   reset("file")
-                 }) %>% bindEvent(input$source)
-
                  observeEvent(input$file, {
                    logDebug("Updating input$file")
                    inFile <- input$file
@@ -383,7 +394,7 @@ selectSourceServer <- function(id) {
 
                  observe({
                    logDebug("Updating input$url")
-                   req(input$source == "url", input$url)
+                   req(input$source == "url", input$url, has_internet())
                    req(trimws(input$url) != "")
 
                    tmp <- tempfile()

@@ -48,7 +48,7 @@ tryGET <- function(path) {
   if (!has_internet()) return(NULL)
 
   res <- try({
-    httr::GET(path, timeout(1))
+    httr::GET(path, timeout(3))
   }, silent = TRUE)
 
   if (inherits(res, "try-error") || res$status_code == 500 || !is.null(res[["message"]])) {
