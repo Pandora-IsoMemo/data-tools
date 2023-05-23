@@ -1,5 +1,10 @@
 # DataTools
 
+## Version: 23.05.3
+- _Import of Pandora datasets_:
+  - alphabetical order of datasets and resources (#18)
+  - select recource types to be displayed (xls, xlsx, csv, odt, txt, all) (#18)
+
 ## Version: 23.05.2
 
 ### Bug Fixes
