@@ -738,7 +738,7 @@ addIncIfDuplicate <- function(vNames, isDuplicate, inc = 1) {
 #'
 #' @param filepath (character) url or path
 getSheetSelection <- function(filepath) {
-  if (is.null(filepath))
+  if (is.null(filepath) || !has_internet())
     return(list())
 
   fileSplit <- strsplit(filepath, split = "\\.")[[1]]

@@ -90,7 +90,7 @@ selectDataServer <- function(id,
                  selectFileTypeServer("fileType", dataSource)
 
                  observeEvent(dataSource$file, {
-                   logDebug("Updating input$source")
+                   logDebug("Updating dataSource$file")
                    # reset values
                    values$warnings <- list()
                    values$errors <- list()
@@ -128,17 +128,21 @@ selectDataServer <- function(id,
                      withProgress(
                        value = 0.75,
                        message = 'loading data ...', {
-                         values <- loadDataWrapper(
-                           values = values,
-                           filepath = dataSource$file,
-                           filename = dataSource$filename,
-                           type = input[["fileType-type"]],
-                           sep = input[["fileType-colSep"]],
-                           dec = input[["fileType-decSep"]],
-                           withRownames = customNames$withRownames,
-                           withColnames = customNames$withColnames,
-                           sheetId = as.numeric(input[["fileType-sheet"]])
-                         )
+                         if (has_internet()) {
+                           values <- loadDataWrapper(
+                             values = values,
+                             filepath = dataSource$file,
+                             filename = dataSource$filename,
+                             type = input[["fileType-type"]],
+                             sep = input[["fileType-colSep"]],
+                             dec = input[["fileType-decSep"]],
+                             withRownames = customNames$withRownames,
+                             withColnames = customNames$withColnames,
+                             sheetId = as.numeric(input[["fileType-sheet"]])
+                           )
+                         } else {
+                           values$errors <- list(load = "No internet connection!")
+                         }
 
                          if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                            shinyjs::disable(ns("keepData"), asis = TRUE)
@@ -472,7 +476,7 @@ selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
                  observeEvent(list(input$type, dataSource$file), ignoreInit = TRUE, {
-                   logDebug("Updating dataSource$file")
+                   logDebug("Updating input$sheet")
                    req(input$type)
 
                    if (input$type %in% c("xls", "xlsx")) {
