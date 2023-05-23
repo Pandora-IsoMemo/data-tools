@@ -75,14 +75,10 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
   choices
 }
 
-getCKANFiles <- function() {
-  res <- getCKANFileList()
-
-  if (length(res) > 0) {
-    res <- filterCKANFileList(res)
-  }
-
-  res
+getCKANFiles <- function(meta = "") {
+  getCKANFileList() %>%
+    filterCKANByMeta(meta = meta) %>%
+    filterCKANFileList()
 }
 
 getCKANFileList <- function() {
@@ -94,7 +90,15 @@ getCKANFileList <- function() {
   res$result
 }
 
+filterCKANByMeta <- function(fileList, meta = "") {
+  # add search for meta string here before filtering
+
+  fileList
+}
+
 filterCKANFileList <- function(fileList) {
+  if (length(fileList) == 0) return(fileList)
+
   files <- lapply(fileList, filterSingleCKANRecord)
   keyBy(files, "title")
 }
