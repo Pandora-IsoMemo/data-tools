@@ -91,9 +91,14 @@ getCKANFileList <- function() {
 }
 
 filterCKANByMeta <- function(fileList, meta = "") {
-  # add search for meta string here before filtering
+  filterMeta <- sapply(fileList, function(record) {
+    record %>%
+      unlist(use.names = FALSE) %>%
+      grepl(pattern = meta) %>%
+      any()
+  })
 
-  fileList
+  fileList[filterMeta]
 }
 
 filterCKANFileList <- function(fileList) {

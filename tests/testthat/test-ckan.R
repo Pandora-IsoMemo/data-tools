@@ -158,3 +158,7 @@ test_that("Test getCKANGroupChoices()", {
     c(`IsoMemo Network` = "isomemo-group")
   )
 })
+
+test_that("Test getCKANFiles()", {
+  expect_true(length(getCKANFiles(meta = "Roman")) < length(getCKANFiles()))
+})
