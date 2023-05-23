@@ -152,6 +152,7 @@ test_that("Test getCKANResourcesChoices()", {
 })
 
 test_that("Test getCKANGroupChoices()", {
+  # always test on live data -> test will fail if groups are changing
   expect_equal(
     getCKANGroupChoices(getCKANFiles(), sort = TRUE),
     c(`IsoMemo Network` = "isomemo-group")
