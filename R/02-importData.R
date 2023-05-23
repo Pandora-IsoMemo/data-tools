@@ -297,7 +297,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = "Import Data",
-      style = 'height: 950px',
+      style = 'height: 1020px',
       footer = tagList(fluidRow(
         column(4,
                align = "left",

@@ -6,7 +6,8 @@ test_that("Test module importData", {
                # Act
                session$setInputs(source = "ckan",
                                  ckanRecord = "AfriArch isotopic dataset",
-                                 ckanResource = "Isotopic measurements in Excel format",)
+                                 ckanResourceTypes = c("xlsx"),
+                                 ckanResource = "Isotopic measurements in Excel format")
 
                expect_equal(session$returned$filename,
                             "isotopic-measurements-in-excel-format.xlsx")

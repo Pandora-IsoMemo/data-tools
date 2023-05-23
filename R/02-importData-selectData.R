@@ -39,7 +39,7 @@ selectDataUI <- function(id,
       style = if (batch)
         "height: 9em"
       else
-        "height: 12em",
+        "height: 9em",
       div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
       div(class = "text-success", textOutput(ns("success")))
@@ -414,7 +414,7 @@ selectSourceServer <- function(id) {
                      updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  }) %>%
-                   bindEvent(input$ckanResource, ignoreNULL = FALSE, ignoreInit = TRUE)
+                   bindEvent(input$ckanResource, ignoreNULL = FALSE)
 
                  observeEvent(input$file, {
                    logDebug("Updating input$file")
