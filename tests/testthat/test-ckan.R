@@ -150,3 +150,10 @@ test_that("Test getCKANResourcesChoices()", {
     c(`Isotopic measurements in Excel format  ( XLSX )` = "Isotopic measurements in Excel format")
   )
 })
+
+test_that("Test getCKANGroupChoices()", {
+  expect_equal(
+    getCKANGroupChoices(getCKANFiles(), sort = TRUE),
+    "IsoMemo Network"
+  )
+})

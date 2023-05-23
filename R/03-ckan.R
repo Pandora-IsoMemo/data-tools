@@ -56,7 +56,21 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
   choices
 }
 
-getCKANFiles <- function () {
+getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
+  choices <- lapply(ckanFiles, function(file) {
+    lapply(file[["groups"]], `[[`, "title")
+  }) %>%
+    unlist(use.names = FALSE) %>%
+    unique()
+
+  if (sort) {
+    choices <- choices %>% sort()
+  }
+
+  choices
+}
+
+getCKANFiles <- function() {
   res <- getCKANFileList()
 
   if (length(res) > 0) {
@@ -75,25 +89,35 @@ getCKANFileList <- function() {
   res$result
 }
 
-filterCKANFileList <- function (fileList) {
+filterCKANFileList <- function(fileList) {
   files <- lapply(fileList, filterSingleCKANRecord)
   keyBy(files, "title")
 }
 
 filterSingleCKANRecord <- function(record) {
-  if (is.null(record$resources))
+  if (is.null(record$resources)) {
     resources <- list()
-  else
+    groups <- list()
+  } else {
     resources <- lapply(record$resources, filterSingleCKANResource)
+    groups <- lapply(record$groups, filterSingleCKANGroup)
+  }
 
   list(title = record$title,
-       resources = keyBy(resources, "name"))
+       resources = keyBy(resources, "name"),
+       groups = keyBy(groups, "name"))
 }
 
 filterSingleCKANResource <- function(resource) {
-  list (name = resource$name,
-        format = resource$format,
-        url = resource$url)
+  list(name = resource$name,
+       format = resource$format,
+       url = resource$url)
+}
+
+filterSingleCKANGroup <- function(group) {
+  list(name = group$name,
+       title = group$title,
+       description = group$description)
 }
 
 keyBy <- function(l, key) {
