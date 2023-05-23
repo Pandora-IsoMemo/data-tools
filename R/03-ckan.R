@@ -57,11 +57,16 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
 }
 
 getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
-  choices <- lapply(ckanFiles, function(file) {
-    lapply(file[["groups"]], `[[`, "title")
-  }) %>%
-    unlist(use.names = FALSE) %>%
-    unique()
+  # get all groups
+  choices <- lapply(ckanFiles, function(record) {
+    sapply(record[["groups"]], `[[`, "name")
+  })
+
+  # remove names of records, keep names of groups
+  names(choices) <- NULL
+  choices <- choices %>%
+    unlist()
+  choices <- choices[unique(names(choices))]
 
   if (sort) {
     choices <- choices %>% sort()
@@ -105,7 +110,7 @@ filterSingleCKANRecord <- function(record) {
 
   list(title = record$title,
        resources = keyBy(resources, "name"),
-       groups = keyBy(groups, "name"))
+       groups = keyBy(groups, "title"))
 }
 
 filterSingleCKANResource <- function(resource) {

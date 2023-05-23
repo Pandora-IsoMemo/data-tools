@@ -154,6 +154,6 @@ test_that("Test getCKANResourcesChoices()", {
 test_that("Test getCKANGroupChoices()", {
   expect_equal(
     getCKANGroupChoices(getCKANFiles(), sort = TRUE),
-    "IsoMemo Network"
+    c(`IsoMemo Network` = "isomemo-group")
   )
 })
