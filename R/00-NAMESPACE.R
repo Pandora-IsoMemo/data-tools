@@ -1,5 +1,4 @@
 #' @rawNamespace import(shiny, except = c(renderDataTable, dataTableOutput))
-#' @importFrom curl has_internet
 #' @importFrom dplyr full_join inner_join left_join right_join
 #' @importFrom DT datatable renderDataTable dataTableOutput
 #' @importFrom htmltools save_html

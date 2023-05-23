@@ -106,7 +106,7 @@ tryGET <- function(path) {
   if (!has_internet()) return(NULL)
 
   res <- try({
-    httr::GET(path, timeout(3))
+    httr::GET(path, timeout(2))
   }, silent = TRUE)
 
   if (inherits(res, "try-error") || res$status_code == 500 || !is.null(res[["message"]])) {
@@ -120,4 +120,12 @@ tryGET <- function(path) {
   } else {
     NULL
   }
+}
+
+has_internet <- function(timeout = 2) {
+  res <- try({
+    httr::GET("http://google.com/", timeout(timeout))
+  }, silent = TRUE)
+
+  !inherits(res, "try-error")
 }
