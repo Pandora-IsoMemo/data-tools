@@ -320,8 +320,7 @@ selectSourceServer <- function(id) {
                  })
 
                  dataSource <- reactiveValues(file = NULL,
-                                              fileName = NULL,
-                                              type = NULL)
+                                              fileName = NULL)
 
                  observe({
                    logDebug("Updating input source if no internet")
@@ -398,7 +397,6 @@ selectSourceServer <- function(id) {
                  observe({
                    logDebug("Updating input$ckanResource")
                    if (is.null(input$ckanResource) || input$ckanResource == "") {
-                     dataSource$type <- NULL
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
                    } else {
@@ -408,7 +406,6 @@ selectSourceServer <- function(id) {
 
                      # "file" will be used to load the file
                      # "filename" will be stored in values$fileName
-                     dataSource$type <- getExtension(resource$url)
                      dataSource$file <- resource$url
                      dataSource$filename <- basename(resource$url)
                      updateSelectInput(session = session, "sheet", selected = character(0))
@@ -421,13 +418,11 @@ selectSourceServer <- function(id) {
                    inFile <- input$file
 
                    if (is.null(inFile)) {
-                     dataSource$type <- NULL
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
                    } else {
                      # "file" will be used to load the file
                      # "filename" will be stored in values$fileName
-                     dataSource$type <- getExtension(inFile$datapath)
                      dataSource$file <- inFile$datapath
                      dataSource$filename <- inFile$name
                      updateSelectInput(session = session, "sheet", selected = character(0))
@@ -444,13 +439,11 @@ selectSourceServer <- function(id) {
                      try(download.file(input$url, destfile = tmp))
                    if (inherits(res, "try-error")) {
                      shinyjs::alert("Could not load remote file")
-                     dataSource$type <- NULL
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
                    } else {
                      # "file" will be used to load the file
                      # "filename" will be stored in values$fileName
-                     dataSource$type <- getExtension(input$url)
                      dataSource$file <- tmp
                      dataSource$filename <- basename(input$url)
                      updateSelectInput(session = session, "sheet", selected = character(0))
@@ -525,15 +518,6 @@ selectFileTypeServer <- function(id, dataSource) {
                    }
                  })
                })
-}
-
-getExtension <- function(file){
-  ex <- strsplit(basename(file), split="\\.")[[1]]
-  ex <- ex[length(ex)]
-
-  if (ex == "xls") ex <- xlsx
-
-  return(ex)
 }
 
 # TEST MODULE -------------------------------------------------------------
