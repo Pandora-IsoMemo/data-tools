@@ -427,7 +427,7 @@ selectSourceServer <- function(id) {
 
                    ckanFiles(tmpCkan)
                  }) %>%
-                   bindEvent(list(filteredCkanFiles(), input$ckanGroup), ignoreInit = TRUE)
+                   bindEvent(list(filteredCkanFiles(), input$ckanGroup))
 
                  # important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
@@ -468,7 +468,7 @@ selectSourceServer <- function(id) {
                      selected = choicesList$selected
                    )
                  }) %>%
-                   bindEvent(list(ckanRecord(), input$ckanResourceTypes), ignoreInit = TRUE)
+                   bindEvent(list(ckanRecord(), input$ckanResourceTypes))
 
                  # Update dataSource ----
                  observe({
@@ -488,7 +488,7 @@ selectSourceServer <- function(id) {
                      dataSource$filename <- basename(resource$url)
                    }
                  }) %>%
-                   bindEvent(input$ckanResource, ignoreNULL = FALSE, ignoreInit = TRUE)
+                   bindEvent(input$ckanResource, ignoreNULL = FALSE)
 
                  observeEvent(input$file, {
                    logDebug("Updating input$file")
