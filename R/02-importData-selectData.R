@@ -314,22 +314,23 @@ selectSourceUI <- function(id,
                     )
                   )
                 ),
-                div(style = "margin-top: 1.5em;",
-                selectizeInput(
-                  ns("ckanResource"),
-                  "Pandora dataset resource",
-                  choices = c("Select Pandora dataset ..." = ""),
-                  width = "100%",
-                  options = list(
-                    onFocus = I(
-                      "function() {currentVal = this.getValue(); this.clear(true); }"
-                    ),
-                    onBlur = I(
-                      "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                div(
+                  style = "margin-top: 1.5em;",
+                  selectizeInput(
+                    ns("ckanResource"),
+                    "Pandora dataset resource",
+                    choices = c("Select Pandora dataset ..." = ""),
+                    width = "100%",
+                    options = list(
+                      onFocus = I(
+                        "function() {currentVal = this.getValue(); this.clear(true); }"
+                      ),
+                      onBlur = I(
+                        "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                      )
                     )
                   )
                 )
-                  )
               ),
               ## source == file ----
               conditionalPanel(
@@ -388,11 +389,9 @@ selectSourceServer <- function(id) {
                        selected = c("Select Pandora dataset ..." = "")
                      )
                    } else {
-                     updateSelectizeInput(
-                       session,
-                       "ckanRecord",
-                       choices = c("No Pandora dataset found ..." = "")
-                     )
+                     updateSelectizeInput(session,
+                                          "ckanRecord",
+                                          choices = c("No Pandora dataset found ..." = ""))
                    }
                  }) %>%
                    bindEvent(list(input$source, ckanFiles()), ignoreInit = TRUE)
