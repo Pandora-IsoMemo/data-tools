@@ -102,6 +102,10 @@ selectDataServer <- function(id,
                                 values$dataImport <- NULL
                                 values$preview <- NULL
                                 values$data <- list()
+
+                                updateSelectInput(session = session,
+                                                  "fileType-sheet",
+                                                  selected = character(0))
                               })
 
                  # specify file server ----
@@ -356,15 +360,6 @@ selectSourceUI <- function(id,
 selectSourceServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
-                 ckanFiles <- reactiveVal()
-                 observe({
-                   ckanFiles(getCKANFiles(
-                     meta = input$ckanMeta,
-                     ckanGroup = input$ckanGroup
-                   ))
-                 }) %>%
-                   bindEvent(list(input$ckanMeta, input$ckanGroup), ignoreInit = TRUE)
-
                  dataSource <- reactiveValues(file = NULL,
                                               fileName = NULL)
 
@@ -378,57 +373,66 @@ selectSourceServer <- function(id) {
                    bindEvent(input$source, once = TRUE)
 
                  observe({
-                   logDebug("Updating inputs url, ckanRecord (Pandora dataset)")
+                   logDebug("Updating input$source")
                    reset("file")
-
-                   req(has_internet(), input$source == "ckan")
-                   # update Pandora group list ----
-                   groupChoices <- ckanFiles() %>%
-                     getCKANGroupChoices()
-                   if (!is.null(groupChoices)) {
-                     updateSelectizeInput(session,
-                                          "ckanGroup",
-                                          choices = groupChoices)
-                   } else {
-                     updateSelectizeInput(session,
-                                          "ckanGroup",
-                                          choices = c("No Pandora group available ..." = ""))
-                   }
-
-                   # update Pandora dataset list ----
-                   recordChoices <- ckanFiles() %>%
-                     getCKANRecordChoices()
-                   if (!is.null(recordChoices)) {
-                     updateSelectizeInput(
-                       session,
-                       "ckanRecord",
-                       choices = c("Select Pandora dataset ..." = "", recordChoices),
-                       selected = c("Select Pandora dataset ..." = "")
-                     )
-                   } else {
-                     updateSelectizeInput(session,
-                                          "ckanRecord",
-                                          choices = c("No Pandora dataset available ..." = ""))
-                   }
+                   updateTextInput(session, "ckanMeta", value = "")
                  }) %>%
-                   bindEvent(list(input$source, ckanFiles()), ignoreInit = TRUE)
+                   bindEvent(input$source)
+
+                 apiCkanFiles <- reactive({
+                   #req(input$source == "ckan")
+                   logDebug("Updating ckan from api")
+                   getCKANFileList()
+                 })
+
+                 filteredCkanFiles <- reactiveVal()
+                 observe({
+                   logDebug("Updating ckanGroups")
+                   tmpCkan <- apiCkanFiles() %>%
+                     filterCKANByMeta(meta = input$ckanMeta) %>%
+                     filterCKANFileList()
+
+                   updateSelectizeInput(session,
+                                        "ckanGroup",
+                                        choices = getCKANGroupChoices(tmpCkan))
+
+                   filteredCkanFiles(tmpCkan)
+                 }) %>%
+                   bindEvent(input$ckanMeta)
+
+                 ckanFiles <- reactiveVal()
+                 observe({
+                   logDebug("Updating ckanRecords (Pandora dataset)")
+                   tmpCkan <- filteredCkanFiles() %>%
+                     filterCKANGroup(ckanGroup = input$ckanGroup)
+
+                   updateSelectizeInput(
+                     session,
+                     "ckanRecord",
+                     choices = getCKANRecordChoices(tmpCkan)
+                   )
+
+                   ckanFiles(tmpCkan)
+                 })
 
                  # important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
                  # removes 'onFocus' as well as this.clear(true)
+                 ###
                  observe({
-                   logDebug("Updating ckanRecord (Pandora dataset)")
+                   logDebug("Updating ckanRecord after Enter (Pandora dataset)")
                    req(input$ckanRecord)
                    updateSelectizeInput(session, "ckanRecord", selected = input$ckanRecord)
                  }) %>%
                    bindEvent(input$ckanRecord)
 
                  observe({
-                   logDebug("Updating ckanResource")
+                   logDebug("Updating ckanResource after Enter")
                    req(input$ckanResource)
                    updateSelectizeInput(session, "ckanResource", selected = input$ckanResource)
                  }) %>%
                    bindEvent(input$ckanResource)
+                 ###
 
                  ckanRecord <- reactive({
                    logDebug("Setting ckanRecord (Pandora dataset)")
@@ -438,33 +442,18 @@ selectSourceServer <- function(id) {
                    ckanFiles()[[input$ckanRecord]]
                  })
 
-                 ckanResources <- reactive({
-                   logDebug("Updating ckanResources()")
-                   if (is.null(ckanRecord()))
-                     return(NULL)
-
-                   ckanRecord()$resources
-                 })
-
                  observe({
                    logDebug("Updating ckanResources()")
-                   if (is.null(ckanResources()) ||
-                       length(input$ckanResourceTypes) == 0) {
-                     choices <- c("No resource available ..." = "")
-                     selected <- c("No resource available ..." = "")
-                   } else {
-                     choicesList <- ckanResources() %>%
-                       getCKANResourcesChoices(types = input$ckanResourceTypes)
-                     choices <- choicesList$choices
-                     selected <- choicesList$selected
-                   }
 
+                   choicesList <- ckanRecord()$resources %>%
+                     getCKANResourcesChoices(types = input$ckanResourceTypes)
                    updateSelectizeInput(session,
                                         "ckanResource",
-                                        choices = choices,
-                                        selected = selected)
+                                        choices = choicesList$choices,
+                                        selected = choicesList$selected)
                  })
 
+                 # Update dataSource ----
                  observe({
                    logDebug("Updating input$ckanResource")
                    if (is.null(input$ckanResource) ||
@@ -480,7 +469,6 @@ selectSourceServer <- function(id) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- resource$url
                      dataSource$filename <- basename(resource$url)
-                     updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  }) %>%
                    bindEvent(input$ckanResource, ignoreNULL = FALSE)
@@ -497,7 +485,6 @@ selectSourceServer <- function(id) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- inFile$datapath
                      dataSource$filename <- inFile$name
-                     updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  })
 
@@ -518,7 +505,6 @@ selectSourceServer <- function(id) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- tmp
                      dataSource$filename <- basename(input$url)
-                     updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  }) %>%
                    bindEvent(input$loadUrl)

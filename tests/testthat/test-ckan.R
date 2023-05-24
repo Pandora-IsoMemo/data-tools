@@ -62,6 +62,7 @@ test_that("Test getCKANRecordChoices()", {
   expect_equal(
     getCKANRecordChoices(testGetCKANFiles, sort = FALSE),
     c(
+      `Select Pandora dataset ...` = "",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset"
@@ -71,6 +72,7 @@ test_that("Test getCKANRecordChoices()", {
   expect_equal(
     getCKANRecordChoices(testGetCKANFiles, sort = TRUE),
     c(
+      `Select Pandora dataset ...` = "",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu"
@@ -161,8 +163,10 @@ test_that("Test getCKANGroupChoices()", {
 
 test_that("Test getCKANFiles()", {
   expect_true(length(getCKANFiles(meta = "Roman")) < length(getCKANFiles()))
+  expect_equal(names(getCKANFiles(meta = "Roman")[[1]]), c("title", "resources", "groups"))
   expect_equal(getCKANFiles(meta = "Roman"), getCKANFiles(meta = "rOmAn"))
   expect_length(getCKANFiles(meta = "cjyvfljdosijvckjnlsfnsdkfnak"), 0)
 
   expect_true(length(getCKANFiles(ckanGroup = "isomemo-group")) < length(getCKANFiles()))
+  expect_equal(names(getCKANFiles(ckanGroup = "isomemo-group")[[1]]), c("title", "resources", "groups"))
 })

@@ -7,6 +7,12 @@
 #' @param sort (logical) if TRUE sort choices alphabetically
 getCKANResourcesChoices <-
   function(ckanResources, types, sort = TRUE) {
+    if (is.null(ckanResources) || length(types) == 0) {
+      return(list(
+        choices = c("No resource available ..." = ""),
+        selected = c("No resource available ..." = "")
+      ))
+    }
     # choices values
     resources <- names(ckanResources)
     # choices names to be displayed
@@ -52,39 +58,45 @@ getCKANResourcesChoices <-
 getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
   choices <- unlist(lapply(ckanFiles, `[[`, "title"))
 
+  if (is.null(choices)) return(c("No Pandora dataset available ..." = ""))
+
   if (sort) {
     choices <- choices %>% sort()
   }
 
-  choices
+  c("Select Pandora dataset ..." = "", choices)
 }
 
 getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
+  empty <- c("No Pandora group available ..." = "")
+
+  if (!has_internet()) return(empty)
+
   # get all groups
   choices <- lapply(ckanFiles, function(record) {
     sapply(record[["groups"]], `[[`, "name")
   })
 
-  if (!is.null(choices)) {
-    # remove names of records, keep names of groups
-    names(choices) <- NULL
-    choices <- choices %>%
-      unlist()
-    choices <- choices[unique(names(choices))]
+  if (is.null(choices)) return(empty)
 
-    if (sort) {
-      choices <- choices %>% sort()
-    }
+  # remove names of records, keep names of groups
+  names(choices) <- NULL
+  choices <- choices %>%
+    unlist()
+  choices <- choices[unique(names(choices))]
+
+  if (sort) {
+    choices <- choices %>% sort()
   }
 
-  c(`[No filter]` = NA, choices)
+  c("[No filter]" = NA, choices)
 }
 
 getCKANFiles <- function(meta = "", ckanGroup = NA) {
   res <- getCKANFileList() %>%
-    filterCKANGroup(ckanGroup = ckanGroup) %>%
     filterCKANByMeta(meta = meta) %>%
-    filterCKANFileList()
+    filterCKANFileList() %>%
+    filterCKANGroup(ckanGroup = ckanGroup)
 
   if (isRunning()) {
     res <- res %>%
@@ -105,16 +117,23 @@ getCKANFileList <- function() {
 
 #' Filter CKAN by Group
 #'
-#' @param fileList (list) output from the Pandora API
+#' @param ckanFiles (list) output from the Pandora API already filtered for relevant entries
 #' @param ckanGroup (character) title of a CKAN group
 #'
 #' @return (list) a fileList where the entries 'groups' == ckanGroup
-filterCKANGroup <- function(fileList, ckanGroup = NA) {
-  if (is.na(ckanGroup)) return(fileList)
+filterCKANGroup <- function(ckanFiles, ckanGroup = NA) {
+  if (is.null(ckanGroup) || is.na(ckanGroup) || ckanGroup == "" || ckanGroup == "NA") return(ckanFiles)
 
+  filterGroup <- sapply(ckanFiles, function(record) {
+    if (length(record$groups) == 0) return(FALSE)
 
+    sapply(record$groups, function(group) {
+      ckanGroup %in% group$name
+    }) %>%
+      any()
+  })
 
-  fileList
+  ckanFiles[filterGroup]
 }
 
 #' Filter CKAN by Meta
@@ -143,14 +162,15 @@ filterCKANFileList <- function(fileList) {
   keyBy(files, "title")
 }
 
+#' Filter Single CKAN Record
+#'
+#' Removes all meta information that is not needed by selecting only relevant entries.
+#'
+#' @param record (list) single entry from fileList
 filterSingleCKANRecord <- function(record) {
-  if (is.null(record$resources)) {
-    resources <- list()
-    groups <- list()
-  } else {
-    resources <- lapply(record$resources, filterSingleCKANResource)
-    groups <- lapply(record$groups, filterSingleCKANGroup)
-  }
+  # if is.null(record$...), empty list will be returned
+  resources <- lapply(record$resources, filterSingleCKANResource)
+  groups <- lapply(record$groups, filterSingleCKANGroup)
 
   list(
     title = record$title,
