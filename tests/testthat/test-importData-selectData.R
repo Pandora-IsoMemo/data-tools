@@ -6,6 +6,7 @@ test_that("Test module importData", {
                # Act
                session$setInputs(
                  source = "ckan",
+                 ckanMeta = "",
                  ckanRecord = "AfriArch isotopic dataset",
                  ckanResourceTypes = c("xlsx"),
                  ckanResource = "Isotopic measurements in Excel format"
@@ -17,5 +18,22 @@ test_that("Test module importData", {
                  session$returned$file,
                  "https://pandoradata.earth/dataset/06fc7dfa-4f6e-495b-91f5-185022be895a/resource/739029f6-3a3e-4365-8007-ead779bbfce0/download/isotopic-measurements-in-excel-format.xlsx"
                )
+             })
+
+  testServer(selectSourceServer,
+             {
+               # Arrange
+               print("test select source from ckan")
+               # Act
+               session$setInputs(
+                 source = "ckan",
+                 ckanMeta = "cxbdyfbxdSomeRandomStringYlkdjgl",
+                 ckanRecord = "AfriArch isotopic dataset",
+                 ckanResourceTypes = c("xlsx"),
+                 ckanResource = "Isotopic measurements in Excel format"
+               )
+
+               expect_null(session$returned$filename)
+               expect_null(session$returned$file)
              })
 })
