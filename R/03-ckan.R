@@ -149,6 +149,9 @@ filterCKANGroup <- function(ckanFiles, ckanGroup = NA) {
 #'
 #' @return (list) a fileList where the entries meta data contains the string 'meta'
 filterCKANByMeta <- function(fileList, meta = "") {
+  if (length(fileList) == 0)
+    return(fileList)
+
   filterMeta <- sapply(fileList, function(record) {
     record %>%
       unlist(use.names = FALSE) %>%
