@@ -157,7 +157,7 @@ test_that("Test getCKANGroupChoices()", {
   # always test on live data -> test will fail if groups are changing
   expect_equal(
     getCKANGroupChoices(getCKANFiles(), sort = TRUE),
-    c(`[No filter]` = NA, `IsoMemo Network` = "isomemo-group")
+    c(`IsoMemo Network` = "isomemo-group")
   )
 })
 
