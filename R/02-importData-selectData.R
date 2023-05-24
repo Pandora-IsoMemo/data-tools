@@ -319,7 +319,7 @@ selectSourceUI <- function(id,
                   selectizeInput(
                     ns("ckanResource"),
                     "Pandora dataset resource",
-                    choices = c("Select Pandora dataset ..." = ""),
+                    choices = c("No resource available ..." = ""),
                     width = "100%",
                     options = list(
                       onFocus = I(
@@ -391,7 +391,7 @@ selectSourceServer <- function(id) {
                    } else {
                      updateSelectizeInput(session,
                                           "ckanRecord",
-                                          choices = c("No Pandora dataset found ..." = ""))
+                                          choices = c("No Pandora dataset available ..." = ""))
                    }
                  }) %>%
                    bindEvent(list(input$source, ckanFiles()), ignoreInit = TRUE)
@@ -414,7 +414,6 @@ selectSourceServer <- function(id) {
                    bindEvent(input$ckanResource)
 
                  ckanRecord <- reactive({
-                   req(input$ckanRecord)
                    logDebug("Setting ckanRecord (Pandora dataset)")
                    # reset sheet
                    updateSelectInput(session = session, "sheet", selected = character(0))
@@ -423,18 +422,24 @@ selectSourceServer <- function(id) {
                  })
 
                  ckanResources <- reactive({
-                   req(ckanRecord())
-                   logDebug("Setting ckanResources()")
+                   logDebug("Updating ckanResources()")
+                   if (is.null(ckanRecord())) return(NULL)
+
                    ckanRecord()$resources
                  })
 
                  observe({
-                   req(ckanResources(), input$ckanResourceTypes)
                    logDebug("Updating ckanResources()")
-                   choicesList <- ckanResources() %>%
-                     getCKANResourcesChoices(types = input$ckanResourceTypes)
-                   choices <- choicesList$choices
-                   selected <- choicesList$selected
+                   if (is.null(ckanResources()) || length(input$ckanResourceTypes) == 0) {
+                     choices <- c("No resource available ..." = "")
+                     selected <- c("No resource available ..." = "")
+                   } else {
+                     choicesList <- ckanResources() %>%
+                       getCKANResourcesChoices(types = input$ckanResourceTypes)
+                     choices <- choicesList$choices
+                     selected <- choicesList$selected
+                   }
+
                    updateSelectizeInput(session,
                                         "ckanResource",
                                         choices = choices,
