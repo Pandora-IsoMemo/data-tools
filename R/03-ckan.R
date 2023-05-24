@@ -76,9 +76,17 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
 }
 
 getCKANFiles <- function(meta = "") {
-  getCKANFileList() %>%
+  res <- getCKANFileList() %>%
     filterCKANByMeta(meta = meta) %>%
     filterCKANFileList()
+
+  if (isRunning()) {
+    res <- res %>%
+      withProgress(value = 0.8,
+                   message = "Updating Pandora dataset list ...")
+  }
+
+  res
 }
 
 getCKANFileList <- function() {
@@ -94,7 +102,8 @@ filterCKANByMeta <- function(fileList, meta = "") {
   filterMeta <- sapply(fileList, function(record) {
     record %>%
       unlist(use.names = FALSE) %>%
-      grepl(pattern = meta) %>%
+      tolower() %>%
+      grepl(pattern = tolower(meta)) %>%
       any()
   })
 

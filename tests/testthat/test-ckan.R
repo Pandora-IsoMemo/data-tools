@@ -161,4 +161,6 @@ test_that("Test getCKANGroupChoices()", {
 
 test_that("Test getCKANFiles()", {
   expect_true(length(getCKANFiles(meta = "Roman")) < length(getCKANFiles()))
+  expect_equal(getCKANFiles(meta = "Roman"), getCKANFiles(meta = "rOmAn"))
+  expect_length(getCKANFiles(meta = "cjyvfljdosijvckjnlsfnsdkfnak"), 0)
 })
