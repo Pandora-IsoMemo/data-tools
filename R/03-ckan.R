@@ -65,21 +65,24 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
     sapply(record[["groups"]], `[[`, "name")
   })
 
-  # remove names of records, keep names of groups
-  names(choices) <- NULL
-  choices <- choices %>%
-    unlist()
-  choices <- choices[unique(names(choices))]
+  if (!is.null(choices)) {
+    # remove names of records, keep names of groups
+    names(choices) <- NULL
+    choices <- choices %>%
+      unlist()
+    choices <- choices[unique(names(choices))]
 
-  if (sort) {
-    choices <- choices %>% sort()
+    if (sort) {
+      choices <- choices %>% sort()
+    }
   }
 
-  choices
+  c(`[No filter]` = NA, choices)
 }
 
-getCKANFiles <- function(meta = "") {
+getCKANFiles <- function(meta = "", ckanGroup = NA) {
   res <- getCKANFileList() %>%
+    filterCKANGroup(ckanGroup = ckanGroup) %>%
     filterCKANByMeta(meta = meta) %>%
     filterCKANFileList()
 
@@ -100,6 +103,26 @@ getCKANFileList <- function() {
   res$result
 }
 
+#' Filter CKAN by Group
+#'
+#' @param fileList (list) output from the Pandora API
+#' @param ckanGroup (character) title of a CKAN group
+#'
+#' @return (list) a fileList where the entries 'groups' == ckanGroup
+filterCKANGroup <- function(fileList, ckanGroup = NA) {
+  if (is.na(ckanGroup)) return(fileList)
+
+
+
+  fileList
+}
+
+#' Filter CKAN by Meta
+#'
+#' @param fileList (list) output from the Pandora API
+#' @param meta (character) string for filtering all meta information
+#'
+#' @return (list) a fileList where the entries meta data contains the string 'meta'
 filterCKANByMeta <- function(fileList, meta = "") {
   filterMeta <- sapply(fileList, function(record) {
     record %>%

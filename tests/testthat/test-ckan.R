@@ -155,7 +155,7 @@ test_that("Test getCKANGroupChoices()", {
   # always test on live data -> test will fail if groups are changing
   expect_equal(
     getCKANGroupChoices(getCKANFiles(), sort = TRUE),
-    c(`IsoMemo Network` = "isomemo-group")
+    c(`[No filter]` = NA, `IsoMemo Network` = "isomemo-group")
   )
 })
 
@@ -163,4 +163,6 @@ test_that("Test getCKANFiles()", {
   expect_true(length(getCKANFiles(meta = "Roman")) < length(getCKANFiles()))
   expect_equal(getCKANFiles(meta = "Roman"), getCKANFiles(meta = "rOmAn"))
   expect_length(getCKANFiles(meta = "cjyvfljdosijvckjnlsfnsdkfnak"), 0)
+
+  expect_true(length(getCKANFiles(ckanGroup = "isomemo-group")) < length(getCKANFiles()))
 })

@@ -288,7 +288,7 @@ selectSourceUI <- function(id,
                 ns = ns,
                 selectizeInput(
                   ns("ckanGroup"),
-                  "Filter Pandora group (optional)",
+                  "Filter Pandora group",
                   choices = c("Please check connection ..." = ""),
                   width = "100%",
                   options = list(
@@ -358,9 +358,12 @@ selectSourceServer <- function(id) {
                function(input, output, session) {
                  ckanFiles <- reactiveVal()
                  observe({
-                   ckanFiles(getCKANFiles(meta = input$ckanMeta))
+                   ckanFiles(getCKANFiles(
+                     meta = input$ckanMeta,
+                     ckanGroup = input$ckanGroup
+                   ))
                  }) %>%
-                   bindEvent(input$ckanMeta)
+                   bindEvent(list(input$ckanMeta, input$ckanGroup), ignoreInit = TRUE)
 
                  dataSource <- reactiveValues(file = NULL,
                                               fileName = NULL)
@@ -379,13 +382,27 @@ selectSourceServer <- function(id) {
                    reset("file")
 
                    req(has_internet(), input$source == "ckan")
-                   titles <- ckanFiles() %>%
+                   # update Pandora group list ----
+                   groupChoices <- ckanFiles() %>%
+                     getCKANGroupChoices()
+                   if (!is.null(groupChoices)) {
+                     updateSelectizeInput(session,
+                                          "ckanGroup",
+                                          choices = groupChoices)
+                   } else {
+                     updateSelectizeInput(session,
+                                          "ckanGroup",
+                                          choices = c("No Pandora group available ..." = ""))
+                   }
+
+                   # update Pandora dataset list ----
+                   recordChoices <- ckanFiles() %>%
                      getCKANRecordChoices()
-                   if (!is.null(titles)) {
+                   if (!is.null(recordChoices)) {
                      updateSelectizeInput(
                        session,
                        "ckanRecord",
-                       choices = c("Select Pandora dataset ..." = "", titles),
+                       choices = c("Select Pandora dataset ..." = "", recordChoices),
                        selected = c("Select Pandora dataset ..." = "")
                      )
                    } else {
@@ -423,14 +440,16 @@ selectSourceServer <- function(id) {
 
                  ckanResources <- reactive({
                    logDebug("Updating ckanResources()")
-                   if (is.null(ckanRecord())) return(NULL)
+                   if (is.null(ckanRecord()))
+                     return(NULL)
 
                    ckanRecord()$resources
                  })
 
                  observe({
                    logDebug("Updating ckanResources()")
-                   if (is.null(ckanResources()) || length(input$ckanResourceTypes) == 0) {
+                   if (is.null(ckanResources()) ||
+                       length(input$ckanResourceTypes) == 0) {
                      choices <- c("No resource available ..." = "")
                      selected <- c("No resource available ..." = "")
                    } else {
