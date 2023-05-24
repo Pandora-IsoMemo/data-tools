@@ -4,10 +4,10 @@
 \alias{filterCKANGroup}
 \title{Filter CKAN by Group}
 \usage{
-filterCKANGroup(fileList, ckanGroup = NA)
+filterCKANGroup(ckanFiles, ckanGroup = NA)
 }
 \arguments{
-\item{fileList}{(list) output from the Pandora API}
+\item{ckanFiles}{(list) output from the Pandora API already filtered for relevant entries}
 
 \item{ckanGroup}{(character) title of a CKAN group}
 }

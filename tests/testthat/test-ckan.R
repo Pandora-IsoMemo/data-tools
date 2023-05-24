@@ -161,12 +161,20 @@ test_that("Test getCKANGroupChoices()", {
   )
 })
 
-test_that("Test getCKANFiles()", {
-  expect_true(length(getCKANFiles(meta = "Roman")) < length(getCKANFiles()))
-  expect_equal(names(getCKANFiles(meta = "Roman")[[1]]), c("title", "resources", "groups"))
-  expect_equal(getCKANFiles(meta = "Roman"), getCKANFiles(meta = "rOmAn"))
-  expect_length(getCKANFiles(meta = "cjyvfljdosijvckjnlsfnsdkfnak"), 0)
+test_that("Test filterCKANByMeta()", {
+  testFiles <- getCKANFileList()
 
-  expect_true(length(getCKANFiles(ckanGroup = "isomemo-group")) < length(getCKANFiles()))
-  expect_equal(names(getCKANFiles(ckanGroup = "isomemo-group")[[1]]), c("title", "resources", "groups"))
+  expect_true(length(filterCKANByMeta(testFiles, meta = "Roman")) < length(testFiles))
+  expect_equal(filterCKANByMeta(testFiles, meta = "Roman"),
+               filterCKANByMeta(testFiles, meta = "rOmAn"))
+  expect_length(filterCKANByMeta(testFiles, meta = "cjyvfljdosijvckjnlsfnsdkfnak"), 0)
+})
+
+test_that("Test filterCKANGroup()", {
+  testFiles <- getCKANFileList() %>%
+    filterCKANFileList()
+
+  expect_true(length(filterCKANGroup(testFiles, ckanGroup = "isomemo-group")) < length(testFiles))
+  expect_equal(names(filterCKANGroup(testFiles, ckanGroup = "isomemo-group")[[1]]),
+               c("title", "resources", "groups"))
 })
