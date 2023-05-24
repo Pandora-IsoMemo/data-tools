@@ -1,6 +1,15 @@
 # DataTools
 
+## Version: 23.05.4
+
+### New Features
+- _Import of Pandora datasets_:
+  - option to filter the list of Pandora datasets for a string in their metadata (#18)
+  - option to select a ckan group to filter the list of Pandora datasets (#20)
+
 ## Version: 23.05.3
+
+### New Features
 - _Import of Pandora datasets_:
   - alphabetical order of datasets and resources (#18)
   - select resource types to be displayed (xls, xlsx, csv, odt, txt, all) (#18)

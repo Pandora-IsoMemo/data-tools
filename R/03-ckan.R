@@ -5,49 +5,86 @@
 #' @param ckanResources (list) output of getCKANFiles() for a specific record
 #' @param types (character) user selected types to show
 #' @param sort (logical) if TRUE sort choices alphabetically
-getCKANResourcesChoices <- function(ckanResources, types, sort = TRUE) {
-  # choices values
-  resources <- names(ckanResources)
-  # choices names to be displayed
-  labels <-
-    unlist(lapply(ckanResources, function(x) {
-      paste(x$name, " (", x$format, ")")
-    }))
+getCKANResourcesChoices <-
+  function(ckanResources, types, sort = TRUE) {
+    if (is.null(ckanResources) || length(types) == 0) {
+      return(list(
+        choices = c("No resource available ..." = ""),
+        selected = c("No resource available ..." = "")
+      ))
+    }
+    # choices values
+    resources <- names(ckanResources)
+    # choices names to be displayed
+    labels <-
+      unlist(lapply(ckanResources, function(x) {
+        paste(x$name, " (", x$format, ")")
+      }))
 
-  # available types
-  ckanTypes <- unlist(lapply(ckanResources, function(x) {
-    tolower(x$format)
-  }), use.names = FALSE)
-  # user filter for type
-  typesFilter <- ckanTypes %in% types
+    # available types
+    ckanTypes <- unlist(lapply(ckanResources, function(x) {
+      tolower(x$format)
+    }), use.names = FALSE)
+    # user filter for type
+    typesFilter <- ckanTypes %in% types
 
-  if (all(!typesFilter)) {
-    return(list(choices = c("Selected type(s) not available ..." = ""),
-                selected = c("Selected type(s) not available ..." = "")))
+    if (all(!typesFilter)) {
+      return(list(
+        choices = c("Selected type(s) not available ..." = ""),
+        selected = c("Selected type(s) not available ..." = "")
+      ))
+    }
+
+    # set choices
+    choices <- setNames(resources[typesFilter], labels[typesFilter])
+
+    # set selected before sorting !
+    default <- sapply(types, function(type) {
+      match(type, ckanTypes)
+    })
+    default <- default[which(!is.na(default))[1]]
+    selected <- choices[default]
+
+    # sort choices
+    if (sort) {
+      choices <- choices %>% sort()
+    }
+
+    # return
+    list(choices = choices,
+         selected = selected)
   }
 
-  # set choices
-  choices <- setNames(resources[typesFilter], labels[typesFilter])
+getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
+  choices <- unlist(lapply(ckanFiles, `[[`, "title"))
 
-  # set selected before sorting !
-  default <- sapply(types, function(type) {
-    match(type, ckanTypes)
-  })
-  default <- default[which(!is.na(default))[1]]
-  selected <- choices[default]
+  if (is.null(choices))
+    return(c("No Pandora dataset available ..." = ""))
 
-  # sort choices
   if (sort) {
     choices <- choices %>% sort()
   }
 
-  # return
-  list(choices = choices,
-       selected = selected)
+  c("Select Pandora dataset ..." = "", choices)
 }
 
-getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
-  choices <- unlist(lapply(ckanFiles, `[[`, "title"))
+getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
+  if (!has_internet())
+    return(c("No connection ..." = ""))
+
+  # get all groups
+  choices <- lapply(ckanFiles, function(record) {
+    sapply(record[["groups"]], `[[`, "name")
+  })
+
+  if (is.null(choices))
+    return(c("No group available ..." = ""))
+
+  # remove names of records, keep names of groups
+  names(choices) <- NULL
+  choices <- choices %>%
+    unlist()
+  choices <- choices[unique(names(choices))]
 
   if (sort) {
     choices <- choices %>% sort()
@@ -56,44 +93,113 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
   choices
 }
 
-getCKANFiles <- function () {
-  res <- getCKANFileList()
+getCKANFiles <- function(meta = "", ckanGroup = NA) {
+  res <- getCKANFileList() %>%
+    filterCKANByMeta(meta = meta) %>%
+    filterCKANFileList() %>%
+    filterCKANGroup(ckanGroup = ckanGroup)
 
-  if (length(res) > 0) {
-    res <- filterCKANFileList(res)
+  if (isRunning()) {
+    res <- res %>%
+      withProgress(value = 0.8,
+                   message = "Updating Pandora dataset list ...")
   }
 
   res
 }
 
 getCKANFileList <- function() {
-  res <- tryGET(
-    path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000"
-    )
-  if (is.null(res)) return(list())
+  res <-
+    tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
+  if (is.null(res))
+    return(list())
 
   res$result
 }
 
-filterCKANFileList <- function (fileList) {
+#' Filter CKAN by Group
+#'
+#' @param ckanFiles (list) output from the Pandora API already filtered for relevant entries
+#' @param ckanGroup (character) title of a CKAN group
+#'
+#' @return (list) a fileList where the entries 'groups' == ckanGroup
+filterCKANGroup <- function(ckanFiles, ckanGroup = NA) {
+  if (length(ckanGroup) == 0 || all(is.na(ckanGroup)) ||
+      all(ckanGroup == "") ||
+      all(ckanGroup == "NA"))
+    return(ckanFiles)
+
+  filterGroup <- sapply(ckanFiles, function(record) {
+    if (length(record$groups) == 0)
+      return(FALSE)
+
+    sapply(record$groups, function(group) {
+      group$name %in% ckanGroup
+    }) %>%
+      any()
+  })
+
+  ckanFiles[filterGroup]
+}
+
+#' Filter CKAN by Meta
+#'
+#' @param fileList (list) output from the Pandora API
+#' @param meta (character) string for filtering all meta information
+#'
+#' @return (list) a fileList where the entries meta data contains the string 'meta'
+filterCKANByMeta <- function(fileList, meta = "") {
+  if (length(fileList) == 0)
+    return(fileList)
+
+  filterMeta <- sapply(fileList, function(record) {
+    record %>%
+      unlist(use.names = FALSE) %>%
+      tolower() %>%
+      grepl(pattern = tolower(meta)) %>%
+      any()
+  })
+
+  fileList[filterMeta]
+}
+
+filterCKANFileList <- function(fileList) {
+  if (length(fileList) == 0)
+    return(fileList)
+
   files <- lapply(fileList, filterSingleCKANRecord)
   keyBy(files, "title")
 }
 
+#' Filter Single CKAN Record
+#'
+#' Removes all meta information that is not needed by selecting only relevant entries.
+#'
+#' @param record (list) single entry from fileList
 filterSingleCKANRecord <- function(record) {
-  if (is.null(record$resources))
-    resources <- list()
-  else
-    resources <- lapply(record$resources, filterSingleCKANResource)
+  # if is.null(record$...), empty list will be returned
+  resources <- lapply(record$resources, filterSingleCKANResource)
+  groups <- lapply(record$groups, filterSingleCKANGroup)
 
-  list(title = record$title,
-       resources = keyBy(resources, "name"))
+  list(
+    title = record$title,
+    resources = keyBy(resources, "name"),
+    groups = keyBy(groups, "title")
+  )
 }
 
 filterSingleCKANResource <- function(resource) {
-  list (name = resource$name,
-        format = resource$format,
-        url = resource$url)
+  list(name = resource$name,
+       format = resource$format,
+       url = resource$url)
+}
+
+filterSingleCKANGroup <- function(group) {
+  list(
+    name = group$name,
+    title = group$title,
+    description = group$description
+  )
 }
 
 keyBy <- function(l, key) {
@@ -103,13 +209,15 @@ keyBy <- function(l, key) {
 }
 
 tryGET <- function(path) {
-  if (!has_internet()) return(NULL)
+  if (!has_internet())
+    return(NULL)
 
   res <- try({
     httr::GET(path, timeout(2))
   }, silent = TRUE)
 
-  if (inherits(res, "try-error") || res$status_code == 500 || !is.null(res[["message"]])) {
+  if (inherits(res, "try-error") ||
+      res$status_code == 500 || !is.null(res[["message"]])) {
     # if there is a message than an error occurred
     # We do not need to print an alert! If output is empty UI tells a message
     # apiName = "pandoradata.earth" or apiName = "api.github.com"
@@ -127,5 +235,5 @@ has_internet <- function(timeout = 2) {
     httr::GET("http://google.com/", timeout(timeout))
   }, silent = TRUE)
 
-  !inherits(res, "try-error")
+  ! inherits(res, "try-error")
 }

@@ -1,19 +1,24 @@
 callAPI <- function(action, ...) {
-
   if (!has_internet()) {
     warning("No internet connection.")
     return(NULL)
   }
 
   params <- list(...)
-  paramString <- paste(names(params), params, sep = "=", collapse = "&")
+  paramString <-
+    paste(names(params), params, sep = "=", collapse = "&")
 
-  if (Sys.getenv("API_BASE_URL") == "" && Sys.getenv("API_BASE_URL_DEFAULT") == "") {
-    stop(paste0("Cannot reach API. Environment variable 'API_BASE_URL' is missing. ",
-                "Please add the API_BASE_URL to your .Renviron file ",
-                "(e.g. 'API_BASE_URL=https://isomemodb.com/testapi/v1/'), or provide ",
-                "API_BASE_URL as a parameter to docker ",
-                "(e.g. 'docker run -p 3838:3838 -e API_BASE_URL=https://isomemodb.com/api/v1/ ghcr.io/pandora-isomemo/iso-app:main')."))
+  if (Sys.getenv("API_BASE_URL") == "" &&
+      Sys.getenv("API_BASE_URL_DEFAULT") == "") {
+    stop(
+      paste0(
+        "Cannot reach API. Environment variable 'API_BASE_URL' is missing. ",
+        "Please add the API_BASE_URL to your .Renviron file ",
+        "(e.g. 'API_BASE_URL=https://isomemodb.com/testapi/v1/'), or provide ",
+        "API_BASE_URL as a parameter to docker ",
+        "(e.g. 'docker run -p 3838:3838 -e API_BASE_URL=https://isomemodb.com/api/v1/ ghcr.io/pandora-isomemo/iso-app:main')."
+      )
+    )
   }
 
   if (Sys.getenv("API_BASE_URL") != "") {
@@ -24,7 +29,9 @@ callAPI <- function(action, ...) {
 
   url <- paste(apiBaseURL, action, "?", paramString, sep = "")
 
-  data <- try({ fromJSON(url) }, silent = TRUE)
+  data <- try({
+    fromJSON(url)
+  }, silent = TRUE)
 
   if (inherits(data, "try-error")) {
     warning(data[[1]])
@@ -49,8 +56,10 @@ callAPI <- function(action, ...) {
 #' @export
 getDatabaseList <- function() {
   res <- callAPI("dbsources")
-  if (!is.null(res)) res$dbsource
-  else res
+  if (!is.null(res))
+    res$dbsource
+  else
+    res
 }
 
 getRemoteDataAPI <- function(db = NULL) {
@@ -58,16 +67,19 @@ getRemoteDataAPI <- function(db = NULL) {
   if (!is.null(res)) {
     attr(res$isodata, "updated") <- res$updated
     fillIsoData(res$isodata, getMappingAPI())
-  } else res
+  } else
+    res
 }
 
-getMappingAPI <- function(){
+getMappingAPI <- function() {
   res <- callAPI("mapping")
-  if (!is.null(res)) res$mapping
-  else res
+  if (!is.null(res))
+    res$mapping
+  else
+    res
 }
 
-fillIsoData <- function(data, mapping){
+fillIsoData <- function(data, mapping) {
   colToFill <- mapping$shiny[!(mapping$shiny %in% names(data))]
   data[colToFill] <- NA
   data
@@ -86,20 +98,23 @@ getMappingTable <- function() {
 #'
 #' @export
 getRemoteData <- function(db) {
-  if (is.null(db)) return(NULL)
+  if (is.null(db))
+    return(NULL)
 
   isoData <- getRemoteDataAPI(db = db)
-  isoData[sapply(isoData, is.character)] <- lapply(isoData[sapply(isoData, is.character)], as.factor)
+  isoData[sapply(isoData, is.character)] <-
+    lapply(isoData[sapply(isoData, is.character)], as.factor)
   isoData <- handleDescription(isoData)
 
   isoData
 }
 
-handleDescription <- function(isoData, maxChar = 20){
+handleDescription <- function(isoData, maxChar = 20) {
   isoData$description <- as.character(isoData$description)
   isoData$descriptionFull <- isoData$description
-  isoData$description <- paste0(substr(isoData$description, 1, maxChar),
-                                ifelse(nchar(isoData$description) > maxChar, " ...", ""))
+  isoData$description <-
+    paste0(substr(isoData$description, 1, maxChar),
+           ifelse(nchar(isoData$description) > maxChar, " ...", ""))
   isoData
 
 }

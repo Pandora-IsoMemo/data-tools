@@ -89,17 +89,24 @@ selectDataServer <- function(id,
                  dataSource <- selectSourceServer("fileSource")
                  selectFileTypeServer("fileType", dataSource)
 
-                 observeEvent(dataSource$file, ignoreNULL = FALSE, ignoreInit = TRUE, {
-                   logDebug("Updating dataSource$file")
-                   # reset values
-                   values$warnings <- list()
-                   values$errors <- list()
-                   values$fileName <- ""
-                   values$fileImportSuccess <- NULL
-                   values$dataImport <- NULL
-                   values$preview <- NULL
-                   values$data <- list()
-                 })
+                 observeEvent(dataSource$file,
+                              ignoreNULL = FALSE,
+                              ignoreInit = TRUE,
+                              {
+                                logDebug("Updating dataSource$file")
+                                # reset values
+                                values$warnings <- list()
+                                values$errors <- list()
+                                values$fileName <- ""
+                                values$fileImportSuccess <- NULL
+                                values$dataImport <- NULL
+                                values$preview <- NULL
+                                values$data <- list()
+
+                                updateSelectInput(session = session,
+                                                  "fileType-sheet",
+                                                  selected = character(0))
+                              })
 
                  # specify file server ----
                  observeEvent(
@@ -112,7 +119,8 @@ selectDataServer <- function(id,
                      customNames$withRownames,
                      customNames$withColnames
                    ),
-                   ignoreInit = TRUE, {
+                   ignoreInit = TRUE,
+                   {
                      logDebug("Entering values$dataImport")
                      req(dataSource$file)
                      # reset values
@@ -125,36 +133,35 @@ selectDataServer <- function(id,
                      values$data <- list()
 
                      logDebug("Updating values$dataImport")
-                     withProgress(
-                       value = 0.75,
-                       message = 'loading data ...', {
-                         if (has_internet()) {
-                           values <- loadDataWrapper(
-                             values = values,
-                             filepath = dataSource$file,
-                             filename = dataSource$filename,
-                             type = input[["fileType-type"]],
-                             sep = input[["fileType-colSep"]],
-                             dec = input[["fileType-decSep"]],
-                             withRownames = customNames$withRownames,
-                             withColnames = customNames$withColnames,
-                             sheetId = as.numeric(input[["fileType-sheet"]])
-                           )
-                         } else {
-                           values$errors <- list(load = "No internet connection!")
-                         }
+                     withProgress(value = 0.75,
+                                  message = 'loading data ...', {
+                                    if (has_internet()) {
+                                      values <- loadDataWrapper(
+                                        values = values,
+                                        filepath = dataSource$file,
+                                        filename = dataSource$filename,
+                                        type = input[["fileType-type"]],
+                                        sep = input[["fileType-colSep"]],
+                                        dec = input[["fileType-decSep"]],
+                                        withRownames = customNames$withRownames,
+                                        withColnames = customNames$withColnames,
+                                        sheetId = as.numeric(input[["fileType-sheet"]])
+                                      )
+                                    } else {
+                                      values$errors <- list(load = "No internet connection!")
+                                    }
 
-                         if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                           shinyjs::disable(ns("keepData"), asis = TRUE)
-                         } else {
-                           shinyjs::enable(ns("keepData"), asis = TRUE)
-                           values$fileImportSuccess <-
-                             "Data import successful"
-                           values$preview <-
-                             cutAllLongStrings(values$dataImport, cutAt = 20)
-                         }
-                       }
-                       )}
+                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                                      shinyjs::disable(ns("keepData"), asis = TRUE)
+                                    } else {
+                                      shinyjs::enable(ns("keepData"), asis = TRUE)
+                                      values$fileImportSuccess <-
+                                        "Data import successful"
+                                      values$preview <-
+                                        cutAllLongStrings(values$dataImport, cutAt = 20)
+                                    }
+                                  })
+                   }
                  )
 
                  output$warning <-
@@ -201,17 +208,21 @@ selectDataServer <- function(id,
                    }
 
                    # update mergeList() ----
-                   newMergeList <- updateMergeList(mergeList = mergeList(),
-                                                   fileName = values$fileName,
-                                                   newData = newData,
-                                                   notifications = notifications)
+                   newMergeList <-
+                     updateMergeList(
+                       mergeList = mergeList(),
+                       fileName = values$fileName,
+                       newData = newData,
+                       notifications = notifications
+                     )
                    mergeList(newMergeList$mergeList)
                    notifications <- newMergeList$notifications
 
-                   showNotification(
-                     HTML(sprintf("Submitted files: <br>%s",
-                                  paste(names(mergeList()), collapse = ",<br>"))),
-                     type = "message")
+                   showNotification(HTML(sprintf(
+                     "Submitted files: <br>%s",
+                     paste(names(mergeList()), collapse = ",<br>")
+                   )),
+                   type = "message")
 
                    if (length(notifications) > 0) {
                      shinyjs::info(paste0(notifications, collapse = "\n"))
@@ -234,82 +245,127 @@ selectSourceUI <- function(id,
                            defaultSource) {
   ns <- NS(id)
 
-  tagList(tags$br(),
-          fluidRow(
-            column(
-              4,
-              selectInput(
-                ns("source"),
-                "Source",
-                choices = c(
-                  "Pandora Platform" = "ckan",
-                  "File" = "file",
-                  "URL" = "url"
-                ),
-                selected = defaultSource
-              )
-            ),
-            column(
-              8,
-              conditionalPanel(
-                condition = "input.source == 'ckan'",
-                ns = ns,
-                selectizeInput(
-                  ns("ckanRecord"),
-                  "Pandora dataset",
-                  choices = c("No dataset found, please check connection ..." = ""),
-                  width = "100%",
-                  options = list(
-                    onFocus = I(
-                      "function() {currentVal = this.getValue(); this.clear(true); }"
-                    ),
-                    onBlur = I(
-                      "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                    )
-                  )
-                ),
-                pickerInput(
-                  ns("ckanResourceTypes"),
-                  "Filter resource type",
-                  choices = c("xls", "xlsx", "csv", "odt", "txt"),
-                  selected = c("xls", "xlsx", "csv", "odt", "txt"),
-                  multiple = TRUE,
-                  options = list(
-                    `actions-box` = TRUE,
-                    size = 10,
-                    `none-selected-text` = "No column selected",
-                    `selected-text-format` = "count > 8",
-                    style = "backgound:'gray'"
-                  )
-                ),
-                selectizeInput(
-                  ns("ckanResource"),
-                  "Pandora dataset resource",
-                  choices = c("Select Pandora dataset ..." = ""),
-                  width = "100%",
-                  options = list(
-                    onFocus = I(
-                      "function() {currentVal = this.getValue(); this.clear(true); }"
-                    ),
-                    onBlur = I(
-                      "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                    )
-                  )
-                )
-              ),
-              conditionalPanel(
-                condition = "input.source == 'file'",
-                ns = ns,
-                fileInput(ns("file"), "File", width = "100%")
-              ),
-              conditionalPanel(
-                condition = "input.source == 'url'",
-                ns = ns,
-                textInput(ns("url"), "URL", width = "100%"),
-                actionButton(ns("loadUrl"), "Load")
+  tagList(fluidRow(
+    column(
+      3,
+      selectInput(
+        ns("source"),
+        "Source",
+        choices = c(
+          "Pandora Platform" = "ckan",
+          "File" = "file",
+          "URL" = "url"
+        ),
+        selected = defaultSource
+      )
+    ),
+    column(
+      9,
+      ## source == ckan ----
+      conditionalPanel(
+        condition = "input.source == 'ckan'",
+        ns = ns,
+        tags$strong("Filter Pandora datasets"),
+        fluidRow(
+          column(
+            5,
+            style = "margin-top: 0.5em;",
+            textInput(
+              ns("ckanMeta"),
+              label = NULL,
+              value = "",
+              placeholder = "Meta data"
+            )
+          ),
+          column(
+            7,
+            style = "margin-top: 0.5em;",
+            pickerInput(
+              ns("ckanGroup"),
+              label = NULL,
+              choices = c("Check connection ..." = ""),
+              multiple = TRUE,
+              options = list(
+                `actions-box` = TRUE,
+                size = 10,
+                `none-selected-text` = "No group filter",
+                `selected-text-format` = "count > 8",
+                style = "backgound:'gray'"
               )
             )
-          ))
+          )
+        ),
+        selectizeInput(
+          ns("ckanRecord"),
+          "Pandora dataset",
+          choices = c("Please check connection ..." = ""),
+          width = "100%",
+          options = list(
+            onFocus = I(
+              "function() {currentVal = this.getValue(); this.clear(true); }"
+            ),
+            onBlur = I(
+              "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+            )
+          )
+        ),
+        tags$strong("Pandora dataset resource"),
+        fluidRow(
+          column(
+            5,
+            style = "margin-top: 0.5em;",
+            pickerInput(
+              ns("ckanResourceTypes"),
+              label = NULL,
+              choices = c("xls", "xlsx", "csv", "odt", "txt"),
+              selected = c("xls", "xlsx", "csv", "odt", "txt"),
+              multiple = TRUE,
+              options = list(
+                `actions-box` = TRUE,
+                size = 10,
+                `none-selected-text` = "No type selected",
+                `deselect-all-text` = "None",
+                `select-all-text` = "All",
+                `selected-text-format` = "count > 8",
+                style = "backgound:'dark-gray'"
+              )
+            )
+          ),
+          column(
+            7,
+            style = "margin-top: 0.5em;",
+            selectizeInput(
+              ns("ckanResource"),
+              label = NULL,
+              choices = c("No resource available ..." = ""),
+              width = "100%",
+              options = list(
+                onFocus = I(
+                  "function() {currentVal = this.getValue(); this.clear(true); }"
+                ),
+                onBlur = I(
+                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                )
+              )
+            )
+          )
+        )
+      ),
+      ## source == file ----
+      conditionalPanel(
+        condition = "input.source == 'file'",
+        ns = ns,
+        fileInput(ns("file"), "File", width = "100%")
+      ),
+      ## source == url ----
+      conditionalPanel(
+        condition = "input.source == 'url'",
+        ns = ns,
+        textInput(ns("url"), "URL", width = "100%"),
+        actionButton(ns("loadUrl"), "Load")
+      )
+    )
+  ))
 }
 
 #' Select Source Server
@@ -319,10 +375,6 @@ selectSourceUI <- function(id,
 selectSourceServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
-                 ckanFiles <- reactive({
-                   getCKANFiles()
-                 })
-
                  dataSource <- reactiveValues(file = NULL,
                                               fileName = NULL)
 
@@ -336,71 +388,93 @@ selectSourceServer <- function(id) {
                    bindEvent(input$source, once = TRUE)
 
                  observe({
-                   logDebug("Updating inputs url, ckanRecord")
+                   logDebug("Updating input$source")
                    reset("file")
-
-                   req(has_internet(), input$source == "ckan")
-                   titles <- ckanFiles() %>%
-                     getCKANRecordChoices()
-                   if (!is.null(titles)) {
-                     updateSelectizeInput(
-                       session,
-                       "ckanRecord",
-                       choices = c("Select Pandora dataset ..." = "", titles),
-                       selected = c("Select Pandora dataset ..." = "")
-                     )
-                   }
+                   updateTextInput(session, "ckanMeta", value = "")
                  }) %>%
                    bindEvent(input$source)
+
+                 apiCkanFiles <- reactive({
+                   #req(input$source == "ckan")
+                   logDebug("Updating ckan from api")
+                   getCKANFileList()
+                 })
+
+                 filteredCkanFiles <- reactiveVal()
+                 observe({
+                   logDebug("Updating ckanGroups")
+                   tmpCkan <- apiCkanFiles() %>%
+                     filterCKANByMeta(meta = input$ckanMeta) %>%
+                     filterCKANFileList()
+
+                   updatePickerInput(session,
+                                     "ckanGroup",
+                                     choices = getCKANGroupChoices(tmpCkan))
+
+                   filteredCkanFiles(tmpCkan)
+                 }) %>%
+                   bindEvent(input$ckanMeta)
+
+                 ckanFiles <- reactiveVal()
+                 observe({
+                   logDebug("Updating ckanRecords (Pandora dataset)")
+                   tmpCkan <- filteredCkanFiles() %>%
+                     filterCKANGroup(ckanGroup = input$ckanGroup)
+
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = getCKANRecordChoices(tmpCkan))
+
+                   ckanFiles(tmpCkan)
+                 }) %>%
+                   bindEvent(list(filteredCkanFiles(), input$ckanGroup))
 
                  # important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
                  # removes 'onFocus' as well as this.clear(true)
+                 ###
                  observe({
-                   logDebug("Updating ckanRecord")
+                   logDebug("Updating ckanRecord after Enter (Pandora dataset)")
                    req(input$ckanRecord)
                    updateSelectizeInput(session, "ckanRecord", selected = input$ckanRecord)
                  }) %>%
                    bindEvent(input$ckanRecord)
 
                  observe({
-                   logDebug("Updating ckanResource")
+                   logDebug("Updating ckanResource after Enter")
                    req(input$ckanResource)
                    updateSelectizeInput(session, "ckanResource", selected = input$ckanResource)
                  }) %>%
                    bindEvent(input$ckanResource)
+                 ###
 
                  ckanRecord <- reactive({
-                   req(input$ckanRecord)
-                   logDebug("Setting ckanRecord")
+                   logDebug("Setting ckanRecord (Pandora dataset)")
                    # reset sheet
                    updateSelectInput(session = session, "sheet", selected = character(0))
 
                    ckanFiles()[[input$ckanRecord]]
                  })
 
-                 ckanResources <- reactive({
-                   req(ckanRecord())
-                   logDebug("Setting ckanResources()")
-                   ckanRecord()$resources
-                 })
-
                  observe({
-                   req(ckanResources(), input$ckanResourceTypes)
                    logDebug("Updating ckanResources()")
-                   choicesList <- ckanResources() %>%
-                     getCKANResourcesChoices(types = input$ckanResourceTypes)
-                   choices <- choicesList$choices
-                   selected <- choicesList$selected
-                   updateSelectizeInput(session,
-                                        "ckanResource",
-                                        choices = choices,
-                                        selected = selected)
-                 })
 
+                   choicesList <- ckanRecord()$resources %>%
+                     getCKANResourcesChoices(types = input$ckanResourceTypes)
+                   updateSelectizeInput(
+                     session,
+                     "ckanResource",
+                     choices = choicesList$choices,
+                     selected = choicesList$selected
+                   )
+                 }) %>%
+                   bindEvent(list(ckanRecord(), input$ckanResourceTypes))
+
+                 # Update dataSource ----
                  observe({
                    logDebug("Updating input$ckanResource")
-                   if (is.null(input$ckanResource) || input$ckanResource == "") {
+                   if (is.null(input$ckanResource) ||
+                       input$ckanResource == "") {
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
                    } else {
@@ -412,7 +486,6 @@ selectSourceServer <- function(id) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- resource$url
                      dataSource$filename <- basename(resource$url)
-                     updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  }) %>%
                    bindEvent(input$ckanResource, ignoreNULL = FALSE)
@@ -429,7 +502,6 @@ selectSourceServer <- function(id) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- inFile$datapath
                      dataSource$filename <- inFile$name
-                     updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  })
 
@@ -450,7 +522,6 @@ selectSourceServer <- function(id) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- tmp
                      dataSource$filename <- basename(input$url)
-                     updateSelectInput(session = session, "sheet", selected = character(0))
                    }
                  }) %>%
                    bindEvent(input$loadUrl)

@@ -62,6 +62,7 @@ test_that("Test getCKANRecordChoices()", {
   expect_equal(
     getCKANRecordChoices(testGetCKANFiles, sort = FALSE),
     c(
+      `Select Pandora dataset ...` = "",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset"
@@ -71,6 +72,7 @@ test_that("Test getCKANRecordChoices()", {
   expect_equal(
     getCKANRecordChoices(testGetCKANFiles, sort = TRUE),
     c(
+      `Select Pandora dataset ...` = "",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu"
@@ -149,4 +151,30 @@ test_that("Test getCKANResourcesChoices()", {
     testChoicesList$selected,
     c(`Isotopic measurements in Excel format  ( XLSX )` = "Isotopic measurements in Excel format")
   )
+})
+
+test_that("Test getCKANGroupChoices()", {
+  # always test on live data -> test will fail if groups are changing
+  expect_equal(
+    getCKANGroupChoices(getCKANFiles(), sort = TRUE),
+    c(`IsoMemo Network` = "isomemo-group")
+  )
+})
+
+test_that("Test filterCKANByMeta()", {
+  testFiles <- getCKANFileList()
+
+  expect_true(length(filterCKANByMeta(testFiles, meta = "Roman")) < length(testFiles))
+  expect_equal(filterCKANByMeta(testFiles, meta = "Roman"),
+               filterCKANByMeta(testFiles, meta = "rOmAn"))
+  expect_length(filterCKANByMeta(testFiles, meta = "cjyvfljdosijvckjnlsfnsdkfnak"), 0)
+})
+
+test_that("Test filterCKANGroup()", {
+  testFiles <- getCKANFileList() %>%
+    filterCKANFileList()
+
+  expect_true(length(filterCKANGroup(testFiles, ckanGroup = "isomemo-group")) < length(testFiles))
+  expect_equal(names(filterCKANGroup(testFiles, ckanGroup = "isomemo-group")[[1]]),
+               c("title", "resources", "groups"))
 })

@@ -53,13 +53,15 @@ importDataServer <- function(id,
 
                  observe({
                    logDebug("Update withRownames")
-                   customNames$withRownames <- input[["dataSelector-withRownames"]]
+                   customNames$withRownames <-
+                     input[["dataSelector-withRownames"]]
                  }) %>%
                    bindEvent(input[["dataSelector-withRownames"]])
 
                  observe({
                    logDebug("Update withColnames")
-                   customNames$withColnames <- input[["dataSelector-withColnames"]]
+                   customNames$withColnames <-
+                     input[["dataSelector-withColnames"]]
                  }) %>%
                    bindEvent(input[["dataSelector-withColnames"]])
 
@@ -114,10 +116,12 @@ importDataServer <- function(id,
                    removeModal()
                  })
 
-                 values <- selectDataServer("dataSelector",
-                                            mergeList = mergeList,
-                                            customNames = customNames,
-                                            ignoreWarnings = ignoreWarnings)
+                 values <- selectDataServer(
+                   "dataSelector",
+                   mergeList = mergeList,
+                   customNames = customNames,
+                   ignoreWarnings = ignoreWarnings
+                 )
 
                  ## disable button accept ----
                  observeEvent(values$dataImport, {
@@ -127,17 +131,20 @@ importDataServer <- function(id,
                    values$warnings$import <- list()
                    values$errors$import <- list()
 
-                   checkResult <- checkImport(warnings = values$warnings,
-                                              errors = values$errors,
-                                              df = values$dataImport %>%
-                                                formatForImport(
-                                                  outputAsMatrix = outputAsMatrix,
-                                                  includeSd = input$includeSd,
-                                                  dfNames = customNames,
-                                                  silent = FALSE
-                                                ),
-                                              customWarningChecks,
-                                              customErrorChecks)
+                   checkResult <-
+                     checkImport(
+                       warnings = values$warnings,
+                       errors = values$errors,
+                       df = values$dataImport %>%
+                         formatForImport(
+                           outputAsMatrix = outputAsMatrix,
+                           includeSd = input$includeSd,
+                           dfNames = customNames,
+                           silent = FALSE
+                         ),
+                       customWarningChecks,
+                       customErrorChecks
+                     )
 
                    values$warnings <- checkResult$warnings
                    values$errors <- checkResult$errors
@@ -164,17 +171,20 @@ importDataServer <- function(id,
                    values$warnings$prepareData <- list()
                    values$errors$prepareData <- list()
 
-                   checkResult <- checkImport(warnings = values$warnings,
-                                              errors = values$errors,
-                                              df = preparedData$data %>%
-                                                formatForImport(
-                                                  outputAsMatrix = outputAsMatrix,
-                                                  includeSd = input$includeSd,
-                                                  dfNames = customNames,
-                                                  silent = TRUE
-                                                ),
-                                              customWarningChecks,
-                                              customErrorChecks)
+                   checkResult <-
+                     checkImport(
+                       warnings = values$warnings,
+                       errors = values$errors,
+                       df = preparedData$data %>%
+                         formatForImport(
+                           outputAsMatrix = outputAsMatrix,
+                           includeSd = input$includeSd,
+                           dfNames = customNames,
+                           silent = TRUE
+                         ),
+                       customWarningChecks,
+                       customErrorChecks
+                     )
 
                    # do not display warnings of prepare data in select data
                    # -> do not return result
@@ -183,7 +193,9 @@ importDataServer <- function(id,
 
                    if (is.null(preparedData$data) ||
                        nrow(preparedData$data) == 0 ||
-                       isNotValid(checkResult$errors, checkResult$warnings, ignoreWarnings)) {
+                       isNotValid(checkResult$errors,
+                                  checkResult$warnings,
+                                  ignoreWarnings)) {
                      shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptPrepared"), asis = TRUE)
@@ -196,14 +208,17 @@ importDataServer <- function(id,
 
                  observe({
                    logDebug("Updating button acceptMerged")
-                   if (is.null(joinedData()) || is.null(joinedData()[[1]]) ||
+                   if (is.null(joinedData()) ||
+                       is.null(joinedData()[[1]]) ||
                        nrow(joinedData()[[1]]) == 0) {
                      shinyjs::disable(ns("acceptMerged"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptMerged"), asis = TRUE)
                    }
                  }) %>%
-                   bindEvent(joinedData(), ignoreNULL = FALSE, ignoreInit = TRUE)
+                   bindEvent(joinedData(),
+                             ignoreNULL = FALSE,
+                             ignoreInit = TRUE)
 
                  ## disable button query data ----
                  queriedData <-
@@ -211,14 +226,17 @@ importDataServer <- function(id,
 
                  observe({
                    logDebug("Updating button acceptQuery")
-                   if (is.null(queriedData()) || is.null(queriedData()[[1]]) ||
+                   if (is.null(queriedData()) ||
+                       is.null(queriedData()[[1]]) ||
                        nrow(queriedData()[[1]]) == 0) {
                      shinyjs::disable(ns("acceptQuery"), asis = TRUE)
                    } else {
                      shinyjs::enable(ns("acceptQuery"), asis = TRUE)
                    }
                  }) %>%
-                   bindEvent(queriedData(), ignoreNULL = FALSE, ignoreInit = TRUE)
+                   bindEvent(queriedData(),
+                             ignoreNULL = FALSE,
+                             ignoreInit = TRUE)
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
@@ -259,7 +277,8 @@ importDataServer <- function(id,
                    removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
-                   values$data[[names(joinedData())[1]]] <- joinedData()[[1]] %>%
+                   values$data[[names(joinedData())[1]]] <-
+                     joinedData()[[1]] %>%
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = FALSE,
@@ -273,7 +292,8 @@ importDataServer <- function(id,
                    removeOpenGptCon()
                    customNames$withRownames <- FALSE
                    customNames$withColnames <- TRUE
-                   values$data[[names(queriedData())[1]]] <- queriedData()[[1]] %>%
+                   values$data[[names(queriedData())[1]]] <-
+                     queriedData()[[1]] %>%
                      formatForImport(
                        outputAsMatrix = outputAsMatrix,
                        includeSd = FALSE,
@@ -320,11 +340,14 @@ importDataDialog <-
       tabsetPanel(
         id = ns("tabImport"),
         selected = "Select (required)",
-        tabPanel("Select (required)",
-                 selectDataUI(ns("dataSelector"),
-                              defaultSource = defaultSource,
-                              batch = batch,
-                              outputAsMatrix = outputAsMatrix)
+        tabPanel(
+          "Select (required)",
+          selectDataUI(
+            ns("dataSelector"),
+            defaultSource = defaultSource,
+            batch = batch,
+            outputAsMatrix = outputAsMatrix
+          )
         ),
         tabPanel("Prepare",
                  prepareDataUI(ns("dataPreparer"))),
@@ -555,7 +578,8 @@ cutAllLongStrings <- function(df, cutAt = 50) {
     return(NULL)
   }
 
-  if (any(sapply(df, is.factor))) warning("factors are converted to character")
+  if (any(sapply(df, is.factor)))
+    warning("factors are converted to character")
 
   df <- lapply(df, function(z) {
     if (is.factor(z)) {
