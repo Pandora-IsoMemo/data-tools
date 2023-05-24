@@ -58,7 +58,8 @@ getCKANResourcesChoices <-
 getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
   choices <- unlist(lapply(ckanFiles, `[[`, "title"))
 
-  if (is.null(choices)) return(c("No Pandora dataset available ..." = ""))
+  if (is.null(choices))
+    return(c("No Pandora dataset available ..." = ""))
 
   if (sort) {
     choices <- choices %>% sort()
@@ -68,16 +69,16 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
 }
 
 getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
-  empty <- c("No Pandora group available ..." = "")
-
-  if (!has_internet()) return(empty)
+  if (!has_internet())
+    return(c("No connection ..." = ""))
 
   # get all groups
   choices <- lapply(ckanFiles, function(record) {
     sapply(record[["groups"]], `[[`, "name")
   })
 
-  if (is.null(choices)) return(empty)
+  if (is.null(choices))
+    return(c("No group available ..." = ""))
 
   # remove names of records, keep names of groups
   names(choices) <- NULL
@@ -89,7 +90,7 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
     choices <- choices %>% sort()
   }
 
-  c("[No filter]" = NA, choices)
+  choices
 }
 
 getCKANFiles <- function(meta = "", ckanGroup = NA) {
@@ -108,7 +109,8 @@ getCKANFiles <- function(meta = "", ckanGroup = NA) {
 }
 
 getCKANFileList <- function() {
-  res <- tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
+  res <-
+    tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
   if (is.null(res))
     return(list())
 
@@ -122,13 +124,17 @@ getCKANFileList <- function() {
 #'
 #' @return (list) a fileList where the entries 'groups' == ckanGroup
 filterCKANGroup <- function(ckanFiles, ckanGroup = NA) {
-  if (is.null(ckanGroup) || is.na(ckanGroup) || ckanGroup == "" || ckanGroup == "NA") return(ckanFiles)
+  if (length(ckanGroup) == 0 || all(is.na(ckanGroup)) ||
+      all(ckanGroup == "") ||
+      all(ckanGroup == "NA"))
+    return(ckanFiles)
 
   filterGroup <- sapply(ckanFiles, function(record) {
-    if (length(record$groups) == 0) return(FALSE)
+    if (length(record$groups) == 0)
+      return(FALSE)
 
     sapply(record$groups, function(group) {
-      ckanGroup %in% group$name
+      group$name %in% ckanGroup
     }) %>%
       any()
   })

@@ -245,112 +245,127 @@ selectSourceUI <- function(id,
                            defaultSource) {
   ns <- NS(id)
 
-  tagList(tags$br(),
-          fluidRow(
-            column(
-              4,
-              selectInput(
-                ns("source"),
-                "Source",
-                choices = c(
-                  "Pandora Platform" = "ckan",
-                  "File" = "file",
-                  "URL" = "url"
-                ),
-                selected = defaultSource
-              ),
-              conditionalPanel(
-                condition = "input.source == 'ckan'",
-                ns = ns,
-                textInput(
-                  ns("ckanMeta"),
-                  label = "Filter meta data",
-                  value = "",
-                  placeholder = "e.g. 'Roman'"
-                ),
-                pickerInput(
-                  ns("ckanResourceTypes"),
-                  label = "Filter resource type",
-                  choices = c("xls", "xlsx", "csv", "odt", "txt"),
-                  selected = c("xls", "xlsx", "csv", "odt", "txt"),
-                  multiple = TRUE,
-                  options = list(
-                    `actions-box` = TRUE,
-                    size = 10,
-                    `none-selected-text` = "No column selected",
-                    `selected-text-format` = "count > 8",
-                    style = "backgound:'gray'"
-                  )
-                )
-              )
-            ),
-            column(
-              8,
-              ## source == ckan ----
-              conditionalPanel(
-                condition = "input.source == 'ckan'",
-                ns = ns,
-                selectizeInput(
-                  ns("ckanGroup"),
-                  "Filter Pandora group",
-                  choices = c("Please check connection ..." = ""),
-                  width = "100%",
-                  options = list(
-                    onFocus = I(
-                      "function() {currentVal = this.getValue(); this.clear(true); }"
-                    ),
-                    onBlur = I(
-                      "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                    )
-                  )
-                ),
-                selectizeInput(
-                  ns("ckanRecord"),
-                  "Pandora dataset",
-                  choices = c("Please check connection ..." = ""),
-                  width = "100%",
-                  options = list(
-                    onFocus = I(
-                      "function() {currentVal = this.getValue(); this.clear(true); }"
-                    ),
-                    onBlur = I(
-                      "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                    )
-                  )
-                ),
-                div(
-                  style = "margin-top: 1.5em;",
-                  selectizeInput(
-                    ns("ckanResource"),
-                    "Pandora dataset resource",
-                    choices = c("No resource available ..." = ""),
-                    width = "100%",
-                    options = list(
-                      onFocus = I(
-                        "function() {currentVal = this.getValue(); this.clear(true); }"
-                      ),
-                      onBlur = I(
-                        "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                      )
-                    )
-                  )
-                )
-              ),
-              ## source == file ----
-              conditionalPanel(
-                condition = "input.source == 'file'",
-                ns = ns,
-                fileInput(ns("file"), "File", width = "100%")
-              ),
-              ## source == url ----
-              conditionalPanel(
-                condition = "input.source == 'url'",
-                ns = ns,
-                textInput(ns("url"), "URL", width = "100%"),
-                actionButton(ns("loadUrl"), "Load")
+  tagList(fluidRow(
+    column(
+      3,
+      selectInput(
+        ns("source"),
+        "Source",
+        choices = c(
+          "Pandora Platform" = "ckan",
+          "File" = "file",
+          "URL" = "url"
+        ),
+        selected = defaultSource
+      )
+    ),
+    column(
+      9,
+      ## source == ckan ----
+      conditionalPanel(
+        condition = "input.source == 'ckan'",
+        ns = ns,
+        tags$strong("Filter Pandora datasets"),
+        fluidRow(
+          column(
+            5,
+            style = "margin-top: 0.5em;",
+            textInput(
+              ns("ckanMeta"),
+              label = NULL,
+              value = "",
+              placeholder = "Meta data"
+            )
+          ),
+          column(
+            7,
+            style = "margin-top: 0.5em;",
+            pickerInput(
+              ns("ckanGroup"),
+              label = NULL,
+              choices = c("Check connection ..." = ""),
+              multiple = TRUE,
+              options = list(
+                `actions-box` = TRUE,
+                size = 10,
+                `none-selected-text` = "No group filter",
+                `selected-text-format` = "count > 8",
+                style = "backgound:'gray'"
               )
             )
-          ))
+          )
+        ),
+        selectizeInput(
+          ns("ckanRecord"),
+          "Pandora dataset",
+          choices = c("Please check connection ..." = ""),
+          width = "100%",
+          options = list(
+            onFocus = I(
+              "function() {currentVal = this.getValue(); this.clear(true); }"
+            ),
+            onBlur = I(
+              "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+            )
+          )
+        ),
+        tags$strong("Pandora dataset resource"),
+        fluidRow(
+          column(
+            5,
+            style = "margin-top: 0.5em;",
+            pickerInput(
+              ns("ckanResourceTypes"),
+              label = NULL,
+              choices = c("xls", "xlsx", "csv", "odt", "txt"),
+              selected = c("xls", "xlsx", "csv", "odt", "txt"),
+              multiple = TRUE,
+              options = list(
+                `actions-box` = TRUE,
+                size = 10,
+                `none-selected-text` = "No type selected",
+                `deselect-all-text` = "None",
+                `select-all-text` = "All",
+                `selected-text-format` = "count > 8",
+                style = "backgound:'dark-gray'"
+              )
+            )
+          ),
+          column(
+            7,
+            style = "margin-top: 1em;",
+            selectizeInput(
+              ns("ckanResource"),
+              label = NULL,
+              choices = c("No resource available ..." = ""),
+              width = "100%",
+              options = list(
+                onFocus = I(
+                  "function() {currentVal = this.getValue(); this.clear(true); }"
+                ),
+                onBlur = I(
+                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                )
+              )
+            )
+          )
+        )
+      ),
+      ## source == file ----
+      conditionalPanel(
+        condition = "input.source == 'file'",
+        ns = ns,
+        fileInput(ns("file"), "File", width = "100%")
+      ),
+      ## source == url ----
+      conditionalPanel(
+        condition = "input.source == 'url'",
+        ns = ns,
+        textInput(ns("url"), "URL", width = "100%"),
+        actionButton(ns("loadUrl"), "Load")
+      )
+    )
+  ))
 }
 
 #' Select Source Server
@@ -392,9 +407,9 @@ selectSourceServer <- function(id) {
                      filterCKANByMeta(meta = input$ckanMeta) %>%
                      filterCKANFileList()
 
-                   updateSelectizeInput(session,
-                                        "ckanGroup",
-                                        choices = getCKANGroupChoices(tmpCkan))
+                   updatePickerInput(session,
+                                     "ckanGroup",
+                                     choices = getCKANGroupChoices(tmpCkan))
 
                    filteredCkanFiles(tmpCkan)
                  }) %>%
@@ -406,11 +421,9 @@ selectSourceServer <- function(id) {
                    tmpCkan <- filteredCkanFiles() %>%
                      filterCKANGroup(ckanGroup = input$ckanGroup)
 
-                   updateSelectizeInput(
-                     session,
-                     "ckanRecord",
-                     choices = getCKANRecordChoices(tmpCkan)
-                   )
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = getCKANRecordChoices(tmpCkan))
 
                    ckanFiles(tmpCkan)
                  })
@@ -447,10 +460,12 @@ selectSourceServer <- function(id) {
 
                    choicesList <- ckanRecord()$resources %>%
                      getCKANResourcesChoices(types = input$ckanResourceTypes)
-                   updateSelectizeInput(session,
-                                        "ckanResource",
-                                        choices = choicesList$choices,
-                                        selected = choicesList$selected)
+                   updateSelectizeInput(
+                     session,
+                     "ckanResource",
+                     choices = choicesList$choices,
+                     selected = choicesList$selected
+                   )
                  })
 
                  # Update dataSource ----
