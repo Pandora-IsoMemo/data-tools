@@ -67,11 +67,14 @@ selectDataUI <- function(id,
 #' @param id id of module
 #' @param mergeList (list) list of selected data
 #' @param customNames settings for custom column and row names
+#' @param openPopupReset (reactive) if TRUE reset ckan source inputs
 #' @inheritParams importDataServer
 selectDataServer <- function(id,
                              mergeList,
                              customNames,
-                             ignoreWarnings = FALSE) {
+                             openPopupReset,
+                             ignoreWarnings = FALSE
+                             ) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -86,7 +89,7 @@ selectDataServer <- function(id,
                    data = list()
                  )
 
-                 dataSource <- selectSourceServer("fileSource")
+                 dataSource <- selectSourceServer("fileSource", openPopupReset = openPopupReset)
                  selectFileTypeServer("fileType", dataSource)
 
                  observeEvent(dataSource$file,
@@ -396,7 +399,8 @@ selectSourceUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-selectSourceServer <- function(id) {
+#' @inheritParams selectDataServer
+selectSourceServer <- function(id, openPopupReset) {
   moduleServer(id,
                function(input, output, session) {
                  dataSource <- reactiveValues(file = NULL,
@@ -412,10 +416,12 @@ selectSourceServer <- function(id) {
                      apiCkanFiles(getCKANFileList())
                    }
                  }) %>%
-                   bindEvent(input$source, once = TRUE)
+                   bindEvent(openPopupReset(), once = TRUE)
 
 
                  filteredCkanFiles <- reactive({
+                   logDebug("Calling filteredCkanFiles")
+
                    apiCkanFiles() %>%
                      filterCKANByMeta(meta = input$ckanMeta) %>%
                      filterCKANFileList()
@@ -425,6 +431,7 @@ selectSourceServer <- function(id) {
                    logDebug("Updating input$source")
                    reset("file")
 
+                   req(input$source)
                    if (input$source == "ckan") {
                      # reset ckan inputs
                      updateTextInput(session, "ckanMeta", value = "")
@@ -437,7 +444,7 @@ selectSourceServer <- function(id) {
                                           choices = getCKANRecordChoices(filteredCkanFiles()))
                    }
                  }) %>%
-                   bindEvent(input$source)
+                   bindEvent(openPopupReset())
 
                  observe({
                    logDebug("Apply Meta filter")
@@ -451,6 +458,7 @@ selectSourceServer <- function(id) {
                    bindEvent(input$applyMeta)
 
                  ckanFiles <- reactive({
+                   logDebug("Calling ckanFiles")
                    filteredCkanFiles() %>%
                      filterCKANGroup(ckanGroup = input$ckanGroup)
                  })

@@ -124,6 +124,7 @@ importDataServer <- function(id,
                    "dataSelector",
                    mergeList = mergeList,
                    customNames = customNames,
+                   openPopupReset = reactive(input$openPopup > 0),
                    ignoreWarnings = ignoreWarnings
                  )
 

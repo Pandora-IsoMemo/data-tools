@@ -4,10 +4,12 @@
 \alias{selectSourceServer}
 \title{Select Source Server}
 \usage{
-selectSourceServer(id)
+selectSourceServer(id, openPopupReset)
 }
 \arguments{
 \item{id}{id of module}
+
+\item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 }
 \description{
 Server function of the module

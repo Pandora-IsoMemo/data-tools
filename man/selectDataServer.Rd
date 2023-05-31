@@ -4,7 +4,13 @@
 \alias{selectDataServer}
 \title{Select Data Server}
 \usage{
-selectDataServer(id, mergeList, customNames, ignoreWarnings = FALSE)
+selectDataServer(
+  id,
+  mergeList,
+  customNames,
+  openPopupReset,
+  ignoreWarnings = FALSE
+)
 }
 \arguments{
 \item{id}{id of module}
@@ -12,6 +18,8 @@ selectDataServer(id, mergeList, customNames, ignoreWarnings = FALSE)
 \item{mergeList}{(list) list of selected data}
 
 \item{customNames}{settings for custom column and row names}
+
+\item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 }
