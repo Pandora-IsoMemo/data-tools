@@ -428,7 +428,7 @@ selectSourceServer <- function(id) {
                                           choices = getCKANRecordChoices(tmpCkan))
                    }
                  }) %>%
-                   bindEvent(input$source, ignoreInit = TRUE)
+                   bindEvent(input$source)
 
                  filteredCkanFiles <- reactiveVal()
                  observe({
