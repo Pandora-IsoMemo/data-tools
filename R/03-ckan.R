@@ -193,10 +193,10 @@ filterCKANByMeta <- function(fileList, meta = "") {
     res <- try(record %>%
                  unlist(use.names = FALSE) %>%
                  tolower() %>%
-                 grepl(pattern = tolower(meta)),
+                 grepl(pattern = tolower(meta)) %>%
+                 suppressWarnings(),
                silent = TRUE)
-    %>%
-      suppressWarnings()
+
 
     if (inherits(res, "try-error")) {
       errMsg <<- res[[1]]
