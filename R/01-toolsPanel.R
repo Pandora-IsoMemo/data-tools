@@ -13,16 +13,15 @@ toolsImportUI <- function(id) {
       importDataUI(ns("localData"), "Import Data"),
       tags$br(),
       tags$br(),
+      importDataUI(ns("ckanData"), "Import CKAN Data"),
+      tags$br(),
+      tags$br(),
       importDataUI(ns("batchData"), "Import Batch Data")
     ),
     mainPanel(
-      tags$h2("Imported data"),
-      DT::dataTableOutput(ns("importedDataTable")),
-      tags$br(),
-      tags$br(),
-      tags$hr(),
-      tags$h2("Imported batch data"),
-      DT::dataTableOutput(ns("importedBatchTable"))
+      selectInput(ns("dataSel"), "Select which Import to display" ,
+                  choices = c("Data", "CKAN Data", "Batch Data")),
+      DT::dataTableOutput(ns("importedDataTable"))
     )
   )
 }
@@ -43,6 +42,14 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    defaultSource = defaultSource
                  )
 
+                 importedDataCKAN <- importDataServer(
+                   "ckanData",
+                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   ignoreWarnings = TRUE,
+                   defaultSource = "ckan"
+                 )
+
                  importedBatchData <- importDataServer(
                    "batchData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
@@ -53,20 +60,30 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    outputAsMatrix = TRUE
                  )
 
-                 output$importedDataTable <- renderDataTable({
-                   validate(need(length(importedData()) > 0,
-                                 "Please import data."))
-                   req(length(importedData()) > 0)
-                   importedData()[[1]]
-                 })
+                 dataOut <- reactiveVal(NULL)
 
-                 output$importedBatchTable <- renderDataTable({
-                   validate(need(
-                     length(importedBatchData()) > 0,
-                     "Please import batch data."
-                   ))
-                   req(length(importedBatchData()) > 0)
-                   importedBatchData()[[1]]
+                 observe({
+                   dataOut(NULL)
+
+                   if (input$dataSel == "Data") {
+                     req(length(importedData()) > 0)
+                     dataOut(importedData()[[1]])
+                   }
+                   if (input$dataSel == "CKAN Data") {
+                     req(length(importedDataCKAN()) > 0)
+                     dataOut(importedDataCKAN()[[1]])
+                   }
+                   if (input$dataSel == "Batch Data") {
+                     req(length(importedBatchData()) > 0)
+                     dataOut(importedBatchData()[[1]])
+                   }
+                 }) %>%
+                   bindEvent(input$dataSel)
+
+                 output$importedDataTable <- renderDataTable({
+                   validate(need(dataOut(), paste("Please import", input$dataSel)))
+                   req(dataOut())
+                   dataOut()
                  })
                })
 }

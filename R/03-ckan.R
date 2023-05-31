@@ -81,12 +81,15 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
     return(noChoices)
   }
 
+  if (is.null(ckanFiles))
+    return(c("No group available ..." = ""))
+
   # get all groups
   choices <- lapply(ckanFiles, function(record) {
     sapply(record[["groups"]], `[[`, "name")
   })
 
-  if (is.null(choices))
+  if (is.null(choices) | length(choices) == 0)
     return(c("No group available ..." = ""))
 
   # remove names of records, keep names of groups
@@ -130,7 +133,8 @@ getCKANFileList <- function() {
     tryGET(path = "https://pandora.earth/")
   if (is.null(testCon)) {
     res <- list()
-    attr(res, "errorApi") <- "Cannot reach 'https://pandora.earth/' ..."
+    attr(res, "errorApi") <-
+      "Cannot reach 'https://pandora.earth/' ..."
     return(res)
   }
 
@@ -138,7 +142,8 @@ getCKANFileList <- function() {
     tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
   if (is.null(apiCon)) {
     res <- list()
-    attr(res, "errorApi") <- "Could not retrieve data from 'https://pandoradata.earth/api' ..."
+    attr(res, "errorApi") <-
+      "Could not retrieve data from 'https://pandoradata.earth/api' ..."
     return(res)
   }
 
@@ -177,17 +182,21 @@ filterCKANGroup <- function(ckanFiles, ckanGroup = NA) {
 #'
 #' @return (list) a fileList where the entries meta data contains the string 'meta'
 filterCKANByMeta <- function(fileList, meta = "") {
-  if (length(fileList) == 0)
+  if (length(fileList) == 0 | is.null(meta))
+    return(fileList)
+
+  if (meta == "")
     return(fileList)
 
   errMsg <- NULL
   filterMeta <- sapply(fileList, function(record) {
-    res <- record %>%
-      unlist(use.names = FALSE) %>%
-      tolower() %>%
-      grepl(pattern = tolower(meta)) %>%
-      try(silent = TRUE) %>%
-      suppressWarnings()
+    res <- try(record %>%
+                 unlist(use.names = FALSE) %>%
+                 tolower() %>%
+                 grepl(pattern = tolower(meta)) %>%
+                 suppressWarnings(),
+               silent = TRUE)
+
 
     if (inherits(res, "try-error")) {
       errMsg <<- res[[1]]
@@ -201,7 +210,8 @@ filterCKANByMeta <- function(fileList, meta = "") {
   filteredList <- fileList[filterMeta]
 
   if (!is.null(errMsg)) {
-    attr(filteredList, "errorMeta") <- "Error in filter for Meta data ..."
+    attr(filteredList, "errorMeta") <-
+      "Error in filter for Meta data ..."
   }
 
   filteredList
@@ -279,5 +289,5 @@ has_internet <- function(timeout = 2) {
     httr::GET("http://google.com/", timeout(timeout))
   }, silent = TRUE)
 
-  !inherits(res, "try-error")
+  ! inherits(res, "try-error")
 }

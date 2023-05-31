@@ -67,11 +67,14 @@ selectDataUI <- function(id,
 #' @param id id of module
 #' @param mergeList (list) list of selected data
 #' @param customNames settings for custom column and row names
+#' @param openPopupReset (reactive) if TRUE reset ckan source inputs
 #' @inheritParams importDataServer
 selectDataServer <- function(id,
                              mergeList,
                              customNames,
-                             ignoreWarnings = FALSE) {
+                             openPopupReset,
+                             ignoreWarnings = FALSE
+                             ) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -86,7 +89,7 @@ selectDataServer <- function(id,
                    data = list()
                  )
 
-                 dataSource <- selectSourceServer("fileSource")
+                 dataSource <- selectSourceServer("fileSource", openPopupReset = openPopupReset)
                  selectFileTypeServer("fileType", dataSource)
 
                  observeEvent(dataSource$file,
@@ -265,20 +268,24 @@ selectSourceUI <- function(id,
       conditionalPanel(
         condition = "input.source == 'ckan'",
         ns = ns,
-        tags$strong(HTML(paste(
-          "Filter Pandora datasets &nbsp",
-          # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
-          tags$i(
-            class = "glyphicon glyphicon-info-sign",
-            style = sprintf("color:%s;", "#0072B2"),
-            title =
-              paste("- Filter 'some', or 'key', or 'words':",
-                    "   'some|key|words'",
-                    "- Filter 'some', and 'key', and 'words':",
-                    "   '(some+)(.*)(key+)(.*)(words+)'",
-                    sep = " \n")
+        tags$strong(HTML(
+          paste(
+            "Filter Pandora datasets &nbsp",
+            # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
+            tags$i(
+              class = "glyphicon glyphicon-info-sign",
+              style = sprintf("color:%s;", "#0072B2"),
+              title =
+                paste(
+                  "- Filter 'some', or 'key', or 'words':",
+                  "   'some|key|words'",
+                  "- Filter 'some', and 'key', and 'words':",
+                  "   '(some+)(.*)(key+)(.*)(words+)'",
+                  sep = " \n"
+                )
+            )
           )
-        ))),
+        )),
         fluidRow(
           column(
             5,
@@ -290,14 +297,13 @@ selectSourceUI <- function(id,
               placeholder = "Meta data"
             )
           ),
-          column(
-            1,
-            style = "margin-top: 0.5em; margin-left: -2em",
-            actionButton(
-              ns("applyMeta"),
-              label = NULL,
-              icon = icon("play")
-            )),
+          column(1,
+                 style = "margin-top: 0.5em; margin-left: -2em",
+                 actionButton(
+                   ns("applyMeta"),
+                   label = NULL,
+                   icon = icon("play")
+                 )),
           column(
             6,
             style = "margin-top: 0.5em; margin-left: 2em",
@@ -393,73 +399,78 @@ selectSourceUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-selectSourceServer <- function(id) {
+#' @inheritParams selectDataServer
+selectSourceServer <- function(id, openPopupReset) {
   moduleServer(id,
                function(input, output, session) {
                  dataSource <- reactiveValues(file = NULL,
                                               fileName = NULL)
 
+                 apiCkanFiles <- reactiveVal(list())
                  observe({
-                   logDebug("Updating input source if no internet")
+                   logDebug("Updating input$source once")
                    if (!has_internet()) {
                      updateSelectInput(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection!")
+                   } else {
+                     apiCkanFiles(getCKANFileList())
                    }
                  }) %>%
-                   bindEvent(input$source, once = TRUE)
+                   bindEvent(openPopupReset(), once = TRUE)
 
-                 apiCkanFiles <- reactiveVal()
-                 filteredCkanFiles <- reactiveVal()
+
+                 filteredCkanFiles <- reactive({
+                   logDebug("Calling filteredCkanFiles")
+
+                   apiCkanFiles() %>%
+                     filterCKANByMeta(meta = input$ckanMeta) %>%
+                     filterCKANFileList()
+                 })
 
                  observe({
                    logDebug("Updating input$source")
                    reset("file")
 
+                   req(input$source)
                    if (input$source == "ckan") {
+                     # reset ckan inputs
                      updateTextInput(session, "ckanMeta", value = "")
-                     apiCkanFiles(getCKANFileList())
-
-                     tmpCkan <- apiCkanFiles() %>%
-                       filterCKANFileList()
-
+                     # trigger update of ckanGroup without button for meta
                      updatePickerInput(session,
                                        "ckanGroup",
-                                       choices = getCKANGroupChoices(tmpCkan))
+                                       choices = getCKANGroupChoices(filteredCkanFiles()))
                      updateSelectizeInput(session,
                                           "ckanRecord",
-                                          choices = getCKANRecordChoices(tmpCkan))
-                     filteredCkanFiles(tmpCkan)
+                                          choices = getCKANRecordChoices(filteredCkanFiles()))
                    }
                  }) %>%
-                   bindEvent(input$source)
+                   bindEvent(openPopupReset())
 
                  observe({
-                   logDebug("Updating ckanGroups")
-                   tmpCkan <- apiCkanFiles() %>%
-                     filterCKANByMeta(meta = input$ckanMeta) %>%
-                     filterCKANFileList()
-
+                   logDebug("Apply Meta filter")
                    updatePickerInput(session,
                                      "ckanGroup",
-                                     choices = getCKANGroupChoices(tmpCkan))
-
-                   filteredCkanFiles(tmpCkan)
+                                     choices = getCKANGroupChoices(filteredCkanFiles()))
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = getCKANRecordChoices(filteredCkanFiles()))
                  }) %>%
                    bindEvent(input$applyMeta)
 
-                 ckanFiles <- reactiveVal()
+                 ckanFiles <- reactive({
+                   logDebug("Calling ckanFiles")
+                   filteredCkanFiles() %>%
+                     filterCKANGroup(ckanGroup = input$ckanGroup)
+                 })
+
                  observe({
                    logDebug("Updating ckanRecords (Pandora dataset)")
-                   tmpCkan <- filteredCkanFiles() %>%
-                     filterCKANGroup(ckanGroup = input$ckanGroup)
-
                    updateSelectizeInput(session,
                                         "ckanRecord",
-                                        choices = getCKANRecordChoices(tmpCkan))
+                                        choices = getCKANRecordChoices(ckanFiles()))
 
-                   ckanFiles(tmpCkan)
                  }) %>%
-                   bindEvent(list(filteredCkanFiles(), input$ckanGroup))
+                   bindEvent(input$ckanGroup, ignoreNULL = FALSE)
 
                  # important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
@@ -485,6 +496,8 @@ selectSourceServer <- function(id) {
                    # reset sheet
                    updateSelectInput(session = session, "sheet", selected = character(0))
 
+                   if (is.null(input$ckanRecord))
+                     return(NULL)
                    ckanFiles()[[input$ckanRecord]]
                  })
 
