@@ -81,12 +81,15 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
     return(noChoices)
   }
 
+  if (is.null(ckanFiles))
+    return(c("No group available ..." = ""))
+
   # get all groups
   choices <- lapply(ckanFiles, function(record) {
     sapply(record[["groups"]], `[[`, "name")
   })
 
-  if (is.null(choices))
+  if (is.null(choices) | length(choices) == 0)
     return(c("No group available ..." = ""))
 
   # remove names of records, keep names of groups
@@ -177,16 +180,19 @@ filterCKANGroup <- function(ckanFiles, ckanGroup = NA) {
 #'
 #' @return (list) a fileList where the entries meta data contains the string 'meta'
 filterCKANByMeta <- function(fileList, meta = "") {
-  if (length(fileList) == 0 | is.null(meta) | meta = "")
+  if (length(fileList) == 0 | is.null(meta))
+    return(fileList)
+
+  if (meta == "")
     return(fileList)
 
   errMsg <- NULL
   filterMeta <- sapply(fileList, function(record) {
-    res <- record %>%
-      unlist(use.names = FALSE) %>%
-      tolower() %>%
-      grepl(pattern = tolower(meta)) %>%
-      try(silent = TRUE) %>%
+    res <- try(record %>%
+                 unlist(use.names = FALSE) %>%
+                 tolower() %>%
+                 grepl(pattern = tolower(meta)),
+               silent = TRUE) %>%
       suppressWarnings()
 
     if (inherits(res, "try-error")) {
@@ -201,7 +207,8 @@ filterCKANByMeta <- function(fileList, meta = "") {
   filteredList <- fileList[filterMeta]
 
   if (!is.null(errMsg)) {
-    attr(filteredList, "errorMeta") <- "Error in filter for Meta data ..."
+    attr(filteredList, "errorMeta") <-
+      "Error in filter for Meta data ..."
   }
 
   filteredList

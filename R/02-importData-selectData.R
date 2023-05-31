@@ -412,7 +412,11 @@ selectSourceServer <- function(id) {
                    bindEvent(input$source, once = TRUE)
 
 
-                 filteredCkanFiles <- reactiveVal()
+                 filteredCkanFiles <- reactive({
+                   apiCkanFiles() %>%
+                     filterCKANByMeta(meta = input$ckanMeta) %>%
+                     filterCKANFileList()
+                 })
 
                  observe({
                    logDebug("Updating input$source")
@@ -421,44 +425,41 @@ selectSourceServer <- function(id) {
                    if (input$source == "ckan") {
                      # reset ckan inputs
                      updateTextInput(session, "ckanMeta", value = "")
-
-                     tmpCkan <- apiCkanFiles() %>%
-                       filterCKANFileList()
-
+                     # trigger update of ckanGroup without button for meta
                      updatePickerInput(session,
                                        "ckanGroup",
-                                       choices = getCKANGroupChoices(tmpCkan))
-                     filteredCkanFiles(tmpCkan)
+                                       choices = getCKANGroupChoices(filteredCkanFiles()))
+                     updateSelectizeInput(session,
+                                          "ckanRecord",
+                                          choices = getCKANRecordChoices(filteredCkanFiles()))
                    }
                  }) %>%
                    bindEvent(input$source)
 
                  observe({
                    logDebug("Apply Meta filter")
-                   tmpCkan <- apiCkanFiles() %>%
-                     filterCKANByMeta(meta = input$ckanMeta) %>%
-                     filterCKANFileList()
-
                    updatePickerInput(session,
                                      "ckanGroup",
-                                     choices = getCKANGroupChoices(tmpCkan))
-                   filteredCkanFiles(tmpCkan)
+                                     choices = getCKANGroupChoices(filteredCkanFiles()))
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = getCKANRecordChoices(filteredCkanFiles()))
                  }) %>%
                    bindEvent(input$applyMeta)
 
-                 ckanFiles <- reactiveVal()
+                 ckanFiles <- reactive({
+                   filteredCkanFiles() %>%
+                     filterCKANGroup(ckanGroup = input$ckanGroup)
+                 })
+
                  observe({
                    logDebug("Updating ckanRecords (Pandora dataset)")
-                   tmpCkan <- filteredCkanFiles() %>%
-                     filterCKANGroup(ckanGroup = input$ckanGroup)
-
                    updateSelectizeInput(session,
                                         "ckanRecord",
-                                        choices = getCKANRecordChoices(tmpCkan))
+                                        choices = getCKANRecordChoices(ckanFiles()))
 
-                   ckanFiles(tmpCkan)
                  }) %>%
-                   bindEvent(input$ckanGroup)
+                   bindEvent(input$ckanGroup, ignoreNULL = FALSE)
 
                  # important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
@@ -484,6 +485,7 @@ selectSourceServer <- function(id) {
                    # reset sheet
                    updateSelectInput(session = session, "sheet", selected = character(0))
 
+                   if (is.null(input$ckanRecord)) return(NULL)
                    ckanFiles()[[input$ckanRecord]]
                  })
 
