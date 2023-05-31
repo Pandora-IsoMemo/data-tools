@@ -409,6 +409,8 @@ selectSourceServer <- function(id) {
                    bindEvent(input$source, once = TRUE)
 
                  apiCkanFiles <- reactiveVal()
+                 filteredCkanFiles <- reactiveVal()
+
                  observe({
                    logDebug("Updating input$source")
                    reset("file")
@@ -426,11 +428,11 @@ selectSourceServer <- function(id) {
                      updateSelectizeInput(session,
                                           "ckanRecord",
                                           choices = getCKANRecordChoices(tmpCkan))
+                     filteredCkanFiles(tmpCkan)
                    }
                  }) %>%
                    bindEvent(input$source)
 
-                 filteredCkanFiles <- reactiveVal()
                  observe({
                    logDebug("Updating ckanGroups")
                    tmpCkan <- apiCkanFiles() %>%
@@ -498,7 +500,7 @@ selectSourceServer <- function(id) {
                      selected = choicesList$selected
                    )
                  }) %>%
-                   bindEvent(list(ckanRecord(), input$ckanResourceTypes))
+                   bindEvent(list(input$ckanRecord, input$ckanResourceTypes))
 
                  # Update dataSource ----
                  observe({

@@ -7,7 +7,7 @@ test_that("Test module selectSourceServer", {
                session$setInputs(
                  source = "ckan",
                  ckanMeta = "",
-                 applyMeta = 1,
+                 applyMeta = 0,
                  ckanGroup = "isomemo-group",
                  ckanRecord = "14CARHU",
                  ckanResourceTypes = c("xlsx"),
