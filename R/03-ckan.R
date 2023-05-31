@@ -56,9 +56,9 @@ getCKANResourcesChoices <-
   }
 
 getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
-  if (!is.null(attr(ckanFiles, "apiError"))) {
+  if (!is.null(attr(ckanFiles, "error"))) {
     noChoices <- c("")
-    names(noChoices) <- attr(ckanFiles, "apiError")
+    names(noChoices) <- attr(ckanFiles, "error")
     return(noChoices)
   }
 
@@ -75,9 +75,9 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
 }
 
 getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
-  if (!is.null(attr(ckanFiles, "apiError"))) {
+  if (!is.null(attr(ckanFiles, "error"))) {
     noChoices <- c("")
-    names(noChoices) <- attr(ckanFiles, "apiError")
+    names(noChoices) <- attr(ckanFiles, "error")
     return(noChoices)
   }
 
@@ -122,7 +122,7 @@ getCKANFiles <- function(meta = "", ckanGroup = NA) {
 getCKANFileList <- function() {
   if (!has_internet()) {
     res <- list()
-    attr(res, "apiError") <- "No internet connection ..."
+    attr(res, "errorApi") <- "No internet connection ..."
     return(res)
   }
 
@@ -130,7 +130,7 @@ getCKANFileList <- function() {
     tryGET(path = "https://pandora.earth/")
   if (is.null(testCon)) {
     res <- list()
-    attr(res, "apiError") <- "Cannot reach 'https://pandora.earth/' ..."
+    attr(res, "errorApi") <- "Cannot reach 'https://pandora.earth/' ..."
     return(res)
   }
 
@@ -138,7 +138,7 @@ getCKANFileList <- function() {
     tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
   if (is.null(apiCon)) {
     res <- list()
-    attr(res, "apiError") <- "Could not retrieve data from 'https://pandoradata.earth/api' ..."
+    attr(res, "errorApi") <- "Could not retrieve data from 'https://pandoradata.earth/api' ..."
     return(res)
   }
 
@@ -180,15 +180,31 @@ filterCKANByMeta <- function(fileList, meta = "") {
   if (length(fileList) == 0)
     return(fileList)
 
+  errMsg <- NULL
   filterMeta <- sapply(fileList, function(record) {
-    record %>%
+    res <- record %>%
       unlist(use.names = FALSE) %>%
       tolower() %>%
       grepl(pattern = tolower(meta)) %>%
+      try(silent = TRUE) %>%
+      suppressWarnings()
+
+    if (inherits(res, "try-error")) {
+      errMsg <<- res[[1]]
+      return(FALSE)
+    }
+
+    res %>%
       any()
   })
 
-  fileList[filterMeta]
+  filteredList <- fileList[filterMeta]
+
+  if (!is.null(errMsg)) {
+    attr(filteredList, "errorMeta") <- "Error in filter for Meta data ..."
+  }
+
+  filteredList
 }
 
 filterCKANFileList <- function(fileList) {
