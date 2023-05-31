@@ -68,6 +68,10 @@ importDataServer <- function(id,
                  observeEvent(input$openPopup, ignoreNULL = TRUE, {
                    logDebug("Updating input$openPopup")
 
+                   updateSelectInput(session,
+                                     "dataSelector-fileSource-source",
+                                     selected = defaultSource)
+
                    showModal(
                      importDataDialog(
                        ns = ns,
