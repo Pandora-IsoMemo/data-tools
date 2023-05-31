@@ -56,6 +56,12 @@ getCKANResourcesChoices <-
   }
 
 getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
+  if (!is.null(attr(ckanFiles, "error"))) {
+    noChoices <- c("")
+    names(noChoices) <- attr(ckanFiles, "error")
+    return(noChoices)
+  }
+
   choices <- unlist(lapply(ckanFiles, `[[`, "title"))
 
   if (is.null(choices))
@@ -69,8 +75,11 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
 }
 
 getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
-  if (!has_internet())
-    return(c("No connection ..." = ""))
+  if (!is.null(attr(ckanFiles, "error"))) {
+    noChoices <- c("")
+    names(noChoices) <- attr(ckanFiles, "error")
+    return(noChoices)
+  }
 
   # get all groups
   choices <- lapply(ckanFiles, function(record) {
@@ -94,7 +103,9 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
 }
 
 getCKANFiles <- function(meta = "", ckanGroup = NA) {
-  res <- getCKANFileList() %>%
+  res <- getCKANFileList()
+
+  res <- res %>%
     filterCKANByMeta(meta = meta) %>%
     filterCKANFileList() %>%
     filterCKANGroup(ckanGroup = ckanGroup)
@@ -109,12 +120,29 @@ getCKANFiles <- function(meta = "", ckanGroup = NA) {
 }
 
 getCKANFileList <- function() {
-  res <-
-    tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
-  if (is.null(res))
-    return(list())
+  if (!has_internet()) {
+    res <- list()
+    attr(res, "errorApi") <- "No internet connection ..."
+    return(res)
+  }
 
-  res$result
+  testCon <-
+    tryGET(path = "https://pandora.earth/")
+  if (is.null(testCon)) {
+    res <- list()
+    attr(res, "errorApi") <- "Cannot reach 'https://pandora.earth/' ..."
+    return(res)
+  }
+
+  apiCon <-
+    tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
+  if (is.null(apiCon)) {
+    res <- list()
+    attr(res, "errorApi") <- "Could not retrieve data from 'https://pandoradata.earth/api' ..."
+    return(res)
+  }
+
+  return(apiCon$result)
 }
 
 #' Filter CKAN by Group
@@ -152,15 +180,31 @@ filterCKANByMeta <- function(fileList, meta = "") {
   if (length(fileList) == 0)
     return(fileList)
 
+  errMsg <- NULL
   filterMeta <- sapply(fileList, function(record) {
-    record %>%
+    res <- record %>%
       unlist(use.names = FALSE) %>%
       tolower() %>%
       grepl(pattern = tolower(meta)) %>%
+      try(silent = TRUE) %>%
+      suppressWarnings()
+
+    if (inherits(res, "try-error")) {
+      errMsg <<- res[[1]]
+      return(FALSE)
+    }
+
+    res %>%
       any()
   })
 
-  fileList[filterMeta]
+  filteredList <- fileList[filterMeta]
+
+  if (!is.null(errMsg)) {
+    attr(filteredList, "errorMeta") <- "Error in filter for Meta data ..."
+  }
+
+  filteredList
 }
 
 filterCKANFileList <- function(fileList) {
@@ -235,5 +279,5 @@ has_internet <- function(timeout = 2) {
     httr::GET("http://google.com/", timeout(timeout))
   }, silent = TRUE)
 
-  ! inherits(res, "try-error")
+  !inherits(res, "try-error")
 }

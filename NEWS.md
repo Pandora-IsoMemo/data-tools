@@ -1,5 +1,14 @@
 # DataTools
 
+## Version: 23.05.5
+
+### New Features
+- _Import of Pandora datasets_: info icon next to the meta data filter with examples how to filter for several keywords (#18)
+
+### Bug Fixes
+- catch api connection errors and output them in UI
+- catch errors for wrong meta filters and output them in UI
+
 ## Version: 23.05.4
 
 ### New Features

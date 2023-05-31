@@ -265,7 +265,20 @@ selectSourceUI <- function(id,
       conditionalPanel(
         condition = "input.source == 'ckan'",
         ns = ns,
-        tags$strong("Filter Pandora datasets"),
+        tags$strong(HTML(paste(
+          "Filter Pandora datasets &nbsp",
+          # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
+          tags$i(
+            class = "glyphicon glyphicon-info-sign",
+            style = sprintf("color:%s;", "#0072B2"),
+            title =
+              paste("- Filter 'some', or 'key', or 'words':",
+                    "   'some|key|words'",
+                    "- Filter 'some', and 'key', and 'words':",
+                    "   '(some+)(.*)(key+)(.*)(words+)'",
+                    sep = " \n")
+          )
+        ))),
         fluidRow(
           column(
             5,
@@ -278,8 +291,16 @@ selectSourceUI <- function(id,
             )
           ),
           column(
-            7,
-            style = "margin-top: 0.5em;",
+            1,
+            style = "margin-top: 0.5em; margin-left: -2em",
+            actionButton(
+              ns("applyMeta"),
+              label = NULL,
+              icon = icon("play")
+            )),
+          column(
+            6,
+            style = "margin-top: 0.5em; margin-left: 2em",
             pickerInput(
               ns("ckanGroup"),
               label = NULL,
@@ -387,18 +408,27 @@ selectSourceServer <- function(id) {
                  }) %>%
                    bindEvent(input$source, once = TRUE)
 
+                 apiCkanFiles <- reactiveVal()
                  observe({
                    logDebug("Updating input$source")
                    reset("file")
-                   updateTextInput(session, "ckanMeta", value = "")
+
+                   if (input$source == "ckan") {
+                     updateTextInput(session, "ckanMeta", value = "")
+                     apiCkanFiles(getCKANFileList())
+
+                     tmpCkan <- apiCkanFiles() %>%
+                       filterCKANFileList()
+
+                     updatePickerInput(session,
+                                       "ckanGroup",
+                                       choices = getCKANGroupChoices(tmpCkan))
+                     updateSelectizeInput(session,
+                                          "ckanRecord",
+                                          choices = getCKANRecordChoices(tmpCkan))
+                   }
                  }) %>%
                    bindEvent(input$source)
-
-                 apiCkanFiles <- reactive({
-                   #req(input$source == "ckan")
-                   logDebug("Updating ckan from api")
-                   getCKANFileList()
-                 })
 
                  filteredCkanFiles <- reactiveVal()
                  observe({
@@ -413,7 +443,7 @@ selectSourceServer <- function(id) {
 
                    filteredCkanFiles(tmpCkan)
                  }) %>%
-                   bindEvent(input$ckanMeta)
+                   bindEvent(input$applyMeta)
 
                  ckanFiles <- reactiveVal()
                  observe({

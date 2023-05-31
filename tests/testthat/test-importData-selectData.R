@@ -7,6 +7,7 @@ test_that("Test module selectSourceServer", {
                session$setInputs(
                  source = "ckan",
                  ckanMeta = "",
+                 applyMeta = 1,
                  ckanGroup = "isomemo-group",
                  ckanRecord = "14CARHU",
                  ckanResourceTypes = c("xlsx"),
@@ -29,6 +30,7 @@ test_that("Test module selectSourceServer", {
                session$setInputs(
                  source = "ckan",
                  ckanMeta = "",
+                 applyMeta = 1,
                  ckanRecord = "AfriArch isotopic dataset",
                  ckanResourceTypes = c("xlsx"),
                  ckanResource = "Isotopic measurements in Excel format"
@@ -47,6 +49,7 @@ test_that("Test module selectSourceServer", {
                session$setInputs(
                  source = "ckan",
                  ckanMeta = "cxbdyfbxdSomeRandomStringYlkdjgl",
+                 applyMeta = 1,
                  ckanRecord = "AfriArch isotopic dataset",
                  ckanResourceTypes = c("xlsx"),
                  ckanResource = "Isotopic measurements in Excel format"
