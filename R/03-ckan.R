@@ -133,7 +133,8 @@ getCKANFileList <- function() {
     tryGET(path = "https://pandora.earth/")
   if (is.null(testCon)) {
     res <- list()
-    attr(res, "errorApi") <- "Cannot reach 'https://pandora.earth/' ..."
+    attr(res, "errorApi") <-
+      "Cannot reach 'https://pandora.earth/' ..."
     return(res)
   }
 
@@ -141,7 +142,8 @@ getCKANFileList <- function() {
     tryGET(path = "https://pandoradata.earth/api/3/action/current_package_list_with_resources?limit=1000")
   if (is.null(apiCon)) {
     res <- list()
-    attr(res, "errorApi") <- "Could not retrieve data from 'https://pandoradata.earth/api' ..."
+    attr(res, "errorApi") <-
+      "Could not retrieve data from 'https://pandoradata.earth/api' ..."
     return(res)
   }
 
@@ -192,7 +194,8 @@ filterCKANByMeta <- function(fileList, meta = "") {
                  unlist(use.names = FALSE) %>%
                  tolower() %>%
                  grepl(pattern = tolower(meta)),
-               silent = TRUE) %>%
+               silent = TRUE)
+    %>%
       suppressWarnings()
 
     if (inherits(res, "try-error")) {
@@ -286,5 +289,5 @@ has_internet <- function(timeout = 2) {
     httr::GET("http://google.com/", timeout(timeout))
   }, silent = TRUE)
 
-  !inherits(res, "try-error")
+  ! inherits(res, "try-error")
 }

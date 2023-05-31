@@ -265,20 +265,24 @@ selectSourceUI <- function(id,
       conditionalPanel(
         condition = "input.source == 'ckan'",
         ns = ns,
-        tags$strong(HTML(paste(
-          "Filter Pandora datasets &nbsp",
-          # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
-          tags$i(
-            class = "glyphicon glyphicon-info-sign",
-            style = sprintf("color:%s;", "#0072B2"),
-            title =
-              paste("- Filter 'some', or 'key', or 'words':",
-                    "   'some|key|words'",
-                    "- Filter 'some', and 'key', and 'words':",
-                    "   '(some+)(.*)(key+)(.*)(words+)'",
-                    sep = " \n")
+        tags$strong(HTML(
+          paste(
+            "Filter Pandora datasets &nbsp",
+            # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
+            tags$i(
+              class = "glyphicon glyphicon-info-sign",
+              style = sprintf("color:%s;", "#0072B2"),
+              title =
+                paste(
+                  "- Filter 'some', or 'key', or 'words':",
+                  "   'some|key|words'",
+                  "- Filter 'some', and 'key', and 'words':",
+                  "   '(some+)(.*)(key+)(.*)(words+)'",
+                  sep = " \n"
+                )
+            )
           )
-        ))),
+        )),
         fluidRow(
           column(
             5,
@@ -290,14 +294,13 @@ selectSourceUI <- function(id,
               placeholder = "Meta data"
             )
           ),
-          column(
-            1,
-            style = "margin-top: 0.5em; margin-left: -2em",
-            actionButton(
-              ns("applyMeta"),
-              label = NULL,
-              icon = icon("play")
-            )),
+          column(1,
+                 style = "margin-top: 0.5em; margin-left: -2em",
+                 actionButton(
+                   ns("applyMeta"),
+                   label = NULL,
+                   icon = icon("play")
+                 )),
           column(
             6,
             style = "margin-top: 0.5em; margin-left: 2em",
@@ -485,7 +488,8 @@ selectSourceServer <- function(id) {
                    # reset sheet
                    updateSelectInput(session = session, "sheet", selected = character(0))
 
-                   if (is.null(input$ckanRecord)) return(NULL)
+                   if (is.null(input$ckanRecord))
+                     return(NULL)
                    ckanFiles()[[input$ckanRecord]]
                  })
 
