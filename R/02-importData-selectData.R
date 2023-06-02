@@ -408,16 +408,29 @@ selectSourceServer <- function(id, openPopupReset) {
 
                  apiCkanFiles <- reactiveVal(list())
                  observe({
-                   logDebug("Updating input$source once")
+                   logDebug("Update after openPopupReset()")
+                   reset("file")
+                   updateTextInput(session, "ckanMeta", value = "")
+
                    if (!has_internet()) {
                      updateSelectInput(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection!")
                    } else {
-                     apiCkanFiles(getCKANFileList())
+                     req(isTRUE(openPopupReset()))
+                     apiCkanFiles(getCKANFiles())
+                     # reset ckan inputs
+                     updateTextInput(session, "ckanMeta", value = "")
+                     # trigger update of ckanGroup without button for meta
+                     ckanFiles <- filteredCkanFiles()
+                     updatePickerInput(session,
+                                       "ckanGroup",
+                                       choices = getCKANGroupChoices(ckanFiles))
+                     updateSelectizeInput(session,
+                                          "ckanRecord",
+                                          choices = getCKANRecordChoices(ckanFiles))
                    }
                  }) %>%
-                   bindEvent(openPopupReset(), once = TRUE)
-
+                   bindEvent(openPopupReset())
 
                  filteredCkanFiles <- reactive({
                    logDebug("Calling filteredCkanFiles")
@@ -428,23 +441,20 @@ selectSourceServer <- function(id, openPopupReset) {
                  })
 
                  observe({
-                   logDebug("Updating input$source")
+                   logDebug("Reset input$source")
                    reset("file")
+                   updateTextInput(session, "url", value = "")
+                   updateTextInput(session, "ckanMeta", value = "")
 
-                   req(input$source)
-                   if (input$source == "ckan") {
-                     # reset ckan inputs
-                     updateTextInput(session, "ckanMeta", value = "")
-                     # trigger update of ckanGroup without button for meta
-                     updatePickerInput(session,
-                                       "ckanGroup",
-                                       choices = getCKANGroupChoices(filteredCkanFiles()))
-                     updateSelectizeInput(session,
-                                          "ckanRecord",
-                                          choices = getCKANRecordChoices(filteredCkanFiles()))
-                   }
+                   # reset ckanGroup and ckanRecord
+                   updatePickerInput(session,
+                                     "ckanGroup",
+                                     choices = getCKANGroupChoices(filteredCkanFiles()))
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = getCKANRecordChoices(filteredCkanFiles()))
                  }) %>%
-                   bindEvent(openPopupReset())
+                   bindEvent(input$source)
 
                  observe({
                    logDebug("Apply Meta filter")

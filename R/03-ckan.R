@@ -2,7 +2,7 @@
 #'
 #' Select, filter and sort choices to be available in the ckanResource input
 #'
-#' @param ckanResources (list) output of getCKANFiles() for a specific record
+#' @param ckanResources (list) output of `getCKANFiles() %>% filterCKANFileList()` for a specific record
 #' @param types (character) user selected types to show
 #' @param sort (logical) if TRUE sort choices alphabetically
 getCKANResourcesChoices <-
@@ -105,21 +105,14 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
   choices
 }
 
-getCKANFiles <- function(meta = "", ckanGroup = NA) {
-  res <- getCKANFileList()
-
-  res <- res %>%
-    filterCKANByMeta(meta = meta) %>%
-    filterCKANFileList() %>%
-    filterCKANGroup(ckanGroup = ckanGroup)
-
+getCKANFiles <- function() {
   if (isRunning()) {
-    res <- res %>%
+    getCKANFileList() %>%
       withProgress(value = 0.8,
                    message = "Updating Pandora dataset list ...")
+  } else {
+    getCKANFileList()
   }
-
-  res
 }
 
 getCKANFileList <- function() {
@@ -271,7 +264,7 @@ tryGET <- function(path) {
   }, silent = TRUE)
 
   if (inherits(res, "try-error") ||
-      res$status_code == 500 || !is.null(res[["message"]])) {
+      res$status_code == 500 || !is.null(httr::content(res)[["message"]])) {
     # if there is a message than an error occurred
     # We do not need to print an alert! If output is empty UI tells a message
     # apiName = "pandoradata.earth" or apiName = "api.github.com"

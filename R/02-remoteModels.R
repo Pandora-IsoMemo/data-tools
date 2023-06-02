@@ -187,10 +187,15 @@ checkLocalModelDir <-
 #'
 #' Get remote models from github directory
 #' @inheritParams remoteModelsServer
+#' @param apiOut output of `getGithubContent()` if it was already loaded
 getRemoteModelsFromGithub <-
-  function(githubRepo, folderOnGithub = "/predefinedModels") {
-    apiOut <- getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
+  function(githubRepo, folderOnGithub = "/predefinedModels", apiOut = NULL) {
+    if (is.null(apiOut)) {
+      # if default value
+      apiOut <- getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
+    }
 
+    # if nothing could be loaded
     if (is.null(apiOut)) return(c())
 
     lapply(apiOut, function(el)

@@ -7,7 +7,7 @@
 getCKANResourcesChoices(ckanResources, types, sort = TRUE)
 }
 \arguments{
-\item{ckanResources}{(list) output of getCKANFiles() for a specific record}
+\item{ckanResources}{(list) output of `getCKANFiles() %>% filterCKANFileList()` for a specific record}
 
 \item{types}{(character) user selected types to show}
 

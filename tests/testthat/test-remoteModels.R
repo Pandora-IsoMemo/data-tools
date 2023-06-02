@@ -1,12 +1,12 @@
 testthat::test_that("Test module remoteModels", {
-  testthat::expect_true(length(getGithubContent(githubRepo = "bpred")) > 0)
-  testthat::expect_true(length(getRemoteModelsFromGithub(githubRepo = "bpred")) > 0)
-  testthat::expect_true(length(getGithubContent(githubRepo = "bpred")) ==
-                          length(getRemoteModelsFromGithub(githubRepo = "bpred")))
+  testApiContent <- getGithubContent(githubRepo = "bpred")
+  testRemoteModels <- getRemoteModelsFromGithub(githubRepo = "bpred", apiOut = testApiContent)
+
+  testthat::expect_true(length(testApiContent) > 0)
+  testthat::expect_true(length(testRemoteModels) > 0)
+  testthat::expect_true(length(testApiContent) == length(testRemoteModels))
 
   testthat::expect_error(checkLocalModelDir(pathToLocal = "xyz"))
-
-  testModel <- getRemoteModelsFromGithub(githubRepo = "bpred")[1]
 
   testServer(
     remoteModelsServer,
@@ -19,7 +19,7 @@ testthat::test_that("Test module remoteModels", {
       # Arrange
       print("test empty data input")
       # Act
-      session$setInputs(remoteModelChoice = testModel,
+      session$setInputs(remoteModelChoice = testRemoteModels[1],
                         loadRemoteModel = 1)
 
       testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")

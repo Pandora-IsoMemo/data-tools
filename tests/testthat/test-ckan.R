@@ -1,5 +1,8 @@
 test_that("Test getCKANRecordChoices()", {
-  # getCKANFiles()[1:3] %>% dput
+  # testFiles <- getCKANFiles() %>%
+  #   filterCKANFileList()
+  # testFiles()[1:3] %>%
+  #   dput()
   testGetCKANFiles <-
     list(
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = list(
@@ -81,7 +84,10 @@ test_that("Test getCKANRecordChoices()", {
 })
 
 test_that("Test getCKANResourcesChoices()", {
-  # getCKANFiles()[["AfriArch isotopic dataset"]]$resource %>% dput
+  # testFiles <- getCKANFiles() %>%
+  #   filterCKANFileList()
+  # testFiles[["AfriArch isotopic dataset"]]$resource %>%
+  #   dput()
   testGetCKANResource <-
     list(
       `Isotopic measurements in Excel format` = list(
@@ -132,9 +138,11 @@ test_that("Test getCKANResourcesChoices()", {
     c(`Isotopic measurements in Excel format  ( XLSX )` = "Isotopic measurements in Excel format")
   )
 
+  testFiles <- getCKANFiles() %>%
+    filterCKANFileList()
   testChoicesList <-
     getCKANResourcesChoices(
-      getCKANFiles()[["AfriArch isotopic dataset"]]$resource,
+      testFiles[["AfriArch isotopic dataset"]]$resource,
       types = c("xls", "xlsx", "csv"),
       sort = TRUE
     )
@@ -155,14 +163,16 @@ test_that("Test getCKANResourcesChoices()", {
 
 test_that("Test getCKANGroupChoices()", {
   # always test on live data -> test will fail if groups are changing
+  testFiles <- getCKANFiles() %>%
+    filterCKANFileList()
   expect_equal(
-    getCKANGroupChoices(getCKANFiles(), sort = TRUE),
+    getCKANGroupChoices(testFiles, sort = TRUE),
     c(`IsoMemo Network` = "isomemo-group")
   )
 })
 
 test_that("Test filterCKANByMeta()", {
-  testFiles <- getCKANFileList()
+  testFiles <- getCKANFiles()
 
   expect_true(length(filterCKANByMeta(testFiles, meta = "Roman")) < length(testFiles))
   expect_equal(filterCKANByMeta(testFiles, meta = "Roman"),
@@ -171,7 +181,7 @@ test_that("Test filterCKANByMeta()", {
 })
 
 test_that("Test filterCKANGroup()", {
-  testFiles <- getCKANFileList() %>%
+  testFiles <- getCKANFiles() %>%
     filterCKANFileList()
 
   expect_true(length(filterCKANGroup(testFiles, ckanGroup = "isomemo-group")) < length(testFiles))

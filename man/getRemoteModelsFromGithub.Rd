@@ -4,13 +4,19 @@
 \alias{getRemoteModelsFromGithub}
 \title{Get Remote Models From Github}
 \usage{
-getRemoteModelsFromGithub(githubRepo, folderOnGithub = "/predefinedModels")
+getRemoteModelsFromGithub(
+  githubRepo,
+  folderOnGithub = "/predefinedModels",
+  apiOut = NULL
+)
 }
 \arguments{
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
 \item{folderOnGithub}{(character) folder on github where remote files are stored. This should
 correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
+
+\item{apiOut}{output of `getGithubContent()` if it was already loaded}
 }
 \description{
 Get remote models from github directory
