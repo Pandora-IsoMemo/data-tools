@@ -92,25 +92,6 @@ selectDataServer <- function(id,
                  dataSource <- selectSourceServer("fileSource", openPopupReset = openPopupReset)
                  selectFileTypeServer("fileType", dataSource)
 
-                 observeEvent(dataSource$file,
-                              ignoreNULL = FALSE,
-                              ignoreInit = TRUE,
-                              {
-                                logDebug("Updating dataSource$file")
-                                # reset values
-                                values$warnings <- list()
-                                values$errors <- list()
-                                values$fileName <- ""
-                                values$fileImportSuccess <- NULL
-                                values$dataImport <- NULL
-                                values$preview <- NULL
-                                values$data <- list()
-
-                                updateSelectInput(session = session,
-                                                  "fileType-sheet",
-                                                  selected = character(0))
-                              })
-
                  # specify file server ----
                  observeEvent(
                    list(
@@ -125,7 +106,6 @@ selectDataServer <- function(id,
                    ignoreInit = TRUE,
                    {
                      logDebug("Entering values$dataImport")
-                     req(dataSource$file)
                      # reset values
                      values$warnings <- list()
                      values$errors <- list()
@@ -135,9 +115,10 @@ selectDataServer <- function(id,
                      values$preview <- NULL
                      values$data <- list()
 
+                     req(dataSource$file)
                      logDebug("Updating values$dataImport")
                      withProgress(value = 0.75,
-                                  message = 'loading data ...', {
+                                  message = 'Loading data ...', {
                                     if (has_internet()) {
                                       values <- loadDataWrapper(
                                         values = values,
@@ -417,7 +398,7 @@ selectSourceServer <- function(id, openPopupReset) {
                      updateTextInput(session, "url", placeholder = "No internet connection!")
                    } else {
                      req(isTRUE(openPopupReset()))
-                     apiCkanFiles(getCKANFiles())
+                     apiCkanFiles(getCKANFiles(message = "Updating Pandora dataset list ..."))
                      # reset ckan inputs
                      updateTextInput(session, "ckanMeta", value = "")
                      # trigger update of ckanGroup without button for meta
@@ -639,10 +620,21 @@ selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
                  observeEvent(list(input$type, dataSource$file), ignoreInit = TRUE, {
-                   logDebug("Updating input$sheet")
-                   req(input$type)
+                   logDebug("Entering input$sheet")
+                   if (is.null(input$type)) {
+                     updateSelectInput(session = session, "sheet",
+                                       selected = character(0))
+                     return()
+                   }
+
+                   if (!(input$type %in% c("xls", "xlsx"))) {
+                     updateSelectInput(session = session, "sheet",
+                                       selected = character(0))
+                     return()
+                   }
 
                    if (input$type %in% c("xls", "xlsx")) {
+                     logDebug("Updating input$sheet")
                      updateSelectInput(session, "sheet",
                                        choices = getSheetSelection(dataSource$file))
                    }
