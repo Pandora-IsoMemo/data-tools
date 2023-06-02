@@ -2,7 +2,7 @@
 #'
 #' Select, filter and sort choices to be available in the ckanResource input
 #'
-#' @param ckanResources (list) output of getCKANFiles() %>% filterCKANFileList() for a specific record
+#' @param ckanResources (list) output of filterCKANFileList(getCKANFiles()) for a specific record
 #' @param types (character) user selected types to show
 #' @param sort (logical) if TRUE sort choices alphabetically
 getCKANResourcesChoices <-
