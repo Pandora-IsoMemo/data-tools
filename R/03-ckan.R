@@ -65,13 +65,13 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
   choices <- unlist(lapply(ckanFiles, `[[`, "title"))
 
   if (is.null(choices))
-    return(c("No Pandora dataset available ..." = ""))
+    return(c("No Pandora repository available ..." = ""))
 
   if (sort) {
     choices <- choices %>% sort()
   }
 
-  c("Select Pandora dataset ..." = "", choices)
+  c("Select Pandora repository ..." = "", choices)
 }
 
 getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
@@ -82,7 +82,7 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
   }
 
   if (is.null(ckanFiles))
-    return(c("No group available ..." = ""))
+    return(c("No Pandora network available ..." = ""))
 
   # get all groups
   choices <- lapply(ckanFiles, function(record) {
@@ -90,7 +90,7 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
   })
 
   if (is.null(choices) | length(choices) == 0)
-    return(c("No group available ..." = ""))
+    return(c("No Pandora network available ..." = ""))
 
   # remove names of records, keep names of groups
   names(choices) <- NULL
@@ -105,7 +105,7 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
   choices
 }
 
-getCKANFiles <- function(message = "Updating Pandora dataset list ...") {
+getCKANFiles <- function(message = "Updating list of Pandora repositories ...") {
   if (isRunning()) {
     getCKANFileList() %>%
       withProgress(value = 0.8, message = message)

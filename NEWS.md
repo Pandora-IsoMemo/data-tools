@@ -1,5 +1,13 @@
 # DataTools
 
+## Version: 23.06.0
+
+### Updates
+- _Import of Pandora datasets_: rename "Pandora group" to "Pandora network", and "Pandora dataset" to "Pandora repository" (#18)
+
+### Bug Fixes 
+- contains fixes regarding issues with loading data and updates of the lists of user inputs (#163)
+
 ## Version: 23.05.5
 
 ### New Features

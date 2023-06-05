@@ -251,7 +251,7 @@ selectSourceUI <- function(id,
         ns = ns,
         tags$strong(HTML(
           paste(
-            "Filter Pandora datasets &nbsp",
+            "Filter Pandora repositories &nbsp",
             # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
             tags$i(
               class = "glyphicon glyphicon-info-sign",
@@ -296,7 +296,7 @@ selectSourceUI <- function(id,
               options = list(
                 `actions-box` = TRUE,
                 size = 10,
-                `none-selected-text` = "No group filter",
+                `none-selected-text` = "No network filter",
                 `selected-text-format` = "count > 8",
                 style = "backgound:'gray'"
               )
@@ -305,7 +305,7 @@ selectSourceUI <- function(id,
         ),
         selectizeInput(
           ns("ckanRecord"),
-          "Pandora dataset",
+          "Pandora repository",
           choices = c("Please check connection ..." = ""),
           width = "100%",
           options = list(
@@ -317,7 +317,7 @@ selectSourceUI <- function(id,
             )
           )
         ),
-        tags$strong("Pandora dataset resource"),
+        tags$strong("Pandora repository resource"),
         fluidRow(
           column(
             5,
@@ -398,7 +398,7 @@ selectSourceServer <- function(id, openPopupReset) {
                      updateTextInput(session, "url", placeholder = "No internet connection!")
                    } else {
                      req(isTRUE(openPopupReset()))
-                     apiCkanFiles(getCKANFiles(message = "Updating Pandora dataset list ..."))
+                     apiCkanFiles(getCKANFiles(message = "Updating list of Pandora repositories ..."))
                      # reset ckan inputs
                      updateTextInput(session, "ckanMeta", value = "")
                      # trigger update of ckanGroup without button for meta

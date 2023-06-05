@@ -6,7 +6,7 @@
 #' @param label label of button
 #' @rdname importData
 #' @export
-importDataUI <- function(id, label = "Import Data") {
+importDataUI <- function(id, label = "Data import") {
   ns <- NS(id)
   actionButton(ns("openPopup"), label)
 }

@@ -65,7 +65,7 @@ test_that("Test getCKANRecordChoices()", {
   expect_equal(
     getCKANRecordChoices(testGetCKANFiles, sort = FALSE),
     c(
-      `Select Pandora dataset ...` = "",
+      `Select Pandora repository ...` = "",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset"
@@ -75,7 +75,7 @@ test_that("Test getCKANRecordChoices()", {
   expect_equal(
     getCKANRecordChoices(testGetCKANFiles, sort = TRUE),
     c(
-      `Select Pandora dataset ...` = "",
+      `Select Pandora repository ...` = "",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu"
