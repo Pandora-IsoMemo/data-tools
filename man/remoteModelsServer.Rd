@@ -11,7 +11,7 @@ remoteModelsServer(
   folderOnGithub = "/predefinedModels",
   onlyLocalModels = reactive(FALSE),
   resetSelected = reactive(FALSE),
-  reloadChoices = reactive(FALSE),
+  reloadChoices = reactive(TRUE),
   rPackageName = NULL,
   rPackageVersion = NULL
 )

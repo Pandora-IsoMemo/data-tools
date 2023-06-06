@@ -56,7 +56,7 @@ remoteModelsServer <- function(id,
                                folderOnGithub = "/predefinedModels",
                                onlyLocalModels = reactive(FALSE),
                                resetSelected = reactive(FALSE),
-                               reloadChoices = reactive(FALSE),
+                               reloadChoices = reactive(TRUE),
                                rPackageName = NULL,
                                rPackageVersion = NULL) {
   moduleServer(id,
@@ -68,7 +68,7 @@ remoteModelsServer <- function(id,
                  observe({
                    shinyjs::hide(ns("noConn"), asis = TRUE)
                    # try getting online models
-                   if (reloadChoices() || githubRepo != "") {
+                   if (reloadChoices() && githubRepo != "") {
                      choices <-
                        getRemoteModelsFromGithub(githubRepo = githubRepo,
                                                  folderOnGithub = folderOnGithub)

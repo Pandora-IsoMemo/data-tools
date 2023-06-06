@@ -322,7 +322,7 @@ uploadModelServer <-
            mainFolder = "predefinedModels",
            subFolder = NULL,
            rPackageName = NULL,
-           reloadChoices = reactive(FALSE),
+           reloadChoices = reactive(TRUE),
            onlySettings = FALSE,
            reset = reactive(FALSE)) {
     moduleServer(id,
