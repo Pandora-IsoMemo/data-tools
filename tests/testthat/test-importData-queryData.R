@@ -10,7 +10,8 @@ testthat::test_that("Test queryDataServer", {
   )
 
   shiny::testServer(queryDataServer,
-                    args = list(mergeList = reactiveVal(testMergeList)),
+                    args = list(mergeList = reactiveVal(testMergeList),
+                                isActiveTab = reactive(TRUE)),
                     {
                       # Arrange
                       print("test queryDataServer")
@@ -132,7 +133,8 @@ testthat::test_that("Test gptServer", {
   ), regexp = NA)
 
   shiny::testServer(gptServer,
-                    args = list(autoCompleteList = reactive(c("testA", "testB"))),
+                    args = list(autoCompleteList = reactive(c("testA", "testB")),
+                                isActiveTab = reactive(TRUE)),
                     {
                       # Arrange
                       print("test gptServer: no auth, empty prompt")

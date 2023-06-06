@@ -373,6 +373,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        )
                      enable("useGPT")
                    } else {
+                     warning("gptServer: No internet connection!")
                      updateCheckboxInput(
                        session,
                        "useGPT",

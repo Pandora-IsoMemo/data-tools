@@ -105,17 +105,18 @@ getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
   choices
 }
 
-getCKANFiles <- function(message = "Updating list of Pandora repositories ...") {
+getCKANFiles <- function(message = "Updating list of Pandora repositories ...",
+                         isInternet = has_internet()) {
   if (isRunning()) {
-    getCKANFileList() %>%
+    getCKANFileList(isInternet = isInternet) %>%
       withProgress(value = 0.8, message = message)
   } else {
-    getCKANFileList()
+    getCKANFileList(isInternet = isInternet)
   }
 }
 
-getCKANFileList <- function() {
-  if (!has_internet()) {
+getCKANFileList <- function(isInternet = has_internet()) {
+  if (!isInternet) {
     res <- list()
     attr(res, "errorApi") <- "No internet connection ..."
     return(res)
@@ -254,8 +255,8 @@ keyBy <- function(l, key) {
   l
 }
 
-tryGET <- function(path) {
-  if (!has_internet())
+tryGET <- function(path, isInternet = has_internet()) {
+  if (!isInternet)
     return(NULL)
 
   res <- try({

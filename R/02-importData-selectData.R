@@ -119,8 +119,7 @@ selectDataServer <- function(id,
                      logDebug("Updating values$dataImport")
                      withProgress(value = 0.75,
                                   message = 'Loading data ...', {
-                                    if (has_internet()) {
-                                      values <- loadDataWrapper(
+                                    values <- loadDataWrapper(
                                         values = values,
                                         filepath = dataSource$file,
                                         filename = dataSource$filename,
@@ -131,9 +130,6 @@ selectDataServer <- function(id,
                                         withColnames = customNames$withColnames,
                                         sheetId = as.numeric(input[["fileType-sheet"]])
                                       )
-                                    } else {
-                                      values$errors <- list(load = "No internet connection!")
-                                    }
 
                                     if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                                       shinyjs::disable(ns("keepData"), asis = TRUE)
@@ -386,19 +382,24 @@ selectSourceServer <- function(id, openPopupReset) {
                function(input, output, session) {
                  dataSource <- reactiveValues(file = NULL,
                                               fileName = NULL)
+                 internetCon <- reactiveVal(FALSE)
 
                  apiCkanFiles <- reactiveVal(list())
                  observe({
+                   req(isTRUE(openPopupReset()))
                    logDebug("Update after openPopupReset()")
                    reset("file")
                    updateTextInput(session, "ckanMeta", value = "")
 
-                   if (!has_internet()) {
+                   internetCon(has_internet())
+                   if (!internetCon()) {
+                     warning("selectSourceServer: No internet connection!")
+                     apiCkanFiles(list())
                      updateSelectInput(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection!")
                    } else {
-                     req(isTRUE(openPopupReset()))
-                     apiCkanFiles(getCKANFiles(message = "Updating list of Pandora repositories ..."))
+                     apiCkanFiles(getCKANFiles(message = "Updating list of Pandora repositories ...",
+                                               isInternet = internetCon()))
                      # reset ckan inputs
                      updateTextInput(session, "ckanMeta", value = "")
                      # trigger update of ckanGroup without button for meta
@@ -455,13 +456,14 @@ selectSourceServer <- function(id, openPopupReset) {
                  })
 
                  observe({
+                   req(internetCon())
                    logDebug("Updating ckanRecords (Pandora dataset)")
                    updateSelectizeInput(session,
                                         "ckanRecord",
                                         choices = getCKANRecordChoices(ckanFiles()))
 
                  }) %>%
-                   bindEvent(input$ckanGroup, ignoreNULL = FALSE)
+                   bindEvent(list(input$ckanGroup, internetCon()), ignoreNULL = FALSE)
 
                  # important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
@@ -493,6 +495,7 @@ selectSourceServer <- function(id, openPopupReset) {
                  })
 
                  observe({
+                   req(internetCon())
                    logDebug("Updating ckanResources()")
 
                    choicesList <- ckanRecord()$resources %>%
@@ -508,6 +511,7 @@ selectSourceServer <- function(id, openPopupReset) {
 
                  # Update dataSource ----
                  observe({
+                   req(internetCon())
                    logDebug("Updating input$ckanResource")
                    if (is.null(input$ckanResource) ||
                        input$ckanResource == "") {
