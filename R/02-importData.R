@@ -226,7 +226,12 @@ importDataServer <- function(id,
 
                  ## disable button query data ----
                  queriedData <-
-                   queryDataServer("dataQuerier", mergeList = mergeList)
+                   queryDataServer(
+                     "dataQuerier",
+                     mergeList = mergeList,
+                     isActiveTab = reactive(checkIfActive(currentTab = input[["tabImport"]],
+                                                          tabName = "Query with SQL"))
+                     )
 
                  observe({
                    logDebug("Updating button acceptQuery")
@@ -312,6 +317,13 @@ importDataServer <- function(id,
 }
 
 # Helper Functions ----
+
+checkIfActive <- function(currentTab, tabName) {
+  if (is.null(currentTab)) return(FALSE)
+
+  currentTab == tabName
+}
+
 # import data dialog UI ----
 importDataDialog <-
   function(ns,

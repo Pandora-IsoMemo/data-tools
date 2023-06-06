@@ -210,9 +210,17 @@ getRemoteModelsFromGithub <-
 #' @inheritParams remoteModelsServer
 getGithubContent <-
   function(githubRepo, folderOnGithub = "/predefinedModels") {
-    tryGET(path = sprintf("api.github.com/repos/Pandora-IsoMemo/%s/contents/inst/app%s",
-                          githubRepo,
-                          folderOnGithub))
+    isInternet <- has_internet()
+
+    if (isInternet) {
+      tryGET(path = sprintf("api.github.com/repos/Pandora-IsoMemo/%s/contents/inst/app%s",
+                            githubRepo,
+                            folderOnGithub),
+             isInternet = isInternet)
+    } else {
+      warning("getGithubContent: No internet connection!")
+      return(NULL)
+    }
   }
 
 

@@ -62,7 +62,8 @@ queryDataUI <- function(id) {
 #' Server function of the qery data module
 #' @param id id of module
 #' @param mergeList (list) list of data to be merged
-queryDataServer <- function(id, mergeList) {
+#' @param isActiveTab (reactive) TRUE if tab of query module is the active
+queryDataServer <- function(id, mergeList, isActiveTab) {
   moduleServer(id,
                function(input, output, session) {
                  inMemoryDB <- reactiveVal(dbConnect(SQLite(), "file::memory:"))
@@ -79,7 +80,7 @@ queryDataServer <- function(id, mergeList) {
                  )
 
                  sqlCommandFromGpt <-
-                   gptServer("gpt", autoCompleteList = inMemColumns)
+                   gptServer("gpt", autoCompleteList = inMemColumns, isActiveTab = isActiveTab)
 
                  observe({
                    req(length(mergeList()) > 0)
@@ -251,7 +252,12 @@ gptUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    checkboxInput(ns("useGPT"), HTML("<b>Use AI PEITHO data operations</b>")),
+    useShinyjs(),
+    disabled(checkboxInput(
+      ns("useGPT"),
+      "Use AI PEITHO data operations",
+      width = "100%"
+      )),
     conditionalPanel(
       ns = ns,
       condition = "input.useGPT && !input.confirmUsingGPT",
@@ -344,15 +350,47 @@ gptUI <- function(id) {
 #' Server function of the gpt module
 #' @param id id of module
 #' @param autoCompleteList (list) word to be used for auto completion
-gptServer <- function(id, autoCompleteList) {
+#' @inheritParams queryDataServer
+gptServer <- function(id, autoCompleteList, isActiveTab) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 internetCon <- reactiveVal(FALSE)
                  validConnection <- reactiveVal(FALSE)
                  gptOut <- reactiveVal(NULL)
                  sqlCommand <- reactiveVal(NULL)
 
                  observe({
+                   req(isActiveTab())
+                   logDebug("check internet connection")
+
+                   internetCon(has_internet())
+                   if (internetCon()) {
+                     updateCheckboxInput(
+                       session,
+                       "useGPT",
+                       label = "Use AI PEITHO data operations"
+                       )
+                     enable("useGPT")
+                   } else {
+                     warning("gptServer: No internet connection!")
+                     updateCheckboxInput(
+                       session,
+                       "useGPT",
+                       label = "Use AI PEITHO data operations (requires internet connection)",
+                       value = FALSE
+                     )
+                     disable("useGPT")
+                     hide("temperature")
+                     hide("maxTokens")
+                     hide("n")
+                     validConnection(FALSE)
+                   }
+                 }) %>%
+                   bindEvent(isActiveTab())
+
+                 observe({
+                   req(internetCon())
                    logDebug("update gptPrompt")
                    updateAceEditor(
                      session = session,
@@ -366,7 +404,9 @@ gptServer <- function(id, autoCompleteList) {
                              ignoreInit = TRUE)
 
                  observe({
+                   req(internetCon())
                    logDebug("update input$apiKey")
+
                    inFile <- input$apiKey
 
                    # check key format
@@ -411,6 +451,7 @@ gptServer <- function(id, autoCompleteList) {
                  outputOptions(output, "showGpt", suspendWhenHidden = FALSE)
 
                  observe({
+                   req(internetCon())
                    logDebug("button input$applyPrompt")
                    # reset output
                    sqlCommand(NULL)
