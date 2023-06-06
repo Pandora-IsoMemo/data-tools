@@ -12,7 +12,7 @@
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
 #' @importFrom shinyalert shinyalert
-#' @importFrom shinyjs alert hide hidden info reset runjs show useShinyjs
+#' @importFrom shinyjs alert disable disabled enable hide hidden info reset runjs show useShinyjs
 #' @importFrom shinyWidgets pickerInput updatePickerInput
 #' @importFrom stats setNames
 #' @importFrom templates tmpl

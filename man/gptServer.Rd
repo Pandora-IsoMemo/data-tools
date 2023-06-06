@@ -4,12 +4,14 @@
 \alias{gptServer}
 \title{GPT Server}
 \usage{
-gptServer(id, autoCompleteList)
+gptServer(id, autoCompleteList, isActiveTab)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{autoCompleteList}{(list) word to be used for auto completion}
+
+\item{isActiveTab}{(reactive) TRUE if tab of query module is the active}
 }
 \description{
 Server function of the gpt module

@@ -4,12 +4,14 @@
 \alias{queryDataServer}
 \title{Query Data Server}
 \usage{
-queryDataServer(id, mergeList)
+queryDataServer(id, mergeList, isActiveTab)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{mergeList}{(list) list of data to be merged}
+
+\item{isActiveTab}{(reactive) TRUE if tab of query module is the active}
 }
 \description{
 Server function of the qery data module
