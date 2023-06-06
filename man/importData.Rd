@@ -4,7 +4,7 @@
 \alias{importDataUI}
 \title{Data import module}
 \usage{
-importDataUI(id, label = "Data import")
+importDataUI(id, label = "Import Data")
 }
 \arguments{
 \item{id}{id of module}

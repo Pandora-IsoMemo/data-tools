@@ -6,6 +6,7 @@
 \usage{
 importDataServer(
   id,
+  title = "Data import",
   rowNames = reactiveVal(NULL),
   colNames = reactiveVal(NULL),
   customWarningChecks = list(),
@@ -18,6 +19,8 @@ importDataServer(
 }
 \arguments{
 \item{id}{namespace id}
+
+\item{title}{title of data import module}
 
 \item{rowNames}{(reactive) use this for rownames of imported data}
 

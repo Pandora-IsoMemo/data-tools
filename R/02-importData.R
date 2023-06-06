@@ -6,7 +6,7 @@
 #' @param label label of button
 #' @rdname importData
 #' @export
-importDataUI <- function(id, label = "Data import") {
+importDataUI <- function(id, label = "Import Data") {
   ns <- NS(id)
   actionButton(ns("openPopup"), label)
 }
@@ -16,6 +16,7 @@ importDataUI <- function(id, label = "Data import") {
 #' Backend for data import module
 #'
 #' @param id namespace id
+#' @param title title of data import module
 #' @param rowNames (reactive) use this for rownames of imported data
 #' @param colNames (reactive) use this for colnames of imported data
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
@@ -31,6 +32,7 @@ importDataUI <- function(id, label = "Data import") {
 #'  e.g. for batch = TRUE in Resources
 #' @export
 importDataServer <- function(id,
+                             title = "Data import",
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),
                              customWarningChecks = list(),
@@ -71,6 +73,7 @@ importDataServer <- function(id,
                    showModal(
                      importDataDialog(
                        ns = ns,
+                       title = title,
                        defaultSource = defaultSource,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix
@@ -312,12 +315,13 @@ importDataServer <- function(id,
 # import data dialog UI ----
 importDataDialog <-
   function(ns,
+           title,
            defaultSource = "ckan",
            batch = FALSE,
            outputAsMatrix = FALSE) {
     modalDialog(
       shinyjs::useShinyjs(),
-      title = "Import Data",
+      title = sprintf("%s (%s)", title, packageVersion("DataTools")),
       style = 'height: 1020px',
       footer = tagList(fluidRow(
         column(4,
