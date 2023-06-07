@@ -68,6 +68,7 @@ selectDataUI <- function(id,
 #' @param mergeList (list) list of selected data
 #' @param customNames settings for custom column and row names
 #' @param openPopupReset (reactive) if TRUE reset ckan source inputs
+#' @param internetCon (reactive) TRUE if there is an internet connection
 #' @inheritParams importDataServer
 selectDataServer <- function(id,
                              mergeList,

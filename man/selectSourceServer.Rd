@@ -10,6 +10,8 @@ selectSourceServer(id, openPopupReset, internetCon)
 \item{id}{id of module}
 
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
+
+\item{internetCon}{(reactive) TRUE if there is an internet connection}
 }
 \description{
 Server function of the module

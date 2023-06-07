@@ -22,6 +22,8 @@ selectDataServer(
 
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 
+\item{internetCon}{(reactive) TRUE if there is an internet connection}
+
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 }
 \description{
