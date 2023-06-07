@@ -45,13 +45,13 @@ importDataServer <- function(id,
                function(input, output, session) {
                  ns <- session$ns
                  mergeList <- reactiveVal(list())
-
                  customNames <- reactiveValues(
                    withRownames = FALSE,
                    rownames = rowNames,
                    withColnames = TRUE,
                    colnames = colNames
                  )
+                 internetCon <- reactiveVal(FALSE)
 
                  observe({
                    logDebug("Update withRownames")
@@ -67,14 +67,17 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(input[["dataSelector-withColnames"]])
 
-                 observeEvent(input$openPopup, ignoreNULL = TRUE, {
-                   logDebug("Updating input$openPopup")
+                 observeEvent(input$openPopup, {
+                   logDebug("Check internet and showModal import")
+
+                   internetCon(has_internet())
+                   initSource <- ifelse(internetCon(), defaultSource, "file")
 
                    showModal(
                      importDataDialog(
                        ns = ns,
                        title = title,
-                       defaultSource = defaultSource,
+                       defaultSource = initSource,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix
                      )
@@ -124,6 +127,7 @@ importDataServer <- function(id,
                    mergeList = mergeList,
                    customNames = customNames,
                    openPopupReset = reactive(input$openPopup > 0),
+                   internetCon = internetCon,
                    ignoreWarnings = ignoreWarnings
                  )
 

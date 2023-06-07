@@ -24,8 +24,8 @@ remoteModelsUI <-
       div(id = ns("noConn"),
           helpText(
             paste0(
-              "Access to the Github API failed. Online files ",
-              "are taken from the app's folder for uploadable files."
+              "Access to the Github API failed. Files ",
+              "are taken from the app's folder for saved files."
             )
           )),
       actionButton(ns("loadRemoteModel"), buttonLabel)

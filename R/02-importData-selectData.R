@@ -73,6 +73,7 @@ selectDataServer <- function(id,
                              mergeList,
                              customNames,
                              openPopupReset,
+                             internetCon,
                              ignoreWarnings = FALSE
                              ) {
   moduleServer(id,
@@ -89,7 +90,9 @@ selectDataServer <- function(id,
                    data = list()
                  )
 
-                 dataSource <- selectSourceServer("fileSource", openPopupReset = openPopupReset)
+                 dataSource <- selectSourceServer("fileSource",
+                                                  openPopupReset = openPopupReset,
+                                                  internetCon = internetCon)
                  selectFileTypeServer("fileType", dataSource)
 
                  # specify file server ----
@@ -377,39 +380,36 @@ selectSourceUI <- function(id,
 #' Server function of the module
 #' @param id id of module
 #' @inheritParams selectDataServer
-selectSourceServer <- function(id, openPopupReset) {
+selectSourceServer <- function(id, openPopupReset, internetCon) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
                  dataSource <- reactiveValues(file = NULL,
                                               fileName = NULL)
-                 internetCon <- reactiveVal(FALSE)
-
                  apiCkanFiles <- reactiveVal(list())
+
                  observe({
                    req(isTRUE(openPopupReset()))
                    logDebug("Update after openPopupReset()")
+                   # reset
                    reset("file")
                    updateTextInput(session, "ckanMeta", value = "")
+                   apiCkanFiles(getCKANFiles(message = "Checking for Pandora repositories ...",
+                                             isInternet = internetCon()))
 
-                   internetCon(has_internet())
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
-                     apiCkanFiles(list())
                      updateSelectInput(session, "source", selected = "file")
-                     updateTextInput(session, "url", placeholder = "No internet connection!")
+                     updateTextInput(session, "url", placeholder = "No internet connection ...")
+                     shinyjs::disable(ns("loadUrl"), asis = TRUE)
                    } else {
-                     apiCkanFiles(getCKANFiles(message = "Updating list of Pandora repositories ...",
-                                               isInternet = internetCon()))
-                     # reset ckan inputs
-                     updateTextInput(session, "ckanMeta", value = "")
-                     # trigger update of ckanGroup without button for meta
-                     ckanFiles <- filteredCkanFiles()
+                     # trigger update of ckanGroup/ckanRecord without button for meta
                      updatePickerInput(session,
                                        "ckanGroup",
-                                       choices = getCKANGroupChoices(ckanFiles))
+                                       choices = getCKANGroupChoices(filteredCkanFiles()))
                      updateSelectizeInput(session,
                                           "ckanRecord",
-                                          choices = getCKANRecordChoices(ckanFiles))
+                                          choices = getCKANRecordChoices(filteredCkanFiles()))
                    }
                  }) %>%
                    bindEvent(openPopupReset())
@@ -423,12 +423,12 @@ selectSourceServer <- function(id, openPopupReset) {
                  })
 
                  observe({
-                   logDebug("Reset input$source")
+                   logDebug("Updating input$source and reset")
                    reset("file")
                    updateTextInput(session, "url", value = "")
-                   updateTextInput(session, "ckanMeta", value = "")
 
                    # reset ckanGroup and ckanRecord
+                   updateTextInput(session, "ckanMeta", value = "")
                    updatePickerInput(session,
                                      "ckanGroup",
                                      choices = getCKANGroupChoices(filteredCkanFiles()))
@@ -521,7 +521,6 @@ selectSourceServer <- function(id, openPopupReset) {
                      resource <-
                        ckanRecord()$resources[[input$ckanResource]]
                      req(resource)
-
                      # "file" will be used to load the file
                      # "filename" will be stored in values$fileName
                      dataSource$file <- resource$url
@@ -530,7 +529,7 @@ selectSourceServer <- function(id, openPopupReset) {
                  }) %>%
                    bindEvent(input$ckanResource, ignoreNULL = FALSE)
 
-                 observeEvent(input$file, {
+                 observe({
                    logDebug("Updating input$file")
                    inFile <- input$file
 
@@ -543,13 +542,14 @@ selectSourceServer <- function(id, openPopupReset) {
                      dataSource$file <- inFile$datapath
                      dataSource$filename <- inFile$name
                    }
-                 })
+                 }) %>%
+                   bindEvent(input$file)
 
                  observe({
                    logDebug("Updating input$url")
-                   req(input$source == "url", input$url, has_internet())
-                   req(trimws(input$url) != "")
+                   req(input$source == "url", input$url)
 
+                   req(trimws(input$url) != "")
                    tmp <- tempfile()
                    res <-
                      try(download.file(input$url, destfile = tmp))
@@ -661,7 +661,9 @@ uiSelect <- fluidPage(
 )
 
 serverSelect <- function(input, output, session) {
-  dat <- selectDataServer("selDat")
+  dat <- selectDataServer("selDat",
+                          openPopupReset = reactive(TRUE),
+                          internetCon = reactiveVal(has_internet()))
 
   output$import <- renderDataTable({
     req(dat$dataImport)
@@ -690,7 +692,9 @@ uiSelectSource <- fluidPage(
 )
 
 serverSelectSource <- function(input, output, session) {
-  datSource <- selectSourceServer("selSource")
+  datSource <- selectSourceServer("selSource",
+                                  openPopupReset = reactive(TRUE),
+                                  internetCon = reactiveVal(has_internet()))
 
   output$file <- renderText(datSource$file)
   output$filename <- renderText(datSource$filename)

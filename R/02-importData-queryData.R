@@ -377,7 +377,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                      updateCheckboxInput(
                        session,
                        "useGPT",
-                       label = "Use AI PEITHO data operations (requires internet connection)",
+                       label = "Use AI PEITHO data operations (Requires internet connection!)",
                        value = FALSE
                      )
                      disable("useGPT")

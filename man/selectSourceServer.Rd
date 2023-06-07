@@ -4,7 +4,7 @@
 \alias{selectSourceServer}
 \title{Select Source Server}
 \usage{
-selectSourceServer(id, openPopupReset)
+selectSourceServer(id, openPopupReset, internetCon)
 }
 \arguments{
 \item{id}{id of module}

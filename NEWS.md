@@ -1,5 +1,13 @@
 # DataTools
 
+## Version: 23.06.1
+
+### Bug Fixes
+- _Import of Pandora datasets_:
+  - fix and optimize checks for internet connection
+  - fix issue with sheet selection if no internet
+  - set 'file' as initial source if no internet
+
 ## Version: 23.06.0
 
 ### Updates

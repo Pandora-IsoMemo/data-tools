@@ -9,6 +9,7 @@ selectDataServer(
   mergeList,
   customNames,
   openPopupReset,
+  internetCon,
   ignoreWarnings = FALSE
 )
 }

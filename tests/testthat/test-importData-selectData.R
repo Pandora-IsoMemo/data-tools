@@ -1,6 +1,7 @@
 test_that("Test module selectSourceServer", {
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE)),
+             args = list(openPopupReset = reactive(TRUE),
+                         internetCon = reactiveVal(has_internet())),
              {
                # Arrange
                print("test select source from ckan")
@@ -24,7 +25,8 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE)),
+             args = list(openPopupReset = reactive(TRUE),
+                         internetCon = reactiveVal(has_internet())),
              {
                # Arrange
                print("test select source from ckan")
@@ -44,7 +46,8 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE)),
+             args = list(openPopupReset = reactive(TRUE),
+                         internetCon = reactiveVal(has_internet())),
              {
                # Arrange
                print("test select source from ckan")
