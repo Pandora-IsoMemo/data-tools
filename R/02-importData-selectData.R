@@ -7,14 +7,13 @@
 #' @param id id of module
 #' @inheritParams importDataServer
 selectDataUI <- function(id,
-                         defaultSource,
                          batch,
                          outputAsMatrix) {
   ns <- NS(id)
 
   tagList(
     tags$br(),
-    selectSourceUI(ns("fileSource"), defaultSource),
+    selectSourceUI(ns("fileSource")),
     tags$hr(),
     selectFileTypeUI(ns("fileType")),
     checkboxInput(
@@ -73,6 +72,7 @@ selectDataServer <- function(id,
                              mergeList,
                              customNames,
                              openPopupReset,
+                             defaultSource,
                              ignoreWarnings = FALSE
                              ) {
   moduleServer(id,
@@ -89,7 +89,22 @@ selectDataServer <- function(id,
                    data = list()
                  )
 
-                 dataSource <- selectSourceServer("fileSource", openPopupReset = openPopupReset)
+                 observe({
+                   req(isTRUE(openPopupReset()))
+                   logDebug("Reset values after openPopupReset()")
+                   values$warnings <- list()
+                   values$errors <- list()
+                   values$fileName <- ""
+                   values$fileImportSuccess <- NULL
+                   values$dataImport <- NULL
+                   values$preview <- NULL
+                   values$data <- list()
+                 }) %>%
+                   bindEvent(openPopupReset())
+
+                 dataSource <- selectSourceServer("fileSource",
+                                                  openPopupReset = openPopupReset,
+                                                  defaultSource = defaultSource)
                  selectFileTypeServer("fileType", dataSource)
 
                  # specify file server ----
@@ -105,8 +120,7 @@ selectDataServer <- function(id,
                    ),
                    ignoreInit = TRUE,
                    {
-                     logDebug("Entering values$dataImport")
-                     # reset values
+                     logDebug("Updating file and reset values")
                      values$warnings <- list()
                      values$errors <- list()
                      values$fileName <- ""
@@ -220,9 +234,7 @@ selectDataServer <- function(id,
 #' UI of the module
 #'
 #' @param id id of module
-#' @inheritParams importDataServer
-selectSourceUI <- function(id,
-                           defaultSource) {
+selectSourceUI <- function(id) {
   ns <- NS(id)
 
   tagList(fluidRow(
@@ -236,7 +248,7 @@ selectSourceUI <- function(id,
           "File" = "file",
           "URL" = "url"
         ),
-        selected = defaultSource
+        selected = "file"
       )
     ),
     column(
@@ -377,7 +389,8 @@ selectSourceUI <- function(id,
 #' Server function of the module
 #' @param id id of module
 #' @inheritParams selectDataServer
-selectSourceServer <- function(id, openPopupReset) {
+#' @inheritParams importDataServer
+selectSourceServer <- function(id, openPopupReset, defaultSource) {
   moduleServer(id,
                function(input, output, session) {
                  dataSource <- reactiveValues(file = NULL,
@@ -387,7 +400,7 @@ selectSourceServer <- function(id, openPopupReset) {
                  apiCkanFiles <- reactiveVal(list())
                  observe({
                    req(isTRUE(openPopupReset()))
-                   logDebug("Update after openPopupReset()")
+                   logDebug("Reset and update apiCkanFiles()")
                    reset("file")
                    updateTextInput(session, "ckanMeta", value = "")
 
@@ -395,9 +408,9 @@ selectSourceServer <- function(id, openPopupReset) {
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
                      apiCkanFiles(list())
-                     updateSelectInput(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection!")
                    } else {
+                     updateSelectInput(session, "source", selected = defaultSource)
                      apiCkanFiles(getCKANFiles(message = "Updating list of Pandora repositories ...",
                                                isInternet = internetCon()))
                      # reset ckan inputs
@@ -415,7 +428,7 @@ selectSourceServer <- function(id, openPopupReset) {
                    bindEvent(openPopupReset())
 
                  filteredCkanFiles <- reactive({
-                   logDebug("Calling filteredCkanFiles")
+                   logDebug("Updating filteredCkanFiles")
 
                    apiCkanFiles() %>%
                      filterCKANByMeta(meta = input$ckanMeta) %>%
@@ -652,7 +665,6 @@ uiSelect <- fluidPage(
   shinyjs::useShinyjs(),
   selectDataUI(
     id = "selDat",
-    defaultSource = "cKan",
     batch = FALSE,
     outputAsMatrix = FALSE
   ),
@@ -661,7 +673,17 @@ uiSelect <- fluidPage(
 )
 
 serverSelect <- function(input, output, session) {
-  dat <- selectDataServer("selDat")
+  customNames <- reactiveValues(
+    withRownames = FALSE,
+    rownames = reactiveVal(NULL),
+    withColnames = TRUE,
+    colnames = reactiveVal(NULL)
+  )
+
+  dat <- selectDataServer("selDat",
+                          customNames = customNames,
+                          openPopupReset = reactive(TRUE),
+                          defaultSource = "ckan")
 
   output$import <- renderDataTable({
     req(dat$dataImport)
@@ -673,8 +695,7 @@ shinyApp(uiSelect, serverSelect)
 
 uiSelectSource <- fluidPage(
   shinyjs::useShinyjs(),
-  selectSourceUI(id = "selSource",
-                 defaultSource = "cKan"),
+  selectSourceUI(id = "selSource"),
   fluidRow(
     column(width = 6,
            tags$h3("file"),
@@ -690,7 +711,9 @@ uiSelectSource <- fluidPage(
 )
 
 serverSelectSource <- function(input, output, session) {
-  datSource <- selectSourceServer("selSource")
+  datSource <- selectSourceServer("selSource",
+                                  openPopupReset = reactive(TRUE),
+                                  defaultSource = "ckan")
 
   output$file <- renderText(datSource$file)
   output$filename <- renderText(datSource$filename)

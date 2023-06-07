@@ -4,12 +4,10 @@
 \alias{selectDataUI}
 \title{Select Data UI}
 \usage{
-selectDataUI(id, defaultSource, batch, outputAsMatrix)
+selectDataUI(id, batch, outputAsMatrix)
 }
 \arguments{
 \item{id}{id of module}
-
-\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{batch}{(logical) use batch import}
 
