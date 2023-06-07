@@ -63,6 +63,10 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                  dataOut <- reactiveVal(NULL)
 
                  observe({
+                   req(length(importedData()) > 0 ||
+                         length(importedDataCKAN()) > 0 ||
+                         length(importedBatchData()) > 0)
+                   logDebug("Updating dataOut()")
                    dataOut(NULL)
 
                    if (input$dataSel == "Data") {
@@ -77,8 +81,7 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                      req(length(importedBatchData()) > 0)
                      dataOut(importedBatchData()[[1]])
                    }
-                 }) %>%
-                   bindEvent(input$dataSel)
+                 })
 
                  output$importedDataTable <- renderDataTable({
                    validate(need(dataOut(), paste("Please import", input$dataSel)))

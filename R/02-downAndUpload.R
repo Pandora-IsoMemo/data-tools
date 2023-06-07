@@ -49,6 +49,7 @@ downUploadButtonServer <- function(id,
                  ns <- session$ns
                  # open modal when button is clicked and pass data to modal
                  observe({
+                   logDebug("Entering showModal")
                    showModal(
                      modalDialog(
                        title = title,
@@ -93,11 +94,14 @@ downUploadButtonServer <- function(id,
                    subFolder = subFolder,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
-                   reloadChoices = reactive(input[["showModal"]] > 0)
+                   reloadChoices = reactive(input[["showModal"]] > 0),
+                   reset = reset
                  )
 
 
                  observe({
+                   req(input[["showModal"]] > 0)
+                   logDebug("downUploadButtonServer: removeModal")
                    if (!is.null(uploadedData$data) ||
                        !is.null(uploadedData$inputs) ||
                        !is.null(uploadedData$model)) {
