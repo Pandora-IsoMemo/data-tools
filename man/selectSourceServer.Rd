@@ -4,14 +4,12 @@
 \alias{selectSourceServer}
 \title{Select Source Server}
 \usage{
-selectSourceServer(id, openPopupReset, defaultSource)
+selectSourceServer(id, openPopupReset)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
-
-\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 }
 \description{
 Server function of the module

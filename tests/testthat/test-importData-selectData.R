@@ -1,7 +1,6 @@
 test_that("Test module selectSourceServer", {
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
-                         defaultSource = "ckan"),
+             args = list(openPopupReset = reactive(TRUE)),
              {
                # Arrange
                print("test select source from ckan")
@@ -25,8 +24,7 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
-                         defaultSource = "ckan"),
+             args = list(openPopupReset = reactive(TRUE)),
              {
                # Arrange
                print("test select source from ckan")
@@ -46,8 +44,7 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
-                         defaultSource = "ckan"),
+             args = list(openPopupReset = reactive(TRUE)),
              {
                # Arrange
                print("test select source from ckan")

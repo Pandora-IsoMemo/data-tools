@@ -38,7 +38,7 @@ importDataServer <- function(id,
                              customWarningChecks = list(),
                              customErrorChecks = list(),
                              ignoreWarnings = FALSE,
-                             defaultSource = "file",
+                             defaultSource = "ckan",
                              batch = FALSE,
                              outputAsMatrix = FALSE) {
   moduleServer(id,
@@ -74,6 +74,7 @@ importDataServer <- function(id,
                      importDataDialog(
                        ns = ns,
                        title = title,
+                       defaultSource = defaultSource,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix
                      )
@@ -123,7 +124,6 @@ importDataServer <- function(id,
                    mergeList = mergeList,
                    customNames = customNames,
                    openPopupReset = reactive(input$openPopup > 0),
-                   defaultSource = defaultSource,
                    ignoreWarnings = ignoreWarnings
                  )
 
@@ -328,6 +328,7 @@ checkIfActive <- function(currentTab, tabName) {
 importDataDialog <-
   function(ns,
            title,
+           defaultSource = "ckan",
            batch = FALSE,
            outputAsMatrix = FALSE) {
     modalDialog(
@@ -360,6 +361,7 @@ importDataDialog <-
           "Select (required)",
           selectDataUI(
             ns("dataSelector"),
+            defaultSource = defaultSource,
             batch = batch,
             outputAsMatrix = outputAsMatrix
           )

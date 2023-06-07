@@ -4,10 +4,12 @@
 \alias{selectSourceUI}
 \title{Select Source UI}
 \usage{
-selectSourceUI(id)
+selectSourceUI(id, defaultSource)
 }
 \arguments{
 \item{id}{id of module}
+
+\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 }
 \description{
 UI of the module

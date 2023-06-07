@@ -9,7 +9,6 @@ selectDataServer(
   mergeList,
   customNames,
   openPopupReset,
-  defaultSource,
   ignoreWarnings = FALSE
 )
 }
@@ -21,8 +20,6 @@ selectDataServer(
 \item{customNames}{settings for custom column and row names}
 
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
-
-\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 }
