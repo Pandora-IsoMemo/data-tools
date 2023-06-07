@@ -625,7 +625,7 @@ selectFileTypeServer <- function(id, dataSource) {
                function(input, output, session) {
                  observeEvent(list(input$type, dataSource$file), ignoreInit = TRUE, {
                    logDebug("Entering input$sheet")
-                   if (is.null(input$type)) {
+                   if (is.null(input$type) || is.null(dataSource$file)) {
                      updateSelectInput(session = session, "sheet",
                                        selected = character(0))
                      return()
