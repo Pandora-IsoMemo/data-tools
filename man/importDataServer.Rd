@@ -12,7 +12,7 @@ importDataServer(
   customWarningChecks = list(),
   customErrorChecks = list(),
   ignoreWarnings = FALSE,
-  defaultSource = "file",
+  defaultSource = "ckan",
   batch = FALSE,
   outputAsMatrix = FALSE
 )
