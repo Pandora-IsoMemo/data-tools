@@ -4,10 +4,13 @@
 \alias{getRemoteData}
 \title{getRemoteData}
 \usage{
-getRemoteData(db)
+getRemoteData(db, mappingId = "IsoMemo")
 }
 \arguments{
 \item{db}{database}
+
+\item{mappingId}{(character) If desired, provide a different mappingId in order to obtain the
+data for that mapping. Check available mapping ids with getMappingIds().}
 }
 \description{
 getRemoteData

@@ -1,5 +1,10 @@
 # DataTools
 
+## Version: 23.06.2
+
+### New Features
+- Add  a new parameter "mappingId" to all functions that are used to reach the isomemo API (#36)
+
 ## Version: 23.06.1
 
 ### Bug Fixes
