@@ -312,7 +312,7 @@ uploadModelUI <- function(id,
 #'
 #' @param id namespace id
 #' @param reset (reactive) resets the selection of the online files
-#' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
+#' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data
 #' @param mainFolder (character) folder containing all loadable .zip files
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param rPackageName (character) If not NULL, than the uploaded file must come from this R
@@ -344,12 +344,8 @@ uploadModelServer <-
                    pathToRemote <- remoteModelsServer(
                      "remoteModels",
                      githubRepo = githubRepo,
-                     folderOnGithub = paste0("/", paste(c(
-                       mainFolder, subFolder
-                     ), collapse = "/")),
-                     pathToLocal =
-                       list(".", mainFolder, subFolder)[!sapply(list(".", mainFolder, subFolder), is.null)] %>%
-                       do.call(what = file.path),
+                     folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
+                     pathToLocal = getPathToLocal(mainFolder, subFolder),
                      resetSelected = reset,
                      reloadChoices = reloadChoices
                    )
@@ -485,6 +481,22 @@ uploadModelServer <-
                    return(uploadedData)
                  })
   }
+
+#' Get Folder on Github
+#'
+#' @inheritParams uploadModelServer
+getFolderOnGithub <- function(mainFolder, subFolder = NULL) {
+  paste0("/", paste(c(mainFolder, subFolder), collapse = "/"))
+}
+
+#' Get Path to Local
+#'
+#' @inheritParams uploadModelServer
+getPathToLocal <- function(mainFolder, subFolder) {
+  res <- list(".", mainFolder, subFolder)[!sapply(list(".", mainFolder, subFolder), is.null)] %>%
+    do.call(what = file.path)
+  res
+}
 
 dataLoadedAlert <-
   function(warnings,

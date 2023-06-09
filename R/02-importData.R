@@ -128,7 +128,12 @@ importDataServer <- function(id,
                    customNames = customNames,
                    openPopupReset = reactive(input$openPopup > 0),
                    internetCon = internetCon,
-                   ignoreWarnings = ignoreWarnings
+                   ignoreWarnings = ignoreWarnings,
+                   githubRepo = "data-tools",
+                   mainFolder = "predefinedModels",
+                   subFolder = NULL,
+                   rPackageName = NULL,
+                   onlySettings = FALSE
                  )
 
                  ## disable button accept ----
@@ -367,7 +372,13 @@ importDataDialog <-
             ns("dataSelector"),
             defaultSource = defaultSource,
             batch = batch,
-            outputAsMatrix = outputAsMatrix
+            outputAsMatrix = outputAsMatrix,
+            sourceChoices = c(
+              "Pandora Platform" = "ckan",
+              "File" = "file",
+              "URL" = "url",
+              "Online Model" = "remoteModel"
+            )
           )
         ),
         tabPanel("Prepare",

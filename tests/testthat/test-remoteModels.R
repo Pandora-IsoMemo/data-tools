@@ -11,9 +11,7 @@ testthat::test_that("Test module remoteModels", {
   testServer(
     remoteModelsServer,
     args = list(
-      githubRepo = "bpred",
-      rPackageName = "mpiBpred",
-      rPackageVersion = "23.03.1"
+      githubRepo = "bpred"
     ),
     {
       # Arrange
@@ -25,4 +23,15 @@ testthat::test_that("Test module remoteModels", {
       testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
     }
   )
+})
+
+test_that("Test getFolderOnGithub()", {
+  expect_equal(getFolderOnGithub(mainFolder = "predefinedModels", subFolder = "AverageR"),
+               "/predefinedModels/AverageR")
+  expect_equal(getFolderOnGithub(mainFolder = "predefinedModels", subFolder = NULL),
+               "/predefinedModels")
+  expect_equal(getPathToLocal(mainFolder = "predefinedModels", subFolder = "AverageR"),
+               "./predefinedModels/AverageR")
+  expect_equal(getPathToLocal(mainFolder = "predefinedModels", subFolder = NULL),
+               "./predefinedModels")
 })

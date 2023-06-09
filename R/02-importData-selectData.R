@@ -5,16 +5,18 @@
 #' UI of the module
 #'
 #' @param id id of module
+#' @param sourceChoices (character) named list of choices for the input 'Source'
 #' @inheritParams importDataServer
 selectDataUI <- function(id,
                          defaultSource,
                          batch,
-                         outputAsMatrix) {
+                         outputAsMatrix,
+                         sourceChoices) {
   ns <- NS(id)
 
   tagList(
     tags$br(),
-    selectSourceUI(ns("fileSource"), defaultSource),
+    selectSourceUI(ns("fileSource"), defaultSource = defaultSource, sourceChoices = sourceChoices),
     tags$hr(),
     selectFileTypeUI(ns("fileType")),
     checkboxInput(
@@ -70,12 +72,19 @@ selectDataUI <- function(id,
 #' @param openPopupReset (reactive) if TRUE reset ckan source inputs
 #' @param internetCon (reactive) TRUE if there is an internet connection
 #' @inheritParams importDataServer
+#' @inheritParams uploadModelServer
+#' @inheritParams remoteModelsServer
 selectDataServer <- function(id,
                              mergeList,
                              customNames,
                              openPopupReset,
                              internetCon,
-                             ignoreWarnings = FALSE
+                             githubRepo,
+                             mainFolder = "predefinedModels",
+                             subFolder = NULL,
+                             ignoreWarnings = FALSE,
+                             rPackageName = NULL,
+                             onlySettings = FALSE
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -93,7 +102,10 @@ selectDataServer <- function(id,
 
                  dataSource <- selectSourceServer("fileSource",
                                                   openPopupReset = openPopupReset,
-                                                  internetCon = internetCon)
+                                                  internetCon = internetCon,
+                                                  githubRepo = githubRepo,
+                                                  mainFolder = mainFolder,
+                                                  subFolder = subFolder)
                  selectFileTypeServer("fileType", dataSource)
 
                  # specify file server ----
@@ -147,6 +159,16 @@ selectDataServer <- function(id,
                                   })
                    }
                  )
+
+                 observe({
+                   logDebug("Updating input[['fileSource-source']]")
+                   if (input[["fileSource-source"]] == "remoteModel") {
+                     shinyjs::disable(ns("keepData"), asis = TRUE)
+                   } else {
+                     shinyjs::enable(ns("keepData"), asis = TRUE)
+                   }
+                 }) %>%
+                   bindEvent(input[["fileSource-source"]])
 
                  output$warning <-
                    renderUI(tagList(lapply(
@@ -225,8 +247,10 @@ selectDataServer <- function(id,
 #'
 #' @param id id of module
 #' @inheritParams importDataServer
+#' @inheritParams selectDataUI
 selectSourceUI <- function(id,
-                           defaultSource) {
+                           defaultSource,
+                           sourceChoices) {
   ns <- NS(id)
 
   tagList(fluidRow(
@@ -235,11 +259,7 @@ selectSourceUI <- function(id,
       selectInput(
         ns("source"),
         "Source",
-        choices = c(
-          "Pandora Platform" = "ckan",
-          "File" = "file",
-          "URL" = "url"
-        ),
+        choices = sourceChoices,
         selected = defaultSource
       )
     ),
@@ -371,6 +391,12 @@ selectSourceUI <- function(id,
         ns = ns,
         textInput(ns("url"), "URL", width = "100%"),
         actionButton(ns("loadUrl"), "Load")
+      ),
+      ## source == model ----
+      conditionalPanel(
+        condition = "input.source == 'remoteModel'",
+        ns = ns,
+        remoteModelsUI(ns("remoteModels"))
       )
     )
   ))
@@ -381,12 +407,22 @@ selectSourceUI <- function(id,
 #' Server function of the module
 #' @param id id of module
 #' @inheritParams selectDataServer
-selectSourceServer <- function(id, openPopupReset, internetCon) {
+#' @inheritParams uploadModelServer
+#' @inheritParams remoteModelsServer
+selectSourceServer <- function(id,
+                               openPopupReset,
+                               internetCon,
+                               githubRepo,
+                               mainFolder,
+                               subFolder) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
                  dataSource <- reactiveValues(file = NULL,
-                                              fileName = NULL)
+                                              fileName = NULL,
+                                              type = NULL)
+
+                 # logic to setup ckan ----
                  apiCkanFiles <- reactiveVal(list())
 
                  observe({
@@ -487,8 +523,6 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
 
                  ckanRecord <- reactive({
                    logDebug("Setting ckanRecord (Pandora dataset)")
-                   # reset sheet
-                   updateSelectInput(session = session, "sheet", selected = character(0))
 
                    if (is.null(input$ckanRecord))
                      return(NULL)
@@ -510,7 +544,8 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                  }) %>%
                    bindEvent(list(input$ckanRecord, input$ckanResourceTypes))
 
-                 # Update dataSource ----
+                 # UPDATE dataSource ----
+                 ## logic for ckan ----
                  observe({
                    req(internetCon())
                    logDebug("Updating input$ckanResource")
@@ -526,10 +561,12 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- resource$url
                      dataSource$filename <- basename(resource$url)
+                     dataSource$type <- "data"
                    }
                  }) %>%
                    bindEvent(input$ckanResource, ignoreNULL = FALSE)
 
+                 ## logic for file ----
                  observe({
                    logDebug("Updating input$file")
                    inFile <- input$file
@@ -542,10 +579,12 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- inFile$datapath
                      dataSource$filename <- inFile$name
+                     dataSource$type <- "data"
                    }
                  }) %>%
                    bindEvent(input$file)
 
+                 ## logic for url ----
                  observe({
                    logDebug("Updating input$url")
                    req(input$source == "url", input$url)
@@ -563,9 +602,27 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- tmp
                      dataSource$filename <- basename(input$url)
+                     dataSource$type <- "data"
                    }
                  }) %>%
                    bindEvent(input$loadUrl)
+
+                 ## logic for model ----
+                 pathToRemote <- remoteModelsServer(
+                   "remoteModels",
+                   githubRepo = githubRepo,
+                   folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
+                   pathToLocal = getPathToLocal(mainFolder, subFolder),
+                   reloadChoices = openPopupReset
+                 )
+
+                 observe({
+                   logDebug("Updating input$remoteModels")
+                   dataSource$file <- pathToRemote()
+                   dataSource$filename <- basename(pathToRemote())
+                   dataSource$type <- "model"
+                 }) %>%
+                   bindEvent(pathToRemote())
 
                  dataSource
                })
@@ -646,59 +703,3 @@ selectFileTypeServer <- function(id, dataSource) {
                  })
                })
 }
-
-# TEST MODULE -------------------------------------------------------------
-
-uiSelect <- fluidPage(
-  shinyjs::useShinyjs(),
-  selectDataUI(
-    id = "selDat",
-    defaultSource = "cKan",
-    batch = FALSE,
-    outputAsMatrix = FALSE
-  ),
-  tags$h3("Import"),
-  dataTableOutput("import")
-)
-
-serverSelect <- function(input, output, session) {
-  dat <- selectDataServer("selDat",
-                          openPopupReset = reactive(TRUE),
-                          internetCon = reactiveVal(has_internet()))
-
-  output$import <- renderDataTable({
-    req(dat$dataImport)
-    DT::datatable(dat$dataImport)
-  })
-}
-
-shinyApp(uiSelect, serverSelect)
-
-uiSelectSource <- fluidPage(
-  shinyjs::useShinyjs(),
-  selectSourceUI(id = "selSource",
-                 defaultSource = "cKan"),
-  fluidRow(
-    column(width = 6,
-           tags$h3("file"),
-           tags$hr(),
-           textOutput("file")),
-    column(
-      width = 6,
-      tags$h3("filepath"),
-      tags$hr(),
-      textOutput("filename")
-    )
-  )
-)
-
-serverSelectSource <- function(input, output, session) {
-  datSource <- selectSourceServer("selSource",
-                                  openPopupReset = reactive(TRUE),
-                                  internetCon = reactiveVal(has_internet()))
-
-  output$file <- renderText(datSource$file)
-  output$filename <- renderText(datSource$filename)
-}
-
-shinyApp(uiSelectSource, serverSelectSource)

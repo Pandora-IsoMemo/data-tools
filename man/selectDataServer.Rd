@@ -10,7 +10,12 @@ selectDataServer(
   customNames,
   openPopupReset,
   internetCon,
-  ignoreWarnings = FALSE
+  githubRepo,
+  mainFolder = "predefinedModels",
+  subFolder = NULL,
+  ignoreWarnings = FALSE,
+  rPackageName = NULL,
+  onlySettings = FALSE
 )
 }
 \arguments{
@@ -24,7 +29,18 @@ selectDataServer(
 
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
 
+\item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
+
+\item{mainFolder}{(character) folder containing all loadable .zip files}
+
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
+package}
+
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
 }
 \description{
 Server function of the module

@@ -29,7 +29,7 @@ package}
 
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote files}
 
-\item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
 
 \item{reset}{(reactive) resets the selection of the online files}
 }

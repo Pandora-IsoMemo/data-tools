@@ -44,10 +44,10 @@ remoteModelsUI <-
 #' @param onlyLocalModels (reactive) if TRUE only local files are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote file
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote files
-#' @param rPackageName (character) DEPRECATED (will be removed in future): name of the package (as in the
-#'  description file) in which this module is applied, e.g. "mpiBpred"
-#' @param rPackageVersion (character) DEPRECATED (will be removed in future): current version of the
-#'  package where this module is applied, e.g. utils::packageVersion("mpiBpred")
+#' @param rPackageName (character) DEPRECATED (not in use and will be removed in future): name of
+#'  the package (as in the description file) in which this module is applied, e.g. "mpiBpred"
+#' @param rPackageVersion (character) DEPRECATED (not in use and will be removed in future): current
+#'  version of the package where this module is applied, e.g. utils::packageVersion("mpiBpred")
 #' @return (character) the path to the selected remote (github) or local file
 #' @export
 remoteModelsServer <- function(id,
@@ -64,6 +64,11 @@ remoteModelsServer <- function(id,
                  ns <- session$ns
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
+
+                 if (!is.null(rPackageName))
+                   warning("Parameter 'rPackageName' is not in use anymore and will be removed soon.")
+                 if (!is.null(rPackageVersion))
+                   warning("Parameter 'rPackageVersion' is not in use anymore and will be removed soon.")
 
                  observe({
                    shinyjs::hide(ns("noConn"), asis = TRUE)
