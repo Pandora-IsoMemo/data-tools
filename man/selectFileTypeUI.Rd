@@ -4,7 +4,10 @@
 \alias{selectFileTypeUI}
 \title{Select File Type UI}
 \usage{
-selectFileTypeUI(id)
+selectFileTypeUI(
+  id,
+  fileTypes = c(`xls(x)` = "xlsx", "csv", "ods", "txt", "zip")
+)
 }
 \arguments{
 \item{id}{id of module}

@@ -17,8 +17,8 @@ selectDataUI <- function(id,
   tagList(
     tags$br(),
     selectSourceUI(ns("fileSource"), defaultSource = defaultSource, sourceChoices = sourceChoices),
-    tags$hr(),
-    selectFileTypeUI(ns("fileType")),
+    # tags$hr(),
+    # selectFileTypeUI(ns("fileType")),
     checkboxInput(
       ns("withRownames"),
       paste(if (batch)
@@ -106,16 +106,16 @@ selectDataServer <- function(id,
                                                   githubRepo = githubRepo,
                                                   mainFolder = mainFolder,
                                                   subFolder = subFolder)
-                 selectFileTypeServer("fileType", dataSource)
+                 # selectFileTypeServer("fileType", dataSource)
 
                  # specify file server ----
                  observeEvent(
                    list(
                      dataSource$file,
-                     input[["fileType-type"]],
-                     input[["fileType-colSep"]],
-                     input[["fileType-decSep"]],
-                     input[["fileType-sheet"]],
+                     input[["fileSource-fileType-type"]],
+                     input[["fileSource-fileType-colSep"]],
+                     input[["fileSource-fileType-decSep"]],
+                     input[["fileSource-fileType-sheet"]],
                      customNames$withRownames,
                      customNames$withColnames
                    ),
@@ -139,15 +139,16 @@ selectDataServer <- function(id,
                                         values = values,
                                         filepath = dataSource$file,
                                         filename = dataSource$filename,
-                                        type = input[["fileType-type"]],
-                                        sep = input[["fileType-colSep"]],
-                                        dec = input[["fileType-decSep"]],
+                                        type = input[["fileSource-fileType-type"]],
+                                        sep = input[["fileSource-fileType-colSep"]],
+                                        dec = input[["fileSource-fileType-decSep"]],
                                         withRownames = customNames$withRownames,
                                         withColnames = customNames$withColnames,
-                                        sheetId = as.numeric(input[["fileType-sheet"]])
+                                        sheetId = as.numeric(input[["fileSource-fileType-sheet"]])
                                       )
 
-                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
+                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||
+                                        input[["fileSource-source"]] == "remoteModel") {
                                       shinyjs::disable(ns("keepData"), asis = TRUE)
                                     } else {
                                       shinyjs::enable(ns("keepData"), asis = TRUE)
@@ -399,7 +400,15 @@ selectSourceUI <- function(id,
         remoteModelsUI(ns("remoteModels"))
       )
     )
-  ))
+  ),
+  conditionalPanel(
+    condition = "input.source != 'remoteModel'",
+    ns = ns,
+    tags$hr(),
+    selectFileTypeUI(ns("fileType"))
+  ),
+  tags$hr()
+  )
 }
 
 #' Select Source Server
@@ -419,11 +428,13 @@ selectSourceServer <- function(id,
                function(input, output, session) {
                  ns <- session$ns
                  dataSource <- reactiveValues(file = NULL,
-                                              fileName = NULL,
+                                              filename = NULL,
                                               type = NULL)
 
                  # logic to setup ckan ----
                  apiCkanFiles <- reactiveVal(list())
+
+                 selectFileTypeServer("fileType", dataSource)
 
                  observe({
                    req(isTRUE(openPopupReset()))
@@ -613,11 +624,14 @@ selectSourceServer <- function(id,
                    githubRepo = githubRepo,
                    folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
                    pathToLocal = getPathToLocal(mainFolder, subFolder),
-                   reloadChoices = openPopupReset
+                   reloadChoices = openPopupReset,
+                   resetSelected = reactive(!is.null(input$source))
                  )
 
                  observe({
                    logDebug("Updating input$remoteModels")
+
+                   updateSelectInput(session, "fileType-type", selected = "zip")
                    dataSource$file <- pathToRemote()
                    dataSource$filename <- basename(pathToRemote())
                    dataSource$type <- "model"
@@ -633,7 +647,12 @@ selectSourceServer <- function(id,
 #' UI of the module
 #'
 #' @param id id of module
-selectFileTypeUI <- function(id) {
+selectFileTypeUI <- function(id,
+                             fileTypes = c("xls(x)" = "xlsx",
+                                           "csv",
+                                           "ods",
+                                           "txt",
+                                           "zip")) {
   ns <- NS(id)
 
   tagList(fluidRow(
@@ -641,8 +660,8 @@ selectFileTypeUI <- function(id) {
            selectInput(
              ns("type"),
              "File type",
-             choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
-             selected = "xlsx"
+             choices = fileTypes,
+             selected = fileTypes[1]
            )),
     column(
       8,
@@ -681,25 +700,17 @@ selectFileTypeUI <- function(id) {
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
-                 observeEvent(list(input$type, dataSource$file), ignoreInit = TRUE, {
-                   logDebug("Entering input$sheet")
-                   if (is.null(input$type) || is.null(dataSource$file)) {
+                 observe({
+                   logDebug("Updating input$sheet")
+                   if (is.null(input$type) || is.null(dataSource$file) ||
+                       !(input$type %in% c("xls", "xlsx"))) {
                      updateSelectInput(session = session, "sheet",
                                        selected = character(0))
-                     return()
-                   }
-
-                   if (!(input$type %in% c("xls", "xlsx"))) {
-                     updateSelectInput(session = session, "sheet",
-                                       selected = character(0))
-                     return()
-                   }
-
-                   if (input$type %in% c("xls", "xlsx")) {
-                     logDebug("Updating input$sheet")
+                   } else {
                      updateSelectInput(session, "sheet",
                                        choices = getSheetSelection(dataSource$file))
                    }
-                 })
+                 }) %>%
+                   bindEvent(dataSource$file, ignoreNULL = FALSE, ignoreInit = TRUE)
                })
 }
