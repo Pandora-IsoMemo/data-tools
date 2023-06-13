@@ -4,7 +4,11 @@
 \alias{getMappingTable}
 \title{getMappingTable}
 \usage{
-getMappingTable()
+getMappingTable(mappingId = "IsoMemo")
+}
+\arguments{
+\item{mappingId}{(character) If desired, provide a different mappingId in order to obtain the
+mapping table for that mapping. Check available mapping ids with getMappingIds().}
 }
 \description{
 getMappingTable

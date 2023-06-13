@@ -1,7 +1,15 @@
+#' Call API
+#'
+#' @param action (character) name of the endpoint, one of "mapping-ids", "dbsources", "iso-data" or
+#'  "mapping"
+#' @param ... parameters for the endpoint, e.g. mappingId = "IsoMemo", dbsource = "LiVES,
+#'  field = "site,longitude", ...
 callAPI <- function(action, ...) {
   if (!has_internet()) {
     warning("No internet connection.")
-    return(NULL)
+    res <- list()
+    attr(res, "errorApi") <- "No internet connection ..."
+    return(res)
   }
 
   params <- list(...)
@@ -32,48 +40,67 @@ callAPI <- function(action, ...) {
   data <- try({
     fromJSON(url)
   }, silent = TRUE)
-
   if (inherits(data, "try-error")) {
     warning(data[[1]])
-    NULL
+    res <- list()
+    attr(res, "errorApi") <- data[[1]]
   } else if (data$status == 200) {
-    data
+    res <- data
   } else if (!is.null(data$message)) {
     warning(data$message)
-    NULL
+    res <- list()
+    attr(res, "errorApi") <- data$message
   } else if (!is.null(data$error)) {
     warning(data$error)
-    NULL
-  }
-  else {
+    res <- list()
+    attr(res, "errorApi") <- data$error
+  } else {
     warning("An error occured")
-    NULL
+    res <- list()
+    attr(res, "errorApi") <- "An error occured"
   }
+
+  res
+}
+
+#' Get Mapping Ids
+#'
+#' Get all available mapping ids
+#'
+#' @export
+getMappingIds <- function() {
+  res <- callAPI("mapping-ids")
+  if (!is.null(res) && length(res) > 0)
+    res$mappingIds
+  else
+    res
 }
 
 #' Get Database List
 #'
+#' @param mappingId (character) If desired, provide a different mappingId in order to obtain a list
+#'  of databases for that mapping. Check available mapping ids with getMappingIds().
 #' @export
-getDatabaseList <- function() {
-  res <- callAPI("dbsources")
-  if (!is.null(res))
+getDatabaseList <- function(mappingId = "IsoMemo") {
+  res <- callAPI("dbsources", mappingId = mappingId)
+  if (!is.null(res) && length(res) > 0)
     res$dbsource
   else
     res
 }
 
-getRemoteDataAPI <- function(db = NULL) {
-  res <- callAPI("iso-data", dbsource = paste(db, collapse = ","))
-  if (!is.null(res)) {
+getRemoteDataAPI <- function(db = NULL, mappingId = "IsoMemo") {
+  res <- callAPI("iso-data", mappingId = mappingId, dbsource = paste(db, collapse = ","))
+  if (!is.null(res) && length(res) > 0) {
     attr(res$isodata, "updated") <- res$updated
-    fillIsoData(res$isodata, getMappingAPI())
+    fillIsoData(res$isodata, getMappingAPI(mappingId = mappingId))
   } else
     res
 }
 
-getMappingAPI <- function() {
-  res <- callAPI("mapping")
-  if (!is.null(res))
+getMappingAPI <- function(mappingId = "IsoMemo") {
+  res <- callAPI("mapping", mappingId = mappingId)
+  if (!is.null(res) && length(res) > 0)
     res$mapping
   else
     res
@@ -87,21 +114,29 @@ fillIsoData <- function(data, mapping) {
 
 #' getMappingTable
 #'
+#' @param mappingId (character) If desired, provide a different mappingId in order to obtain the
+#'  mapping table for that mapping. Check available mapping ids with getMappingIds().
+#'
 #' @export
-getMappingTable <- function() {
-  getMappingAPI()
+getMappingTable <- function(mappingId = "IsoMemo") {
+  getMappingAPI(mappingId = mappingId)
 }
 
 #' getRemoteData
 #'
 #' @param db database
+#' @param mappingId (character) If desired, provide a different mappingId in order to obtain the
+#'  data for that mapping. Check available mapping ids with getMappingIds().
 #'
 #' @export
-getRemoteData <- function(db) {
+getRemoteData <- function(db, mappingId = "IsoMemo") {
   if (is.null(db))
     return(NULL)
 
-  isoData <- getRemoteDataAPI(db = db)
+  isoData <- getRemoteDataAPI(mappingId = mappingId, db = db)
+  if (is.null(isoData) || length(isoData) == 0)
+    return(isoData)
+
   isoData[sapply(isoData, is.character)] <-
     lapply(isoData[sapply(isoData, is.character)], as.factor)
   isoData <- handleDescription(isoData)
@@ -110,6 +145,8 @@ getRemoteData <- function(db) {
 }
 
 handleDescription <- function(isoData, maxChar = 20) {
+  if (is.null(isoData) || length(isoData) == 0) return(isoData)
+
   isoData$description <- as.character(isoData$description)
   isoData$descriptionFull <- isoData$description
   isoData$description <-
