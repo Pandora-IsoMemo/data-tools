@@ -14,7 +14,8 @@ importDataServer(
   ignoreWarnings = FALSE,
   defaultSource = "ckan",
   batch = FALSE,
-  outputAsMatrix = FALSE
+  outputAsMatrix = FALSE,
+  importType = "data"
 )
 }
 \arguments{
@@ -42,6 +43,8 @@ of data.
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources}
+
+\item{importType}{(character) type of import, either "data" or "model"}
 }
 \description{
 Backend for data import module

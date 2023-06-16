@@ -30,6 +30,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param batch (logical) use batch import
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
 #'  e.g. for batch = TRUE in Resources
+#' @param importType (character) type of import, either "data" or "model"
 #' @export
 importDataServer <- function(id,
                              title = "Data import",
@@ -40,7 +41,8 @@ importDataServer <- function(id,
                              ignoreWarnings = FALSE,
                              defaultSource = "ckan",
                              batch = FALSE,
-                             outputAsMatrix = FALSE) {
+                             outputAsMatrix = FALSE,
+                             importType = "data") {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -79,7 +81,8 @@ importDataServer <- function(id,
                        title = title,
                        defaultSource = initSource,
                        batch = batch,
-                       outputAsMatrix = outputAsMatrix
+                       outputAsMatrix = outputAsMatrix,
+                       importType = importType
                      )
                    )
 
@@ -339,7 +342,8 @@ importDataDialog <-
            title,
            defaultSource = "ckan",
            batch = FALSE,
-           outputAsMatrix = FALSE) {
+           outputAsMatrix = FALSE,
+           importType = "data") {
     modalDialog(
       shinyjs::useShinyjs(),
       title = sprintf("%s (%s)", title, packageVersion("DataTools")),
@@ -373,12 +377,7 @@ importDataDialog <-
             defaultSource = defaultSource,
             batch = batch,
             outputAsMatrix = outputAsMatrix,
-            sourceChoices = c(
-              "Pandora Platform" = "ckan",
-              "File" = "file",
-              "URL" = "url",
-              "Online Model" = "remoteModel"
-            )
+            importType = importType
           )
         ),
         tabPanel("Prepare",

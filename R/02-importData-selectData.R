@@ -5,18 +5,19 @@
 #' UI of the module
 #'
 #' @param id id of module
-#' @param sourceChoices (character) named list of choices for the input 'Source'
 #' @inheritParams importDataServer
 selectDataUI <- function(id,
                          defaultSource,
                          batch,
                          outputAsMatrix,
-                         sourceChoices) {
+                         importType) {
   ns <- NS(id)
 
   tagList(
     tags$br(),
-    selectSourceUI(ns("fileSource"), defaultSource = defaultSource, sourceChoices = sourceChoices),
+    selectSourceUI(ns("fileSource"),
+                   defaultSource = defaultSource,
+                   importType = importType),
     # tags$hr(),
     # selectFileTypeUI(ns("fileType")),
     checkboxInput(
@@ -248,11 +249,26 @@ selectDataServer <- function(id,
 #'
 #' @param id id of module
 #' @inheritParams importDataServer
-#' @inheritParams selectDataUI
 selectSourceUI <- function(id,
                            defaultSource,
-                           sourceChoices) {
+                           importType) {
   ns <- NS(id)
+
+  sourceChoices <- switch(importType,
+                          data = c("Pandora Platform" = "ckan",
+                                   "File" = "file",
+                                   "URL" = "url"),
+                          model = c("Pandora Platform" = "ckan",
+                                    "File" = "file",
+                                    "URL" = "url",
+                                    "Online Model" = "remoteModel")
+  )
+
+  if (!(defaultSource %in% sourceChoices)) {
+    warning(sprintf("Parameter `defaultSource` = %s not available, using 'file' as default.",
+                    defaultSource))
+    defaultSource <- "file"
+  }
 
   tagList(fluidRow(
     column(
@@ -405,7 +421,7 @@ selectSourceUI <- function(id,
     condition = "input.source != 'remoteModel'",
     ns = ns,
     tags$hr(),
-    selectFileTypeUI(ns("fileType"))
+    selectFileTypeUI(ns("fileType"), importType = importType)
   ),
   tags$hr()
   )
@@ -647,13 +663,16 @@ selectSourceServer <- function(id,
 #' UI of the module
 #'
 #' @param id id of module
-selectFileTypeUI <- function(id,
-                             fileTypes = c("xls(x)" = "xlsx",
-                                           "csv",
-                                           "ods",
-                                           "txt",
-                                           "zip")) {
+#' @inheritParams importDataServer
+selectFileTypeUI <- function(id, importType) {
   ns <- NS(id)
+
+  fileTypes <- switch(importType,
+                      data = c("xls(x)" = "xlsx",
+                               "csv",
+                               "ods",
+                               "txt"),
+                      model = c("zip"))
 
   tagList(fluidRow(
     column(4,

@@ -4,7 +4,7 @@
 \alias{selectDataUI}
 \title{Select Data UI}
 \usage{
-selectDataUI(id, defaultSource, batch, outputAsMatrix, sourceChoices)
+selectDataUI(id, defaultSource, batch, outputAsMatrix, importType)
 }
 \arguments{
 \item{id}{id of module}
@@ -16,7 +16,7 @@ selectDataUI(id, defaultSource, batch, outputAsMatrix, sourceChoices)
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources}
 
-\item{sourceChoices}{(character) named list of choices for the input 'Source'}
+\item{importType}{(character) type of import, either "data" or "model"}
 }
 \description{
 UI of the module
