@@ -356,126 +356,22 @@ uploadModelServer <-
 
                    observeEvent(pathToModel(), {
                      withProgress({
-                       alertType <- "success"
-
-                       res <- try({
-                         zip::unzip(pathToModel())
-                         modelImport <- readRDS("model.rds")
-                       })
+                       res <- loadModel(filepath = pathToModel(),
+                                        subFolder = subFolder,
+                                        rPackageName = rPackageName,
+                                        onlySettings = onlySettings) %>%
+                         tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
                      },
                      value = 0.8,
                      message = "Uploading ...")
 
-                     if (inherits(res, "try-error")) {
-                       shinyalert(
-                         title = "Could not load file.",
-                         text = paste(
-                           "The file to be uploaded should be a .zip file",
-                           "that contains the following files:",
-                           "help.html, model.rds, README.txt. ",
-                           "If you download a model it will exactly have this format."
-                         ),
-                         type = "error"
-                       )
-                       return()
-                     }
+                     if (is.null(res)) return()
 
-                     if (!exists("modelImport") ||
-                         !all(names(modelImport) %in% c("data", "inputs", "model", "version"))) {
-                       shinyalert(title = "Could not load file.",
-                                  text = "File format not valid. Model object not found.",
-                                  type = "error")
-                       return()
-                     }
+                     dataLoadedAlert(res$message, res$uploadedVersion, res$alertType)
 
-                     if (!is.null(rPackageName) &&
-                         !grepl(rPackageName, modelImport$version)) {
-                       shinyalert(
-                         title = "Wrong model loaded.",
-                         text = paste(
-                           "Trying to upload",
-                           modelImport$version,
-                           ". Model not valid for",
-                           rPackageName,
-                           ". Make sure to upload",
-                           "a model that was saved exactly with this app before."
-                         ),
-                         type = "error"
-                       )
-                       return()
-                     }
-
-                     if (!is.null(rPackageName) &&
-                         !is.null(subFolder) &&
-                         !grepl(subFolder, modelImport$version)) {
-                       shinyalert(
-                         title = "Wrong model loaded.",
-                         text = paste(
-                           "Trying to upload",
-                           modelImport$version,
-                           ". Model not valid for the tab",
-                           subFolder,
-                           "of",
-                           rPackageName,
-                           ". Make sure",
-                           "to upload a model that was saved exactly within",
-                           "this tab of the app before."
-                         ),
-                         type = "error"
-                       )
-                       return()
-                     }
-
-                     warning <- c()
-                     if (is.null(modelImport$data)) {
-                       warning[["data"]] <-
-                         "No input data found."
-                       alertType <- "warning"
-                     } else {
-                       uploadedData$data <- modelImport$data
-                       warning[["data"]] <-
-                         "Input data loaded. "
-                       # no update of alertType, do not overwrite a possible warning
-                     }
-
-                     if (is.null(modelImport$inputs)) {
-                       warning[["inputs"]] <-
-                         "No model selection parameters found."
-                       alertType <- "warning"
-                     } else {
-                       uploadedData$inputs <- modelImport$inputs
-                       warning[["inputs"]] <-
-                         "Model selection parameters loaded. "
-                       # no update of alertType, do not overwrite a possible warning
-                     }
-
-                     if (!onlySettings) {
-                       if (is.null(modelImport$model)) {
-                         warning[["model"]] <- "No model results found. "
-                         alertType <- "warning"
-                       } else {
-                         uploadedData$model <- modelImport$model
-                         warning[["model"]] <-
-                           "Model results loaded. "
-                         # no update of alertType, do not overwrite a possible warning
-                       }
-                     }
-
-                     if (!is.null(modelImport$version)) {
-                       uploadedVersion <- paste("Saved version:", modelImport$version, ".")
-                     } else {
-                       uploadedVersion <- ""
-                     }
-
-                     dataLoadedAlert(warning, uploadedVersion, alertType)
-
-                     # clean up
-                     if (file.exists("model.rds"))
-                       file.remove("model.rds")
-                     if (file.exists("README.txt"))
-                       file.remove("README.txt")
-                     if (file.exists("help.html"))
-                       file.remove("help.html")
+                     uploadedData$data <- res$data
+                     uploadedData$inputs <- res$inputs
+                     uploadedData$model <- res$model
                    })
 
                    return(uploadedData)
