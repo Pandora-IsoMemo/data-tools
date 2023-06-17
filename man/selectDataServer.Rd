@@ -6,6 +6,7 @@
 \usage{
 selectDataServer(
   id,
+  importType,
   mergeList,
   customNames,
   openPopupReset,
@@ -20,6 +21,8 @@ selectDataServer(
 }
 \arguments{
 \item{id}{id of module}
+
+\item{importType}{(character) type of import, either "data" or "model"}
 
 \item{mergeList}{(list) list of selected data}
 

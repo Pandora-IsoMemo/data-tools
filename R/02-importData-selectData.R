@@ -45,7 +45,7 @@ selectDataUI <- function(id,
         "height: 9em",
       div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
-      div(class = "text-success", textOutput(ns("success")))
+      div(class = "text-success", uiOutput(ns("success")))
     ),
     div(#align = "right",
       actionButton(
@@ -76,6 +76,7 @@ selectDataUI <- function(id,
 #' @inheritParams uploadModelServer
 #' @inheritParams remoteModelsServer
 selectDataServer <- function(id,
+                             importType,
                              mergeList,
                              customNames,
                              openPopupReset,
@@ -134,31 +135,43 @@ selectDataServer <- function(id,
 
                      req(dataSource$file)
                      logDebug("Updating values$dataImport")
-                     withProgress(value = 0.75,
-                                  message = 'Loading data ...', {
-                                    values <- loadDataWrapper(
-                                        values = values,
-                                        filepath = dataSource$file,
-                                        filename = dataSource$filename,
-                                        type = input[["fileSource-fileType-type"]],
-                                        sep = input[["fileSource-fileType-colSep"]],
-                                        dec = input[["fileSource-fileType-decSep"]],
-                                        withRownames = customNames$withRownames,
-                                        withColnames = customNames$withColnames,
-                                        sheetId = as.numeric(input[["fileSource-fileType-sheet"]])
-                                      )
 
-                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||
-                                        input[["fileSource-source"]] == "remoteModel") {
-                                      shinyjs::disable(ns("keepData"), asis = TRUE)
-                                    } else {
-                                      shinyjs::enable(ns("keepData"), asis = TRUE)
-                                      values$fileImportSuccess <-
-                                        "Data import successful"
-                                      values$preview <-
-                                        cutAllLongStrings(values$dataImport, cutAt = 20)
-                                    }
-                                  })
+                     withProgress(
+                       value = 0.75,
+                       message = 'Importing ...', {
+
+                         params <- selectImportParams(
+                           importType = importType,
+                           params = list(
+                             values = values,
+                             dataSource = dataSource,
+                             type = input[["fileSource-fileType-type"]],
+                             sep = input[["fileSource-fileType-colSep"]],
+                             dec = input[["fileSource-fileType-decSep"]],
+                             sheetId = as.numeric(input[["fileSource-fileType-sheet"]]),
+                             customNames = customNames,
+                             subFolder = subFolder,
+                             rPackageName = rPackageName,
+                             onlySettings = onlySettings)
+                         )
+
+                         values <- loadImport(importType = importType,
+                                              params = params,
+                                              values = values,
+                                              filename = dataSource$filename)
+
+                         if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||
+                             input[["fileSource-source"]] == "remoteModel") {
+                           shinyjs::disable(ns("keepData"), asis = TRUE)
+                         } else {
+                           shinyjs::enable(ns("keepData"), asis = TRUE)
+                           if (importType == "data")
+                             values$fileImportSuccess <-
+                               "Data import successful"
+                             values$preview <-
+                             cutAllLongStrings(values$dataImport, cutAt = 20)
+                         }
+                       })
                    }
                  )
 
@@ -181,7 +194,10 @@ selectDataServer <- function(id,
                      unlist(values$errors, use.names = FALSE), tags$p
                    )))
                  output$success <-
-                   renderText(values$fileImportSuccess)
+                   renderUI(tagList(lapply(
+                     unlist(values$fileImportSuccess, use.names = FALSE), tags$p
+                   )))
+                   #renderText(values$fileImportSuccess)
 
                  output$preview <- renderDataTable({
                    req(values$preview)
@@ -732,4 +748,29 @@ selectFileTypeServer <- function(id, dataSource) {
                  }) %>%
                    bindEvent(dataSource$file, ignoreNULL = FALSE, ignoreInit = TRUE)
                })
+}
+
+#' Select Import params
+#'
+#' @param params (list) named list of parameters required to import data or a model
+#' @inheritParams importDataServer
+#'
+#' @return (list) named list of parameters required for the particular importType
+selectImportParams <- function(importType,
+                               params) {
+  switch(importType,
+         "data" = list(values = params$values,
+                       filepath = params$dataSource$file,
+                       filename = params$dataSource$filename,
+                       type = params$type,
+                       sep = params$sep,
+                       dec = params$dec,
+                       withRownames = params$customNames$withRownames,
+                       withColnames = params$customNames$withColnames,
+                       sheetId = params$sheetId),
+         "model" = list(filepath = params$dataSource$file,
+                        subFolder = params$subFolder,
+                        rPackageName = params$rPackageName,
+                        onlySettings = params$onlySettings)
+  )
 }

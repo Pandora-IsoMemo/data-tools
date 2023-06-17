@@ -1,7 +1,13 @@
-loadImport <- function(importType, ...) {
-  switch(importType,
-         data = loadDataWrapper(...),
-         model = loadModel(...))
+loadImport <- function(importType, params, values, filename) {
+  res <- switch(importType,
+         data = do.call(loadDataWrapper, params),
+         model = do.call(loadModel, params))
+
+  if (importType == "model") {
+    extractValuesFromModel(res, values = values, filename = filename)
+  } else {
+    res
+  }
 }
 
 
@@ -253,11 +259,15 @@ loadModel <-
     if (is.null(modelImport$data)) {
       dat$message[["data"]] <-
         "No input data found."
+      dat$messageType[["data"]] <-
+        "warning"
       dat$alertType <- "warning"
     } else {
       dat$data <- modelImport$data
       dat$message[["data"]] <-
         "Input data loaded. "
+      dat$messageType[["data"]] <-
+        "success"
       # no update of alertType, do not overwrite a possible warning
     }
 
@@ -265,11 +275,15 @@ loadModel <-
     if (is.null(modelImport$inputs)) {
       dat$message[["inputs"]] <-
         "No model selection parameters found."
+      dat$messageType[["inputs"]] <-
+        "warning"
       dat$alertType <- "warning"
     } else {
       dat$inputs <- modelImport$inputs
       dat$message[["inputs"]] <-
         "Model selection parameters loaded. "
+      dat$messageType[["inputs"]] <-
+        "success"
       # no update of alertType, do not overwrite a possible warning
     }
 
@@ -277,11 +291,15 @@ loadModel <-
     if (!onlySettings) {
       if (is.null(modelImport$model)) {
         dat$message[["model"]] <- "No model results found. "
+        dat$messageType[["model"]] <-
+          "warning"
         dat$alertType <- "warning"
       } else {
         dat$model <- modelImport$model
         dat$message[["model"]] <-
           "Model results loaded. "
+        dat$messageType[["model"]] <-
+          "success"
         # no update of alertType, do not overwrite a possible warning
       }
     }
@@ -302,3 +320,24 @@ loadModel <-
 
     return(dat)
   }
+
+#' Extract Values From Model
+#'
+#' @param importedModel (list) output of loadModel()
+#' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
+#'
+#' @return (list) list of values in the format of the output of loadDataWrapper
+extractValuesFromModel <- function(importedModel, values, filename) {
+  values$dataImport <- importedModel[c("data", "inputs", "model")]
+  values$fileName <- filename
+
+  success <- importedModel$message[importedModel$messageType == "success"]
+  warnings <- importedModel$message[importedModel$messageType == "warning"]
+  errors <- importedModel$message[importedModel$messageType == "error"]
+
+  values$fileImportSuccess <- success
+  values$warnings <- list(load = warnings)
+  values$errors <- list(load = errors)
+
+  values
+}

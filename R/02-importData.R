@@ -127,6 +127,7 @@ importDataServer <- function(id,
 
                  values <- selectDataServer(
                    "dataSelector",
+                   importType = importType,
                    mergeList = mergeList,
                    customNames = customNames,
                    openPopupReset = reactive(input$openPopup > 0),
@@ -143,36 +144,41 @@ importDataServer <- function(id,
                  observeEvent(values$dataImport, {
                    logDebug("Enable/Disable Accept button")
 
-                   ## Import valid?
-                   values$warnings$import <- list()
-                   values$errors$import <- list()
+                   if (importType == "data") {
+                     ## Import valid?
+                     values$warnings$import <- list()
+                     values$errors$import <- list()
 
-                   checkResult <-
-                     checkImport(
-                       warnings = values$warnings,
-                       errors = values$errors,
-                       df = values$dataImport %>%
-                         formatForImport(
-                           outputAsMatrix = outputAsMatrix,
-                           includeSd = input$includeSd,
-                           dfNames = customNames,
-                           silent = FALSE
-                         ),
-                       customWarningChecks,
-                       customErrorChecks
-                     )
+                     checkResult <-
+                       customImportChecks(
+                         warnings = values$warnings,
+                         errors = values$errors,
+                         df = values$dataImport %>%
+                           formatForImport(
+                             outputAsMatrix = outputAsMatrix,
+                             includeSd = input$includeSd,
+                             dfNames = customNames,
+                             silent = FALSE
+                           ),
+                         customWarningChecks,
+                         customErrorChecks
+                       )
 
-                   values$warnings <- checkResult$warnings
-                   values$errors <- checkResult$errors
+                     values$warnings <- checkResult$warnings
+                     values$errors <- checkResult$errors
+                   }
 
-                   if (nrow(values$dataImport) == 0 ||
+                   # disable button if import was reset or custom checks fail
+                   if (length(values$dataImport) == 0 ||
                        isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
-                     values$fileImportSuccess <-
-                       "Data import successful"
+                     if (importType == "data") {
+                       values$fileImportSuccess <-
+                         "Data import successful"
+                     }
                    }
                  })
 
@@ -188,7 +194,7 @@ importDataServer <- function(id,
                    values$errors$prepareData <- list()
 
                    checkResult <-
-                     checkImport(
+                     customImportChecks(
                        warnings = values$warnings,
                        errors = values$errors,
                        df = preparedData$data %>%
@@ -390,7 +396,7 @@ importDataDialog <-
     )
   }
 
-checkImport <- function(warnings,
+customImportChecks <- function(warnings,
                         errors,
                         df,
                         customWarningChecks,

@@ -77,7 +77,8 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                  observe({
                    req(length(importedData()) > 0 ||
                          length(importedDataCKAN()) > 0 ||
-                         length(importedBatchData()) > 0)
+                         length(importedBatchData()) > 0 ||
+                         length(importedModel()) > 0)
                    logDebug("Updating dataOut()")
                    dataOut(NULL)
 
@@ -95,8 +96,7 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    }
                    if (input$dataSel == "Model") {
                      req(length(importedModel()) > 0)
-                     browser()
-                     dataOut(importedModel()[[1]])
+                     dataOut(importedModel()[[1]][["data"]])
                    }
                  })
 

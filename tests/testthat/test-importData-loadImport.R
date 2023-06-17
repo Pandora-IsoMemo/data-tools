@@ -19,6 +19,7 @@ test_that("Test loadModel()", {
       "inputs",
       "model",
       "message",
+      "messageType",
       "alertType",
       "uploadedVersion"
     )
