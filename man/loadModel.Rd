@@ -9,12 +9,12 @@ loadModel(filepath, subFolder, rPackageName, onlySettings)
 \arguments{
 \item{filepath}{(character) path to the model file}
 
-\item{subFolder}{(character) name of the (optional) subfolder containing loadable .zip files}
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 
-\item{rPackageName}{(character) name of the package (as in the description file) in which this
-module is applied, e.g. "mpiBpred"}
+\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
+package}
 
-\item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
 }
 \description{
 Load Model

@@ -1,7 +1,7 @@
 loadImport <- function(importType, params, values, filename) {
   res <- switch(importType,
-         data = do.call(loadDataWrapper, params),
-         model = do.call(loadModel, params))
+         "data" = do.call(loadDataWrapper, params),
+         "model" = do.call(loadModel, params))
 
   if (importType == "model") {
     extractValuesFromModel(res, values = values, filename = filename)
@@ -9,6 +9,33 @@ loadImport <- function(importType, params, values, filename) {
     res
   }
 }
+
+
+#' Select Import params
+#'
+#' @param params (list) named list of parameters required to import data or a model
+#' @inheritParams importDataServer
+#'
+#' @return (list) named list of parameters required for the particular importType
+selectImportParams <- function(importType,
+                               params) {
+  switch(importType,
+         "data" = list(values = params$values,
+                       filepath = params$dataSource$file,
+                       filename = params$dataSource$filename,
+                       type = params$type,
+                       sep = params$sep,
+                       dec = params$dec,
+                       withRownames = params$customNames$withRownames,
+                       withColnames = params$customNames$withColnames,
+                       sheetId = params$sheetId),
+         "model" = list(filepath = params$dataSource$file,
+                        subFolder = params$subFolder,
+                        rPackageName = params$rPackageName,
+                        onlySettings = params$onlySettings)
+  )
+}
+
 
 
 #' Load Data Wrapper
@@ -183,7 +210,7 @@ loadData <-
 #' Load Model
 #'
 #' @param filepath (character) path to the model file
-#' @inheritParams downloadModelServer
+#' @inheritParams uploadModelServer
 loadModel <-
   function(filepath,
            subFolder,
@@ -222,6 +249,7 @@ loadModel <-
     }
 
     if (!is.null(rPackageName) &&
+        (rPackageName != "") &&
         !grepl(rPackageName, modelImport$version)) {
       stop(
         paste(
@@ -236,6 +264,7 @@ loadModel <-
     }
 
     if (!is.null(rPackageName) &&
+        (rPackageName != "") &&
         !is.null(subFolder) &&
         !grepl(subFolder, modelImport$version)) {
       stop(
@@ -325,6 +354,7 @@ loadModel <-
 #'
 #' @param importedModel (list) output of loadModel()
 #' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
+#' @param filename (reactive) name of the loaded file
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
 extractValuesFromModel <- function(importedModel, values, filename) {

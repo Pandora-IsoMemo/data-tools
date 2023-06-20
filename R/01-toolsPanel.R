@@ -69,7 +69,8 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ignoreWarnings = TRUE,
                    defaultSource = defaultSource,
-                   importType = "model"
+                   importType = "model",
+                   rPackageName = "DataTools"
                  )
 
                  dataOut <- reactiveVal(NULL)

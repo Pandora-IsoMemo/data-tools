@@ -6,7 +6,7 @@
 \usage{
 importDataServer(
   id,
-  title = "Data import",
+  title = "",
   rowNames = reactiveVal(NULL),
   colNames = reactiveVal(NULL),
   customWarningChecks = list(),
@@ -15,7 +15,11 @@ importDataServer(
   defaultSource = "ckan",
   batch = FALSE,
   outputAsMatrix = FALSE,
-  importType = "data"
+  importType = "data",
+  mainFolder = "predefinedModels",
+  subFolder = NULL,
+  rPackageName = "",
+  onlySettings = FALSE
 )
 }
 \arguments{
@@ -45,6 +49,15 @@ of data.
 e.g. for batch = TRUE in Resources}
 
 \item{importType}{(character) type of import, either "data" or "model"}
+
+\item{mainFolder}{(character) folder containing all loadable .zip files}
+
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
+package}
+
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
 }
 \description{
 Backend for data import module

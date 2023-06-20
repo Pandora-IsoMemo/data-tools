@@ -9,8 +9,8 @@ selectSourceServer(
   openPopupReset,
   internetCon,
   githubRepo,
-  mainFolder,
-  subFolder
+  folderOnGithub,
+  pathToLocal
 )
 }
 \arguments{
@@ -22,9 +22,10 @@ selectSourceServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{mainFolder}{(character) folder containing all loadable .zip files}
+\item{folderOnGithub}{(character) folder on github where remote files are stored. This should
+correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
 
-\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+\item{pathToLocal}{(character) relative path to the folder storing local files}
 }
 \description{
 Server function of the module

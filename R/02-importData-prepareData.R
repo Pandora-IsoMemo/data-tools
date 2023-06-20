@@ -23,16 +23,7 @@ prepareDataUI <- function(id) {
     splitColumnsUI(ns("splitCols")),
     tags$br(),
     deleteColumnsUI(ns("deleteCols")),
-    tags$hr(),
-    tags$html(
-      HTML(
-        "<b>Preview prepared data</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
-      )
-    ),
-    fluidRow(column(12,
-                    dataTableOutput(ns(
-                      "preview"
-                    ))))
+    previewDataUI(ns("previewDat"), title = "Preview prepared data")
   )
 }
 
@@ -123,25 +114,7 @@ prepareDataServer <- function(id, mergeList) {
                    mergeList(newMergeList$mergeList)
                  })
 
-                 output$preview <- renderDataTable({
-                   logDebug("Render preparedData")
-                   req(preparedData$data)
-
-                   previewData <-
-                     cutAllLongStrings(preparedData$data, cutAt = 20)
-                   DT::datatable(
-                     previewData,
-                     filter = "none",
-                     selection = "none",
-                     rownames = FALSE,
-                     options = list(
-                       dom = "t",
-                       searching = FALSE,
-                       scrollX = TRUE,
-                       scrollY = "12rem"
-                     )
-                   )
-                 })
+                 previewDataServer("previewDat", dat = reactive(preparedData$data))
 
                  preparedData
                })
@@ -495,10 +468,11 @@ updateMergeList <- function(mergeList, fileName, newData, notifications = "") {
        notifications = notifications)
 }
 
-getColnameChoices <- function(preparedData) {
-  currentColNames <- colnames(preparedData)
-  if (is.null(preparedData) || is.null(currentColNames)) {
-    choices <- c("Select a file ..." = "")
+getColnameChoices <- function(dat, textIfEmpty = "Select a file ...") {
+  currentColNames <- colnames(dat)
+  if (is.null(currentColNames)) {
+    choices <- c("")
+    names(choices) <- textIfEmpty
   } else {
     choices <- currentColNames
   }

@@ -1,5 +1,10 @@
 # DataTools
 
+## Version: 23.06.3
+
+### New Features
+- _Import Data_ module: functionality to import model objects by setting a new parameter `importType = "model"` (#50)
+
 ## Version: 23.06.2
 
 ### New Features

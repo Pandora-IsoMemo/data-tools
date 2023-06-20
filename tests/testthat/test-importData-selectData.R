@@ -3,8 +3,8 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         mainFolder = "predefinedModels",
-                         subFolder = NULL),
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from ckan")
@@ -32,8 +32,8 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         mainFolder = "predefinedModels",
-                         subFolder = NULL),
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from ckan")
@@ -57,8 +57,8 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         mainFolder = "predefinedModels",
-                         subFolder = NULL),
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from ckan")
@@ -84,8 +84,8 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         mainFolder = "predefinedModels",
-                         subFolder = NULL),
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from online model")

@@ -11,11 +11,10 @@ selectDataServer(
   customNames,
   openPopupReset,
   internetCon,
-  githubRepo,
   mainFolder = "predefinedModels",
   subFolder = NULL,
   ignoreWarnings = FALSE,
-  rPackageName = NULL,
+  rPackageName = "",
   onlySettings = FALSE
 )
 }
@@ -31,8 +30,6 @@ selectDataServer(
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
-
-\item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
 \item{mainFolder}{(character) folder containing all loadable .zip files}
 

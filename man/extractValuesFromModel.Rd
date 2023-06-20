@@ -10,6 +10,8 @@ extractValuesFromModel(importedModel, values, filename)
 \item{importedModel}{(list) output of loadModel()}
 
 \item{values}{(reactiveValues) empty list of values in the format of the output of loadDataWrapper}
+
+\item{filename}{(reactive) name of the loaded file}
 }
 \value{
 (list) list of values in the format of the output of loadDataWrapper
