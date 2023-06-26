@@ -17,30 +17,50 @@ importDataUI <- function(id, label = "Import Data") {
 #'
 #' @param id namespace id
 #' @param title title of data import module
-#' @param rowNames (reactive) use this for rownames of imported data
-#' @param colNames (reactive) use this for colnames of imported data
+#' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
+#' @param ignoreWarnings TRUE to enable imports in case of warnings
+#' @param importType (character) type of import, either "data" or "model"
+#' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
+#' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
 #'  of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
+#'   This parameter is ignored if importType == "model"
 #' @param customErrorChecks list of reactive(!) functions which will be executed after importing
 #' of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
-#' @param ignoreWarnings TRUE to enable imports in case of warnings
-#' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
-#' @param batch (logical) use batch import
+#'   This parameter is ignored if importType == "model"
+#' @param batch (logical) use batch import. This parameter is ignored if importType == "model"
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
-#'  e.g. for batch = TRUE in Resources
+#'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
+#' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
+#'  This parameter is ignored if importType == "data"
+#' @param mainFolder (character) folder containing all loadable .zip files.
+#'   This parameter is ignored if importType == "data"
+#' @param subFolder (character) (optional) subfolder containing loadable .zip files.
+#'  This parameter is ignored if importType == "data"
+#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
+#'  from this R package. This parameter is ignored if importType == "data"
+#'
 #' @export
 importDataServer <- function(id,
-                             title = "Data import",
+                             title = "",
+                             defaultSource = "ckan",
+                             ignoreWarnings = FALSE,
+                             importType = "data",
+                             # parameters for data upload
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),
                              customWarningChecks = list(),
                              customErrorChecks = list(),
-                             ignoreWarnings = FALSE,
-                             defaultSource = "ckan",
                              batch = FALSE,
-                             outputAsMatrix = FALSE) {
+                             outputAsMatrix = FALSE,
+                             # parameters for model upload
+                             mainFolder = "predefinedModels",
+                             subFolder = NULL,
+                             rPackageName = "",
+                             onlySettings = FALSE
+                             ) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -79,7 +99,8 @@ importDataServer <- function(id,
                        title = title,
                        defaultSource = initSource,
                        batch = batch,
-                       outputAsMatrix = outputAsMatrix
+                       outputAsMatrix = outputAsMatrix,
+                       importType = importType
                      )
                    )
 
@@ -124,132 +145,148 @@ importDataServer <- function(id,
 
                  values <- selectDataServer(
                    "dataSelector",
+                   importType = importType,
+                   internetCon = internetCon,
+                   openPopupReset = reactive(input$openPopup > 0),
+                   ignoreWarnings = ignoreWarnings,
+                   # parameters required to load data
                    mergeList = mergeList,
                    customNames = customNames,
-                   openPopupReset = reactive(input$openPopup > 0),
-                   internetCon = internetCon,
-                   ignoreWarnings = ignoreWarnings
+                   # parameters required to load a model
+                   mainFolder = mainFolder,
+                   subFolder = subFolder,
+                   rPackageName = rPackageName,
+                   onlySettings = onlySettings
                  )
 
                  ## disable button accept ----
                  observeEvent(values$dataImport, {
                    logDebug("Enable/Disable Accept button")
 
-                   ## Import valid?
-                   values$warnings$import <- list()
-                   values$errors$import <- list()
+                   if (importType == "data") {
+                     ## Import valid?
+                     values$warnings$import <- list()
+                     values$errors$import <- list()
 
-                   checkResult <-
-                     checkImport(
-                       warnings = values$warnings,
-                       errors = values$errors,
-                       df = values$dataImport %>%
-                         formatForImport(
-                           outputAsMatrix = outputAsMatrix,
-                           includeSd = input$includeSd,
-                           dfNames = customNames,
-                           silent = FALSE
-                         ),
-                       customWarningChecks,
-                       customErrorChecks
-                     )
+                     checkResult <-
+                       customImportChecks(
+                         warnings = values$warnings,
+                         errors = values$errors,
+                         df = values$dataImport %>%
+                           formatForImport(
+                             outputAsMatrix = outputAsMatrix,
+                             includeSd = input$includeSd,
+                             dfNames = customNames,
+                             silent = FALSE
+                           ),
+                         customWarningChecks,
+                         customErrorChecks
+                       )
 
-                   values$warnings <- checkResult$warnings
-                   values$errors <- checkResult$errors
+                     values$warnings <- checkResult$warnings
+                     values$errors <- checkResult$errors
+                   }
 
-                   if (nrow(values$dataImport) == 0 ||
+                   # disable button if import was reset or custom checks fail
+                   if (length(values$dataImport) == 0 ||
                        isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
-                     values$fileImportSuccess <-
-                       "Data import successful"
+                     if (importType == "data") {
+                       values$fileImportSuccess <-
+                         "Data import successful"
+                     }
                    }
                  })
 
-                 preparedData <- prepareDataServer("dataPreparer",
-                                                   mergeList = mergeList)
+                 # START: data preparation ----
+                 if (importType == "data") {
+                   preparedData <- prepareDataServer("dataPreparer",
+                                                     mergeList = mergeList)
 
-                 ## disable button accept prepared data ----
-                 observeEvent(preparedData$data, {
-                   logDebug("Enable/Disable AcceptPrepared button")
+                   ### disable button accept prepared data ----
+                   observeEvent(preparedData$data, {
+                     logDebug("Enable/Disable AcceptPrepared button")
 
-                   ## Import valid?
-                   values$warnings$prepareData <- list()
-                   values$errors$prepareData <- list()
+                     ## Import valid?
+                     values$warnings$prepareData <- list()
+                     values$errors$prepareData <- list()
 
-                   checkResult <-
-                     checkImport(
-                       warnings = values$warnings,
-                       errors = values$errors,
-                       df = preparedData$data %>%
-                         formatForImport(
-                           outputAsMatrix = outputAsMatrix,
-                           includeSd = input$includeSd,
-                           dfNames = customNames,
-                           silent = TRUE
-                         ),
-                       customWarningChecks,
-                       customErrorChecks
+                     checkResult <-
+                       customImportChecks(
+                         warnings = values$warnings,
+                         errors = values$errors,
+                         df = preparedData$data %>%
+                           formatForImport(
+                             outputAsMatrix = outputAsMatrix,
+                             includeSd = input$includeSd,
+                             dfNames = customNames,
+                             silent = TRUE
+                           ),
+                         customWarningChecks,
+                         customErrorChecks
+                       )
+
+                     # do not display warnings of prepare data in select data
+                     # -> do not return result
+                     #values$warnings <- checkResult$warnings
+                     #values$errors <- checkResult$errors
+
+                     if (is.null(preparedData$data) ||
+                         nrow(preparedData$data) == 0 ||
+                         isNotValid(checkResult$errors,
+                                    checkResult$warnings,
+                                    ignoreWarnings)) {
+                       shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
+                     } else {
+                       shinyjs::enable(ns("acceptPrepared"), asis = TRUE)
+                     }
+                   })
+
+                   joinedData <-
+                     mergeDataServer("dataMerger", mergeList = mergeList)
+
+                   ## disable button merge data ----
+                   observe({
+                     logDebug("Updating button acceptMerged")
+                     if (is.null(joinedData()) ||
+                         is.null(joinedData()[[1]]) ||
+                         nrow(joinedData()[[1]]) == 0) {
+                       shinyjs::disable(ns("acceptMerged"), asis = TRUE)
+                     } else {
+                       shinyjs::enable(ns("acceptMerged"), asis = TRUE)
+                     }
+                   }) %>%
+                     bindEvent(joinedData(),
+                               ignoreNULL = FALSE,
+                               ignoreInit = TRUE)
+
+                   queriedData <-
+                     queryDataServer(
+                       "dataQuerier",
+                       mergeList = mergeList,
+                       isActiveTab = reactive(checkIfActive(currentTab = input[["tabImport"]],
+                                                            tabName = "Query with SQL"))
                      )
 
-                   # do not display warnings of prepare data in select data
-                   # -> do not return result
-                   #values$warnings <- checkResult$warnings
-                   #values$errors <- checkResult$errors
-
-                   if (is.null(preparedData$data) ||
-                       nrow(preparedData$data) == 0 ||
-                       isNotValid(checkResult$errors,
-                                  checkResult$warnings,
-                                  ignoreWarnings)) {
-                     shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
-                   } else {
-                     shinyjs::enable(ns("acceptPrepared"), asis = TRUE)
-                   }
-                 })
-
-                 ## disable button merge data ----
-                 joinedData <-
-                   mergeDataServer("dataMerger", mergeList = mergeList)
-
-                 observe({
-                   logDebug("Updating button acceptMerged")
-                   if (is.null(joinedData()) ||
-                       is.null(joinedData()[[1]]) ||
-                       nrow(joinedData()[[1]]) == 0) {
-                     shinyjs::disable(ns("acceptMerged"), asis = TRUE)
-                   } else {
-                     shinyjs::enable(ns("acceptMerged"), asis = TRUE)
-                   }
-                 }) %>%
-                   bindEvent(joinedData(),
-                             ignoreNULL = FALSE,
-                             ignoreInit = TRUE)
-
-                 ## disable button query data ----
-                 queriedData <-
-                   queryDataServer(
-                     "dataQuerier",
-                     mergeList = mergeList,
-                     isActiveTab = reactive(checkIfActive(currentTab = input[["tabImport"]],
-                                                          tabName = "Query with SQL"))
-                     )
-
-                 observe({
-                   logDebug("Updating button acceptQuery")
-                   if (is.null(queriedData()) ||
-                       is.null(queriedData()[[1]]) ||
-                       nrow(queriedData()[[1]]) == 0) {
-                     shinyjs::disable(ns("acceptQuery"), asis = TRUE)
-                   } else {
-                     shinyjs::enable(ns("acceptQuery"), asis = TRUE)
-                   }
-                 }) %>%
-                   bindEvent(queriedData(),
-                             ignoreNULL = FALSE,
-                             ignoreInit = TRUE)
+                   ## disable button query data ----
+                   observe({
+                     logDebug("Updating button acceptQuery")
+                     if (is.null(queriedData()) ||
+                         is.null(queriedData()[[1]]) ||
+                         nrow(queriedData()[[1]]) == 0) {
+                       shinyjs::disable(ns("acceptQuery"), asis = TRUE)
+                     } else {
+                       shinyjs::enable(ns("acceptQuery"), asis = TRUE)
+                     }
+                   }) %>%
+                     bindEvent(queriedData(),
+                               ignoreNULL = FALSE,
+                               ignoreInit = TRUE)
+                 }
+                 # END: data preparation ----
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
@@ -257,62 +294,71 @@ importDataServer <- function(id,
                    removeModal()
                    removeOpenGptCon()
 
+
+
                    req(values$dataImport)
-                   values$data[[values$fileName]] <-
-                     values$dataImport %>%
-                     formatForImport(
-                       outputAsMatrix = outputAsMatrix,
-                       includeSd = input$includeSd,
-                       dfNames = customNames,
-                       silent = TRUE
-                     )
+
+                   res <- values$dataImport
+                   if (importType == "data") {
+                     res <- res %>%
+                       formatForImport(
+                         outputAsMatrix = outputAsMatrix,
+                         includeSd = input$includeSd,
+                         dfNames = customNames,
+                         silent = TRUE
+                       )
+                   }
+
+                   values$data[[values$fileName]] <- res
                  })
 
-                 observeEvent(input$acceptPrepared, {
-                   logDebug("Updating input$acceptPrepared")
-                   removeModal()
-                   removeOpenGptCon()
+                 if (importType == "data") {
+                   observeEvent(input$acceptPrepared, {
+                     logDebug("Updating input$acceptPrepared")
+                     removeModal()
+                     removeOpenGptCon()
 
-                   req(preparedData$data)
-                   values$data[[values$fileName]] <-
-                     preparedData$data %>%
-                     formatForImport(
-                       outputAsMatrix = outputAsMatrix,
-                       includeSd = input$includeSd,
-                       dfNames = customNames,
-                       silent = TRUE
-                     )
-                 })
+                     req(preparedData$data)
+                     values$data[[values$fileName]] <-
+                       preparedData$data %>%
+                       formatForImport(
+                         outputAsMatrix = outputAsMatrix,
+                         includeSd = input$includeSd,
+                         dfNames = customNames,
+                         silent = TRUE
+                       )
+                   })
 
-                 observeEvent(input$acceptMerged, {
-                   logDebug("Updating input$acceptMerged")
-                   removeModal()
-                   removeOpenGptCon()
-                   customNames$withRownames <- FALSE
-                   customNames$withColnames <- TRUE
-                   values$data[[names(joinedData())[1]]] <-
-                     joinedData()[[1]] %>%
-                     formatForImport(
-                       outputAsMatrix = outputAsMatrix,
-                       includeSd = FALSE,
-                       dfNames = customNames
-                     )
-                 })
+                   observeEvent(input$acceptMerged, {
+                     logDebug("Updating input$acceptMerged")
+                     removeModal()
+                     removeOpenGptCon()
+                     customNames$withRownames <- FALSE
+                     customNames$withColnames <- TRUE
+                     values$data[[names(joinedData())[1]]] <-
+                       joinedData()[[1]] %>%
+                       formatForImport(
+                         outputAsMatrix = outputAsMatrix,
+                         includeSd = FALSE,
+                         dfNames = customNames
+                       )
+                   })
 
-                 observeEvent(input$acceptQuery, {
-                   logDebug("Updating input$acceptQuery")
-                   removeModal()
-                   removeOpenGptCon()
-                   customNames$withRownames <- FALSE
-                   customNames$withColnames <- TRUE
-                   values$data[[names(queriedData())[1]]] <-
-                     queriedData()[[1]] %>%
-                     formatForImport(
-                       outputAsMatrix = outputAsMatrix,
-                       includeSd = FALSE,
-                       dfNames = customNames
-                     )
-                 })
+                   observeEvent(input$acceptQuery, {
+                     logDebug("Updating input$acceptQuery")
+                     removeModal()
+                     removeOpenGptCon()
+                     customNames$withRownames <- FALSE
+                     customNames$withColnames <- TRUE
+                     values$data[[names(queriedData())[1]]] <-
+                       queriedData()[[1]] %>%
+                       formatForImport(
+                         outputAsMatrix = outputAsMatrix,
+                         includeSd = FALSE,
+                         dfNames = customNames
+                       )
+                   })
+                 }
 
                  # return value for parent module: ----
                  # currently only the data is returned, not the path(s) to the source(s)
@@ -334,16 +380,24 @@ importDataDialog <-
            title,
            defaultSource = "ckan",
            batch = FALSE,
-           outputAsMatrix = FALSE) {
+           outputAsMatrix = FALSE,
+           importType = "data") {
+
+    if (title == "") {
+      title <- switch(importType,
+                      "data" = "Data import",
+                      "model" = "Model import")
+    }
+
     modalDialog(
       shinyjs::useShinyjs(),
       title = sprintf("%s (%s)", title, packageVersion("DataTools")),
-      style = 'height: 1020px',
+      style = if (importType == "data") 'height: 1020px' else 'height: 800px',
       footer = tagList(fluidRow(
         column(4,
                align = "left",
                style = "margin-top: -1em;",
-               if (outputAsMatrix && batch) {
+               if (importType == "data" && outputAsMatrix && batch) {
                  checkboxInput(ns("includeSd"), "Uncertainties are included", value = TRUE)
                } else {
                  tags$br()
@@ -352,102 +406,36 @@ importDataDialog <-
           8,
           align = "right",
           actionButton(ns("accept"), "Accept"),
-          actionButton(ns("acceptPrepared"), "Accept"),
-          actionButton(ns("acceptMerged"), "Accept Merged"),
-          actionButton(ns("acceptQuery"), "Accept Query"),
+          if (importType == "data") actionButton(ns("acceptPrepared"), "Accept") else NULL,
+          if (importType == "data") actionButton(ns("acceptMerged"), "Accept Merged") else NULL,
+          if (importType == "data") actionButton(ns("acceptQuery"), "Accept Query") else NULL,
           actionButton(ns("cancel"), "Cancel")
         )
       )),
       tabsetPanel(
         id = ns("tabImport"),
-        selected = "Select (required)",
+        selected = "Select",
         tabPanel(
-          "Select (required)",
+          "Select",
           selectDataUI(
             ns("dataSelector"),
             defaultSource = defaultSource,
             batch = batch,
-            outputAsMatrix = outputAsMatrix
+            outputAsMatrix = outputAsMatrix,
+            importType = importType
           )
         ),
-        tabPanel("Prepare",
-                 prepareDataUI(ns("dataPreparer"))),
-        tabPanel("Merge",
-                 mergeDataUI(ns("dataMerger"))),
-        tabPanel("Query with SQL",
-                 queryDataUI(ns("dataQuerier")))
+        if (importType == "data") tabPanel("Prepare",
+                                           prepareDataUI(ns("dataPreparer"))) else NULL,
+        if (importType == "data") tabPanel("Merge",
+                                           mergeDataUI(ns("dataMerger"))) else NULL,
+        if (importType == "data") tabPanel("Query with SQL",
+                                           queryDataUI(ns("dataQuerier"))) else NULL
       )
     )
   }
 
-
-#' Load Data Wrapper
-#'
-#' @param values (list) list with import specifications
-#' @param filepath (character) url or path
-#' @param filename (character) url or file name
-#' @param type (character) file type input
-#' @param sep (character) column separator input
-#' @param dec (character) decimal separator input
-#' @param withRownames (logical) contains rownames input
-#' @param withColnames (logical) contains colnames input
-#' @param sheetId (numeric) sheet id
-loadDataWrapper <- function(values,
-                            filepath,
-                            filename,
-                            type,
-                            sep,
-                            dec,
-                            withRownames,
-                            withColnames,
-                            sheetId) {
-  df <- tryCatch(
-    loadData(
-      file = filepath,
-      type = type,
-      sep = sep,
-      dec = dec,
-      withColnames = withColnames,
-      sheetId = sheetId,
-      headOnly = FALSE
-    ),
-    error = function(cond) {
-      values$errors <-
-        list(load = paste("Could not read in file:", cond$message))
-      NULL
-    },
-    warning = function(cond) {
-      values$warnings <- list(load = paste("Warning:", cond$message))
-      NULL
-    }
-  )
-
-  if (is.null(df)) {
-    values$dataImport <- NULL
-  } else {
-    ## Import technically successful
-    if (withRownames) {
-      rn <- df[, 1]
-      if (any(is.na(suppressWarnings(as.integer(rn))))) {
-        rn <- as.character(rn)
-      } else {
-        rn <- as.integer(rn)
-      }
-
-      df <- df[, -1, drop = FALSE]
-      values$dataImport <- as.data.frame(df, row.names = rn)
-    } else {
-      values$dataImport <- as.data.frame(df)
-    }
-
-  }
-
-  values$fileName <- filename
-
-  values
-}
-
-checkImport <- function(warnings,
+customImportChecks <- function(warnings,
                         errors,
                         df,
                         customWarningChecks,
@@ -481,110 +469,6 @@ isNotValid <- function(errors, warnings, ignoreWarnings) {
     (!ignoreWarnings &&
        length(unlist(warnings, use.names = FALSE)) > 0)
 }
-
-loadData <-
-  function(file,
-           type,
-           sep = ",",
-           dec = ".",
-           withColnames = TRUE,
-           sheetId = 1,
-           headOnly = FALSE) {
-    # if(type == "csv" | type == "txt"){
-    #   codepages <- setNames(iconvlist(), iconvlist())
-    #   x <- lapply(codepages, function(enc) try(suppressWarnings({read.csv(file,
-    #                                                     fileEncoding=enc,
-    #                                                     sep = sep, dec = dec,
-    #                                                     stringsAsFactors = FALSE,
-    #                                                     row.names = NULL,
-    #                                                     nrows=3, header=TRUE)}),
-    #                                            silent = TRUE)) # you get lots of errors/warning here
-    #   x <- x[!sapply(x, function(y) class(y) %in% "try-error")]
-    #   maybe_ok <- which(sapply(x, function(y) isTRUE(all.equal(dim(y)[1], c(3)))))
-    #   if(length(maybe_ok) > 0){
-    #     encTry <- names(maybe_ok[1])
-    #   } else {
-    #     encTry <- ""
-    #   }
-    # }
-
-    encTry <- as.character(guess_encoding(file)[1, 1])
-    if (type == "xlsx") {
-      xlsSplit <- strsplit(file, split = "\\.")[[1]]
-      if (xlsSplit[length(xlsSplit)] == "xls") {
-        type <- "xls"
-      }
-    }
-
-    data <- switch(
-      type,
-      csv = suppressWarnings({
-        read.csv(
-          file,
-          header = withColnames,
-          sep = sep,
-          dec = dec,
-          stringsAsFactors = FALSE,
-          row.names = NULL,
-          fileEncoding = encTry,
-          nrows = getNrow(headOnly, type)
-        )
-      }),
-      txt = suppressWarnings({
-        read.csv(
-          file,
-          header = withColnames,
-          sep = sep,
-          dec = dec,
-          stringsAsFactors = FALSE,
-          row.names = NULL,
-          fileEncoding = encTry,
-          nrows = getNrow(headOnly, type)
-        )
-      }),
-      xlsx = read.xlsx(
-        file,
-        sheet = sheetId,
-        colNames = withColnames,
-        rows = getNrow(headOnly, type)
-      ),
-      xls = suppressWarnings({
-        readxl::read_excel(
-          file,
-          sheet = sheetId,
-          col_names = withColnames,
-          n_max = getNrow(headOnly, type)
-        )
-      }),
-      ods = readODS::read_ods(
-        file,
-        sheet = sheetId,
-        col_names = withColnames,
-        range = getNrow(headOnly, type)
-      )
-    )
-
-    if (is.null(data))
-      return(NULL)
-
-    if (is.null(dim(data))) {
-      stop("Could not determine dimensions of data")
-      return(NULL)
-    }
-
-    if (any(dim(data) == 1)) {
-      warning("Number of rows or columns equal to 1")
-      return(NULL)
-    }
-
-    if (any(dim(data) == 0)) {
-      stop("Number of rows or columns equal to 0")
-      return(NULL)
-    }
-
-    return(data)
-  }
-
 
 #' Cut All Strings
 #'

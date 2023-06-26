@@ -1,7 +1,10 @@
 test_that("Test module selectSourceServer", {
   testServer(selectSourceServer,
              args = list(openPopupReset = reactive(TRUE),
-                         internetCon = reactiveVal(has_internet())),
+                         internetCon = reactiveVal(has_internet()),
+                         githubRepo = "bpred",
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from ckan")
@@ -22,11 +25,15 @@ test_that("Test module selectSourceServer", {
                  session$returned$file,
                  "http://www.oasisnorth.org/uploads/4/4/9/0/44903657/14carhu_database_21oct2015_v1.0.xlsx"
                )
+               expect_equal(session$returned$type, "data")
              })
 
   testServer(selectSourceServer,
              args = list(openPopupReset = reactive(TRUE),
-                         internetCon = reactiveVal(has_internet())),
+                         internetCon = reactiveVal(has_internet()),
+                         githubRepo = "bpred",
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from ckan")
@@ -43,11 +50,15 @@ test_that("Test module selectSourceServer", {
                expect_equal(session$returned$filename, "isotopic-measurements-in-excel-format.xlsx")
                expect_equal(session$returned$file,
                             "https://pandoradata.earth/dataset/06fc7dfa-4f6e-495b-91f5-185022be895a/resource/739029f6-3a3e-4365-8007-ead779bbfce0/download/isotopic-measurements-in-excel-format.xlsx")
+               expect_equal(session$returned$type, "data")
              })
 
   testServer(selectSourceServer,
              args = list(openPopupReset = reactive(TRUE),
-                         internetCon = reactiveVal(has_internet())),
+                         internetCon = reactiveVal(has_internet()),
+                         githubRepo = "bpred",
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from ckan")
@@ -63,5 +74,30 @@ test_that("Test module selectSourceServer", {
 
                expect_null(session$returned$filename)
                expect_null(session$returned$file)
+               expect_null(session$returned$type)
+             })
+
+  testApiContent <- getGithubContent(githubRepo = "bpred")
+  testRemoteModels <- getRemoteModelsFromGithub(githubRepo = "bpred", apiOut = testApiContent)
+
+  testServer(selectSourceServer,
+             args = list(openPopupReset = reactive(TRUE),
+                         internetCon = reactiveVal(has_internet()),
+                         githubRepo = "bpred",
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
+             {
+               # Arrange
+               print("test select source from online model")
+               # Act
+               session$setInputs(
+                 source = "remoteModel",
+                 `remoteModels-remoteModelChoice` = testRemoteModels[1],
+                 `remoteModels-loadRemoteModel` = 1
+               )
+
+               expect_true(nchar(session$returned$filename) > 0)
+               expect_equal(substr(session$returned$file, start = 1, stop = 5), "/tmp/")
+               expect_equal(session$returned$type, "model")
              })
 })

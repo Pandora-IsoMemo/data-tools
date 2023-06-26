@@ -43,16 +43,7 @@ queryDataUI <- function(id) {
              ns("applyQuery"), "Apply"
            ))),
     textOutput(ns("nRowsQueriedData")),
-    tags$hr(),
-    tags$html(
-      HTML(
-        "<b>Preview result of query</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
-      )
-    ),
-    fluidRow(column(12,
-                    dataTableOutput(
-                      ns("queriedData")
-                    )))
+    previewDataUI(ns("previewDat"), title = "Preview result of query")
   )
 }
 
@@ -72,7 +63,6 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  result <- reactiveValues(
                    data = NULL,
-                   preview = NULL,
                    import = NULL,
                    warnings = list(),
                    warningsPopup = list(),
@@ -185,10 +175,10 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                    req(length(mergeList()) > 0, input$applyQuery > 0)
 
                    result$data <- NULL
-                   result$preview <- NULL
                    result$import <- NULL
                    tmpDB <- inMemoryDB()
 
+                   req(input$sqlCommand)
                    result$data <-
                      dbGetQuery(tmpDB, input$sqlCommand) %>%
                      tryCatchWithWarningsAndErrors(errorTitle = "Query failed")
@@ -198,9 +188,6 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      colnames(result$data) <-
                        colnames(result$data) %>%
                        formatColumnNames(silent = TRUE)
-
-                     result$preview <-
-                       cutAllLongStrings(result$data[1:2, , drop = FALSE], cutAt = 20)
                    }
 
                    # UPDATE MERGELIST ----
@@ -221,21 +208,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                    paste("Queried data has ", NROW(result$data), "rows")
                  })
 
-                 output$queriedData <- renderDataTable({
-                   req(result$preview)
-
-                   DT::datatable(
-                     result$preview,
-                     filter = "none",
-                     selection = "none",
-                     rownames = FALSE,
-                     options = list(
-                       dom = "t",
-                       ordering = FALSE,
-                       scrollX = TRUE
-                     )
-                   )
-                 })
+                 previewDataServer("previewDat", dat = reactive(result$data))
 
                  return(reactive(result$import))
                })

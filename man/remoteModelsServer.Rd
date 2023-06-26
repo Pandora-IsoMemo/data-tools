@@ -13,7 +13,8 @@ remoteModelsServer(
   resetSelected = reactive(FALSE),
   reloadChoices = reactive(TRUE),
   rPackageName = NULL,
-  rPackageVersion = NULL
+  rPackageVersion = NULL,
+  isInternet = reactive(TRUE)
 )
 }
 \arguments{
@@ -32,11 +33,13 @@ correspond to 'pathToLocal' since online and offline files should be the same an
 
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote files}
 
-\item{rPackageName}{(character) DEPRECATED (will be removed in future): name of the package (as in the
-description file) in which this module is applied, e.g. "mpiBpred"}
+\item{rPackageName}{(character) DEPRECATED (not in use and will be removed in future): name of
+the package (as in the description file) in which this module is applied, e.g. "mpiBpred"}
 
-\item{rPackageVersion}{(character) DEPRECATED (will be removed in future): current version of the
-package where this module is applied, e.g. utils::packageVersion("mpiBpred")}
+\item{rPackageVersion}{(character) DEPRECATED (not in use and will be removed in future): current
+version of the package where this module is applied, e.g. utils::packageVersion("mpiBpred")}
+
+\item{isInternet}{(reactive) TRUE if there is an internet connection}
 }
 \value{
 (character) the path to the selected remote (github) or local file

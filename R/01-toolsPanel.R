@@ -16,11 +16,14 @@ toolsImportUI <- function(id) {
       importDataUI(ns("ckanData"), "Import CKAN Data"),
       tags$br(),
       tags$br(),
-      importDataUI(ns("batchData"), "Import Batch Data")
+      importDataUI(ns("batchData"), "Import Batch Data"),
+      tags$br(),
+      tags$br(),
+      importDataUI(ns("model"), "Import Model")
     ),
     mainPanel(
       selectInput(ns("dataSel"), "Select which Import to display" ,
-                  choices = c("Data", "CKAN Data", "Batch Data")),
+                  choices = c("Data", "CKAN Data", "Batch Data", "Model")),
       DT::dataTableOutput(ns("importedDataTable"))
     )
   )
@@ -60,12 +63,23 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    outputAsMatrix = TRUE
                  )
 
+                 importedModel <- importDataServer(
+                   "model",
+                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   ignoreWarnings = TRUE,
+                   defaultSource = defaultSource,
+                   importType = "model",
+                   rPackageName = "DataTools"
+                 )
+
                  dataOut <- reactiveVal(NULL)
 
                  observe({
                    req(length(importedData()) > 0 ||
                          length(importedDataCKAN()) > 0 ||
-                         length(importedBatchData()) > 0)
+                         length(importedBatchData()) > 0 ||
+                         length(importedModel()) > 0)
                    logDebug("Updating dataOut()")
                    dataOut(NULL)
 
@@ -80,6 +94,10 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    if (input$dataSel == "Batch Data") {
                      req(length(importedBatchData()) > 0)
                      dataOut(importedBatchData()[[1]])
+                   }
+                   if (input$dataSel == "Model") {
+                     req(length(importedModel()) > 0)
+                     dataOut(importedModel()[[1]][["data"]])
                    }
                  })
 

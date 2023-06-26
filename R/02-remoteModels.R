@@ -44,10 +44,11 @@ remoteModelsUI <-
 #' @param onlyLocalModels (reactive) if TRUE only local files are used
 #' @param resetSelected (reactive) if TRUE resets the selected remote file
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote files
-#' @param rPackageName (character) DEPRECATED (will be removed in future): name of the package (as in the
-#'  description file) in which this module is applied, e.g. "mpiBpred"
-#' @param rPackageVersion (character) DEPRECATED (will be removed in future): current version of the
-#'  package where this module is applied, e.g. utils::packageVersion("mpiBpred")
+#' @param rPackageName (character) DEPRECATED (not in use and will be removed in future): name of
+#'  the package (as in the description file) in which this module is applied, e.g. "mpiBpred"
+#' @param rPackageVersion (character) DEPRECATED (not in use and will be removed in future): current
+#'  version of the package where this module is applied, e.g. utils::packageVersion("mpiBpred")
+#' @param isInternet (reactive) TRUE if there is an internet connection
 #' @return (character) the path to the selected remote (github) or local file
 #' @export
 remoteModelsServer <- function(id,
@@ -58,17 +59,24 @@ remoteModelsServer <- function(id,
                                resetSelected = reactive(FALSE),
                                reloadChoices = reactive(TRUE),
                                rPackageName = NULL,
-                               rPackageVersion = NULL) {
+                               rPackageVersion = NULL,
+                               isInternet = reactive(TRUE)) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
 
+                 if (!is.null(rPackageName))
+                   warning("Parameter 'rPackageName' is not in use anymore and will be removed soon.")
+                 if (!is.null(rPackageVersion))
+                   warning("Parameter 'rPackageVersion' is not in use anymore and will be removed soon.")
+
                  observe({
+                   logDebug("Update remoteModelChoice")
                    shinyjs::hide(ns("noConn"), asis = TRUE)
                    # try getting online models
-                   if (reloadChoices() && githubRepo != "") {
+                   if (reloadChoices() && githubRepo != "" && isInternet()) {
                      choices <-
                        getRemoteModelsFromGithub(githubRepo = githubRepo,
                                                  folderOnGithub = folderOnGithub)
@@ -94,7 +102,7 @@ remoteModelsServer <- function(id,
                    }
 
                    if (length(choices) == 0) {
-                     choices <- c("No online files found ..." = "")
+                     choices <- c("No online files available ..." = "")
                    } else {
                      choices <- c(c("Please select a file ..." = ""), choices)
                    }
@@ -106,15 +114,19 @@ remoteModelsServer <- function(id,
 
                  observe({
                    req(resetSelected())
+                   logDebug("Reset remoteModelChoice")
                    updateSelectInput(
                      session = session,
                      "remoteModelChoice",
                      selected = c("Please select a file ..." = "")
                    )
+
+                   pathToRemote(NULL)
                  }) %>%
                    bindEvent(resetSelected())
 
                  observe({
+                   logDebug("Load remoteModel")
                    if (is.null(input$remoteModelChoice) || input$remoteModelChoice == "") {
                      pathToRemote(NULL)
                    }

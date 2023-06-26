@@ -9,55 +9,45 @@
 selectDataUI <- function(id,
                          defaultSource,
                          batch,
-                         outputAsMatrix) {
+                         outputAsMatrix,
+                         importType) {
   ns <- NS(id)
 
   tagList(
     tags$br(),
-    selectSourceUI(ns("fileSource"), defaultSource),
-    tags$hr(),
-    selectFileTypeUI(ns("fileType")),
-    checkboxInput(
-      ns("withRownames"),
-      paste(if (batch)
-        "Second"
-        else
-          "First", "column contains rownames")
-    ),
+    selectSourceUI(ns("fileSource"),
+                   defaultSource = defaultSource,
+                   importType = importType),
+    if (importType == "data")
+      checkboxInput(
+        ns("withRownames"),
+        paste(if (batch)
+          "Second"
+          else
+            "First", "column contains rownames")
+      ) else NULL,
     # check logic for second column
-    if (outputAsMatrix) {
+    if (importType == "data" && outputAsMatrix) {
       checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
-    } else {
+    } else if (importType == "data") {
       helpText("The first row in your file need to contain variable names.")
-    },
-    if (batch) {
+    } else NULL,
+    if (importType == "data" && batch) {
       helpText(
         "The first column in your file need to contain the observation names from the target table."
       )
-    },
+    } else NULL,
     div(
-      style = if (batch)
-        "height: 9em"
-      else
-        "height: 9em",
+      style = "height: 9em",
       div(class = "text-warning", uiOutput(ns("warning"))),
       div(class = "text-danger", uiOutput(ns("error"))),
-      div(class = "text-success", textOutput(ns("success")))
+      div(class = "text-success", uiOutput(ns("success")))
     ),
-    div(#align = "right",
-      actionButton(
+    if (importType == "data")
+      div(actionButton(
         ns("keepData"), "Submit for data preparation"
-      )),
-    tags$hr(),
-    tags$html(
-      HTML(
-        "<b>Preview data</b> &nbsp;&nbsp; (Long characters are cutted in the preview)"
-      )
-    ),
-    fluidRow(column(12,
-                    dataTableOutput(ns(
-                      "preview"
-                    ))))
+      )) else NULL,
+    if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL
   )
 }
 
@@ -70,12 +60,18 @@ selectDataUI <- function(id,
 #' @param openPopupReset (reactive) if TRUE reset ckan source inputs
 #' @param internetCon (reactive) TRUE if there is an internet connection
 #' @inheritParams importDataServer
+#' @inheritParams uploadModelServer
 selectDataServer <- function(id,
+                             importType,
                              mergeList,
                              customNames,
                              openPopupReset,
                              internetCon,
-                             ignoreWarnings = FALSE
+                             mainFolder = "predefinedModels",
+                             subFolder = NULL,
+                             ignoreWarnings = FALSE,
+                             rPackageName = "",
+                             onlySettings = FALSE
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -91,19 +87,31 @@ selectDataServer <- function(id,
                    data = list()
                  )
 
-                 dataSource <- selectSourceServer("fileSource",
-                                                  openPopupReset = openPopupReset,
-                                                  internetCon = internetCon)
-                 selectFileTypeServer("fileType", dataSource)
+                 dataSource <- selectSourceServer(
+                   "fileSource",
+                   openPopupReset = openPopupReset,
+                   internetCon = internetCon,
+                   githubRepo = switch(rPackageName,
+                                       "BMSCApp" = "bmsc-app",
+                                       "DataTools" = "data-tools",
+                                       "mpiBpred" = "bpred",
+                                       "MpiIsoApp" = "iso-app",
+                                       "OsteoBioR" = "osteo-bior",
+                                       "PlotR" = "plotr",
+                                       "ReSources" = "resources",
+                                       ""),
+                   folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
+                   pathToLocal = getPathToLocal(mainFolder, subFolder)
+                 )
 
                  # specify file server ----
                  observeEvent(
                    list(
                      dataSource$file,
-                     input[["fileType-type"]],
-                     input[["fileType-colSep"]],
-                     input[["fileType-decSep"]],
-                     input[["fileType-sheet"]],
+                     input[["fileSource-fileType-type"]],
+                     input[["fileSource-fileType-colSep"]],
+                     input[["fileSource-fileType-decSep"]],
+                     input[["fileSource-fileType-sheet"]],
                      customNames$withRownames,
                      customNames$withColnames
                    ),
@@ -121,30 +129,43 @@ selectDataServer <- function(id,
 
                      req(dataSource$file)
                      logDebug("Updating values$dataImport")
-                     withProgress(value = 0.75,
-                                  message = 'Loading data ...', {
-                                    values <- loadDataWrapper(
-                                        values = values,
-                                        filepath = dataSource$file,
-                                        filename = dataSource$filename,
-                                        type = input[["fileType-type"]],
-                                        sep = input[["fileType-colSep"]],
-                                        dec = input[["fileType-decSep"]],
-                                        withRownames = customNames$withRownames,
-                                        withColnames = customNames$withColnames,
-                                        sheetId = as.numeric(input[["fileType-sheet"]])
-                                      )
 
-                                    if (isNotValid(values$errors, values$warnings, ignoreWarnings)) {
-                                      shinyjs::disable(ns("keepData"), asis = TRUE)
-                                    } else {
-                                      shinyjs::enable(ns("keepData"), asis = TRUE)
-                                      values$fileImportSuccess <-
-                                        "Data import successful"
-                                      values$preview <-
-                                        cutAllLongStrings(values$dataImport, cutAt = 20)
-                                    }
-                                  })
+                     withProgress(
+                       value = 0.75,
+                       message = 'Importing ...', {
+
+                         params <- selectImportParams(
+                           importType = importType,
+                           params = list(
+                             values = values,
+                             dataSource = dataSource,
+                             type = input[["fileSource-fileType-type"]],
+                             sep = input[["fileSource-fileType-colSep"]],
+                             dec = input[["fileSource-fileType-decSep"]],
+                             sheetId = as.numeric(input[["fileSource-fileType-sheet"]]),
+                             customNames = customNames,
+                             subFolder = subFolder,
+                             rPackageName = rPackageName,
+                             onlySettings = onlySettings)
+                         )
+
+                         values <- loadImport(importType = importType,
+                                              params = params,
+                                              values = values,
+                                              filename = dataSource$filename)
+
+                         if (importType == "data") {
+                           if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||
+                               input[["fileSource-source"]] == "remoteModel") {
+                             shinyjs::disable(ns("keepData"), asis = TRUE)
+                           } else {
+                             shinyjs::enable(ns("keepData"), asis = TRUE)
+                             values$fileImportSuccess <-
+                                 "Data import successful"
+                             values$preview <- values$dataImport
+                           }
+                         }
+                       })
                    }
                  )
 
@@ -157,63 +178,63 @@ selectDataServer <- function(id,
                      unlist(values$errors, use.names = FALSE), tags$p
                    )))
                  output$success <-
-                   renderText(values$fileImportSuccess)
+                   renderUI(tagList(lapply(
+                     unlist(values$fileImportSuccess, use.names = FALSE), tags$p
+                   )))
 
-                 output$preview <- renderDataTable({
-                   req(values$preview)
-                   DT::datatable(
-                     values$preview,
-                     filter = "none",
-                     selection = "none",
-                     rownames = FALSE,
-                     options = list(
-                       dom = "t",
-                       searching = FALSE,
-                       scrollX = TRUE,
-                       scrollY = "12rem"
-                     )
-                   )
-                 })
+                 if (importType == "data") {
+                   previewDataServer("previewDat", dat = reactive(values$preview))
 
-                 ## button keep data ----
-                 observeEvent(input$keepData, {
-                   logDebug("Updating input$keepData")
-                   newData <- list(data = values$dataImport,
-                                   history = list())
-                   ### format column names for import ----
-                   colnames(newData$data) <-
-                     colnames(newData$data) %>%
-                     formatColumnNames(silent = TRUE)
+                   observe({
+                     logDebug("Updating input[['fileSource-source']]")
+                     if (input[["fileSource-source"]] == "remoteModel") {
+                       shinyjs::disable(ns("keepData"), asis = TRUE)
+                     } else {
+                       shinyjs::enable(ns("keepData"), asis = TRUE)
+                     }
+                   }) %>%
+                     bindEvent(input[["fileSource-source"]])
 
-                   notifications <- c()
-                   if (customNames$withRownames) {
-                     notifications <- c(notifications,
-                                        "Rownames are not preserved when applying data preparation.")
-                   }
+                   ## button keep data ----
+                   observeEvent(input$keepData, {
+                     logDebug("Updating input$keepData")
+                     newData <- list(data = values$dataImport,
+                                     history = list())
+                     ### format column names for import ----
+                     colnames(newData$data) <-
+                       colnames(newData$data) %>%
+                       formatColumnNames(silent = TRUE)
 
-                   # update mergeList() ----
-                   newMergeList <-
-                     updateMergeList(
-                       mergeList = mergeList(),
-                       fileName = values$fileName,
-                       newData = newData,
-                       notifications = notifications
-                     )
-                   mergeList(newMergeList$mergeList)
-                   notifications <- newMergeList$notifications
+                     notifications <- c()
+                     if (customNames$withRownames) {
+                       notifications <- c(notifications,
+                                          "Rownames are not preserved when applying data preparation.")
+                     }
 
-                   showNotification(HTML(sprintf(
-                     "Submitted files: <br>%s",
-                     paste(names(mergeList()), collapse = ",<br>")
-                   )),
-                   type = "message")
+                     # update mergeList() ----
+                     newMergeList <-
+                       updateMergeList(
+                         mergeList = mergeList(),
+                         fileName = values$fileName,
+                         newData = newData,
+                         notifications = notifications
+                       )
+                     mergeList(newMergeList$mergeList)
+                     notifications <- newMergeList$notifications
 
-                   if (length(notifications) > 0) {
-                     shinyjs::info(paste0(notifications, collapse = "\n"))
-                   }
-                   # disable "keepData" to prevent loading data twice
-                   shinyjs::disable(ns("keepData"), asis = TRUE)
-                 })
+                     showNotification(HTML(sprintf(
+                       "Submitted files: <br>%s",
+                       paste(names(mergeList()), collapse = ",<br>")
+                     )),
+                     type = "message")
+
+                     if (length(notifications) > 0) {
+                       shinyjs::info(paste0(notifications, collapse = "\n"))
+                     }
+                     # disable "keepData" to prevent loading data twice
+                     shinyjs::disable(ns("keepData"), asis = TRUE)
+                   })
+                 }
 
                  values
                })
@@ -226,8 +247,25 @@ selectDataServer <- function(id,
 #' @param id id of module
 #' @inheritParams importDataServer
 selectSourceUI <- function(id,
-                           defaultSource) {
+                           defaultSource,
+                           importType) {
   ns <- NS(id)
+
+  sourceChoices <- switch(importType,
+                          data = c("Pandora Platform" = "ckan",
+                                   "File" = "file",
+                                   "URL" = "url"),
+                          model = c("Pandora Platform" = "ckan",
+                                    "File" = "file",
+                                    "URL" = "url",
+                                    "Online Model" = "remoteModel")
+  )
+
+  if (!(defaultSource %in% sourceChoices)) {
+    warning(sprintf("Parameter `defaultSource` = %s not available, using 'file' as default.",
+                    defaultSource))
+    defaultSource <- "file"
+  }
 
   tagList(fluidRow(
     column(
@@ -235,11 +273,7 @@ selectSourceUI <- function(id,
       selectInput(
         ns("source"),
         "Source",
-        choices = c(
-          "Pandora Platform" = "ckan",
-          "File" = "file",
-          "URL" = "url"
-        ),
+        choices = sourceChoices,
         selected = defaultSource
       )
     ),
@@ -371,9 +405,23 @@ selectSourceUI <- function(id,
         ns = ns,
         textInput(ns("url"), "URL", width = "100%"),
         actionButton(ns("loadUrl"), "Load")
+      ),
+      ## source == model ----
+      conditionalPanel(
+        condition = "input.source == 'remoteModel'",
+        ns = ns,
+        remoteModelsUI(ns("remoteModels"))
       )
     )
-  ))
+  ),
+  conditionalPanel(
+    condition = "input.source != 'remoteModel'",
+    ns = ns,
+    tags$hr(),
+    selectFileTypeUI(ns("fileType"), importType = importType)
+  ),
+  tags$hr()
+  )
 }
 
 #' Select Source Server
@@ -381,13 +429,24 @@ selectSourceUI <- function(id,
 #' Server function of the module
 #' @param id id of module
 #' @inheritParams selectDataServer
-selectSourceServer <- function(id, openPopupReset, internetCon) {
+#' @inheritParams remoteModelsServer
+selectSourceServer <- function(id,
+                               openPopupReset,
+                               internetCon,
+                               githubRepo,
+                               folderOnGithub,
+                               pathToLocal) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
                  dataSource <- reactiveValues(file = NULL,
-                                              fileName = NULL)
+                                              filename = NULL,
+                                              type = NULL)
+
+                 # logic to setup ckan ----
                  apiCkanFiles <- reactiveVal(list())
+
+                 selectFileTypeServer("fileType", dataSource)
 
                  observe({
                    req(isTRUE(openPopupReset()))
@@ -425,6 +484,10 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
 
                  observe({
                    logDebug("Updating input$source and reset")
+                   dataSource$file <- NULL
+                   dataSource$filename <- NULL
+                   dataSource$type <- NULL
+
                    reset("file")
                    updateTextInput(session, "url", value = "")
 
@@ -487,8 +550,6 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
 
                  ckanRecord <- reactive({
                    logDebug("Setting ckanRecord (Pandora dataset)")
-                   # reset sheet
-                   updateSelectInput(session = session, "sheet", selected = character(0))
 
                    if (is.null(input$ckanRecord))
                      return(NULL)
@@ -510,7 +571,8 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                  }) %>%
                    bindEvent(list(input$ckanRecord, input$ckanResourceTypes))
 
-                 # Update dataSource ----
+                 # UPDATE dataSource ----
+                 ## logic for ckan ----
                  observe({
                    req(internetCon())
                    logDebug("Updating input$ckanResource")
@@ -518,6 +580,7 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                        input$ckanResource == "") {
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
+                     dataSource$type <- NULL
                    } else {
                      resource <-
                        ckanRecord()$resources[[input$ckanResource]]
@@ -526,10 +589,12 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                      # "filename" will be stored in values$fileName
                      dataSource$file <- resource$url
                      dataSource$filename <- basename(resource$url)
+                     dataSource$type <- "data"
                    }
                  }) %>%
                    bindEvent(input$ckanResource, ignoreNULL = FALSE)
 
+                 ## logic for file ----
                  observe({
                    logDebug("Updating input$file")
                    inFile <- input$file
@@ -537,15 +602,18 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                    if (is.null(inFile)) {
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
+                     dataSource$type <- NULL
                    } else {
                      # "file" will be used to load the file
                      # "filename" will be stored in values$fileName
                      dataSource$file <- inFile$datapath
                      dataSource$filename <- inFile$name
+                     dataSource$type <- "data"
                    }
                  }) %>%
                    bindEvent(input$file)
 
+                 ## logic for url ----
                  observe({
                    logDebug("Updating input$url")
                    req(input$source == "url", input$url)
@@ -558,14 +626,46 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
                      shinyjs::alert("Could not load remote file")
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
+                     dataSource$type <- NULL
                    } else {
                      # "file" will be used to load the file
                      # "filename" will be stored in values$fileName
                      dataSource$file <- tmp
                      dataSource$filename <- basename(input$url)
+                     dataSource$type <- "data"
                    }
                  }) %>%
                    bindEvent(input$loadUrl)
+
+                 ## logic for model ----
+                 pathToRemote <- remoteModelsServer(
+                   "remoteModels",
+                   githubRepo = githubRepo,
+                   folderOnGithub = folderOnGithub,
+                   pathToLocal = pathToLocal,
+                   reloadChoices = openPopupReset,
+                   resetSelected = reactive(input$source),
+                   isInternet = internetCon
+                 )
+
+                 observe({
+                   req(!is.null(input$source))
+                   req(input$source == "remoteModel")
+                   logDebug("Updating input$remoteModels")
+
+                   if (is.null(pathToRemote())) {
+                     # reset
+                     dataSource$file <- NULL
+                     dataSource$filename <- NULL
+                     dataSource$type <- NULL
+                   } else {
+                     updateSelectInput(session, "fileType-type", selected = "zip")
+                     dataSource$file <- pathToRemote()
+                     dataSource$filename <- basename(pathToRemote())
+                     dataSource$type <- "model"
+                   }
+                 }) %>%
+                   bindEvent(pathToRemote(), ignoreNULL = FALSE)
 
                  dataSource
                })
@@ -576,16 +676,24 @@ selectSourceServer <- function(id, openPopupReset, internetCon) {
 #' UI of the module
 #'
 #' @param id id of module
-selectFileTypeUI <- function(id) {
+#' @inheritParams importDataServer
+selectFileTypeUI <- function(id, importType) {
   ns <- NS(id)
+
+  fileTypes <- switch(importType,
+                      data = c("xls(x)" = "xlsx",
+                               "csv",
+                               "ods",
+                               "txt"),
+                      model = c("zip"))
 
   tagList(fluidRow(
     column(4,
            selectInput(
              ns("type"),
              "File type",
-             choices = c("xls(x)" = "xlsx", "csv", "ods", "txt"),
-             selected = "xlsx"
+             choices = fileTypes,
+             selected = fileTypes[1]
            )),
     column(
       8,
@@ -624,81 +732,71 @@ selectFileTypeUI <- function(id) {
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
-                 observeEvent(list(input$type, dataSource$file), ignoreInit = TRUE, {
-                   logDebug("Entering input$sheet")
-                   if (is.null(input$type) || is.null(dataSource$file)) {
+                 observe({
+                   logDebug("Updating input$sheet")
+                   if (is.null(input$type) || is.null(dataSource$file) ||
+                       !(input$type %in% c("xls", "xlsx"))) {
                      updateSelectInput(session = session, "sheet",
                                        selected = character(0))
-                     return()
-                   }
-
-                   if (!(input$type %in% c("xls", "xlsx"))) {
-                     updateSelectInput(session = session, "sheet",
-                                       selected = character(0))
-                     return()
-                   }
-
-                   if (input$type %in% c("xls", "xlsx")) {
-                     logDebug("Updating input$sheet")
+                   } else {
                      updateSelectInput(session, "sheet",
                                        choices = getSheetSelection(dataSource$file))
                    }
-                 })
+                 }) %>%
+                   bindEvent(dataSource$file, ignoreNULL = FALSE, ignoreInit = TRUE)
                })
 }
 
-# TEST MODULE -------------------------------------------------------------
 
-uiSelect <- fluidPage(
-  shinyjs::useShinyjs(),
-  selectDataUI(
-    id = "selDat",
-    defaultSource = "cKan",
-    batch = FALSE,
-    outputAsMatrix = FALSE
-  ),
-  tags$h3("Import"),
-  dataTableOutput("import")
-)
+#' Preview Data UI
+#'
+#' UI of the module
+#'
+#' @param id id of module
+#' @param title title
+previewDataUI <- function(id, title = "Preview data") {
+  ns <- NS(id)
 
-serverSelect <- function(input, output, session) {
-  dat <- selectDataServer("selDat",
-                          openPopupReset = reactive(TRUE),
-                          internetCon = reactiveVal(has_internet()))
-
-  output$import <- renderDataTable({
-    req(dat$dataImport)
-    DT::datatable(dat$dataImport)
-  })
-}
-
-shinyApp(uiSelect, serverSelect)
-
-uiSelectSource <- fluidPage(
-  shinyjs::useShinyjs(),
-  selectSourceUI(id = "selSource",
-                 defaultSource = "cKan"),
-  fluidRow(
-    column(width = 6,
-           tags$h3("file"),
-           tags$hr(),
-           textOutput("file")),
-    column(
-      width = 6,
-      tags$h3("filepath"),
-      tags$hr(),
-      textOutput("filename")
-    )
+  tagList(
+    tags$hr(),
+    tags$html(
+      HTML(
+        sprintf("<b>%s</b> &nbsp;&nbsp; (Long characters are cutted in the preview)",
+                title)
+      )
+    ),
+    fluidRow(column(12,
+                    dataTableOutput(ns(
+                      "preview"
+                    ))))
   )
-)
-
-serverSelectSource <- function(input, output, session) {
-  datSource <- selectSourceServer("selSource",
-                                  openPopupReset = reactive(TRUE),
-                                  internetCon = reactiveVal(has_internet()))
-
-  output$file <- renderText(datSource$file)
-  output$filename <- renderText(datSource$filename)
 }
 
-shinyApp(uiSelectSource, serverSelectSource)
+
+#' Preview Data Server
+#'
+#' Server function of the module
+#' @param id id of module
+#' @param dat (reactive) data.frame of preview data to be displayed
+previewDataServer <- function(id, dat) {
+  moduleServer(id,
+               function(input, output, session) {
+                 output$preview <- renderDataTable({
+                   validate(need(dat(), "No data"))
+
+                   DT::datatable(
+                     dat() %>%
+                       cutAllLongStrings(cutAt = 20),
+                     filter = "none",
+                     selection = "none",
+                     rownames = FALSE,
+                     options = list(
+                       dom = "t",
+                       searching = FALSE,
+                       scrollX = TRUE,
+                       scrollY = "12rem"
+                     )
+                   )
+                 })
+               })
+}

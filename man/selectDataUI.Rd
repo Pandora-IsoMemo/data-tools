@@ -4,17 +4,19 @@
 \alias{selectDataUI}
 \title{Select Data UI}
 \usage{
-selectDataUI(id, defaultSource, batch, outputAsMatrix)
+selectDataUI(id, defaultSource, batch, outputAsMatrix, importType)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
-\item{batch}{(logical) use batch import}
+\item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
-e.g. for batch = TRUE in Resources}
+e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
+
+\item{importType}{(character) type of import, either "data" or "model"}
 }
 \description{
 UI of the module

@@ -6,15 +6,20 @@
 \usage{
 importDataServer(
   id,
-  title = "Data import",
+  title = "",
+  defaultSource = "ckan",
+  ignoreWarnings = FALSE,
+  importType = "data",
   rowNames = reactiveVal(NULL),
   colNames = reactiveVal(NULL),
   customWarningChecks = list(),
   customErrorChecks = list(),
-  ignoreWarnings = FALSE,
-  defaultSource = "ckan",
   batch = FALSE,
-  outputAsMatrix = FALSE
+  outputAsMatrix = FALSE,
+  mainFolder = "predefinedModels",
+  subFolder = NULL,
+  rPackageName = "",
+  onlySettings = FALSE
 )
 }
 \arguments{
@@ -22,26 +27,42 @@ importDataServer(
 
 \item{title}{title of data import module}
 
-\item{rowNames}{(reactive) use this for rownames of imported data}
-
-\item{colNames}{(reactive) use this for colnames of imported data}
-
-\item{customWarningChecks}{list of reactive(!) functions which will be executed after importing
-of data.
- functions need to return TRUE if check is successful or a character with a warning otherwise.}
-
-\item{customErrorChecks}{list of reactive(!) functions which will be executed after importing
-of data.
-  functions need to return TRUE if check is successful or a character with a warning otherwise.}
+\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
-\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+\item{importType}{(character) type of import, either "data" or "model"}
 
-\item{batch}{(logical) use batch import}
+\item{rowNames}{(reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"}
+
+\item{colNames}{(reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"}
+
+\item{customWarningChecks}{list of reactive(!) functions which will be executed after importing
+of data.
+ functions need to return TRUE if check is successful or a character with a warning otherwise.
+ This parameter is ignored if importType == "model"}
+
+\item{customErrorChecks}{list of reactive(!) functions which will be executed after importing
+of data.
+  functions need to return TRUE if check is successful or a character with a warning otherwise.
+  This parameter is ignored if importType == "model"}
+
+\item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
-e.g. for batch = TRUE in Resources}
+e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
+
+\item{mainFolder}{(character) folder containing all loadable .zip files.
+This parameter is ignored if importType == "data"}
+
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
+This parameter is ignored if importType == "data"}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
+from this R package. This parameter is ignored if importType == "data"}
+
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
+This parameter is ignored if importType == "data"}
 }
 \description{
 Backend for data import module

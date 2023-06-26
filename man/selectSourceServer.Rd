@@ -4,7 +4,14 @@
 \alias{selectSourceServer}
 \title{Select Source Server}
 \usage{
-selectSourceServer(id, openPopupReset, internetCon)
+selectSourceServer(
+  id,
+  openPopupReset,
+  internetCon,
+  githubRepo,
+  folderOnGithub,
+  pathToLocal
+)
 }
 \arguments{
 \item{id}{id of module}
@@ -12,6 +19,13 @@ selectSourceServer(id, openPopupReset, internetCon)
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
+
+\item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
+
+\item{folderOnGithub}{(character) folder on github where remote files are stored. This should
+correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
+
+\item{pathToLocal}{(character) relative path to the folder storing local files}
 }
 \description{
 Server function of the module

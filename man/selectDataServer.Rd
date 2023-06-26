@@ -6,15 +6,22 @@
 \usage{
 selectDataServer(
   id,
+  importType,
   mergeList,
   customNames,
   openPopupReset,
   internetCon,
-  ignoreWarnings = FALSE
+  mainFolder = "predefinedModels",
+  subFolder = NULL,
+  ignoreWarnings = FALSE,
+  rPackageName = "",
+  onlySettings = FALSE
 )
 }
 \arguments{
 \item{id}{id of module}
+
+\item{importType}{(character) type of import, either "data" or "model"}
 
 \item{mergeList}{(list) list of selected data}
 
@@ -24,7 +31,19 @@ selectDataServer(
 
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
 
+\item{mainFolder}{(character) folder containing all loadable .zip files.
+This parameter is ignored if importType == "data"}
+
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
+This parameter is ignored if importType == "data"}
+
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
+from this R package. This parameter is ignored if importType == "data"}
+
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
+This parameter is ignored if importType == "data"}
 }
 \description{
 Server function of the module
