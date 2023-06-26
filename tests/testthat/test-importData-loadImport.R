@@ -10,7 +10,7 @@ test_that("Test loadModel()", {
   testModel <- loadModel(
     filepath = tmpPath,
     subFolder = NULL,
-    rPackageName = NULL,
+    rPackageName = "",
     onlySettings = FALSE
   )
   expect_true(all(

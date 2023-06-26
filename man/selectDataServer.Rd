@@ -31,16 +31,19 @@ selectDataServer(
 
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
 
-\item{mainFolder}{(character) folder containing all loadable .zip files}
+\item{mainFolder}{(character) folder containing all loadable .zip files.
+This parameter is ignored if importType == "data"}
 
-\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
+This parameter is ignored if importType == "data"}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
-\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
-package}
+\item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
+from this R package. This parameter is ignored if importType == "data"}
 
-\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
+\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
+This parameter is ignored if importType == "data"}
 }
 \description{
 Server function of the module

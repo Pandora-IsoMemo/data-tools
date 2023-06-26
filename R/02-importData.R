@@ -17,33 +17,45 @@ importDataUI <- function(id, label = "Import Data") {
 #'
 #' @param id namespace id
 #' @param title title of data import module
-#' @param rowNames (reactive) use this for rownames of imported data
-#' @param colNames (reactive) use this for colnames of imported data
+#' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
+#' @param ignoreWarnings TRUE to enable imports in case of warnings
+#' @param importType (character) type of import, either "data" or "model"
+#' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
+#' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
 #'  of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
+#'   This parameter is ignored if importType == "model"
 #' @param customErrorChecks list of reactive(!) functions which will be executed after importing
 #' of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
-#' @param ignoreWarnings TRUE to enable imports in case of warnings
-#' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
-#' @param batch (logical) use batch import
+#'   This parameter is ignored if importType == "model"
+#' @param batch (logical) use batch import. This parameter is ignored if importType == "model"
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
-#'  e.g. for batch = TRUE in Resources
-#' @param importType (character) type of import, either "data" or "model"
-#' @inheritParams uploadModelServer
+#'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
+#' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
+#'  This parameter is ignored if importType == "data"
+#' @param mainFolder (character) folder containing all loadable .zip files.
+#'   This parameter is ignored if importType == "data"
+#' @param subFolder (character) (optional) subfolder containing loadable .zip files.
+#'  This parameter is ignored if importType == "data"
+#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
+#'  from this R package. This parameter is ignored if importType == "data"
+#'
 #' @export
 importDataServer <- function(id,
                              title = "",
+                             defaultSource = "ckan",
+                             ignoreWarnings = FALSE,
+                             importType = "data",
+                             # parameters for data upload
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),
                              customWarningChecks = list(),
                              customErrorChecks = list(),
-                             ignoreWarnings = FALSE,
-                             defaultSource = "ckan",
                              batch = FALSE,
                              outputAsMatrix = FALSE,
-                             importType = "data",
+                             # parameters for model upload
                              mainFolder = "predefinedModels",
                              subFolder = NULL,
                              rPackageName = "",
