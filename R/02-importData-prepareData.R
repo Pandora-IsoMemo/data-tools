@@ -491,7 +491,7 @@ renameColumns <- function(data, oldColName, newColName) {
 }
 
 deleteColumns <- function(data, columnsToDelete) {
-  data[, !(colnames(data) %in% columnsToDelete)]
+  data[, !(colnames(data) %in% columnsToDelete), drop = FALSE]
 }
 
 joinColumns <-

@@ -243,7 +243,7 @@ loadModel <-
     }
 
     if (!exists("modelImport") ||
-        !all(names(modelImport) %in% c("data", "inputs", "model", "version"))) {
+        !all(names(modelImport) %in% c("data", "inputs", "values", "model", "version"))) {
       stop("File format not valid. Model object not found.")
       return(NULL)
     }
@@ -285,14 +285,20 @@ loadModel <-
 
     # import checks ----
     ## check data ----
-    if (is.null(modelImport$data)) {
+    if ((rPackageName != "ReSources" && is.null(modelImport$data)) ||
+        (rPackageName == "ReSources" && is.null(modelImport$values))) {
       dat$message[["data"]] <-
         "No input data found."
       dat$messageType[["data"]] <-
         "warning"
       dat$alertType <- "warning"
     } else {
-      dat$data <- modelImport$data
+      if (rPackageName == "ReSources") {
+        # loads "data" and "inputs", both stored in "values"
+        dat$data <- modelImport$values
+      } else {
+        dat$data <- modelImport$data
+      }
       dat$message[["data"]] <-
         "Input data loaded. "
       dat$messageType[["data"]] <-
@@ -301,7 +307,8 @@ loadModel <-
     }
 
     ## check inputs ----
-    if (is.null(modelImport$inputs)) {
+    if ((rPackageName != "ReSources" && is.null(modelImport$data)) ||
+        (rPackageName == "ReSources" && is.null(modelImport$values))) {
       dat$message[["inputs"]] <-
         "No model selection parameters found."
       dat$messageType[["inputs"]] <-
