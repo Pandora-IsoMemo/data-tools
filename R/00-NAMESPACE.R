@@ -17,6 +17,7 @@
 #' @importFrom stats setNames
 #' @importFrom templates tmpl
 #' @importFrom tidyr separate unite
+#' @importFrom tools file_ext
 #' @importFrom utils capture.output download.file read.csv packageVersion
 #' @importFrom zip zipr
 NULL
