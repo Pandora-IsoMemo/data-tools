@@ -3,8 +3,11 @@
 ## Version: 23.09.0
 
 ### New Features
-- _Import Data_ module: new optional parameter `fileExtension` which restricts the import of model 
-objects to files of exactly the specified type, e.g. "zip", "resources", "bpred", "bmsc"
+- _Import Data_ module: new optional parameter `fileExtension` which filters files for the import of
+model objects for exactly the specified type, e.g. "zip", "resources", "bpred", "bmsc"
+
+### Bug Fixes
+- _Import Data_ module: Modal kept closing when trying to import data a second time
 
 ## Version: 23.06.3
 
