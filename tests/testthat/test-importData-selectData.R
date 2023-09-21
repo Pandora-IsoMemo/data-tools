@@ -36,7 +36,7 @@ test_that("Test module selectSourceServer", {
                          pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
-               print("test select source from ckan")
+               print("test select source from ckan: apply empty meta filter")
                # Act
                session$setInputs(
                  source = "ckan",
@@ -61,7 +61,7 @@ test_that("Test module selectSourceServer", {
                          pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
-               print("test select source from ckan")
+               print("test select source from ckan: with meta filter")
                # Act
                session$setInputs(
                  source = "ckan",
@@ -77,9 +77,6 @@ test_that("Test module selectSourceServer", {
                expect_null(session$returned$type)
              })
 
-  testApiContent <- getGithubContent(githubRepo = "bpred")
-  testRemoteModels <- getRemoteModelsFromGithub(githubRepo = "bpred", apiOut = testApiContent)
-
   testServer(selectSourceServer,
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
@@ -92,7 +89,7 @@ test_that("Test module selectSourceServer", {
                # Act
                session$setInputs(
                  source = "remoteModel",
-                 `remoteModels-remoteModelChoice` = testRemoteModels[1],
+                 `remoteModels-remoteModelChoice` = "2020-04-15_18_59_33_bpred",
                  `remoteModels-loadRemoteModel` = 1
                )
 
@@ -100,4 +97,27 @@ test_that("Test module selectSourceServer", {
                expect_equal(substr(session$returned$file, start = 1, stop = 5), "/tmp/")
                expect_equal(session$returned$type, "model")
              })
+
+  testServer(selectSourceServer,
+             args = list(openPopupReset = reactive(TRUE),
+                         internetCon = reactiveVal(FALSE),
+                         githubRepo = "data-tools",
+                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                         pathToLocal = getPathToLocal("predefinedModels",
+                                                      subFolder = NULL,
+                                                      rPackageName = "DataTools")),
+             {
+               # Arrange
+               print("test select source from local model")
+               # Act
+               session$setInputs(
+                 source = "remoteModel",
+                 `remoteModels-remoteModelChoice` = "2023-03-30_10_44_04_DataTools",
+                 `remoteModels-loadRemoteModel` = 1
+               )
+
+               expect_true(nchar(session$returned$filename) > 0)
+               expect_equal(session$returned$type, "model")
+             }) %>%
+    suppressWarnings()
 })
