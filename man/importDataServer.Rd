@@ -16,6 +16,7 @@ importDataServer(
   customErrorChecks = list(),
   batch = FALSE,
   outputAsMatrix = FALSE,
+  fileExtension = "zip",
   mainFolder = "predefinedModels",
   subFolder = NULL,
   rPackageName = "",
@@ -51,6 +52,9 @@ of data.
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
+
+\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
+"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 
 \item{mainFolder}{(character) folder containing all loadable .zip files.
 This parameter is ignored if importType == "data"}

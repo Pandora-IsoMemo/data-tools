@@ -13,6 +13,7 @@ downUploadButtonServer(
   githubRepo,
   mainFolder = "predefinedModels",
   subFolder = NULL,
+  fileExtension = "zip",
   helpHTML = "",
   modelNotes = reactive(""),
   onlySettings = FALSE,
@@ -38,9 +39,13 @@ module is applied, e.g. "mpiBpred"}
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{mainFolder}{(character) folder containing all loadable .zip files}
+\item{mainFolder}{(character) folder containing all loadable .zip files. For most apps this
+is folder "predefinedModels". In most apps it can be found under "inst/app/".}
 
-\item{subFolder}{(character) name of the (optional) subfolder containing loadable .zip files}
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+
+\item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
+"bpred", "bmsc"}
 
 \item{helpHTML}{content of help function}
 

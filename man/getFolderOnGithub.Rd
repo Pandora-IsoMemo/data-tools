@@ -7,7 +7,8 @@
 getFolderOnGithub(mainFolder, subFolder = NULL)
 }
 \arguments{
-\item{mainFolder}{(character) folder containing all loadable .zip files}
+\item{mainFolder}{(character) folder containing all loadable .zip files. For most apps this
+is folder "predefinedModels". In most apps it can be found under "inst/app/".}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 }

@@ -4,7 +4,14 @@
 \alias{selectDataUI}
 \title{Select Data UI}
 \usage{
-selectDataUI(id, defaultSource, batch, outputAsMatrix, importType)
+selectDataUI(
+  id,
+  defaultSource,
+  batch,
+  outputAsMatrix,
+  importType,
+  fileExtension = "zip"
+)
 }
 \arguments{
 \item{id}{id of module}
@@ -17,6 +24,9 @@ selectDataUI(id, defaultSource, batch, outputAsMatrix, importType)
 e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
 
 \item{importType}{(character) type of import, either "data" or "model"}
+
+\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
+"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 }
 \description{
 UI of the module

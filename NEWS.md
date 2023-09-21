@@ -1,5 +1,11 @@
 # DataTools
 
+## Version: 23.09.0
+
+### New Features
+- _Import Data_ module: new optional parameter `fileExtension` which restricts the import of model 
+objects to files of exactly the specified type, e.g. "zip", "resources", "bpred", "bmsc"
+
 ## Version: 23.06.3
 
 ### New Features

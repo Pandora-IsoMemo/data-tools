@@ -15,7 +15,8 @@ selectDataServer(
   subFolder = NULL,
   ignoreWarnings = FALSE,
   rPackageName = "",
-  onlySettings = FALSE
+  onlySettings = FALSE,
+  fileExtension = "zip"
 )
 }
 \arguments{
@@ -44,6 +45,9 @@ from this R package. This parameter is ignored if importType == "data"}
 
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
 This parameter is ignored if importType == "data"}
+
+\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
+"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 }
 \description{
 Server function of the module

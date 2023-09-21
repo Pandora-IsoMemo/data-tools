@@ -33,8 +33,8 @@ toolsImportUI <- function(id) {
 #' Server function of toolsImport module
 #'
 #' @param id module id
-#' @inheritParams importDataServer
-toolsImportServer <- function(id, defaultSource = "ckan") {
+#' @param config (list) list of config variables
+toolsImportServer <- function(id, config) {
   moduleServer(id,
                function(input, output, session) {
                  importedData <- importDataServer(
@@ -42,7 +42,7 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ignoreWarnings = TRUE,
-                   defaultSource = defaultSource
+                   defaultSource = config[["defaultSource"]]
                  )
 
                  importedDataCKAN <- importDataServer(
@@ -58,7 +58,7 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ignoreWarnings = TRUE,
-                   defaultSource = defaultSource,
+                   defaultSource = config[["defaultSource"]],
                    batch = TRUE,
                    outputAsMatrix = TRUE
                  )
@@ -68,9 +68,11 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ignoreWarnings = TRUE,
-                   defaultSource = defaultSource,
+                   defaultSource = config[["defaultSource"]],
                    importType = "model",
-                   rPackageName = "DataTools"
+                   mainFolder = config[["mainFolder"]],
+                   fileExtension = config[["fileExtension"]],
+                   rPackageName = config[["rPackageName"]]
                  )
 
                  dataOut <- reactiveVal(NULL)
@@ -113,10 +115,11 @@ toolsImportServer <- function(id, defaultSource = "ckan") {
 #' UI function of toolsLoad module
 #'
 #' @param id module id
+#' @param config (list) list of config variables
 #'
 #' @importFrom stats setNames
 #'
-toolsLoadUI <- function(id) {
+toolsLoadUI <- function(id, config) {
   ns <- NS(id)
 
   sidebarLayout(
@@ -143,7 +146,9 @@ toolsLoadUI <- function(id) {
           downloadModelUI(ns("downloadDat"), label = "Test download of model: `mtcars`")
         ),
         column(width = 6,
-               uploadModelUI(ns("uploadDat"), label = "Upload some data"))
+               uploadModelUI(ns("uploadDat"),
+                             label = "Upload some data",
+                             fileExtension = config[["fileExtension"]]))
       ),
       tags$h3("Data"),
       dataTableOutput(ns("data"))
@@ -155,7 +160,8 @@ toolsLoadUI <- function(id) {
 #' Server function of toolsLoad module
 #'
 #' @param id module id
-toolsLoadServer <- function(id) {
+#' @param config (list) list of config variables
+toolsLoadServer <- function(id, config) {
   moduleServer(id,
                function(input, output, session) {
                  testData <- reactiveVal(structure(
@@ -189,8 +195,10 @@ toolsLoadServer <- function(id) {
                    dat = testData,
                    inputs = input,
                    model = reactive(NULL),
-                   rPackageName = "DataTools",
-                   githubRepo = "data-tools",
+                   rPackageName = config[["rPackageName"]],
+                   githubRepo = config[["githubRepo"]],
+                   mainFolder = config[["mainFolder"]],
+                   fileExtension = config[["fileExtension"]],
                    modelNotes = reactive(input$modelNotes)
                  )
 
@@ -227,13 +235,17 @@ toolsLoadServer <- function(id) {
                    dat = testData,
                    inputs = input,
                    model = reactive(NULL),
-                   rPackageName = "DataTools",
+                   rPackageName = config[["rPackageName"]],
+                   fileExtension = config[["fileExtension"]],
                    helpHTML = "",
                    onlySettings = TRUE # FALSE
                  )
 
                  uploadedData <- uploadModelServer("uploadDat",
-                                                   githubRepo = "data-tools")
+                                                   githubRepo = config[["githubRepo"]],
+                                                   mainFolder = config[["mainFolder"]],
+                                                   fileExtension = config[["fileExtension"]],
+                                                   reloadChoices = reactive(TRUE))
 
                  observe({
                    ## update data ----

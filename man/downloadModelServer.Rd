@@ -11,6 +11,7 @@ downloadModelServer(
   model,
   rPackageName,
   subFolder = NULL,
+  fileExtension = "zip",
   helpHTML = "",
   modelNotes = reactive(""),
   onlySettings = FALSE,
@@ -31,7 +32,10 @@ downloadModelServer(
 \item{rPackageName}{(character) name of the package (as in the description file) in which this
 module is applied, e.g. "mpiBpred"}
 
-\item{subFolder}{(character) name of the (optional) subfolder containing loadable .zip files}
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+
+\item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
+"bpred", "bmsc"}
 
 \item{helpHTML}{content of help function}
 

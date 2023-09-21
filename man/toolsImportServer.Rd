@@ -4,12 +4,12 @@
 \alias{toolsImportServer}
 \title{Server function of toolsImport module}
 \usage{
-toolsImportServer(id, defaultSource = "ckan")
+toolsImportServer(id, config)
 }
 \arguments{
 \item{id}{module id}
 
-\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+\item{config}{(list) list of config variables}
 }
 \description{
 Server function of toolsImport module

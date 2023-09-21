@@ -1,3 +1,8 @@
+# load global variables
+config_file <- system.file("config.yaml", package = "DataTools")
+app_config <- yaml::read_yaml(config_file)
+
+# setup app
 ui <- fluidPage(useShinyjs(), # Set up shinyjs
                 tagList(
                   navbarPage(
@@ -9,7 +14,7 @@ ui <- fluidPage(useShinyjs(), # Set up shinyjs
                     tabPanel(title = "Data Import",
                              toolsImportUI(id = "import_panel")),
                     tabPanel(title = "Download Model",
-                             toolsLoadUI(id = "load_panel"))
+                             toolsLoadUI(id = "load_panel", config = app_config))
                   ),
                   tags$head(
                     tags$link(rel = "stylesheet", type = "text/css", href = "custom.css")
@@ -17,10 +22,8 @@ ui <- fluidPage(useShinyjs(), # Set up shinyjs
                 ))
 
 server <- function(input, output, session) {
-  toolsImportServer(id = "import_panel",
-                    defaultSource = "file")
-
-  toolsLoadServer(id = "load_panel")
+  toolsImportServer(id = "import_panel", config = app_config)
+  toolsLoadServer(id = "load_panel", config = app_config)
 }
 
 shinyApp(ui, server)

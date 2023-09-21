@@ -33,6 +33,8 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param batch (logical) use batch import. This parameter is ignored if importType == "model"
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
 #'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
+#' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
+#'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
 #'  This parameter is ignored if importType == "data"
 #' @param mainFolder (character) folder containing all loadable .zip files.
@@ -56,6 +58,7 @@ importDataServer <- function(id,
                              batch = FALSE,
                              outputAsMatrix = FALSE,
                              # parameters for model upload
+                             fileExtension = "zip",
                              mainFolder = "predefinedModels",
                              subFolder = NULL,
                              rPackageName = "",
@@ -100,7 +103,8 @@ importDataServer <- function(id,
                        defaultSource = initSource,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix,
-                       importType = importType
+                       importType = importType,
+                       fileExtension = fileExtension
                      )
                    )
 
@@ -156,7 +160,8 @@ importDataServer <- function(id,
                    mainFolder = mainFolder,
                    subFolder = subFolder,
                    rPackageName = rPackageName,
-                   onlySettings = onlySettings
+                   onlySettings = onlySettings,
+                   fileExtension = fileExtension
                  )
 
                  ## disable button accept ----
@@ -381,7 +386,8 @@ importDataDialog <-
            defaultSource = "ckan",
            batch = FALSE,
            outputAsMatrix = FALSE,
-           importType = "data") {
+           importType = "data",
+           fileExtension = "zip") {
 
     if (title == "") {
       title <- switch(importType,
@@ -422,7 +428,8 @@ importDataDialog <-
             defaultSource = defaultSource,
             batch = batch,
             outputAsMatrix = outputAsMatrix,
-            importType = importType
+            importType = importType,
+            fileExtension = fileExtension
           )
         ),
         if (importType == "data") tabPanel("Prepare",

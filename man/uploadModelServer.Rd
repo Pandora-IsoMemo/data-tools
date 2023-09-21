@@ -12,6 +12,7 @@ uploadModelServer(
   rPackageName = NULL,
   reloadChoices = reactive(TRUE),
   onlySettings = FALSE,
+  fileExtension = "zip",
   reset = reactive(FALSE)
 )
 }
@@ -20,7 +21,8 @@ uploadModelServer(
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
-\item{mainFolder}{(character) folder containing all loadable .zip files}
+\item{mainFolder}{(character) folder containing all loadable .zip files. For most apps this
+is folder "predefinedModels". In most apps it can be found under "inst/app/".}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 
@@ -30,6 +32,9 @@ package}
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote files}
 
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
+
+\item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
+"bpred", "bmsc"}
 
 \item{reset}{(reactive) resets the selection of the online files}
 }
