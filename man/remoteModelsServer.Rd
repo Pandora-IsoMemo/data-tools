@@ -27,7 +27,7 @@ remoteModelsServer(
 \item{folderOnGithub}{(character) folder on github where remote files are stored. This should
 correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
 
-\item{onlyLocalModels}{(reactive) if TRUE only local files are used}
+\item{onlyLocalModels}{(reactive) if TRUE only local files are used instead of accessing github}
 
 \item{resetSelected}{(reactive) if TRUE resets the selected remote file}
 
