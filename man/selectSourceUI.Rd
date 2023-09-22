@@ -4,7 +4,7 @@
 \alias{selectSourceUI}
 \title{Select Source UI}
 \usage{
-selectSourceUI(id, defaultSource, importType)
+selectSourceUI(id, defaultSource, importType, fileExtension = "zip")
 }
 \arguments{
 \item{id}{id of module}
@@ -12,6 +12,9 @@ selectSourceUI(id, defaultSource, importType)
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{importType}{(character) type of import, either "data" or "model"}
+
+\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
+"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 }
 \description{
 UI of the module

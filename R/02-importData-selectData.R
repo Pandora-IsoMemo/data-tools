@@ -10,14 +10,16 @@ selectDataUI <- function(id,
                          defaultSource,
                          batch,
                          outputAsMatrix,
-                         importType) {
+                         importType,
+                         fileExtension = "zip") {
   ns <- NS(id)
 
   tagList(
     tags$br(),
     selectSourceUI(ns("fileSource"),
                    defaultSource = defaultSource,
-                   importType = importType),
+                   importType = importType,
+                   fileExtension = fileExtension),
     if (importType == "data")
       checkboxInput(
         ns("withRownames"),
@@ -71,7 +73,8 @@ selectDataServer <- function(id,
                              subFolder = NULL,
                              ignoreWarnings = FALSE,
                              rPackageName = "",
-                             onlySettings = FALSE
+                             onlySettings = FALSE,
+                             fileExtension = "zip"
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -146,7 +149,8 @@ selectDataServer <- function(id,
                              customNames = customNames,
                              subFolder = subFolder,
                              rPackageName = rPackageName,
-                             onlySettings = onlySettings)
+                             onlySettings = onlySettings,
+                             fileExtension = fileExtension)
                          )
 
                          values <- loadImport(importType = importType,
@@ -248,7 +252,8 @@ selectDataServer <- function(id,
 #' @inheritParams importDataServer
 selectSourceUI <- function(id,
                            defaultSource,
-                           importType) {
+                           importType,
+                           fileExtension = "zip") {
   ns <- NS(id)
 
   sourceChoices <- switch(importType,
@@ -265,6 +270,11 @@ selectSourceUI <- function(id,
     warning(sprintf("Parameter `defaultSource` = %s not available, using 'file' as default.",
                     defaultSource))
     defaultSource <- "file"
+  }
+
+  acceptExt <- NULL
+  if (importType == "model" && !is.null(fileExtension) && fileExtension != "") {
+    acceptExt <- sprintf(".%s", fileExtension)
   }
 
   tagList(fluidRow(
@@ -397,7 +407,10 @@ selectSourceUI <- function(id,
       conditionalPanel(
         condition = "input.source == 'file'",
         ns = ns,
-        fileInput(ns("file"), "File", width = "100%")
+        fileInput(ns("file"),
+                  "File",
+                  accept = acceptExt,
+                  width = "100%")
       ),
       ## source == url ----
       conditionalPanel(

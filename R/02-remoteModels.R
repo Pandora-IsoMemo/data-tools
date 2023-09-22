@@ -41,7 +41,7 @@ remoteModelsUI <-
 #' @param pathToLocal (character) relative path to the folder storing local files
 #' @param folderOnGithub (character) folder on github where remote files are stored. This should
 #' correspond to 'pathToLocal' since online and offline files should be the same and up-to-date
-#' @param onlyLocalModels (reactive) if TRUE only local files are used
+#' @param onlyLocalModels (reactive) if TRUE only local files are used instead of accessing github
 #' @param resetSelected (reactive) if TRUE resets the selected remote file
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote files
 #' @param rPackageName (character) DEPRECATED (not in use and will be removed in future): name of
@@ -75,6 +75,8 @@ remoteModelsServer <- function(id,
                  observe({
                    logDebug("Update remoteModelChoice")
                    shinyjs::hide(ns("noConn"), asis = TRUE)
+                   useLocalModels(FALSE)
+
                    # try getting online models
                    if (reloadChoices() && githubRepo != "" && isInternet()) {
                      choices <-
@@ -114,7 +116,7 @@ remoteModelsServer <- function(id,
 
                  observe({
                    req(resetSelected())
-                   logDebug("Reset remoteModelChoice")
+                   logDebug("Reset selected remoteModelChoice")
                    updateSelectInput(
                      session = session,
                      "remoteModelChoice",
@@ -135,16 +137,13 @@ remoteModelsServer <- function(id,
                    tmpPath <- NULL
 
                    if (!useLocalModels()) {
-                     tmpPath <- tempfile()
+                     tmpPath <- tempfile(fileext = ".zip")
                      withProgress(message = "Downloading remote file ...", value = 0.9, {
                        res <- try(download.file(
-                         paste0(
-                           "https://github.com/Pandora-IsoMemo/",
+                         sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s.zip",
                            githubRepo,
-                           "/raw/main/inst/app/predefinedModels/",
-                           input$remoteModelChoice,
-                           ".zip"
-                         ),
+                           folderOnGithub,
+                           input$remoteModelChoice),
                          destfile = tmpPath
                        ))
                      })

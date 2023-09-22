@@ -35,6 +35,7 @@ downUploadButtonServer <- function(id,
                                    githubRepo,
                                    mainFolder = "predefinedModels",
                                    subFolder = NULL,
+                                   fileExtension = "zip",
                                    helpHTML = "",
                                    modelNotes = reactive(""),
                                    onlySettings = FALSE,
@@ -62,6 +63,7 @@ downUploadButtonServer <- function(id,
                            label = "Upload",
                            labelRemote = labelRemote,
                            labelLocal = labelLocal,
+                           fileExtension = fileExtension,
                            width = "100%"
                          ),
                          tags$br(),
@@ -79,6 +81,7 @@ downUploadButtonServer <- function(id,
                    model = model,
                    rPackageName = rPackageName,
                    subFolder = subFolder,
+                   fileExtension = fileExtension,
                    helpHTML = helpHTML,
                    modelNotes = modelNotes,
                    onlySettings = onlySettings,
@@ -94,20 +97,10 @@ downUploadButtonServer <- function(id,
                    subFolder = subFolder,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
+                   fileExtension = fileExtension,
                    reloadChoices = reactive(input[["showModal"]] > 0),
                    reset = reset
                  )
-
-
-                 observe({
-                   req(input[["showModal"]] > 0)
-                   logDebug("downUploadButtonServer: removeModal")
-                   if (!is.null(uploadedData$data) ||
-                       !is.null(uploadedData$inputs) ||
-                       !is.null(uploadedData$model)) {
-                     removeModal()
-                   }
-                 })
 
                  return(uploadedData)
                })
@@ -119,23 +112,24 @@ downUploadButtonServer <- function(id,
 #' UI function to download a zip file with notes and a list of models
 #'
 #' @param id id of module
-#' @param label title of module
+#' @param title title of module
+#' @param label button label
 #' @param width width of inputs in percent
 #'
 #' @export
-downloadModelUI <- function(id, label, width = NULL) {
+downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) {
   ns <- NS(id)
 
   tagList(
-    tags$h4(label),
+    tags$h4(title),
     textAreaInput(
       ns("exportNotes"),
       "Notes",
-      placeholder = "Description ...",
+      placeholder = "Model description ...",
       width = width
     ),
     checkboxInput(ns("onlyInputs"), "Store only data and user inputs", width = width),
-    downloadButton(ns("download"), "Download"),
+    downloadButton(ns("download"), label),
     conditionalPanel(
       ns = ns,
       condition = "output.showSettings",
@@ -155,7 +149,9 @@ downloadModelUI <- function(id, label, width = NULL) {
 #' @param model (reactive) model output object
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
-#' @param subFolder (character) name of the (optional) subfolder containing loadable .zip files
+#' @param subFolder (character) (optional) subfolder containing loadable .zip files
+#' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
+#'  "bpred", "bmsc"
 #' @param helpHTML content of help function
 #' @param modelNotes (reactive) notes regarding the object to be saved and displayed when uploaded
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
@@ -174,6 +170,7 @@ downloadModelServer <-
            model,
            rPackageName,
            subFolder = NULL,
+           fileExtension = "zip",
            helpHTML = "",
            modelNotes = reactive(""),
            onlySettings = FALSE,
@@ -200,12 +197,18 @@ downloadModelServer <-
                      updateTextAreaInput(session, "exportNotes", value = modelNotes())
                    })
 
+                   fileString <- ifelse(fileExtension == "zip",
+                                        paste0(c("model", rPackageName, subFolder), collapse = "_"),
+                                        paste0(c("model", subFolder), collapse = "_"))
+
                    output$download <- downloadHandler(
                      filename = function() {
-                       paste(gsub("\ ", "_", Sys.time()),
-                             paste0(paste0(
-                               c(rPackageName, subFolder), collapse = "_"
-                             ), ".zip"),
+                       paste(round(Sys.time()) %>%
+                               gsub(pattern = ":", replacement = "-") %>%
+                               gsub(pattern = "\ ", replacement = "_"),
+                             sprintf("%s.%s",
+                                     fileString,
+                                     fileExtension),
                              sep = "_")
                      },
                      content = function(file) {
@@ -282,6 +285,8 @@ getModelVersion <- function(rPackageName, subFolder) {
 #' @param label title of module
 #' @param labelRemote label of the input for remote files
 #' @param labelLocal label of the input for local files
+#' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
+#'  "bpred", "bmsc". Only files with this extension are selectable.
 #' @param width width of inputs in percent
 #'
 #' @export
@@ -289,12 +294,16 @@ uploadModelUI <- function(id,
                           label,
                           labelRemote = "Load online model",
                           labelLocal = "Load local model",
+                          fileExtension = "zip",
                           width = NULL) {
   ns <- NS(id)
 
   tagList(
     tags$h4(label),
-    fileInput(ns("uploadModel"), label = labelLocal, width = width),
+    fileInput(ns("uploadModel"),
+              label = labelLocal,
+              accept = sprintf(".%s", fileExtension),
+              width = width),
     remoteModelsUI(
       ns("remoteModels"),
       selectLabel = labelRemote,
@@ -313,7 +322,10 @@ uploadModelUI <- function(id,
 #' @param id namespace id
 #' @param reset (reactive) resets the selection of the online files
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data
-#' @param mainFolder (character) folder containing all loadable .zip files
+#' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
+#'  "bpred", "bmsc"
+#' @param mainFolder (character) folder containing all loadable .zip files. For most apps this
+#' is folder "predefinedModels". In most apps it can be found under "inst/app/".
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param rPackageName (character) If not NULL, than the uploaded file must come from this R
 #'  package
@@ -328,6 +340,7 @@ uploadModelServer <-
            rPackageName = NULL,
            reloadChoices = reactive(TRUE),
            onlySettings = FALSE,
+           fileExtension = "zip",
            reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
@@ -359,7 +372,8 @@ uploadModelServer <-
                        res <- loadModel(filepath = pathToModel(),
                                         subFolder = subFolder,
                                         rPackageName = rPackageName,
-                                        onlySettings = onlySettings) %>%
+                                        onlySettings = onlySettings,
+                                        fileExtension = fileExtension) %>%
                          tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
                      },
                      value = 0.8,
@@ -388,10 +402,16 @@ getFolderOnGithub <- function(mainFolder, subFolder = NULL) {
 #' Get Path to Local
 #'
 #' @inheritParams uploadModelServer
-getPathToLocal <- function(mainFolder, subFolder) {
-  res <- list(".", mainFolder, subFolder)[!sapply(list(".", mainFolder, subFolder), is.null)] %>%
+getPathToLocal <- function(mainFolder, subFolder, rPackageName = NULL) {
+  folders <- list(mainFolder, subFolder)
+  res <- folders[!sapply(folders, is.null)] %>%
     do.call(what = file.path)
-  res
+
+  if (!is.null(rPackageName)) {
+    system.file(file.path("app", res), package = rPackageName)
+  } else {
+    file.path(".", res)
+  }
 }
 
 dataLoadedAlert <-

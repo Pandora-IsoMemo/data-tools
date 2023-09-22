@@ -17,5 +17,6 @@ extractValuesFromModel(importedModel, values, filename)
 (list) list of values in the format of the output of loadDataWrapper
 }
 \description{
-Extract Values From Model
+Format list of model data to be compatible with the import module such that success, warnings and
+ errors are displayed inside the pop-up modal.
 }

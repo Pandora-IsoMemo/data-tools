@@ -4,7 +4,13 @@
 \alias{loadModel}
 \title{Load Model}
 \usage{
-loadModel(filepath, subFolder, rPackageName, onlySettings)
+loadModel(
+  filepath,
+  subFolder,
+  rPackageName,
+  onlySettings,
+  fileExtension = "zip"
+)
 }
 \arguments{
 \item{filepath}{(character) path to the model file}
@@ -15,6 +21,9 @@ loadModel(filepath, subFolder, rPackageName, onlySettings)
 package}
 
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
+
+\item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
+"bpred", "bmsc"}
 }
 \description{
 Load Model

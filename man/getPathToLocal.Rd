@@ -4,12 +4,16 @@
 \alias{getPathToLocal}
 \title{Get Path to Local}
 \usage{
-getPathToLocal(mainFolder, subFolder)
+getPathToLocal(mainFolder, subFolder, rPackageName = NULL)
 }
 \arguments{
-\item{mainFolder}{(character) folder containing all loadable .zip files}
+\item{mainFolder}{(character) folder containing all loadable .zip files. For most apps this
+is folder "predefinedModels". In most apps it can be found under "inst/app/".}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+
+\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
+package}
 }
 \description{
 Get Path to Local

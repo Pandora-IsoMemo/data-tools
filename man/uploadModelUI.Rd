@@ -9,6 +9,7 @@ uploadModelUI(
   label,
   labelRemote = "Load online model",
   labelLocal = "Load local model",
+  fileExtension = "zip",
   width = NULL
 )
 }
@@ -20,6 +21,9 @@ uploadModelUI(
 \item{labelRemote}{label of the input for remote files}
 
 \item{labelLocal}{label of the input for local files}
+
+\item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
+"bpred", "bmsc". Only files with this extension are selectable.}
 
 \item{width}{width of inputs in percent}
 }

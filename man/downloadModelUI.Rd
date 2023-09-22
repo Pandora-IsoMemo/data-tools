@@ -4,12 +4,14 @@
 \alias{downloadModelUI}
 \title{Download model module}
 \usage{
-downloadModelUI(id, label, width = NULL)
+downloadModelUI(id, title = NULL, label = "Download", width = NULL)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{label}{title of module}
+\item{title}{title of module}
+
+\item{label}{button label}
 
 \item{width}{width of inputs in percent}
 }
