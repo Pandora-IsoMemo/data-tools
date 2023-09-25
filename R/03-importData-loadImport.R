@@ -416,7 +416,7 @@ extractDataFromModel <- function(modelImport, rPackageName) {
   switch(rPackageName,
          "ReSources" = placeholder,
          "OsteoBioR" = placeholder,
-         "mpiBpred" = modelImport$dataObj,
+         "mpiBpred" = c(modelImport[["dataObj"]], modelImport[["data"]]), # one of modelImport[["dataObj"]] (old version) or modelImport[["data"]] (version > 23.09.0) will be NULL
          "PlotR" = placeholder,
          modelImport$data)
 }
@@ -432,11 +432,23 @@ extractInputsFromModel <- function(modelImport, rPackageName) {
                                       "PlotR" = "Find input values under $dmodel.")
 
   switch(rPackageName,
-         "ReSources" = c(modelImport$values, modelImport$inputs), # either modelImport$values (old version) or modelImport$inputs (new version) is NULL
+         "ReSources" = c(modelImport$values, modelImport$inputs), # either modelImport$values (old version) or modelImport$inputs (version > 23.09.0) is NULL
          "OsteoBioR" = placeholder,
-         "mpiBpred" = modelImport[c("formulasObj", "inputObj")],
+         "mpiBpred" = extractBPredInput(modelImport),
          "PlotR" = placeholder,
          modelImport$inputs)
+}
+
+extractBPredInput <- function(modelImport) {
+  # one of modelImport[c("formulasObj", "inputObj")] (old version) or
+  # modelImport[["inputs"]] (version > 23.09.0) does not exist
+  if (is.null(modelImport[["inputs"]])) {
+    bpredInput <- modelImport[c("formulasObj", "inputObj")]
+  } else {
+    bpredInput <- modelImport[["inputs"]]
+  }
+
+  bpredInput
 }
 
 extractModelFromModel <- function(modelImport, rPackageName = NULL) {
