@@ -58,6 +58,7 @@ test_that("Test loadModel()", {
         "data",
         "inputs",
         "model",
+        "notes",
         "message",
         "messageType",
         "alertType",
