@@ -49,7 +49,7 @@ selectImportParams <- function(importType,
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
 extractValuesFromModel <- function(importedModel, values, filename) {
-  values$dataImport <- importedModel[c("data", "inputs", "model")]
+  values$dataImport <- importedModel[c("data", "inputs", "model", "notes")]
   values$fileName <- filename
 
   success <- importedModel$message[importedModel$messageType == "success"]
@@ -265,6 +265,11 @@ loadModel <-
     res <- try({
       zip::unzip(filepath, exdir = "unzippedTmp")
       modelImport <- extractModelFromFile(pathToUnzipped = "unzippedTmp")
+      if (file.exists(file.path("unzippedTmp", "README.txt"))) {
+        modelNotes <- readLines(file.path("unzippedTmp", "README.txt"))
+      } else {
+        modelNotes <- ""
+      }
     }, silent = TRUE)
 
     # clean up
@@ -299,15 +304,15 @@ loadModel <-
 
     if (!is.null(rPackageName) && (rPackageName != "") &&
         length(rPackageLoaded) > 0 && rPackageLoaded != "" && !grepl(rPackageName, modelImport$version)) {
-      stop(
-        paste(
-          "Wrong model loaded. Trying to upload",
-          modelImport$version,
-          ". Model not valid for",
-          rPackageName,
-          ". Make sure to upload a model that was saved exactly with this app before."
-        )
-      )
+      versionTxt <- ""
+      if (!is.null(modelImport$version))
+        versionTxt <- sprintf("Trying to upload a model from %s.", modelImport$version)
+
+      errorMsg <- paste0(sprintf("Wrong model loaded. %s This model is not valid for %s.",
+                                 versionTxt, rPackageName),
+                         sprintf("Make sure to upload a model that was previously saved with %s.",
+                                 rPackageName))
+      stop(errorMsg)
       return(NULL)
     }
 
@@ -338,6 +343,7 @@ loadModel <-
       data = NULL,
       inputs = NULL,
       model = NULL,
+      notes = modelNotes,
       message = c(),
       alertType = "success",
       uploadedVersion = ""
@@ -402,10 +408,13 @@ extractDataFromModel <- function(modelImport, rPackageName) {
   if (is.null(rPackageName) || rPackageName == "") return(modelImport$data)
 
   placeholder <- list()
-  attr(placeholder, "note") <- "Find data under $model."
+  attr(placeholder, "note") <- switch(rPackageName,
+                                      "ReSources" = "Find data under $inputs.",
+                                      "OsteoBioR" = "Find data under $model.",
+                                      "PlotR" = "Find data under $dmodel.")
 
   switch(rPackageName,
-         "ReSources" = modelImport$values,
+         "ReSources" = placeholder,
          "OsteoBioR" = placeholder,
          "mpiBpred" = modelImport$dataObj,
          "PlotR" = placeholder,
@@ -419,12 +428,11 @@ extractInputsFromModel <- function(modelImport, rPackageName) {
   # are empty, the inputs are loaded with dat$data <- modelImport$values.
   placeholder <- list()
   attr(placeholder, "note") <- switch(rPackageName,
-                                      "ReSources" = "Find input values under $data.",
                                       "OsteoBioR" = "Find input values under $dmodel.",
                                       "PlotR" = "Find input values under $dmodel.")
 
   switch(rPackageName,
-         "ReSources" = placeholder,
+         "ReSources" = c(modelImport$values, modelImport$inputs), # either modelImport$values (old version) or modelImport$inputs (new version) is NULL
          "OsteoBioR" = placeholder,
          "mpiBpred" = modelImport[c("formulasObj", "inputObj")],
          "PlotR" = placeholder,

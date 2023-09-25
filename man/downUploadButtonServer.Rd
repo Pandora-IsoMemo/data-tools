@@ -30,7 +30,7 @@ downUploadButtonServer(
 
 \item{dat}{(reactive) user data}
 
-\item{inputs}{(reactive) user inputs}
+\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list}
 
 \item{model}{(reactive) model output object}
 

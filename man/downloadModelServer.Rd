@@ -14,10 +14,10 @@ downloadModelServer(
   fileExtension = "zip",
   helpHTML = "",
   modelNotes = reactive(""),
+  triggerUpdate = reactive(TRUE),
   onlySettings = FALSE,
   compress = TRUE,
-  compressionLevel = 9,
-  triggerUpdate = reactive(FALSE)
+  compressionLevel = 9
 )
 }
 \arguments{
@@ -25,7 +25,7 @@ downloadModelServer(
 
 \item{dat}{(reactive) user data}
 
-\item{inputs}{(reactive) user inputs}
+\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list}
 
 \item{model}{(reactive) model output object}
 
@@ -41,6 +41,9 @@ module is applied, e.g. "mpiBpred"}
 
 \item{modelNotes}{(reactive) notes regarding the object to be saved and displayed when uploaded}
 
+\item{triggerUpdate}{(reactive) trigger the update of the "Notes" text input. Useful, when
+applying this module inside a modal window.}
+
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 
 \item{compress}{a logical specifying whether saving to a named file is to use "gzip" compression,
@@ -49,8 +52,6 @@ file is a connection.}
 
 \item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
 longest.}
-
-\item{triggerUpdate}{trigger update of local input of notes}
 }
 \description{
 Backend for download model module

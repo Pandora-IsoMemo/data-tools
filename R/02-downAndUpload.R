@@ -145,7 +145,7 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #'
 #' @param id namespace id
 #' @param dat (reactive) user data
-#' @param inputs (reactive) user inputs
+#' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list
 #' @param model (reactive) model output object
 #' @param rPackageName (character) name of the package (as in the description file) in which this
 #'  module is applied, e.g. "mpiBpred"
@@ -154,13 +154,14 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #'  "bpred", "bmsc"
 #' @param helpHTML content of help function
 #' @param modelNotes (reactive) notes regarding the object to be saved and displayed when uploaded
+#' @param triggerUpdate (reactive) trigger the update of the "Notes" text input. Useful, when
+#'  applying this module inside a modal window.
 #' @param onlySettings (logical) if TRUE allow only download of user inputs and user data
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
 #' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
-#' @param triggerUpdate trigger update of local input of notes
 #'
 #' @export
 downloadModelServer <-
@@ -173,10 +174,10 @@ downloadModelServer <-
            fileExtension = "zip",
            helpHTML = "",
            modelNotes = reactive(""),
+           triggerUpdate = reactive(TRUE),
            onlySettings = FALSE,
            compress = TRUE,
-           compressionLevel = 9,
-           triggerUpdate = reactive(FALSE)) {
+           compressionLevel = 9) {
     moduleServer(id,
                  function(input, output, session) {
                    observe({
