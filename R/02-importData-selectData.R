@@ -94,15 +94,7 @@ selectDataServer <- function(id,
                    "fileSource",
                    openPopupReset = openPopupReset,
                    internetCon = internetCon,
-                   githubRepo = switch(rPackageName,
-                                       "BMSCApp" = "bmsc-app",
-                                       "DataTools" = "data-tools",
-                                       "mpiBpred" = "bpred",
-                                       "MpiIsoApp" = "iso-app",
-                                       "OsteoBioR" = "osteo-bior",
-                                       "PlotR" = "plotr",
-                                       "ReSources" = "resources",
-                                       ""),
+                   githubRepo = getGithubMapping()[[rPackageName]],
                    folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
                    pathToLocal = getPathToLocal(mainFolder, subFolder)
                  )
@@ -242,6 +234,17 @@ selectDataServer <- function(id,
 
                  values
                })
+}
+
+getGithubMapping <- function() {
+  list("BMSCApp" = "bmsc-app",
+       "DataTools" = "data-tools",
+       "mpiBpred" = "bpred",
+       "MpiIsoApp" = "iso-app",
+       "OsteoBioR" = "osteo-bior",
+       "PlotR" = "plotr",
+       "ReSources" = "resources",
+       "")
 }
 
 #' Select Source UI

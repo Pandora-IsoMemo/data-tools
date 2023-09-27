@@ -293,7 +293,7 @@ loadModel <-
       # expected names for "mpiBpred"
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
         )) {
-      stop("File format not valid. Model object not found.")
+      stop("File format not valid or depricated. Model object not found.")
       return(NULL)
     }
 
@@ -417,7 +417,7 @@ extractDataFromModel <- function(modelImport, rPackageName) {
          "ReSources" = placeholder,
          "OsteoBioR" = placeholder,
          "mpiBpred" = c(modelImport[["dataObj"]], modelImport[["data"]]), # one of modelImport[["dataObj"]] (old version) or modelImport[["data"]] (version > 23.09.0) will be NULL
-         "PlotR" = placeholder,
+         "PlotR" = extractPlotRData(modelImport, placeholder),
          modelImport$data)
 }
 
@@ -428,8 +428,8 @@ extractInputsFromModel <- function(modelImport, rPackageName) {
   # are empty, the inputs are loaded with dat$data <- modelImport$values.
   placeholder <- list()
   attr(placeholder, "note") <- switch(rPackageName,
-                                      "OsteoBioR" = "Find input values under $dmodel.",
-                                      "PlotR" = "Find input values under $dmodel.")
+                                      "OsteoBioR" = "Find input values in $dmodel.",
+                                      "PlotR" = "Find input values in $data or $dmodel.")
 
   switch(rPackageName,
          "ReSources" = c(modelImport$values, modelImport$inputs), # either modelImport$values (old version) or modelImport$inputs (version > 23.09.0) is NULL
@@ -449,6 +449,16 @@ extractBPredInput <- function(modelImport) {
   }
 
   bpredInput
+}
+
+extractPlotRData <- function(modelImport, placeholder) {
+  # data is in one of modelImport[["data"]] (version > 23.09.0) or
+  # modelImport[["model"]] (old version)
+  if (is.null(modelImport[["data"]])) {
+    placeholder
+  } else {
+    modelImport[["data"]]
+  }
 }
 
 extractModelFromModel <- function(modelImport, rPackageName = NULL) {
