@@ -405,6 +405,17 @@ envToList <- function(envir) {
 }
 
 extractDataFromModel <- function(modelImport, rPackageName) {
+  # define helper
+  detectData <- function(modelImport, placeholder) {
+    # data can be found in one of modelImport[["data"]] (version > 23.09.0) or
+    # modelImport[["model"]] (old version)
+    if (is.null(modelImport[["data"]])) {
+      placeholder
+    } else {
+      modelImport[["data"]]
+    }
+  }
+
   if (is.null(rPackageName) || rPackageName == "") return(modelImport$data)
 
   placeholder <- list()
@@ -415,9 +426,9 @@ extractDataFromModel <- function(modelImport, rPackageName) {
 
   switch(rPackageName,
          "ReSources" = placeholder,
-         "OsteoBioR" = placeholder,
+         "OsteoBioR" = detectData(modelImport, placeholder),
          "mpiBpred" = c(modelImport[["dataObj"]], modelImport[["data"]]), # one of modelImport[["dataObj"]] (old version) or modelImport[["data"]] (version > 23.09.0) will be NULL
-         "PlotR" = extractPlotRData(modelImport, placeholder),
+         "PlotR" = detectData(modelImport, placeholder),
          modelImport$data)
 }
 
@@ -449,16 +460,6 @@ extractBPredInput <- function(modelImport) {
   }
 
   bpredInput
-}
-
-extractPlotRData <- function(modelImport, placeholder) {
-  # data is in one of modelImport[["data"]] (version > 23.09.0) or
-  # modelImport[["model"]] (old version)
-  if (is.null(modelImport[["data"]])) {
-    placeholder
-  } else {
-    modelImport[["data"]]
-  }
 }
 
 extractModelFromModel <- function(modelImport, rPackageName = NULL) {
