@@ -137,8 +137,10 @@ getRemoteData <- function(db, mappingId = "IsoMemo") {
   if (is.null(isoData) || length(isoData) == 0)
     return(isoData)
 
-  isoData[sapply(isoData, is.character)] <-
-    lapply(isoData[sapply(isoData, is.character)], as.factor)
+  asFactorColumns <- colnames(isoData) %in% c("source", "datingType")
+  isoData[asFactorColumns] <-
+    lapply(isoData[asFactorColumns], as.factor)
+
   isoData <- handleDescription(isoData)
 
   isoData
