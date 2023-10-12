@@ -89,8 +89,7 @@ test_that("Test getRemoteData() from data tables on main and test database", {
                                   mappingId = "IsoMemo")
 
   # Act:
-  # currently the test fails because of some missmatching DOIs in the data
-  # expect_true(mainEqualToTest(allDataIsoMain, allDataIsoTest))
+  expect_true(mainEqualToTest(allDataIsoMain, allDataIsoTest))
 })
 
 Sys.unsetenv("API_BASE_URL")
