@@ -1,8 +1,7 @@
 Sys.setenv(API_BASE_URL = "https://isomemodb.com/api/v1/")
-# for this API the funtions do not YET understand the parameter mappingId
 test_that("Test getMappingIds()", {
-  expect_true(length(suppressWarnings(getMappingIds())) == 0)
-  expect_warning(getMappingIds())
+  expect_true(length(getMappingIds()) > 0)
+  expect_is(getMappingIds(), "character")
 })
 
 test_that("Test getDatabaseList()", {
