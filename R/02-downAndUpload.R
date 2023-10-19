@@ -269,7 +269,13 @@ downloadModelServer <-
 
 
 getModelVersion <- function(rPackageName, subFolder) {
-  version <- paste(rPackageName, packageVersion(rPackageName))
+  versionNo <- try(packageVersion(rPackageName))
+
+  if (inherits(versionNo, "try-error")) {
+    versionNo <- ""
+  }
+
+  version <- paste(rPackageName, versionNo)
   if (!is.null(subFolder) && subFolder != "") {
     version <- paste(version, subFolder, sep = " - ")
   }
