@@ -21,7 +21,7 @@ importDataServer(
   subFolder = NULL,
   rPackageName = "",
   onlySettings = FALSE,
-  extractZipFun = NULL
+  expectedFileInZip = c()
 )
 }
 \arguments{
@@ -34,7 +34,7 @@ importDataServer(
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
-ImportType == "zip" enables the optional parameter 'extractZipFun'.}
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{rowNames}{(reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"}
 
@@ -70,8 +70,8 @@ from this R package. This parameter is ignored if importType == "data"}
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
 This parameter is ignored if importType == "data"}
 
-\item{extractZipFun}{(function) (optional) parameter to provide an app-specific function
-to extract the zip object of the upload. This parameter is ignored if importType != "zip".}
+\item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
+File names that must be contained in the zip upload.}
 }
 \description{
 Backend for data import module

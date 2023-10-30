@@ -20,7 +20,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param importType (character) type of import, either "data" or "model" or "zip".
-#'  ImportType == "zip" enables the optional parameter 'extractZipFun'.
+#'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'.
 #' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
 #' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
@@ -36,8 +36,8 @@ importDataUI <- function(id, label = "Import Data") {
 #'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
 #' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
 #'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
-#' @param extractZipFun (function) (optional) parameter to provide an app-specific function
-#'  to extract the zip object of the upload. This parameter is ignored if importType != "zip".
+#' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
+#'  File names that must be contained in the zip upload.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
 #'  This parameter is ignored if importType == "data"
 #' @param mainFolder (character) folder containing all loadable .zip files.
@@ -66,7 +66,7 @@ importDataServer <- function(id,
                              subFolder = NULL,
                              rPackageName = "",
                              onlySettings = FALSE,
-                             extractZipFun = NULL
+                             expectedFileInZip = c()
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -166,7 +166,7 @@ importDataServer <- function(id,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
                    fileExtension = fileExtension,
-                   extractZipFun = extractZipFun
+                   expectedFileInZip = expectedFileInZip
                  )
 
                  ## disable button accept ----

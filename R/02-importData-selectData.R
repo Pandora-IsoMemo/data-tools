@@ -75,7 +75,7 @@ selectDataServer <- function(id,
                              rPackageName = "",
                              onlySettings = FALSE,
                              fileExtension = "zip",
-                             extractZipFun = NULL
+                             expectedFileInZip = c()
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -142,15 +142,15 @@ selectDataServer <- function(id,
                              subFolder = subFolder,
                              rPackageName = rPackageName,
                              onlySettings = onlySettings,
-                             fileExtension = fileExtension,
-                             extractZipFun = extractZipFun),
+                             fileExtension = fileExtension),
                            importType = importType
                          )
 
                          values <- loadImport(importType = importType,
                                               params = params,
                                               values = values,
-                                              filename = dataSource$filename)
+                                              filename = dataSource$filename,
+                                              expectedFileInZip = expectedFileInZip)
 
                          if (importType == "data") {
                            if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||

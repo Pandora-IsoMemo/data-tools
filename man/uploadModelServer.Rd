@@ -13,7 +13,6 @@ uploadModelServer(
   reloadChoices = reactive(TRUE),
   onlySettings = FALSE,
   fileExtension = "zip",
-  extractZipFun = NULL,
   reset = reactive(FALSE)
 )
 }
@@ -36,9 +35,6 @@ package}
 
 \item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
 "bpred", "bmsc"}
-
-\item{extractZipFun}{(function) (optional) parameter to provide an app-specific function
-to extract the zip object of the upload.}
 
 \item{reset}{(reactive) resets the selection of the online files}
 }

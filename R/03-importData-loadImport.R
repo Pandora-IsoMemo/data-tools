@@ -1,17 +1,19 @@
-loadImport <- function(importType, params, values, filename) {
+loadImport <- function(importType, params, values, filename, expectedFileInZip) {
   res <- switch(importType,
          "data" = do.call(loadDataWrapper, params),
-         "model" = do.call(loadZipWrapper, params),
+         "model" = do.call(loadModelWrapper, params),
          "zip" = do.call(loadZipWrapper, params)) %>%
     tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
 
   if (importType == "model") {
-    return(extractValuesFromModel(importedModel = res, values = values, filename = filename))
+    return(extractValuesFromModel(values = values, filename = filename, importedModel = res))
   }
 
   if (importType == "zip") {
-    browser()
-    #return(extractValuesFromModel(res, values = values, filename = filename))
+    return(fillValuesFromZip(values = values,
+                             filename = filename,
+                             importZip = res,
+                             expectedFileInZip = expectedFileInZip))
   }
 
   res
@@ -40,14 +42,9 @@ selectImportParams <- function(params,
                         subFolder = params$subFolder,
                         rPackageName = params$rPackageName,
                         onlySettings = params$onlySettings,
-                        fileExtension = params$fileExtension,
-                        extractZipFun = loadModel),
+                        fileExtension = params$fileExtension),
          "zip" = list(filepath = params$dataSource$file,
-                      subFolder = params$subFolder,
-                      rPackageName = params$rPackageName,
-                      onlySettings = params$onlySettings,
-                      fileExtension = params$fileExtension,
-                      extractZipFun = params$extractZipFun)
+                      fileExtension = params$fileExtension)
   )
 }
 
@@ -61,7 +58,7 @@ selectImportParams <- function(params,
 #' @param filename (reactive) name of the loaded file
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
-extractValuesFromModel <- function(importedModel, values, filename) {
+extractValuesFromModel <- function(values, filename, importedModel) {
   values$dataImport <- importedModel[c("data", "inputs", "model", "notes")]
   values$fileName <- filename
 
@@ -75,6 +72,55 @@ extractValuesFromModel <- function(importedModel, values, filename) {
 
   values
 }
+
+
+#' Fill Values From Model
+#'
+#' Set values, warning and error messages for the import module such that success, warnings and
+#'  errors are displayed inside the pop-up modal.
+#'
+#' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
+#' @param filename (reactive) name of the loaded file
+#' @param importZip (list) output of loadModel()
+#'
+#' @return (list) list of values in the format of the output of loadDataWrapper
+fillValuesFromZip <- function(values, filename, importZip, expectedFileInZip) {
+  unzippedFiles <- tryCatch({
+    zip::unzip(importZip, exdir = "unzippedTmp")
+    #zip::unzip(importZip, exdir = tempdir())
+    list.files("unzippedTmp")
+    },
+    error = function(cond) {
+      values$errors <-
+        list(load = paste("Could not unzip file:", cond$message))
+      NULL
+    },
+    warning = function(cond) {
+      values$warnings <- list(load = paste("Warning:", cond$message))
+      NULL
+    }
+  )
+
+  # clean up
+  unlink("unzippedTmp", recursive = TRUE)
+
+  if (is.null(unzippedFiles)) {
+    values$dataImport <- NULL
+  } else if (length(expectedFileInZip) > 0 && !all(expectedFileInZip %in% unzippedFiles)) {
+    values$errors <-
+      list(load = "Expected files not found!")
+    values$dataImport <- NULL
+  } else {
+    ## Import technically successful
+    values$dataImport <- importZip
+    values$fileImportSuccess <- "Zip import successful"
+  }
+
+  values$fileName <- filename
+
+  values
+}
+
 
 # Functions to IMPORT DATA files ----
 
@@ -247,31 +293,36 @@ loadData <-
     return(data)
   }
 
-# Functions to IMPORT MODEL objects ----
+# Functions to IMPORT ZIP objects ----
 
 #' Load Zip Wrapper
 #'
 #' @param filepath (character) path to the model file
 #' @inheritParams uploadModelServer
-loadZipWrapper <- function(filepath,
-                           subFolder,
-                           rPackageName,
-                           onlySettings,
-                           fileExtension = "zip",
-                           extractZipFun = NULL) {
+loadZipWrapper <- function(filepath, fileExtension = "zip" ) {
+ filepath %>%
+    checkExtension(fileExtension = fileExtension) %>%
+    tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
+}
 
-  if (is.null(extractZipFun)) {
-    warning("Parameter 'extractZipFun' is NULL, applying 'loadModel()' to extract the zip object!")
-    extractZipFun <- loadModel
-  }
+# Functions to IMPORT MODEL objects ----
 
-  #browser()
+#' Load Model Wrapper
+#'
+#' @param filepath (character) path to the model file
+#' @inheritParams uploadModelServer
+loadModelWrapper <- function(filepath,
+                             subFolder,
+                             rPackageName,
+                             onlySettings,
+                             fileExtension = "zip") {
+
   filepath %>%
     checkExtension(fileExtension = fileExtension) %>%
-    extractZipFun(subFolder = subFolder,
-                  rPackageName = rPackageName,
-                  onlySettings = onlySettings,
-                  fileExtension = fileExtension) %>%
+    loadModel(subFolder = subFolder,
+              rPackageName = rPackageName,
+              onlySettings = onlySettings,
+              fileExtension = fileExtension) %>%
     tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
 }
 
@@ -280,7 +331,7 @@ checkExtension <- function(filepath,
                            fileExtension = "zip") {
   # check if valid app-specific extension or a zip file
   if (file_ext(filepath) != fileExtension && file_ext(filepath) != "zip") {
-    stop(sprintf("Not a .%s file!", expectedExtStrng(fileExtension)))
+    stop(sprintf("Not a %s file!", expectedExtStrng(fileExtension)))
     return(NULL)
   }
 

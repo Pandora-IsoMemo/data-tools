@@ -331,8 +331,6 @@ uploadModelUI <- function(id,
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data
 #' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
 #'  "bpred", "bmsc"
-#' @param extractZipFun (function) (optional) parameter to provide an app-specific function
-#'  to extract the zip object of the upload.
 #' @param mainFolder (character) folder containing all loadable .zip files. For most apps this
 #' is folder "predefinedModels". In most apps it can be found under "inst/app/".
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
@@ -350,7 +348,6 @@ uploadModelServer <-
            reloadChoices = reactive(TRUE),
            onlySettings = FALSE,
            fileExtension = "zip",
-           extractZipFun = NULL,
            reset = reactive(FALSE)) {
     moduleServer(id,
                  function(input, output, session) {
@@ -380,12 +377,11 @@ uploadModelServer <-
                    observeEvent(pathToModel(), {
                      withProgress({
                        res <- pathToModel() %>%
-                         loadZipWrapper(
+                         loadModelWrapper(
                            subFolder = subFolder,
                            rPackageName = rPackageName,
                            onlySettings = onlySettings,
-                           fileExtension = fileExtension,
-                           extractZipFun = extractZipFun
+                           fileExtension = fileExtension
                        )
                      },
                      value = 0.8,

@@ -12,7 +12,7 @@ selectSourceUI(id, defaultSource, importType, fileExtension = "zip")
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
-ImportType == "zip" enables the optional parameter 'extractZipFun'.}
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}

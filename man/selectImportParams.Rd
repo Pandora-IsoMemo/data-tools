@@ -10,7 +10,7 @@ selectImportParams(params, importType)
 \item{params}{(list) named list of parameters required to import data or a model}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
-ImportType == "zip" enables the optional parameter 'extractZipFun'.}
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 }
 \value{
 (list) named list of parameters required for the particular importType

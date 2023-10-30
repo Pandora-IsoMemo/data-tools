@@ -4,30 +4,13 @@
 \alias{loadZipWrapper}
 \title{Load Zip Wrapper}
 \usage{
-loadZipWrapper(
-  filepath,
-  subFolder,
-  rPackageName,
-  onlySettings,
-  fileExtension = "zip",
-  extractZipFun = NULL
-)
+loadZipWrapper(filepath, fileExtension = "zip")
 }
 \arguments{
 \item{filepath}{(character) path to the model file}
 
-\item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
-
-\item{rPackageName}{(character) If not NULL, than the uploaded file must come from this R
-package}
-
-\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data}
-
 \item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
 "bpred", "bmsc"}
-
-\item{extractZipFun}{(function) (optional) parameter to provide an app-specific function
-to extract the zip object of the upload.}
 }
 \description{
 Load Zip Wrapper
