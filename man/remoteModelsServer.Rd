@@ -9,6 +9,7 @@ remoteModelsServer(
   githubRepo,
   pathToLocal = file.path(".", "predefinedModels"),
   folderOnGithub = "/predefinedModels",
+  fileExtension = "zip",
   onlyLocalModels = reactive(FALSE),
   resetSelected = reactive(FALSE),
   reloadChoices = reactive(TRUE),
@@ -26,6 +27,9 @@ remoteModelsServer(
 
 \item{folderOnGithub}{(character) folder on github where remote files are stored. This should
 correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
+
+\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
+"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 
 \item{onlyLocalModels}{(reactive) if TRUE only local files are used instead of accessing github}
 

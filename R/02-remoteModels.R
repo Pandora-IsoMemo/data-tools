@@ -41,6 +41,8 @@ remoteModelsUI <-
 #' @param pathToLocal (character) relative path to the folder storing local files
 #' @param folderOnGithub (character) folder on github where remote files are stored. This should
 #' correspond to 'pathToLocal' since online and offline files should be the same and up-to-date
+#' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
+#'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
 #' @param onlyLocalModels (reactive) if TRUE only local files are used instead of accessing github
 #' @param resetSelected (reactive) if TRUE resets the selected remote file
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote files
@@ -55,6 +57,7 @@ remoteModelsServer <- function(id,
                                githubRepo,
                                pathToLocal = file.path(".", "predefinedModels"),
                                folderOnGithub = "/predefinedModels",
+                               fileExtension = "zip",
                                onlyLocalModels = reactive(FALSE),
                                resetSelected = reactive(FALSE),
                                reloadChoices = reactive(TRUE),
@@ -81,7 +84,8 @@ remoteModelsServer <- function(id,
                    if (reloadChoices() && githubRepo != "" && isInternet()) {
                      choices <-
                        getRemoteModelsFromGithub(githubRepo = githubRepo,
-                                                 folderOnGithub = folderOnGithub)
+                                                 folderOnGithub = folderOnGithub,
+                                                 fileExtension = fileExtension)
                    } else {
                      choices <- c()
                    }
@@ -99,7 +103,7 @@ remoteModelsServer <- function(id,
                        choices <- c()
                      } else {
                        choices <- pathToLocal %>%
-                         getLocalModels()
+                         getLocalModels(fileExtension = fileExtension)
                      }
                    }
 
@@ -137,10 +141,10 @@ remoteModelsServer <- function(id,
                    tmpPath <- NULL
 
                    if (!useLocalModels()) {
-                     tmpPath <- tempfile(fileext = ".zip")
+                     tmpPath <- tempfile(fileext = paste0(".", fileExtension))
                      withProgress(message = "Downloading remote file ...", value = 0.9, {
                        res <- try(download.file(
-                         sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s.zip",
+                         sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s",
                            githubRepo,
                            folderOnGithub,
                            input$remoteModelChoice),
@@ -159,7 +163,7 @@ remoteModelsServer <- function(id,
                      if (!is.null(pathToLocal)) {
                        tmpPath <-
                          file.path(pathToLocal,
-                                   paste0(input$remoteModelChoice, ".zip"))
+                                   paste0(input$remoteModelChoice))
                      }
                    }
 
@@ -174,10 +178,17 @@ remoteModelsServer <- function(id,
 #' Get Local Models
 #'
 #' @inheritParams remoteModelsServer
-getLocalModels <- function(pathToLocal) {
-  pathToLocal %>%
-    dir() %>%
-    sub(pattern = '\\.zip$', replacement = '')
+getLocalModels <- function(pathToLocal, fileExtension = "zip") {
+  choices <- pathToLocal %>%
+    dir()
+
+  if (length(choices) > 0) {
+    names(choices) <- choices  %>%
+      sub(pattern = sprintf("\\.%s$", fileExtension), replacement = "") %>%
+      sub(pattern = "\\.zip$", replacement = "")
+  }
+
+  choices
 }
 
 #' Check Local Model Dir
@@ -200,7 +211,7 @@ checkLocalModelDir <-
 #' @inheritParams remoteModelsServer
 #' @param apiOut output of `getGithubContent()` if it was already loaded
 getRemoteModelsFromGithub <-
-  function(githubRepo, folderOnGithub = "/predefinedModels", apiOut = NULL) {
+  function(githubRepo, folderOnGithub = "/predefinedModels", fileExtension = "zip", apiOut = NULL) {
     if (is.null(apiOut)) {
       # if default value
       apiOut <- getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
@@ -209,10 +220,17 @@ getRemoteModelsFromGithub <-
     # if nothing could be loaded
     if (is.null(apiOut)) return(c())
 
-    lapply(apiOut, function(el)
+    choices <- lapply(apiOut, function(el)
       el$name) %>%
-      unlist() %>%
-      sub(pattern = '\\.zip$', replacement = '')
+      unlist()
+
+    if (length(choices) > 0) {
+      names(choices) <- choices %>%
+        sub(pattern = sprintf("\\.%s$", fileExtension), replacement = "") %>%
+        sub(pattern = "\\.zip$", replacement = "")
+    }
+
+    choices
   }
 
 #' Get Github Content
