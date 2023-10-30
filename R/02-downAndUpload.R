@@ -346,7 +346,7 @@ uploadModelServer <-
            githubRepo,
            mainFolder = "predefinedModels",
            subFolder = NULL,
-           rPackageName = NULL,
+           rPackageName = getPackageName(),
            reloadChoices = reactive(TRUE),
            onlySettings = FALSE,
            fileExtension = "zip",

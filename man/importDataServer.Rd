@@ -19,7 +19,7 @@ importDataServer(
   fileExtension = "zip",
   mainFolder = "predefinedModels",
   subFolder = NULL,
-  rPackageName = "",
+  rPackageName = getPackageName(),
   onlySettings = FALSE,
   extractZipFun = NULL
 )
