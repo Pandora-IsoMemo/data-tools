@@ -1,14 +1,20 @@
 loadImport <- function(importType, params, values, filename) {
   res <- switch(importType,
          "data" = do.call(loadDataWrapper, params),
-         "model" = do.call(loadModel, params)) %>%
+         "model" = do.call(loadZipWrapper, params),
+         "zip" = do.call(loadZipWrapper, params)) %>%
     tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
 
   if (importType == "model") {
-    extractValuesFromModel(res, values = values, filename = filename)
-  } else {
-    res
+    return(extractValuesFromModel(importedModel = res, values = values, filename = filename))
   }
+
+  if (importType == "zip") {
+    browser()
+    #return(extractValuesFromModel(res, values = values, filename = filename))
+  }
+
+  res
 }
 
 
@@ -18,8 +24,8 @@ loadImport <- function(importType, params, values, filename) {
 #' @inheritParams importDataServer
 #'
 #' @return (list) named list of parameters required for the particular importType
-selectImportParams <- function(importType,
-                               params) {
+selectImportParams <- function(params,
+                               importType) {
   switch(importType,
          "data" = list(values = params$values,
                        filepath = params$dataSource$file,
@@ -34,7 +40,14 @@ selectImportParams <- function(importType,
                         subFolder = params$subFolder,
                         rPackageName = params$rPackageName,
                         onlySettings = params$onlySettings,
-                        fileExtension = params$fileExtension)
+                        fileExtension = params$fileExtension,
+                        extractZipFun = loadModel),
+         "zip" = list(filepath = params$dataSource$file,
+                      subFolder = params$subFolder,
+                      rPackageName = params$rPackageName,
+                      onlySettings = params$onlySettings,
+                      fileExtension = params$fileExtension,
+                      extractZipFun = params$extractZipFun)
   )
 }
 
@@ -236,6 +249,52 @@ loadData <-
 
 # Functions to IMPORT MODEL objects ----
 
+#' Load Zip Wrapper
+#'
+#' @param filepath (character) path to the model file
+#' @inheritParams uploadModelServer
+loadZipWrapper <- function(filepath,
+                           subFolder,
+                           rPackageName,
+                           onlySettings,
+                           fileExtension = "zip",
+                           extractZipFun = NULL) {
+
+  if (is.null(extractZipFun)) {
+    warning("Parameter 'extractZipFun' is NULL, applying 'loadModel()' to extract the zip object!")
+    extractZipFun <- loadModel
+  }
+
+  #browser()
+  filepath %>%
+    checkExtension(fileExtension = fileExtension) %>%
+    extractZipFun(subFolder = subFolder,
+                  rPackageName = rPackageName,
+                  onlySettings = onlySettings,
+                  fileExtension = fileExtension) %>%
+    tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
+}
+
+
+checkExtension <- function(filepath,
+                           fileExtension = "zip") {
+  # check if valid app-specific extension or a zip file
+  if (file_ext(filepath) != fileExtension && file_ext(filepath) != "zip") {
+    stop(sprintf("Not a .%s file!", expectedExtStrng(fileExtension)))
+    return(NULL)
+  }
+
+  filepath
+}
+
+expectedExtStrng <- function(fileExtension) {
+  if (fileExtension == "zip") {
+    return(".zip")
+  } else {
+    return(sprintf(".%s or .zip", fileExtension))
+  }
+}
+
 #' Load Model
 #'
 #' @param filepath (character) path to the model file
@@ -246,18 +305,7 @@ loadModel <-
            rPackageName,
            onlySettings,
            fileExtension = "zip") {
-    expectedExt <- function(fileExtension) {
-      if (fileExtension == "zip") {
-        return(".zip")
-      } else {
-        return(sprintf(".%s or .zip", fileExtension))
-      }
-    }
-
-    # General checks: import is a valid model import ----
-    # check if valid app-specific extension or a zip file
-    if (file_ext(filepath) != fileExtension && file_ext(filepath) != "zip") {
-      stop(sprintf("Not a .%s file!", expectedExt(fileExtension)))
+    if (is.null(filepath)) {
       return(NULL)
     }
 
@@ -282,7 +330,7 @@ loadModel <-
           "The file must be a %s file that contains the following files:",
           "help.html, model.rds, README.txt.",
           "If you download a model it will have exactly this format."
-        ), expectedExt(fileExtension))
+        ), expectedExtStrng(fileExtension))
       )
       return(NULL)
     }

@@ -19,7 +19,8 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param title title of data import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
-#' @param importType (character) type of import, either "data" or "model"
+#' @param importType (character) type of import, either "data" or "model" or "zip".
+#'  ImportType == "zip" enables the optional parameter 'extractZipFun'.
 #' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
 #' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
@@ -35,6 +36,8 @@ importDataUI <- function(id, label = "Import Data") {
 #'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
 #' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
 #'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
+#' @param extractZipFun (function) (optional) parameter to provide an app-specific function
+#'  to extract the zip object of the upload. This parameter is ignored if importType != "zip".
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
 #'  This parameter is ignored if importType == "data"
 #' @param mainFolder (character) folder containing all loadable .zip files.
@@ -62,7 +65,8 @@ importDataServer <- function(id,
                              mainFolder = "predefinedModels",
                              subFolder = NULL,
                              rPackageName = "",
-                             onlySettings = FALSE
+                             onlySettings = FALSE,
+                             extractZipFun = NULL
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -161,7 +165,8 @@ importDataServer <- function(id,
                    subFolder = subFolder,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
-                   fileExtension = fileExtension
+                   fileExtension = fileExtension,
+                   extractZipFun = extractZipFun
                  )
 
                  ## disable button accept ----
@@ -392,7 +397,8 @@ importDataDialog <-
     if (title == "") {
       title <- switch(importType,
                       "data" = "Data import",
-                      "model" = "Model import")
+                      "model" = "Model import",
+                      "zip" = "Zip import")
     }
 
     modalDialog(

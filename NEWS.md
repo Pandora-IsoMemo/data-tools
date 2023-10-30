@@ -1,5 +1,11 @@
 # DataTools
 
+## Version: 23.10.0
+### New Features
+- _Import Data_ module: new optional parameter `extractZipFun` that can be used to apply an 
+app-specific function to extract an uploaded zip file. This parameter is ignored if `importType != "zip"`.
+This modification is required to apply the import module within the app `MapR`.
+
 ## Version: 23.09.0
 
 ### New Features

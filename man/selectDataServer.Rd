@@ -16,13 +16,15 @@ selectDataServer(
   ignoreWarnings = FALSE,
   rPackageName = "",
   onlySettings = FALSE,
-  fileExtension = "zip"
+  fileExtension = "zip",
+  extractZipFun = NULL
 )
 }
 \arguments{
 \item{id}{id of module}
 
-\item{importType}{(character) type of import, either "data" or "model"}
+\item{importType}{(character) type of import, either "data" or "model" or "zip".
+ImportType == "zip" enables the optional parameter 'extractZipFun'.}
 
 \item{mergeList}{(list) list of selected data}
 
@@ -48,6 +50,9 @@ This parameter is ignored if importType == "data"}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
+
+\item{extractZipFun}{(function) (optional) parameter to provide an app-specific function
+to extract the zip object of the upload. This parameter is ignored if importType != "zip".}
 }
 \description{
 Server function of the module
