@@ -437,12 +437,8 @@ selectSourceUI <- function(id,
       )
     )
   ),
-  conditionalPanel(
-    condition = "input.source != 'remoteModel'",
-    ns = ns,
-    tags$hr(),
-    selectFileTypeUI(ns("fileType"), importType = importType)
-  ),
+  tags$hr(),
+  if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
   tags$hr()
   )
 }
