@@ -141,7 +141,7 @@ remoteModelsServer <- function(id,
                    tmpPath <- NULL
 
                    if (!useLocalModels()) {
-                     tmpPath <- tempfile(fileext = paste0(".", fileExtension))
+                     tmpPath <- tempfile(fileext = getExtension(input$remoteModelChoice))
                      withProgress(message = "Downloading remote file ...", value = 0.9, {
                        res <- try(download.file(
                          sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s",
@@ -252,6 +252,11 @@ getGithubContent <-
     }
   }
 
+
+getExtension <- function(file) {
+  res <- strsplit(file, ".", fixed=T)[[1]][-1]
+  paste0(".", res)
+}
 
 # TEST MODULE -------------------------------------------------------------
 
