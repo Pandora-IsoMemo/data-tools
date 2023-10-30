@@ -6,7 +6,7 @@ loadImport <- function(importType, params, values, filename, expectedFileInZip) 
     tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
 
   if (importType == "model") {
-    return(extractValuesFromModel(values = values, filename = filename, importedModel = res))
+    return(fillValuesFromModel(values = values, filename = filename, importedModel = res))
   }
 
   if (importType == "zip") {
@@ -48,7 +48,7 @@ selectImportParams <- function(params,
   )
 }
 
-#' Extract Values From Model
+#' Fill Values From Model
 #'
 #' Format list of model data to be compatible with the import module such that success, warnings and
 #'  errors are displayed inside the pop-up modal.
@@ -58,7 +58,7 @@ selectImportParams <- function(params,
 #' @param filename (reactive) name of the loaded file
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
-extractValuesFromModel <- function(values, filename, importedModel) {
+fillValuesFromModel <- function(values, filename, importedModel) {
   values$dataImport <- importedModel[c("data", "inputs", "model", "notes")]
   values$fileName <- filename
 
@@ -74,7 +74,7 @@ extractValuesFromModel <- function(values, filename, importedModel) {
 }
 
 
-#' Fill Values From Model
+#' Fill Values From Zip
 #'
 #' Set values, warning and error messages for the import module such that success, warnings and
 #'  errors are displayed inside the pop-up modal.

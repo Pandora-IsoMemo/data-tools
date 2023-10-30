@@ -2,7 +2,7 @@
 % Please edit documentation in R/03-importData-loadImport.R
 \name{fillValuesFromZip}
 \alias{fillValuesFromZip}
-\title{Fill Values From Model}
+\title{Fill Values From Zip}
 \usage{
 fillValuesFromZip(values, filename, importZip, expectedFileInZip)
 }
