@@ -9,7 +9,7 @@ uploadModelServer(
   githubRepo,
   mainFolder = "predefinedModels",
   subFolder = NULL,
-  rPackageName = getPackageName(),
+  rPackageName = "",
   reloadChoices = reactive(TRUE),
   onlySettings = FALSE,
   fileExtension = "zip",

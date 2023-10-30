@@ -64,7 +64,7 @@ importDataServer <- function(id,
                              fileExtension = "zip",
                              mainFolder = "predefinedModels",
                              subFolder = NULL,
-                             rPackageName = getPackageName(),
+                             rPackageName = "",
                              onlySettings = FALSE,
                              extractZipFun = NULL
                              ) {
