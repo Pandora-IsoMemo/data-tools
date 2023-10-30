@@ -57,12 +57,12 @@ testthat::test_that("Test module remoteModels", {
   testRepos <- c("data-tools", "resources", "bmsc-app", "osteo-bior", "bpred", "plotr")
 
   testFileNames <- list(
-    "data-tools" = "2023-03-30_10_44_04_DataTools",
-    "resources" = "Black_Bear_Data",
-    "bmsc-app" = "testModel_BMSCApp",
-    "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR",
-    "bpred" = "2020-04-15_18_59_33_bpred",
-    "plotr" = "online_test_model"
+    "data-tools" = "2023-03-30_10_44_04_DataTools.zip",
+    "resources" = "Black_Bear_Data.zip",
+    "bmsc-app" = "testModel_BMSCApp.zip",
+    "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip",
+    "bpred" = "2020-04-15_18_59_33_bpred.zip",
+    "plotr" = "online_test_model.zip"
   )
 
   # expected values
