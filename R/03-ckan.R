@@ -263,12 +263,14 @@ tryGET <- function(path, isInternet = has_internet()) {
     httr::GET(path, timeout(2))
   }, silent = TRUE)
 
-  if (inherits(res, "try-error") ||
-      res$status_code == 500 || !is.null(httr::content(res)[["message"]])) {
+  if (inherits(res, "try-error") || res$status_code == 500) {
     # if there is a message than an error occurred
     # We do not need to print an alert! If output is empty UI tells a message
     # apiName = "pandoradata.earth" or apiName = "api.github.com"
     # shinyjs::alert(paste("Could not retrieve data from", apiName))
+    NULL
+  } else if (!is.null(httr::content(res)[["message"]])) {
+    warning(httr::content(res)[["message"]])
     NULL
   } else if (res$status_code == 200) {
     httr::content(res)
