@@ -9,7 +9,8 @@ selectFileTypeUI(id, importType)
 \arguments{
 \item{id}{id of module}
 
-\item{importType}{(character) type of import, either "data" or "model"}
+\item{importType}{(character) type of import, either "data" or "model" or "zip".
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 }
 \description{
 UI of the module

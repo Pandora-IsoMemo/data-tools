@@ -5,12 +5,12 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
 
   # expected values
   expModelNames <- list(
-    "data-tools" = c("2023-03-30_10_44_04_DataTools"),
-    "resources" = c("Black_Bear_Data", "Brown_Bear_Data", "Five_Sources_Data", "Roman_Data"),
-    "bmsc-app" = c("testModel_BMSCApp"),
-    "osteo-bior" = c("2022-05-23_TEST-InputsAndOutput_OsteoBioR", "2022-11-16_TEST-Inputs_OsteoBioR"),
-    "bpred" = c("2020-04-15_18_59_33_bpred"),
-    "plotr" = c("online_test_inputs", "online_test_model")
+    "data-tools" = c("2023-03-30_10_44_04_DataTools.zip"),
+    "resources" = c("Black_Bear_Data.zip", "Brown_Bear_Data.zip", "Five_Sources_Data.zip", "Roman_Data.zip"),
+    "bmsc-app" = c("testModel_BMSCApp.zip"),
+    "osteo-bior" = c("2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip", "2022-11-16_TEST-Inputs_OsteoBioR.zip"),
+    "bpred" = c("2020-04-15_18_59_33_bpred.zip"),
+    "plotr" = c("online_test_inputs.zip", "online_test_model.zip")
   )
 
 
@@ -37,8 +37,11 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder, subFol))
     testRemoteModels <- getRemoteModelsFromGithub(githubRepo = repo, apiOut = testApiContent)
-    expRemoteModels <- sprintf("testModel_MpiIsoApp_%s", subFol)
-    if (subFol == "OperatoR") expRemoteModels <- "testMap_MpiIsoApp_OperatoR"
+    expRemoteModels <- sprintf("testModel_MpiIsoApp_%s.zip", subFol)
+    if (subFol == "OperatoR") {
+      # "testMap" not "testModel"
+      expRemoteModels <- "testMap_MpiIsoApp_OperatoR.zip"
+    }
 
     print(sprintf("test getRemoteModelsFromGithub() with repo: %s and model: %s", repo, subFol))
     # Act
@@ -57,12 +60,12 @@ testthat::test_that("Test module remoteModels", {
   testRepos <- c("data-tools", "resources", "bmsc-app", "osteo-bior", "bpred", "plotr")
 
   testFileNames <- list(
-    "data-tools" = "2023-03-30_10_44_04_DataTools",
-    "resources" = "Black_Bear_Data",
-    "bmsc-app" = "testModel_BMSCApp",
-    "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR",
-    "bpred" = "2020-04-15_18_59_33_bpred",
-    "plotr" = "online_test_model"
+    "data-tools" = "2023-03-30_10_44_04_DataTools.zip",
+    "resources" = "Black_Bear_Data.zip",
+    "bmsc-app" = "testModel_BMSCApp.zip",
+    "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip",
+    "bpred" = "2020-04-15_18_59_33_bpred.zip",
+    "plotr" = "online_test_model.zip"
   )
 
   # expected values
@@ -149,7 +152,7 @@ testthat::test_that("Test module remoteModels", {
         # Arrange
         print(sprintf("test remote model input with repo: %s and model: %s", repo, subFol))
         # Act
-        session$setInputs(remoteModelChoice = sprintf("testModel_MpiIsoApp_%s", subFol),
+        session$setInputs(remoteModelChoice = sprintf("testModel_MpiIsoApp_%s.zip", subFol),
                           loadRemoteModel = 1)
 
         testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
@@ -182,7 +185,7 @@ testthat::test_that("Test module remoteModels", {
       # Arrange
       print(sprintf("test remote model input with repo: %s and model: %s", repo, subFol))
       # Act
-      session$setInputs(remoteModelChoice = "testMap_MpiIsoApp_OperatoR",
+      session$setInputs(remoteModelChoice = "testMap_MpiIsoApp_OperatoR.zip",
                         loadRemoteModel = 1)
 
       testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")

@@ -344,7 +344,7 @@ uploadModelServer <-
            githubRepo,
            mainFolder = "predefinedModels",
            subFolder = NULL,
-           rPackageName = NULL,
+           rPackageName = "",
            reloadChoices = reactive(TRUE),
            onlySettings = FALSE,
            fileExtension = "zip",
@@ -376,12 +376,13 @@ uploadModelServer <-
 
                    observeEvent(pathToModel(), {
                      withProgress({
-                       res <- loadModel(filepath = pathToModel(),
-                                        subFolder = subFolder,
-                                        rPackageName = rPackageName,
-                                        onlySettings = onlySettings,
-                                        fileExtension = fileExtension) %>%
-                         tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
+                       res <- pathToModel() %>%
+                         loadModelWrapper(
+                           subFolder = subFolder,
+                           rPackageName = rPackageName,
+                           onlySettings = onlySettings,
+                           fileExtension = fileExtension
+                       )
                      },
                      value = 0.8,
                      message = "Uploading ...")

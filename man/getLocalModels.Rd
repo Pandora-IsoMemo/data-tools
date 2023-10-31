@@ -4,10 +4,13 @@
 \alias{getLocalModels}
 \title{Get Local Models}
 \usage{
-getLocalModels(pathToLocal)
+getLocalModels(pathToLocal, fileExtension = "zip")
 }
 \arguments{
 \item{pathToLocal}{(character) relative path to the folder storing local files}
+
+\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
+"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 }
 \description{
 Get Local Models

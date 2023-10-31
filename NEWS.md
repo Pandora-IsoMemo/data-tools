@@ -1,5 +1,12 @@
 # DataTools
 
+## Version: 23.10.0
+### New Features
+- _Import Data_ module: A modification that is required to apply the import module within the app `MapR`.
+  - new value "zip" for parameter `importType`
+  - new optional parameter `expectedFileInZip`: This parameter is ignored if importType != "zip". 
+  Name files that must be contained in the zip upload. 
+
 ## Version: 23.09.0
 
 ### New Features

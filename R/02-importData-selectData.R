@@ -74,7 +74,8 @@ selectDataServer <- function(id,
                              ignoreWarnings = FALSE,
                              rPackageName = "",
                              onlySettings = FALSE,
-                             fileExtension = "zip"
+                             fileExtension = "zip",
+                             expectedFileInZip = c()
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -130,7 +131,6 @@ selectDataServer <- function(id,
                        message = 'Importing ...', {
 
                          params <- selectImportParams(
-                           importType = importType,
                            params = list(
                              values = values,
                              dataSource = dataSource,
@@ -142,13 +142,15 @@ selectDataServer <- function(id,
                              subFolder = subFolder,
                              rPackageName = rPackageName,
                              onlySettings = onlySettings,
-                             fileExtension = fileExtension)
+                             fileExtension = fileExtension),
+                           importType = importType
                          )
 
                          values <- loadImport(importType = importType,
                                               params = params,
                                               values = values,
-                                              filename = dataSource$filename)
+                                              filename = dataSource$filename,
+                                              expectedFileInZip = expectedFileInZip)
 
                          if (importType == "data") {
                            if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||
@@ -267,7 +269,11 @@ selectSourceUI <- function(id,
                           model = c("Pandora Platform" = "ckan",
                                     "File" = "file",
                                     "URL" = "url",
-                                    "Online Model" = "remoteModel")
+                                    "Online Model" = "remoteModel"),
+                          zip = c("Pandora Platform" = "ckan",
+                                  "File" = "file",
+                                  "URL" = "url",
+                                  "Online Zip" = "remoteModel")
   )
 
   if (!(defaultSource %in% sourceChoices)) {
@@ -277,7 +283,7 @@ selectSourceUI <- function(id,
   }
 
   acceptExt <- NULL
-  if (importType == "model" && !is.null(fileExtension) && fileExtension != "") {
+  if (importType %in% c("model", "zip") && !is.null(fileExtension) && fileExtension != "") {
     acceptExt <- sprintf(".%s", fileExtension)
   }
 
@@ -431,12 +437,8 @@ selectSourceUI <- function(id,
       )
     )
   ),
-  conditionalPanel(
-    condition = "input.source != 'remoteModel'",
-    ns = ns,
-    tags$hr(),
-    selectFileTypeUI(ns("fileType"), importType = importType)
-  ),
+  tags$hr(),
+  if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
   tags$hr()
   )
 }
@@ -702,7 +704,8 @@ selectFileTypeUI <- function(id, importType) {
                                "csv",
                                "ods",
                                "txt"),
-                      model = c("zip"))
+                      model = c("zip"),
+                      zip = c("zip"))
 
   tagList(fluidRow(
     column(4,

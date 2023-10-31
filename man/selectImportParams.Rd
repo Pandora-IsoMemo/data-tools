@@ -4,12 +4,13 @@
 \alias{selectImportParams}
 \title{Select Import params}
 \usage{
-selectImportParams(importType, params)
+selectImportParams(params, importType)
 }
 \arguments{
-\item{importType}{(character) type of import, either "data" or "model"}
-
 \item{params}{(list) named list of parameters required to import data or a model}
+
+\item{importType}{(character) type of import, either "data" or "model" or "zip".
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 }
 \value{
 (list) named list of parameters required for the particular importType
