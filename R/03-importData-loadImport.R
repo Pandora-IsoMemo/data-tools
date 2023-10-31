@@ -82,6 +82,7 @@ fillValuesFromModel <- function(values, filename, importedModel) {
 #' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
 #' @param filename (reactive) name of the loaded file
 #' @param importZip (list) output of loadModel()
+#' @inheritParams importDataServer
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
 fillValuesFromZip <- function(values, filename, importZip, expectedFileInZip) {

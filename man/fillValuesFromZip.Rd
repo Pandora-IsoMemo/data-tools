@@ -12,6 +12,9 @@ fillValuesFromZip(values, filename, importZip, expectedFileInZip)
 \item{filename}{(reactive) name of the loaded file}
 
 \item{importZip}{(list) output of loadModel()}
+
+\item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
+File names that must be contained in the zip upload.}
 }
 \value{
 (list) list of values in the format of the output of loadDataWrapper

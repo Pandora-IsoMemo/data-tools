@@ -37,8 +37,11 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder, subFol))
     testRemoteModels <- getRemoteModelsFromGithub(githubRepo = repo, apiOut = testApiContent)
-    expRemoteModels <- sprintf("testModel_MpiIsoApp_%s", subFol)
-    if (subFol == "OperatoR") expRemoteModels <- "testMap_MpiIsoApp_OperatoR"
+    expRemoteModels <- sprintf("testModel_MpiIsoApp_%s.zip", subFol)
+    if (subFol == "OperatoR") {
+      # "testMap" not "testModel"
+      expRemoteModels <- "testMap_MpiIsoApp_OperatoR.zip"
+    }
 
     print(sprintf("test getRemoteModelsFromGithub() with repo: %s and model: %s", repo, subFol))
     # Act
@@ -182,7 +185,7 @@ testthat::test_that("Test module remoteModels", {
       # Arrange
       print(sprintf("test remote model input with repo: %s and model: %s", repo, subFol))
       # Act
-      session$setInputs(remoteModelChoice = "testMap_MpiIsoApp_OperatoR",
+      session$setInputs(remoteModelChoice = "testMap_MpiIsoApp_OperatoR.zip",
                         loadRemoteModel = 1)
 
       testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
