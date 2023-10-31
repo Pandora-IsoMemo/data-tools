@@ -152,7 +152,7 @@ testthat::test_that("Test module remoteModels", {
         # Arrange
         print(sprintf("test remote model input with repo: %s and model: %s", repo, subFol))
         # Act
-        session$setInputs(remoteModelChoice = sprintf("testModel_MpiIsoApp_%s", subFol),
+        session$setInputs(remoteModelChoice = sprintf("testModel_MpiIsoApp_%s.zip", subFol),
                           loadRemoteModel = 1)
 
         testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
