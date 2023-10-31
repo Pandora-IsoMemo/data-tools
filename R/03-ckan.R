@@ -270,7 +270,7 @@ tryGET <- function(path, isInternet = has_internet()) {
     # shinyjs::alert(paste("Could not retrieve data from", apiName))
     NULL
   } else if (!is.null(httr::content(res)[["message"]])) {
-    warning(httr::content(res)[["message"]])
+    warning(sprintf("Api call to '%s' gives: %s", path, httr::content(res)[["message"]]))
     NULL
   } else if (res$status_code == 200) {
     httr::content(res)
@@ -282,7 +282,7 @@ tryGET <- function(path, isInternet = has_internet()) {
 has_internet <- function(timeout = 2) {
   res <- try({
     httr::GET("http://google.com/", timeout(timeout))
-  }, silent = TRUE)
+  }, silent = FALSE)
 
-  ! inherits(res, "try-error")
+  !inherits(res, "try-error")
 }
