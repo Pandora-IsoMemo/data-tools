@@ -156,14 +156,23 @@ getRemoteData <- function(db, mappingId = "IsoMemo") {
   isoData
 }
 
-handleDescription <- function(isoData, maxChar = 20) {
-  if (is.null(isoData) || length(isoData) == 0) return(isoData)
+#' Handle Description
+#'
+#' @param data (data.frame) Output from IsoMemo::getData(). A data frame containing the
+#'  requested databases, category domains, and variables of interest from the user
+#' @param maxChar (numeric) Cut descriptions after maxChar characters for nicer display of the
+#' data frame in Shiny
+#' @return A data frame containing a new column with full description kept while entries of the
+#'  column description are cutted.
+#'
+#' @export
+handleDescription <- function(data, maxChar = 20) {
+  if (is.null(data) || length(data) == 0) return(data)
 
-  isoData$description <- as.character(isoData$description)
-  isoData$descriptionFull <- isoData$description
-  isoData$description <-
-    paste0(substr(isoData$description, 1, maxChar),
-           ifelse(nchar(isoData$description) > maxChar, " ...", ""))
-  isoData
-
+  data$description <- as.character(data$description)
+  data$descriptionFull <- data$description
+  data$description <-
+    paste0(substr(data$description, 1, maxChar),
+           ifelse(nchar(data$description) > maxChar, " ...", ""))
+  data
 }
