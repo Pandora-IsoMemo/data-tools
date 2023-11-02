@@ -106,6 +106,16 @@ getMappingAPI <- function(mappingId = "IsoMemo") {
     res
 }
 
+#' Fill Iso Data
+#'
+#' @param data (data.frame) Output from IsoMemo::getData(). A data frame containing the
+#'  requested databases, category domains, and variables of interest from the user
+#' @param mapping (data.frame) Output from IsoMemo::getFields() A data frame that describes data
+#'  field name, data type, and domain category
+#' @return A data frame also containing the columns defined in the mapping but missing in the data.
+#'  New columns have all values set to NA.
+#'
+#' @export
 fillIsoData <- function(data, mapping) {
   colToFill <- mapping$shiny[!(mapping$shiny %in% names(data))]
   data[colToFill] <- NA
