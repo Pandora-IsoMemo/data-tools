@@ -1,5 +1,10 @@
 # DataTools
 
+## Version: 23.10.1
+
+### New Features
+- export of functions `fillIsoData()` and `handleDescription()` which will be needed for the Isomemo app
+
 ## Version: 23.10.0
 ### New Features
 - _Import Data_ module: A modification that is required to apply the import module within the app `MapR`.
