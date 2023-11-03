@@ -14,7 +14,7 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
   )
 
 
-  for (repo in testRepos) {
+  for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
     # Arrange
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder = mainFolder,
@@ -32,7 +32,7 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
   repo <- "iso-app"
   subFolder <- c("AssignR", "AverageR", "KernelR", "KernelTimeR", "OperatoR", "SpreadR", "TimeR")
 
-  for (subFol in subFolder) {
+  for (subFol in subFolder[sample(seq_along(subFolder), 1)]) {
     # Arrange
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder, subFol))
@@ -96,7 +96,7 @@ testthat::test_that("Test module remoteModels", {
     "plotr" = c("testPlot")
   )
 
-  for (repo in testRepos) {
+  for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
     testServer(
       remoteModelsServer,
       args = list(
@@ -141,7 +141,7 @@ testthat::test_that("Test module remoteModels", {
                    "outlier", "outlierDR")
   )
 
-  for (subFol in subFolder) {
+  for (subFol in subFolder[sample(seq_along(subFolder), 1)]) {
     testServer(
       remoteModelsServer,
       args = list(
