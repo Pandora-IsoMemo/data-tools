@@ -279,9 +279,14 @@ tryGET <- function(path, isInternet = has_internet()) {
   }
 }
 
+#' Has Internet
+#'
+#' @param timeout (numeric) number of seconds to wait for a response until giving up. Can not be less than 1 ms.
+#'
+#' @export
 has_internet <- function(timeout = 2) {
   res <- try({
-    httr::GET("http://google.com/", timeout(timeout))
+    httr::GET("www.r-project.org", timeout(timeout))
   }, silent = FALSE)
 
   !inherits(res, "try-error")
