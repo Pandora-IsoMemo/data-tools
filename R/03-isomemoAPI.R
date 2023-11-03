@@ -63,49 +63,6 @@ callAPI <- function(action, ...) {
   res
 }
 
-#' Get Mapping Ids
-#'
-#' Get all available mapping ids
-#'
-#' @export
-getMappingIds <- function() {
-  res <- callAPI("mapping-ids")
-  if (!is.null(res) && length(res) > 0)
-    res$mappingIds
-  else
-    res
-}
-
-#' Get Database List
-#'
-#' @param mappingId (character) If desired, provide a different mappingId in order to obtain a list
-#'  of databases for that mapping. Check available mapping ids with getMappingIds().
-#' @export
-getDatabaseList <- function(mappingId = "IsoMemo") {
-  res <- callAPI("dbsources", mappingId = mappingId)
-  if (!is.null(res) && length(res) > 0)
-    res$dbsource
-  else
-    res
-}
-
-getRemoteDataAPI <- function(db = NULL, mappingId = "IsoMemo") {
-  res <- callAPI("iso-data", mappingId = mappingId, dbsource = paste(db, collapse = ","))
-  if (!is.null(res) && length(res) > 0) {
-    attr(res$isodata, "updated") <- res$updated
-    fillIsoData(res$isodata, getMappingAPI(mappingId = mappingId))
-  } else
-    res
-}
-
-getMappingAPI <- function(mappingId = "IsoMemo") {
-  res <- callAPI("mapping", mappingId = mappingId)
-  if (!is.null(res) && length(res) > 0)
-    res$mapping
-  else
-    res
-}
-
 #' Fill Iso Data
 #'
 #' @param data (data.frame) Output from IsoMemo::getData(). A data frame containing the
@@ -122,39 +79,6 @@ fillIsoData <- function(data, mapping) {
   data
 }
 
-#' getMappingTable
-#'
-#' @param mappingId (character) If desired, provide a different mappingId in order to obtain the
-#'  mapping table for that mapping. Check available mapping ids with getMappingIds().
-#'
-#' @export
-getMappingTable <- function(mappingId = "IsoMemo") {
-  getMappingAPI(mappingId = mappingId)
-}
-
-#' getRemoteData
-#'
-#' @param db database
-#' @param mappingId (character) If desired, provide a different mappingId in order to obtain the
-#'  data for that mapping. Check available mapping ids with getMappingIds().
-#'
-#' @export
-getRemoteData <- function(db, mappingId = "IsoMemo") {
-  if (is.null(db))
-    return(NULL)
-
-  isoData <- getRemoteDataAPI(mappingId = mappingId, db = db)
-  if (is.null(isoData) || length(isoData) == 0)
-    return(isoData)
-
-  asFactorColumns <- colnames(isoData) %in% c("source", "datingType")
-  isoData[asFactorColumns] <-
-    lapply(isoData[asFactorColumns], as.factor)
-
-  isoData <- handleDescription(isoData)
-
-  isoData
-}
 
 #' Handle Description
 #'
