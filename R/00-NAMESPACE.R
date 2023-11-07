@@ -3,7 +3,6 @@
 #' @importFrom DT datatable renderDataTable dataTableOutput
 #' @importFrom htmltools save_html
 #' @importFrom httr GET content timeout
-#' @importFrom jsonlite fromJSON
 #' @importFrom openxlsx loadWorkbook read.xlsx
 #' @importFrom readODS read_ods
 #' @importFrom readr guess_encoding

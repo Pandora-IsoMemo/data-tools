@@ -18,7 +18,6 @@ Imports:
   htmltools,
   httr,
   futile.logger,
-  jsonlite,
   magrittr,
   openxlsx,
   rgpt3,
