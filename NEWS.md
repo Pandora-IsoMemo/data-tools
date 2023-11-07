@@ -1,8 +1,13 @@
 # DataTools
 
+## Version: 23.10.3
+
+### Updates
+- removing functions for "IsoMemo" API, updated functionality was moved to the package `IsoMemo`
+
 ## Version: 23.10.1 & 23.10.2
 
-### New Features
+### Updates
 - export of functions `fillIsoData()`, `handleDescription()`, `has_internet()` which will be needed
   for the Isomemo app
 
