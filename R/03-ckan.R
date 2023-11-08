@@ -55,21 +55,12 @@ getCKANResourcesChoices <-
          selected = selected)
   }
 
-getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
-  if (!is.null(attr(ckanFiles, "error"))) {
-    noChoices <- c("")
-    names(noChoices) <- attr(ckanFiles, "error")
-    return(noChoices)
-  }
-
-  choices <- unlist(lapply(ckanFiles, `[[`, "title"))
-
-  if (is.null(choices))
-    return(c("No Pandora repository available ..." = ""))
-
-  if (sort) {
-    choices <- choices %>% sort()
-  }
+getCKANRecordChoices <- function(network = "", pattern = "") {
+  repos <- getRepositories(network = network, pattern = pattern, order = TRUE)
+  choices <- repos[["title"]]
+  #choices <- repos[["name"]] # update here if using the new load function
+  names(choices) <- repos[["title"]]
+  choices
 
   c("Select Pandora repository ..." = "", choices)
 }

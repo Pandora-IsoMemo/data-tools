@@ -488,7 +488,8 @@ selectSourceServer <- function(id,
                                        choices = getCKANGroupChoices())
                      updateSelectizeInput(session,
                                           "ckanRecord",
-                                          choices = getCKANRecordChoices(filteredCkanFiles()))
+                                          choices = getCKANRecordChoices(network = input$ckanGroup,
+                                                                         pattern = input$ckanMeta))
                    }
                  }) %>%
                    bindEvent(openPopupReset())
@@ -514,10 +515,13 @@ selectSourceServer <- function(id,
                    updateTextInput(session, "ckanMeta", value = "")
                    updatePickerInput(session,
                                      "ckanGroup",
-                                     choices = getCKANGroupChoices())
+                                     choices = getCKANGroupChoices(),
+                                     selected = character(0))
                    updateSelectizeInput(session,
                                         "ckanRecord",
-                                        choices = getCKANRecordChoices(filteredCkanFiles()))
+                                        choices = getCKANRecordChoices(network = "",
+                                                                       pattern = "")
+                   )
                  }) %>%
                    bindEvent(input$source)
 
@@ -528,7 +532,9 @@ selectSourceServer <- function(id,
                                      choices = getCKANGroupChoices())
                    updateSelectizeInput(session,
                                         "ckanRecord",
-                                        choices = getCKANRecordChoices(filteredCkanFiles()))
+                                        choices = getCKANRecordChoices(network = input$ckanGroup,
+                                                                       pattern = input$ckanMeta)
+                                        )
                  }) %>%
                    bindEvent(input$applyMeta)
 
@@ -543,7 +549,9 @@ selectSourceServer <- function(id,
                    logDebug("Updating ckanRecords (Pandora dataset)")
                    updateSelectizeInput(session,
                                         "ckanRecord",
-                                        choices = getCKANRecordChoices(ckanFiles()))
+                                        choices = getCKANRecordChoices(network = input$ckanGroup,
+                                                                       pattern = input$ckanMeta)
+                                        )
 
                  }) %>%
                    bindEvent(list(input$ckanGroup, internetCon()), ignoreNULL = FALSE)

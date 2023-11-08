@@ -62,25 +62,20 @@ test_that("Test getCKANRecordChoices()", {
       )
     )
 
-  expect_equal(
-    getCKANRecordChoices(testGetCKANFiles, sort = FALSE),
-    c(
+  expect_true(
+    all(c(
       `Select Pandora repository ...` = "",
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
       Zanadamu = "Zanadamu",
       `AfriArch isotopic dataset` = "AfriArch isotopic dataset"
-    )
+    ) %in% getCKANRecordChoices())
   )
 
-  expect_equal(
-    getCKANRecordChoices(testGetCKANFiles, sort = TRUE),
-    c(
-      `Select Pandora repository ...` = "",
-      `AfriArch isotopic dataset` = "AfriArch isotopic dataset",
-      `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
-      Zanadamu = "Zanadamu"
-    )
-  )
+  expect_true(
+    all(c(`Select Pandora repository ...` = "", `14CARHU` = "14CARHU",
+      `14SEA Project:  A 14C database for Southeast Europe and Anatolia (10,000–3000 calBC)` = "14SEA Project:  A 14C database for Southeast Europe and Anatolia (10,000–3000 calBC)"
+    ) %in% getCKANRecordChoices(network = "IsoMemo")
+  ))
 })
 
 test_that("Test getCKANResourcesChoices()", {
@@ -162,11 +157,8 @@ test_that("Test getCKANResourcesChoices()", {
 })
 
 test_that("Test getCKANGroupChoices()", {
-  # always test on live data -> test will fail if groups are changing
-  testFiles <- getCKANFiles() %>%
-    filterCKANFileList()
   expect_equal(
-    getCKANGroupChoices(testFiles, sort = TRUE),
+    getCKANGroupChoices(),
     c(`IsoMemo Network` = "isomemo-group")
   )
 })
