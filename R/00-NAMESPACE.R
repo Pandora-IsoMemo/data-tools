@@ -4,6 +4,7 @@
 #' @importFrom htmltools save_html
 #' @importFrom httr GET content timeout
 #' @importFrom openxlsx loadWorkbook read.xlsx
+#' @importFrom Pandora getFileTypes getNetworks getRepositories getResources
 #' @importFrom readODS read_ods
 #' @importFrom readr guess_encoding
 #' @importFrom readxl excel_sheets read_excel

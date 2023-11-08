@@ -74,34 +74,12 @@ getCKANRecordChoices <- function(ckanFiles, sort = TRUE) {
   c("Select Pandora repository ..." = "", choices)
 }
 
-getCKANGroupChoices <- function(ckanFiles, sort = TRUE) {
-  if (!is.null(attr(ckanFiles, "error"))) {
-    noChoices <- c("")
-    names(noChoices) <- attr(ckanFiles, "error")
-    return(noChoices)
-  }
-
-  if (is.null(ckanFiles))
-    return(c("No Pandora network available ..." = ""))
-
-  # get all groups
-  choices <- lapply(ckanFiles, function(record) {
-    sapply(record[["groups"]], `[[`, "name")
-  })
-
-  if (is.null(choices) | length(choices) == 0)
-    return(c("No Pandora network available ..." = ""))
-
-  # remove names of records, keep names of groups
-  names(choices) <- NULL
-  choices <- choices %>%
-    unlist()
-  choices <- choices[unique(names(choices))]
-
-  if (sort) {
-    choices <- choices %>% sort()
-  }
-
+getCKANGroupChoices <- function() {
+  # do not use parameter "pattern", the endpoint from getNetworks does NOT contain all the meta
+  # information. So we cannot use the string from input$ckanMeta here
+  networks <- getNetworks(pattern = "", order = TRUE)
+  choices <- networks[["name"]]
+  names(choices) <- networks[["display_name"]]
   choices
 }
 

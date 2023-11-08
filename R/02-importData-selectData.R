@@ -485,7 +485,7 @@ selectSourceServer <- function(id,
                      # trigger update of ckanGroup/ckanRecord without button for meta
                      updatePickerInput(session,
                                        "ckanGroup",
-                                       choices = getCKANGroupChoices(filteredCkanFiles()))
+                                       choices = getCKANGroupChoices())
                      updateSelectizeInput(session,
                                           "ckanRecord",
                                           choices = getCKANRecordChoices(filteredCkanFiles()))
@@ -514,7 +514,7 @@ selectSourceServer <- function(id,
                    updateTextInput(session, "ckanMeta", value = "")
                    updatePickerInput(session,
                                      "ckanGroup",
-                                     choices = getCKANGroupChoices(filteredCkanFiles()))
+                                     choices = getCKANGroupChoices())
                    updateSelectizeInput(session,
                                         "ckanRecord",
                                         choices = getCKANRecordChoices(filteredCkanFiles()))
@@ -525,7 +525,7 @@ selectSourceServer <- function(id,
                    logDebug("Apply Meta filter")
                    updatePickerInput(session,
                                      "ckanGroup",
-                                     choices = getCKANGroupChoices(filteredCkanFiles()))
+                                     choices = getCKANGroupChoices())
                    updateSelectizeInput(session,
                                         "ckanRecord",
                                         choices = getCKANRecordChoices(filteredCkanFiles()))
