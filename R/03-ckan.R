@@ -1,60 +1,38 @@
 #' Get CKAN Resource Choices
 #'
-#' Select, filter and sort choices to be available in the ckanResource input
+#' Get choices that will be available in the ckanResource input
 #'
-#' @param ckanResources (list) output of filterCKANFileList(getCKANFiles()) for a specific record
-#' @param types (character) user selected types to show
-#' @param sort (logical) if TRUE sort choices alphabetically
+#' @inheritParams Pandora::getResources
 getCKANResourcesChoices <-
-  function(ckanResources, types, sort = TRUE) {
-    if (is.null(ckanResources) || length(types) == 0) {
+  function(fileType = character(), repository = "", network = "", pattern = "") {
+    resources <- getResources(fileType = fileType,
+                              repository = repository,
+                              network = "",
+                              pattern = pattern,
+                              order = TRUE)
+    if (is.null(resources) || nrow(resources) == 0) {
       return(list(
         choices = c("No resource available ..." = ""),
         selected = c("No resource available ..." = "")
       ))
     }
-    # choices values
-    resources <- names(ckanResources)
-    # choices names to be displayed
-    labels <-
-      unlist(lapply(ckanResources, function(x) {
-        paste(x$name, " (", x$format, ")")
-      }))
 
-    # available types
-    ckanTypes <- unlist(lapply(ckanResources, function(x) {
-      tolower(x$format)
-    }), use.names = FALSE)
-    # user filter for type
-    typesFilter <- ckanTypes %in% types
+    choices <- resources[["name"]]
+    names(choices) <- sprintf("%s (%s)", resources[["name"]], toupper(resources[["format"]]))
+    choices
 
-    if (all(!typesFilter)) {
-      return(list(
-        choices = c("Selected type(s) not available ..." = ""),
-        selected = c("Selected type(s) not available ..." = "")
-      ))
-    }
-
-    # set choices
-    choices <- setNames(resources[typesFilter], labels[typesFilter])
-
-    # set selected before sorting !
-    default <- sapply(types, function(type) {
-      match(type, ckanTypes)
-    })
-    default <- default[which(!is.na(default))[1]]
-    selected <- choices[default]
-
-    # sort choices
-    if (sort) {
-      choices <- choices %>% sort()
-    }
+    selected <- choices[1]
 
     # return
     list(choices = choices,
          selected = selected)
   }
 
+#' Get CKAN Record Choices
+#'
+#' Get choices that will be available in the ckanRecord (repository) input
+#'
+#' @inheritParams Pandora::getRepositories
 getCKANRecordChoices <- function(network = "", pattern = "") {
   repos <- getRepositories(network = network, pattern = pattern, order = TRUE)
   choices <- repos[["title"]]
@@ -65,6 +43,10 @@ getCKANRecordChoices <- function(network = "", pattern = "") {
   c("Select Pandora repository ..." = "", choices)
 }
 
+#' Get CKAN Group Choices
+#'
+#' Get choices that will be available in the ckanGroup (network) input
+#'
 getCKANGroupChoices <- function() {
   # do not use parameter "pattern", the endpoint from getNetworks does NOT contain all the meta
   # information. So we cannot use the string from input$ckanMeta here

@@ -114,9 +114,7 @@ test_that("Test getCKANResourcesChoices()", {
 
   testChoicesList <-
     getCKANResourcesChoices(
-      testGetCKANResource,
-      types = c("xls", "xlsx", "csv", "zip"),
-      sort = FALSE
+      fileType = c("xls", "xlsx", "csv", "zip")
     )
   expect_equal(
     testChoicesList$choices,
@@ -137,9 +135,7 @@ test_that("Test getCKANResourcesChoices()", {
     filterCKANFileList()
   testChoicesList <-
     getCKANResourcesChoices(
-      testFiles[["AfriArch isotopic dataset"]]$resource,
-      types = c("xls", "xlsx", "csv"),
-      sort = TRUE
+      fileType = c("xls", "xlsx", "csv")
     )
   expect_equal(
     testChoicesList$choices,

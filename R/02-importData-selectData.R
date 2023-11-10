@@ -357,28 +357,29 @@ selectSourceUI <- function(id,
             )
           )
         ),
-        selectizeInput(
-          ns("ckanRecord"),
-          "Pandora repository",
-          choices = c("Please check connection ..." = ""),
-          width = "100%",
-          options = list(
-            onFocus = I(
-              "function() {currentVal = this.getValue(); this.clear(true); }"
-            ),
-            onBlur = I(
-              "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-            )
-          )
-        ),
-        tags$strong("Pandora repository resource"),
         fluidRow(
           column(
-            5,
-            style = "margin-top: 0.5em;",
+            8,
+            selectizeInput(
+              ns("ckanRecord"),
+              "Pandora repository",
+              choices = c("Please check connection ..." = ""),
+              width = "100%",
+              options = list(
+                onFocus = I(
+                  "function() {currentVal = this.getValue(); this.clear(true); }"
+                ),
+                onBlur = I(
+                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+                )
+              )
+            )
+          ),
+          column(
+            4,
             pickerInput(
               ns("ckanResourceTypes"),
-              label = NULL,
+              label = "File types",
               choices = c("xls", "xlsx", "csv", "odt", "txt"),
               selected = c("xls", "xlsx", "csv", "odt", "txt"),
               multiple = TRUE,
@@ -392,9 +393,12 @@ selectSourceUI <- function(id,
                 style = "backgound:'dark-gray'"
               )
             )
-          ),
+          )
+        ),
+        tags$strong("Pandora repository resource"),
+        fluidRow(
           column(
-            7,
+            8,
             style = "margin-top: 0.5em;",
             selectizeInput(
               ns("ckanResource"),
@@ -410,6 +414,11 @@ selectSourceUI <- function(id,
                 )
               )
             )
+          ),
+          column(
+            4,
+            align = "right",
+            actionButton(ns("loadCKAN"), "Load")
           )
         )
       ),
@@ -587,8 +596,12 @@ selectSourceServer <- function(id,
                    req(internetCon())
                    logDebug("Updating ckanResources()")
 
-                   choicesList <- ckanRecord()$resources %>%
-                     getCKANResourcesChoices(types = input$ckanResourceTypes)
+                   choicesList <- getCKANResourcesChoices(
+                     fileType = input$ckanResourceTypes,
+                     repository = input$ckanRecord,
+                     network = input$ckanGroup,
+                     pattern = input$ckanMeta)
+
                    updateSelectizeInput(
                      session,
                      "ckanResource",
@@ -596,30 +609,36 @@ selectSourceServer <- function(id,
                      selected = choicesList$selected
                    )
                  }) %>%
-                   bindEvent(list(input$ckanRecord, input$ckanResourceTypes))
+                   bindEvent(list(input$ckanRecord, input$ckanResourceTypes,
+                                  input$ckanGroup, input$ckanMeta))
 
                  # UPDATE dataSource ----
                  ## logic for ckan ----
                  observe({
-                   req(internetCon())
-                   logDebug("Updating input$ckanResource")
-                   if (is.null(input$ckanResource) ||
-                       input$ckanResource == "") {
-                     dataSource$file <- NULL
-                     dataSource$filename <- NULL
-                     dataSource$type <- NULL
-                   } else {
-                     resource <-
-                       ckanRecord()$resources[[input$ckanResource]]
-                     req(resource)
-                     # "file" will be used to load the file
-                     # "filename" will be stored in values$fileName
-                     dataSource$file <- resource$url
-                     dataSource$filename <- basename(resource$url)
-                     dataSource$type <- "data"
-                   }
+                   logDebug("load CKAN file")
+
+                   # reset
+                   dataSource$file <- NULL
+                   dataSource$filename <- NULL
+                   dataSource$type <- NULL
+
+                   req(internetCon(), input$ckanResource)
+                   resource <- getResources(fileType = input$ckanResourceTypes,
+                                              repository = input$ckanRecord,
+                                              network = "",
+                                              pattern = input$ckanMeta)
+
+                   req(!is.null(resource), nrow(resource) > 0)
+                   resource <- resource[resource[["name"]] == input$ckanResource, ]
+
+                   req(nrow(resource) > 0)
+                   # "file" will be used to load the file
+                   # "filename" will be stored in values$fileName
+                   dataSource$file <- resource$url
+                   dataSource$filename <- basename(resource$url)
+                   dataSource$type <- "data"
                  }) %>%
-                   bindEvent(input$ckanResource, ignoreNULL = FALSE)
+                   bindEvent(input$loadCKAN)
 
                  ## logic for file ----
                  observe({

@@ -4,15 +4,22 @@
 \alias{getCKANResourcesChoices}
 \title{Get CKAN Resource Choices}
 \usage{
-getCKANResourcesChoices(ckanResources, types, sort = TRUE)
+getCKANResourcesChoices(
+  fileType = character(),
+  repository = "",
+  network = "",
+  pattern = ""
+)
 }
 \arguments{
-\item{ckanResources}{(list) output of filterCKANFileList(getCKANFiles()) for a specific record}
+\item{fileType}{(character) list of relevant file types, e.g. c("xls", "xlsx", "csv", "odt")}
 
-\item{types}{(character) user selected types to show}
+\item{repository}{(character) name of Pandora repository}
 
-\item{sort}{(logical) if TRUE sort choices alphabetically}
+\item{network}{(character) name of Pandora network}
+
+\item{pattern}{(character) string for meta information search}
 }
 \description{
-Select, filter and sort choices to be available in the ckanResource input
+Get choices that will be available in the ckanResource input
 }
