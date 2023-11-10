@@ -473,8 +473,6 @@ selectSourceServer <- function(id,
                                               type = NULL)
 
                  # logic to setup ckan ----
-                 apiCkanFiles <- reactiveVal(list())
-
                  selectFileTypeServer("fileType", dataSource)
 
                  observe({
@@ -483,8 +481,6 @@ selectSourceServer <- function(id,
                    # reset
                    reset("file")
                    updateTextInput(session, "ckanMeta", value = "")
-                   apiCkanFiles(getCKANFiles(message = "Checking for Pandora repositories ...",
-                                             isInternet = internetCon()))
 
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
@@ -503,14 +499,6 @@ selectSourceServer <- function(id,
                    }
                  }) %>%
                    bindEvent(openPopupReset())
-
-                 filteredCkanFiles <- reactive({
-                   logDebug("Calling filteredCkanFiles")
-
-                   apiCkanFiles() %>%
-                     filterCKANByMeta(meta = input$ckanMeta) %>%
-                     filterCKANFileList()
-                 })
 
                  observe({
                    logDebug("Updating input$source and reset")
@@ -548,12 +536,6 @@ selectSourceServer <- function(id,
                  }) %>%
                    bindEvent(input$applyMeta)
 
-                 ckanFiles <- reactive({
-                   logDebug("Calling ckanFiles")
-                   filteredCkanFiles() %>%
-                     filterCKANGroup(ckanGroup = input$ckanGroup)
-                 })
-
                  observe({
                    req(internetCon())
                    logDebug("Updating ckanRecords (Pandora dataset)")
@@ -584,14 +566,6 @@ selectSourceServer <- function(id,
                  }) %>%
                    bindEvent(input$ckanResource)
                  ###
-
-                 ckanRecord <- reactive({
-                   logDebug("Setting ckanRecord (Pandora dataset)")
-
-                   if (is.null(input$ckanRecord))
-                     return(NULL)
-                   ckanFiles()[[input$ckanRecord]]
-                 })
 
                  observe({
                    req(internetCon())
