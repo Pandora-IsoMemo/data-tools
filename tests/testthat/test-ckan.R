@@ -2,15 +2,26 @@ test_that("Test getCKANRecordChoices()", {
   expect_true(
     all(c(
       `Select Pandora repository ...` = "",
-      `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` = "Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)",
-      Zanadamu = "Zanadamu",
-      `AfriArch isotopic dataset` = "AfriArch isotopic dataset"
+      `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` =
+        "vitis-vinifera-seeds-in-eastern-mediterranean-up-to-the-7th-c-ce",
+      Zanadamu = "zanadamu",
+      `AfriArch isotopic dataset` = "afriarch-isotopic-dataset"
     ) %in% getCKANRecordChoices())
   )
 
+  expect_false(
+    any(c(
+      `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` =
+        "vitis-vinifera-seeds-in-eastern-mediterranean-up-to-the-7th-c-ce",
+      Zanadamu = "zanadamu",
+      `AfriArch isotopic dataset` = "afriarch-isotopic-dataset"
+    ) %in% getCKANRecordChoices(network = "IsoMemo")
+    ))
+
   expect_true(
-    all(c(`Select Pandora repository ...` = "", `14CARHU` = "14CARHU",
-      `14SEA Project:  A 14C database for Southeast Europe and Anatolia (10,000–3000 calBC)` = "14SEA Project:  A 14C database for Southeast Europe and Anatolia (10,000–3000 calBC)"
+    all(c(`Select Pandora repository ...` = "", `14CARHU` = "14carhu",
+      `14SEA Project:  A 14C database for Southeast Europe and Anatolia (10,000–3000 calBC)` =
+        "14sea-project-a-14c-database-for-southeast-europe-and-anatolia-10-000-3000-calbc"
     ) %in% getCKANRecordChoices(network = "IsoMemo")
   ))
 })
