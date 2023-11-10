@@ -525,9 +525,6 @@ selectSourceServer <- function(id,
 
                  observe({
                    logDebug("Apply Meta filter")
-                   updatePickerInput(session,
-                                     "ckanGroup",
-                                     choices = getCKANGroupChoices())
                    updateSelectizeInput(session,
                                         "ckanRecord",
                                         choices = getCKANRecordChoices(network = input$ckanGroup,
@@ -535,6 +532,16 @@ selectSourceServer <- function(id,
                                         )
                  }) %>%
                    bindEvent(input$applyMeta)
+
+                 observe({
+                   logDebug("Apply Network filter")
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = getCKANRecordChoices(network = input$ckanGroup,
+                                                                       pattern = input$ckanMeta)
+                   )
+                 }) %>%
+                   bindEvent(input$ckanGroup)
 
                  observe({
                    req(internetCon())
@@ -585,7 +592,7 @@ selectSourceServer <- function(id,
                    )
                  }) %>%
                    bindEvent(list(input$ckanRecord, input$ckanResourceTypes,
-                                  input$ckanGroup, input$ckanMeta))
+                                  input$ckanGroup, input$applyMeta))
 
                  # UPDATE dataSource ----
                  ## logic for ckan ----

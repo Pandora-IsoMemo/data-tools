@@ -35,6 +35,13 @@ getCKANResourcesChoices <-
 #' @inheritParams Pandora::getRepositories
 getCKANRecordChoices <- function(network = "", pattern = "") {
   repos <- getRepositories(network = network, pattern = pattern, order = TRUE)
+  if (is.null(repos) || nrow(repos) == 0) {
+    return(list(
+      choices = c("No Pandora repository available ..." = ""),
+      selected = c("No Pandora repository available ..." = "")
+    ))
+  }
+
   choices <- repos[["name"]]
   names(choices) <- repos[["title"]]
   choices
