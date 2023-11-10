@@ -35,8 +35,7 @@ getCKANResourcesChoices <-
 #' @inheritParams Pandora::getRepositories
 getCKANRecordChoices <- function(network = "", pattern = "") {
   repos <- getRepositories(network = network, pattern = pattern, order = TRUE)
-  choices <- repos[["title"]]
-  #choices <- repos[["name"]] # update here if using the new load function
+  choices <- repos[["name"]]
   names(choices) <- repos[["title"]]
   choices
 
@@ -87,7 +86,7 @@ tryGET <- function(path, isInternet = has_internet()) {
 #' @export
 has_internet <- function(timeout = 2) {
   res <- try({
-    httr::GET("www.r-project.org", timeout(timeout))
+    httr::GET("http://google.com/", timeout(timeout))
   }, silent = FALSE)
 
   !inherits(res, "try-error")
