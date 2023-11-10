@@ -1,5 +1,10 @@
 # DataTools
 
+## Version: 23.11.0
+
+### Updates
+- removing functions for "Pandora" API, updated functionality was moved to the package `Pandora`
+
 ## Version: 23.10.3
 
 ### Updates
