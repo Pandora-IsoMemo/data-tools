@@ -9,7 +9,9 @@ getCKANResourcesChoices <-
                               repository = repository,
                               network = network,
                               pattern = pattern,
-                              order = TRUE)
+                              order = TRUE) %>%
+      withProgress(message = "Loading...")
+
     if (is.null(resources) || nrow(resources) == 0) {
       return(list(
         choices = c("No resource available ..." = ""),
