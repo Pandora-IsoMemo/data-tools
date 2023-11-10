@@ -346,6 +346,7 @@ selectSourceUI <- function(id,
               ns("ckanGroup"),
               label = NULL,
               choices = c("Check connection ..." = ""),
+              selected = "",
               multiple = TRUE,
               options = list(
                 `actions-box` = TRUE,
@@ -624,9 +625,9 @@ selectSourceServer <- function(id,
 
                    req(internetCon(), input$ckanResource)
                    resource <- getResources(fileType = input$ckanResourceTypes,
-                                              repository = input$ckanRecord,
-                                              network = "",
-                                              pattern = input$ckanMeta)
+                                            repository = input$ckanRecord,
+                                            network = input$ckanGroup,
+                                            pattern = input$ckanMeta)
 
                    req(!is.null(resource), nrow(resource) > 0)
                    resource <- resource[resource[["name"]] == input$ckanResource, ]

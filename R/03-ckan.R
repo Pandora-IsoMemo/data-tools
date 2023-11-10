@@ -7,7 +7,7 @@ getCKANResourcesChoices <-
   function(fileType = character(), repository = "", network = "", pattern = "") {
     resources <- getResources(fileType = fileType,
                               repository = repository,
-                              network = "",
+                              network = network,
                               pattern = pattern,
                               order = TRUE)
     if (is.null(resources) || nrow(resources) == 0) {
