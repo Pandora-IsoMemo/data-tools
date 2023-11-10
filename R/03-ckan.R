@@ -5,12 +5,20 @@
 #' @inheritParams Pandora::getResources
 getCKANResourcesChoices <-
   function(fileType = character(), repository = "", network = "", pattern = "") {
-    resources <- getResources(fileType = fileType,
-                              repository = repository,
-                              network = network,
-                              pattern = pattern,
-                              order = TRUE) %>%
-      withProgress(message = "Loading...")
+    if (isRunning()) {
+      resources <- getResources(fileType = fileType,
+                                repository = repository,
+                                network = network,
+                                pattern = pattern,
+                                order = TRUE) %>%
+        withProgress(message = "Loading...")
+    } else {
+      resources <- getResources(fileType = fileType,
+                                repository = repository,
+                                network = network,
+                                pattern = pattern,
+                                order = TRUE)
+    }
 
     if (is.null(resources) || nrow(resources) == 0) {
       return(list(
