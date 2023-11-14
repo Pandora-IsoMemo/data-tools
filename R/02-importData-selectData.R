@@ -67,11 +67,11 @@ selectDataUI <- function(id,
 #' @inheritParams uploadModelServer
 selectDataServer <- function(id,
                              importType,
-                             ckanFileTypes,
                              mergeList,
                              customNames,
                              openPopupReset,
                              internetCon,
+                             ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              mainFolder = "predefinedModels",
                              subFolder = NULL,
                              ignoreWarnings = FALSE,
@@ -471,7 +471,7 @@ selectSourceServer <- function(id,
                                githubRepo,
                                folderOnGithub,
                                pathToLocal,
-                               ckanFileTypes) {
+                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -643,7 +643,6 @@ selectSourceServer <- function(id,
                    logDebug("Updating ckanResource after Enter")
                    req(input$ckanResource)
                    # see SEARCH-OPTION
-                   browser()
                    updateSelectizeInput(session, "ckanResource", selected = input$ckanResource)
                  }) %>%
                    bindEvent(input$ckanResource)

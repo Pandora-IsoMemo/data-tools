@@ -11,7 +11,7 @@ selectSourceServer(
   githubRepo,
   folderOnGithub,
   pathToLocal,
-  ckanFileTypes
+  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")
 )
 }
 \arguments{

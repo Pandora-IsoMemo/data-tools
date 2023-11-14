@@ -41,6 +41,7 @@ toolsImportServer <- function(id, config) {
                    "localData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   ckanFileTypes = config[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config[["defaultSource"]]
                  )
@@ -49,6 +50,7 @@ toolsImportServer <- function(id, config) {
                    "ckanData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   ckanFileTypes = config[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = "ckan"
                  )
@@ -57,6 +59,7 @@ toolsImportServer <- function(id, config) {
                    "batchData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   ckanFileTypes = config[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config[["defaultSource"]],
                    batch = TRUE,

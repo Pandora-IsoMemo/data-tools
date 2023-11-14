@@ -32,10 +32,10 @@ test_that("Test getCKANResourcesChoices()", {
     "Metadata description Excel", "Metadata description CSV", "AfriArch ReSources model"
   )
 
-  testChoicesList <- getCKANResourcesChoices(fileType = c("xls", "xlsx", "csv", "zip"))
+  testChoices <- getCKANResourcesChoices(fileType = c("xls", "xlsx", "csv", "zip"))
 
   expect_equal(
-    testChoicesList$choices[testChoicesList$choices %in% testResourcesNames],
+    testChoices[testChoices %in% testResourcesNames],
     c(`AfriArch ReSources model (ZIP)` = "AfriArch ReSources model",
       `Isotopic measurements in CSV format (CSV)` = "Isotopic measurements in CSV format",
       `Isotopic measurements in Excel format (XLSX)` = "Isotopic measurements in Excel format",
@@ -43,25 +43,17 @@ test_that("Test getCKANResourcesChoices()", {
       `Metadata description Excel (XLSX)` = "Metadata description Excel"
     )
   )
-  expect_equal(
-    testChoicesList$selected,
-    c(`14CARHU - Radiocarbon Dates of Helsinki University (XLSX)` = "14CARHU - Radiocarbon Dates of Helsinki University")
-  )
 
-  testChoicesList <- getCKANResourcesChoices(fileType = c("csv"))
+  testChoices <- getCKANResourcesChoices(fileType = c("csv"))
   expect_equal(
-    testChoicesList$choices[testChoicesList$choices %in% testResourcesNames],
+    testChoices[testChoices %in% testResourcesNames],
     c(`Isotopic measurements in CSV format (CSV)` = "Isotopic measurements in CSV format",
       `Metadata description CSV (CSV)` = "Metadata description CSV"
     )
   )
-  expect_equal(
-    testChoicesList$selected,
-    c(`Isotopic measurements in CSV format (CSV)` = "Isotopic measurements in CSV format")
-  )
 
-  testChoicesList <- getCKANResourcesChoices(network = "IsoMemo")
-  expect_length(testChoicesList$choices[testChoicesList$choices %in% testResourcesNames], 0)
+  testChoices <- getCKANResourcesChoices(network = "IsoMemo")
+  expect_length(testChoices[testChoices %in% testResourcesNames], 0)
 })
 
 test_that("Test getCKANGroupChoices()", {
