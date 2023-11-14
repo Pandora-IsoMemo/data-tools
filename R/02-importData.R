@@ -18,6 +18,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param id namespace id
 #' @param title title of data import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
+#' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan")
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param importType (character) type of import, either "data" or "model" or "zip".
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'.
@@ -51,6 +52,7 @@ importDataUI <- function(id, label = "Import Data") {
 importDataServer <- function(id,
                              title = "",
                              defaultSource = "ckan",
+                             ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              ignoreWarnings = FALSE,
                              importType = "data",
                              # parameters for data upload
@@ -105,6 +107,7 @@ importDataServer <- function(id,
                        ns = ns,
                        title = title,
                        defaultSource = initSource,
+                       ckanFileTypes = ckanFileTypes,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
@@ -154,6 +157,7 @@ importDataServer <- function(id,
                  values <- selectDataServer(
                    "dataSelector",
                    importType = importType,
+                   ckanFileTypes = ckanFileTypes,
                    internetCon = internetCon,
                    openPopupReset = reactive(input$openPopup > 0),
                    ignoreWarnings = ignoreWarnings,
@@ -388,6 +392,7 @@ checkIfActive <- function(currentTab, tabName) {
 importDataDialog <-
   function(ns,
            title,
+           ckanFileTypes,
            defaultSource = "ckan",
            batch = FALSE,
            outputAsMatrix = FALSE,
@@ -432,6 +437,7 @@ importDataDialog <-
           selectDataUI(
             ns("dataSelector"),
             defaultSource = defaultSource,
+            ckanFileTypes = ckanFileTypes,
             batch = batch,
             outputAsMatrix = outputAsMatrix,
             importType = importType,

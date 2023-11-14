@@ -8,7 +8,8 @@ getCKANResourcesChoices(
   fileType = character(),
   repository = "",
   network = "",
-  pattern = ""
+  pattern = "",
+  packageList = data.frame()
 )
 }
 \arguments{
@@ -19,6 +20,9 @@ getCKANResourcesChoices(
 \item{network}{(character) name of Pandora network}
 
 \item{pattern}{(character) string for meta information search}
+
+\item{packageList}{(data.frame) optional, output of callAPI() from a previous call to the
+Pandora API.}
 }
 \description{
 Get choices that will be available in the ckanResource input

@@ -4,12 +4,15 @@
 \alias{getCKANRecordChoices}
 \title{Get CKAN Record Choices}
 \usage{
-getCKANRecordChoices(network = "", pattern = "")
+getCKANRecordChoices(network = "", pattern = "", packageList = data.frame())
 }
 \arguments{
 \item{network}{(character) name of Pandora network}
 
 \item{pattern}{(character) string for meta information search}
+
+\item{packageList}{(data.frame) optional, output of callAPI() from a previous call to the
+Pandora API.}
 }
 \description{
 Get choices that will be available in the ckanRecord (repository) input

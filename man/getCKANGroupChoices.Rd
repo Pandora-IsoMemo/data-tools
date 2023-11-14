@@ -4,7 +4,7 @@
 \alias{getCKANGroupChoices}
 \title{Get CKAN Group Choices}
 \usage{
-getCKANGroupChoices()
+getCKANGroupChoices(groupList = data.frame())
 }
 \description{
 Get choices that will be available in the ckanGroup (network) input

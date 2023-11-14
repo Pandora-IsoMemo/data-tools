@@ -7,6 +7,7 @@
 selectDataUI(
   id,
   defaultSource,
+  ckanFileTypes,
   batch,
   outputAsMatrix,
   importType,
@@ -17,6 +18,8 @@ selectDataUI(
 \item{id}{id of module}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
 

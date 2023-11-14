@@ -7,6 +7,7 @@
 selectDataServer(
   id,
   importType,
+  ckanFileTypes,
   mergeList,
   customNames,
   openPopupReset,
@@ -25,6 +26,8 @@ selectDataServer(
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
+
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{mergeList}{(list) list of selected data}
 
