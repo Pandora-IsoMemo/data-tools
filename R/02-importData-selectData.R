@@ -48,9 +48,14 @@ selectDataUI <- function(id,
       div(class = "text-success", uiOutput(ns("success")))
     ),
     if (importType == "data")
-      div(actionButton(
-        ns("keepData"), "Submit for data preparation"
-      )) else NULL,
+      div(
+        fluidRow(column(width = 5,
+          actionButton(ns("keepData"), "Submit for data preparation")
+        ),
+        column(width = 7,
+               helpText("Enables data manipulation in the tabs: 'Prepare', 'Merge' or 'Query with SQL'.")
+        ))
+      ) else NULL,
     if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL
   )
 }
