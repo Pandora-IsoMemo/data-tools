@@ -179,8 +179,8 @@ test_that("matchColClasses/equalColClasses function", {
 
 
 testthat::test_that("Test module mergeDataServer", {
-  testFile1 <- read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
-  testFile2 <- read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
+  testFile1 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
+  testFile2 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
 
   testMergeList <- list(
     `table1` = list(data = testFile1,

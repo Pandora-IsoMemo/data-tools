@@ -3,11 +3,9 @@
 #' @importFrom DT datatable renderDataTable dataTableOutput
 #' @importFrom htmltools save_html
 #' @importFrom httr GET content timeout
-#' @importFrom openxlsx loadWorkbook read.xlsx
+#' @importFrom openxlsx loadWorkbook
 #' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData
-#' @importFrom readODS read_ods
-#' @importFrom readr guess_encoding
-#' @importFrom readxl excel_sheets read_excel
+#' @importFrom readxl excel_sheets
 #' @importFrom rgpt3 gpt3_authenticate gpt3_single_completion gpt3_test_completion
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
@@ -18,6 +16,7 @@
 #' @importFrom templates tmpl
 #' @importFrom tidyr separate unite
 #' @importFrom tools file_ext
-#' @importFrom utils capture.output download.file read.csv packageVersion
+#' @importFrom utils capture.output download.file packageVersion
+#' @importFrom yaml  yaml.load_file
 #' @importFrom zip zipr
 NULL
