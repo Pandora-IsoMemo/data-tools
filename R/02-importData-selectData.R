@@ -652,11 +652,6 @@ selectSourceServer <- function(id,
 
                  observe({
                    logDebug("Apply file type filter")
-                   # reset repository
-                   choicesRecord <- getCKANRecordChoices(network = input$ckanGroup,
-                                                         pattern = input$ckanMeta,
-                                                         packageList = ckanPackages())
-                   updateSelectizeInput(session, "ckanRecord", selected = choicesRecord[1])
                    # reset and update resource
                    choicesResource <- getCKANResourcesChoices(fileType = input$ckanResourceTypes,
                                                               repository = "",

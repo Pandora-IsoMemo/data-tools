@@ -9,6 +9,9 @@ getCKANResourcesChoices <-
            network = "",
            pattern = "",
            packageList = data.frame()) {
+    if (length(fileType) == 0 || any(fileType == ""))
+      fileType <- config()[["ckanFileTypes"]]
+
     resources <- getResources(fileType = fileType,
                               repository = repository,
                               network = network,
@@ -78,7 +81,7 @@ getCKANTypesChoices <- function(repository = "",
                                 network = "",
                                 pattern = "",
                                 packageList = data.frame(),
-                                ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")) {
+                                ckanFileTypes = config()[["ckanFileTypes"]]) {
   fileTypes <- getFileTypes(repository = repository,
                             network = network,
                             pattern = pattern,
