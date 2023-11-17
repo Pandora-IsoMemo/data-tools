@@ -4,12 +4,10 @@
 \alias{toolsLoadServer}
 \title{Server function of toolsLoad module}
 \usage{
-toolsLoadServer(id, config)
+toolsLoadServer(id)
 }
 \arguments{
 \item{id}{module id}
-
-\item{config}{(list) list of config variables}
 }
 \description{
 Server function of toolsLoad module

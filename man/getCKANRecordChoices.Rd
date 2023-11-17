@@ -7,7 +7,8 @@
 getCKANRecordChoices(network = "", pattern = "", packageList = data.frame())
 }
 \arguments{
-\item{network}{(character) name of Pandora network}
+\item{network}{(character) name of a Pandora network, e.g. an entry of the output from
+\code{getNetworks()$name}}
 
 \item{pattern}{(character) string for meta information search}
 
