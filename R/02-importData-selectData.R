@@ -370,7 +370,7 @@ selectSourceUI <- function(id,
         ),
         fluidRow(
           column(
-            8,
+            7,
             selectizeInput(
               ns("ckanRecord"),
               "Pandora repository",
@@ -387,7 +387,7 @@ selectSourceUI <- function(id,
             )
           ),
           column(
-            4,
+            5,
             pickerInput(
               ns("ckanResourceTypes"),
               label = "Filter file type",
@@ -409,7 +409,7 @@ selectSourceUI <- function(id,
         tags$strong("Pandora repository resource"),
         fluidRow(
           column(
-            8,
+            7,
             style = "margin-top: 0.5em;",
             selectizeInput(
               ns("ckanResource"),
@@ -427,9 +427,14 @@ selectSourceUI <- function(id,
             )
           ),
           column(
-            4,
+            2,
             align = "right",
             actionButton(ns("loadCKAN"), "Load")
+          ),
+          column(
+            3,
+            align = "right",
+            actionButton(ns("resetCKAN"), "Reset")
           )
         )
       ),
@@ -581,6 +586,39 @@ selectSourceServer <- function(id,
                    bindEvent(input$source)
 
                  observe({
+                   logDebug("reset CKAN fields")
+                   # reset ckanGroup, ckanRecord, ckanResourceTypes
+                   # reset meta string
+                   updateTextInput(session, "ckanMeta", value = "")
+                   # reset network filter
+                   updatePickerInput(session,
+                                     "ckanGroup",
+                                     choices = getCKANGroupChoices(groupList = ckanNetworks()),
+                                     selected = character(0))
+                   # reset file type filter
+                   fileTypes <- getCKANTypesChoices(packageList = ckanPackages(),
+                                                    ckanFileTypes = ckanFileTypes)
+                   updatePickerInput(session,
+                                     "ckanResourceTypes",
+                                     choices = fileTypes,
+                                     selected = fileTypes)
+
+                   # reset repository
+                   choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
+                   updateSelectizeInput(session,
+                                        "ckanRecord",
+                                        choices = choicesRepo,
+                                        selected = choicesRepo[1])
+                   # reset resource
+                   choicesResource <- getCKANResourcesChoices(packageList = ckanPackages())
+                   updateSelectizeInput(session,
+                                        "ckanResource",
+                                        choices = choicesResource,
+                                        selected = choicesResource[1])
+                 }) %>%
+                   bindEvent(input$resetCKAN)
+
+                 observe({
                    logDebug("Apply Meta filter")
                    updateSelectizeInput(session,
                                         "ckanRecord",
@@ -613,7 +651,7 @@ selectSourceServer <- function(id,
                    bindEvent(input$ckanGroup)
 
                  observe({
-                   logDebug("Apply Network filter")
+                   logDebug("Apply file type filter")
                    # reset repository
                    choicesRecord <- getCKANRecordChoices(network = input$ckanGroup,
                                                          pattern = input$ckanMeta,
