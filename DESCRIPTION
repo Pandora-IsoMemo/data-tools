@@ -24,7 +24,7 @@ Imports:
   readODS,
   readr,
   readxl,
-  Pandora (>= 23.11.1),
+  Pandora (>= 23.11.2),
   RSQLite,
   shiny,
   shinyAce,

@@ -56,6 +56,7 @@ getCKANRecordChoices <- function(network = "", pattern = "", packageList = data.
 #'
 #' Get choices that will be available in the ckanGroup (network) input
 #'
+#' @inheritParams Pandora::getNetworks
 getCKANGroupChoices <- function(groupList = data.frame()) {
   # do not use parameter "pattern", the endpoint from getNetworks does NOT contain all the meta
   # information. So we cannot use the string from input$ckanMeta here

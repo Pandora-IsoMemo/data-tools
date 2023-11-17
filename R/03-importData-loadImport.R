@@ -147,13 +147,12 @@ loadDataWrapper <- function(values,
                             sheetId) {
   df <- tryCatch(
     loadData(
-      file = filepath,
+      path = filepath,
       type = type,
       sep = sep,
       dec = dec,
-      withColnames = withColnames,
-      sheetId = sheetId,
-      headOnly = FALSE
+      colNames = withColnames,
+      sheet = sheetId
     ),
     error = function(cond) {
       values$errors <-
@@ -190,109 +189,6 @@ loadDataWrapper <- function(values,
 
   values
 }
-
-loadData <-
-  function(file,
-           type,
-           sep = ",",
-           dec = ".",
-           withColnames = TRUE,
-           sheetId = 1,
-           headOnly = FALSE) {
-    # if(type == "csv" | type == "txt"){
-    #   codepages <- setNames(iconvlist(), iconvlist())
-    #   x <- lapply(codepages, function(enc) try(suppressWarnings({read.csv(file,
-    #                                                     fileEncoding=enc,
-    #                                                     sep = sep, dec = dec,
-    #                                                     stringsAsFactors = FALSE,
-    #                                                     row.names = NULL,
-    #                                                     nrows=3, header=TRUE)}),
-    #                                            silent = TRUE)) # you get lots of errors/warning here
-    #   x <- x[!sapply(x, function(y) class(y) %in% "try-error")]
-    #   maybe_ok <- which(sapply(x, function(y) isTRUE(all.equal(dim(y)[1], c(3)))))
-    #   if(length(maybe_ok) > 0){
-    #     encTry <- names(maybe_ok[1])
-    #   } else {
-    #     encTry <- ""
-    #   }
-    # }
-
-    encTry <- as.character(guess_encoding(file)[1, 1])
-    if (type == "xlsx") {
-      xlsSplit <- strsplit(file, split = "\\.")[[1]]
-      if (xlsSplit[length(xlsSplit)] == "xls") {
-        type <- "xls"
-      }
-    }
-
-    data <- switch(
-      type,
-      csv = suppressWarnings({
-        read.csv(
-          file,
-          header = withColnames,
-          sep = sep,
-          dec = dec,
-          stringsAsFactors = FALSE,
-          row.names = NULL,
-          fileEncoding = encTry,
-          nrows = getNrow(headOnly, type)
-        )
-      }),
-      txt = suppressWarnings({
-        read.csv(
-          file,
-          header = withColnames,
-          sep = sep,
-          dec = dec,
-          stringsAsFactors = FALSE,
-          row.names = NULL,
-          fileEncoding = encTry,
-          nrows = getNrow(headOnly, type)
-        )
-      }),
-      xlsx = read.xlsx(
-        file,
-        sheet = sheetId,
-        colNames = withColnames,
-        rows = getNrow(headOnly, type)
-      ),
-      xls = suppressWarnings({
-        readxl::read_excel(
-          file,
-          sheet = sheetId,
-          col_names = withColnames,
-          n_max = getNrow(headOnly, type)
-        )
-      }),
-      ods = readODS::read_ods(
-        file,
-        sheet = sheetId,
-        col_names = withColnames,
-        range = getNrow(headOnly, type)
-      )
-    )
-
-    if (is.null(data))
-      return(NULL)
-
-    if (is.null(dim(data))) {
-      stop("Could not determine dimensions of data")
-      return(NULL)
-    }
-
-    if (any(dim(data) == 1)) {
-      warning("Number of rows or columns equal to 1")
-      return(NULL)
-    }
-
-    if (any(dim(data) == 0)) {
-      stop("Number of rows or columns equal to 0")
-      return(NULL)
-    }
-
-    return(data)
-  }
 
 # Functions to IMPORT ZIP objects ----
 

@@ -6,6 +6,10 @@
 \usage{
 getCKANGroupChoices(groupList = data.frame())
 }
+\arguments{
+\item{groupList}{(data.frame) optional, output of callAPI() from a previous call to the
+Pandora API.}
+}
 \description{
 Get choices that will be available in the ckanGroup (network) input
 }
