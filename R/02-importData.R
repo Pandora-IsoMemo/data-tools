@@ -11,6 +11,90 @@ importDataUI <- function(id, label = "Import Data") {
   actionButton(ns("openPopup"), label)
 }
 
+#' Data Import Options
+#'
+#' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan")
+#' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
+#' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
+#' @param customWarningChecks list of reactive(!) functions which will be executed after importing
+#'  of data.
+#'   functions need to return TRUE if check is successful or a character with a warning otherwise.
+#'   This parameter is ignored if importType == "model"
+#' @param customErrorChecks list of reactive(!) functions which will be executed after importing
+#' of data.
+#'   functions need to return TRUE if check is successful or a character with a warning otherwise.
+#'   This parameter is ignored if importType == "model"
+#' @param batch (logical) use batch import. This parameter is ignored if importType == "model"
+#' @param outputAsMatrix (logical) TRUE if output must be a matrix,
+#'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
+#'
+#' @return list of extra options for \code{impoertDataServer()} that are relevant if
+#' \code{importType = "data"}
+#'
+#' @export
+dataImportOptions <- function(ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                              rowNames = reactiveVal(NULL),
+                              colNames = reactiveVal(NULL),
+                              customWarningChecks = list(),
+                              customErrorChecks = list(),
+                              batch = FALSE,
+                              outputAsMatrix = FALSE) {
+  list(
+    ckanFileTypes = ckanFileTypes,
+    rowNames = rowNames,
+    colNames = colNames,
+    customWarningChecks = customWarningChecks,
+    customErrorChecks = customErrorChecks,
+    batch = batch,
+    outputAsMatrix = outputAsMatrix
+  )
+}
+
+#' Model Import Options
+#'
+#' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
+#'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
+#' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
+#'  This parameter is ignored if importType == "data"
+#' @param mainFolder (character) folder containing all loadable .zip files.
+#'   This parameter is ignored if importType == "data"
+#' @param subFolder (character) (optional) subfolder containing loadable .zip files.
+#'  This parameter is ignored if importType == "data"
+#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
+#'  from this R package. This parameter is ignored if importType == "data"
+#'
+#' @return list of extra options for \code{impoertDataServer()} that are relevant if
+#' \code{importType = "model"}
+#'
+#' @export
+modelImportOptions <- function(fileExtension = "zip",
+                               mainFolder = "predefinedModels",
+                               subFolder = NULL,
+                               rPackageName = "",
+                               onlySettings = FALSE) {
+  list(
+    fileExtension = fileExtension,
+    mainFolder = mainFolder,
+    subFolder = subFolder,
+    rPackageName = rPackageName,
+    onlySettings = onlySettings
+  )
+}
+
+#' Zip Import Options
+#'
+#' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
+#'  File names that must be contained in the zip upload.
+#' @return list of extra options for \code{impoertDataServer()} that are relevant if
+#' \code{importType = "data"}
+#'
+#' @export
+zipImportOptions <- function(expectedFileInZip = c()) {
+  list(
+    expectedFileInZip = expectedFileInZip
+  )
+}
+
 #' Server function for data import
 #'
 #' Backend for data import module
