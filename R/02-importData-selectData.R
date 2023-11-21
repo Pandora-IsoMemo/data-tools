@@ -297,18 +297,14 @@ selectSourceUI <- function(id,
     acceptExt <- sprintf(".%s", fileExtension)
   }
 
-  tagList(fluidRow(
-    column(
-      3,
-      selectInput(
-        ns("source"),
-        "Source",
-        choices = sourceChoices,
-        selected = defaultSource
-      )
+  tagList(
+    radioButtons(
+      ns("source"),
+      label = NULL,
+      choices = sourceChoices,
+      selected = defaultSource,
+      inline = TRUE
     ),
-    column(
-      9,
       ## source == ckan ----
       conditionalPanel(
         condition = "input.source == 'ckan'",
@@ -459,10 +455,8 @@ selectSourceUI <- function(id,
         condition = "input.source == 'remoteModel'",
         ns = ns,
         remoteModelsUI(ns("remoteModels"))
-      )
-    )
-  ),
-  tags$hr(),
+      ),
+  if (importType == "data")  tags$hr() else NULL,
   if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
   tags$hr()
   )
@@ -503,7 +497,7 @@ selectSourceServer <- function(id,
 
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
-                     updateSelectInput(session, "source", selected = "file")
+                     updateRadioButtons(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection ...")
                      shinyjs::disable(ns("loadUrl"), asis = TRUE)
                    } else {
