@@ -12,15 +12,8 @@ selectDataUI <- function(id,
                          batch,
                          outputAsMatrix,
                          importType,
-                         options,
                          fileExtension = "zip"
                          ) {
-
-  for (param in c("ckanFileTypes", "batch", "outputAsMatrix", "fileExtension")) {
-    assign(param, isDepricated(oldParam = get(param),
-                               newParam = options[param]))
-  }
-
   ns <- NS(id)
 
   tagList(

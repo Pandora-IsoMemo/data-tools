@@ -128,27 +128,32 @@ isDepricated <- function(newParam, oldParam) {
 importDataServer <- function(id,
                              title = "",
                              defaultSource = "ckan",
-                             ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                             ckanFileTypes = NULL,
                              ignoreWarnings = FALSE,
                              importType = "data",
                              options = importOptions(),
                              # parameters for data upload
-                             rowNames = reactiveVal(NULL),
-                             colNames = reactiveVal(NULL),
-                             customWarningChecks = list(),
-                             customErrorChecks = list(),
-                             batch = FALSE,
-                             outputAsMatrix = FALSE,
+                             rowNames = NULL,
+                             colNames = NULL,
+                             customWarningChecks = NULL,
+                             customErrorChecks = NULL,
+                             batch = NULL,
+                             outputAsMatrix = NULL,
                              # parameters for model upload
-                             fileExtension = "zip",
-                             mainFolder = "predefinedModels",
+                             fileExtension = NULL,
+                             mainFolder = NULL,
                              subFolder = NULL,
-                             rPackageName = "",
-                             onlySettings = FALSE,
-                             expectedFileInZip = c()
+                             rPackageName = NULL,
+                             onlySettings = NULL,
+                             expectedFileInZip = NULL
                              ) {
   moduleServer(id,
                function(input, output, session) {
+                 for (param in c("rowNames", "colNames", "outputAsMatrix")) {
+                   assign(param, isDepricated(oldParam = get(param),
+                                              newParam = options[param]))
+                 }
+
                  ns <- session$ns
                  mergeList <- reactiveVal(list())
                  customNames <- reactiveValues(
@@ -473,11 +478,16 @@ importDataDialog <-
            title,
            options,
            ckanFileTypes,
+           batch,
+           outputAsMatrix,
+           fileExtension,
            defaultSource = "ckan",
-           batch = FALSE,
-           outputAsMatrix = FALSE,
-           importType = "data",
-           fileExtension = "zip") {
+           importType = "data") {
+
+    for (param in c("ckanFileTypes", "batch", "outputAsMatrix", "fileExtension")) {
+      assign(param, isDepricated(oldParam = get(param),
+                                 newParam = options[param]))
+    }
 
     if (title == "") {
       title <- switch(importType,
@@ -521,8 +531,7 @@ importDataDialog <-
             batch = batch,
             outputAsMatrix = outputAsMatrix,
             importType = importType,
-            fileExtension = fileExtension,
-            options = options
+            fileExtension = fileExtension
           )
         ),
         if (importType == "data") tabPanel("Prepare",

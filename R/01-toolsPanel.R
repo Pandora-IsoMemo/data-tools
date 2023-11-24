@@ -38,43 +38,51 @@ toolsImportServer <- function(id) {
                function(input, output, session) {
                  importedData <- importDataServer(
                    "localData",
-                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
-                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
-                   defaultSource = config()[["defaultSource"]]
+                   defaultSource = config()[["defaultSource"]],
+                   options = importOptions(
+                     customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                     customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                     ckanFileTypes = config()[["ckanFileTypes"]]
+                   )
                  )
 
                  importedDataCKAN <- importDataServer(
                    "ckanData",
-                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
-                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
-                   defaultSource = "ckan"
+                   defaultSource = "ckan",
+                   options = importOptions(
+                     customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                     customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                     ckanFileTypes = config()[["ckanFileTypes"]]
+                   )
                  )
 
                  importedBatchData <- importDataServer(
                    "batchData",
-                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
-                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
-                   batch = TRUE,
-                   outputAsMatrix = TRUE
+                   options = importOptions(
+                     customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                     customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                     ckanFileTypes = config()[["ckanFileTypes"]],
+                     batch = TRUE,
+                     outputAsMatrix = TRUE
+                   )
                  )
 
                  importedModel <- importDataServer(
                    "model",
-                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
-                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    importType = "model",
-                   mainFolder = config()[["mainFolder"]],
-                   fileExtension = config()[["fileExtension"]],
-                   rPackageName = config()[["rPackageName"]]
+                   options = importOptions(
+                     customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                     customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                     mainFolder = config()[["mainFolder"]],
+                     fileExtension = config()[["fileExtension"]],
+                     rPackageName = config()[["rPackageName"]]
+                   )
                  )
 
                  dataOut <- reactiveVal(NULL)

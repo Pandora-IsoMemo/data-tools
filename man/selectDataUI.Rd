@@ -11,7 +11,6 @@ selectDataUI(
   batch,
   outputAsMatrix,
   importType,
-  options,
   fileExtension = "zip"
 )
 }
@@ -29,8 +28,6 @@ e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
-
-\item{options}{(list) extra options, see \code{importOptions()}}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
