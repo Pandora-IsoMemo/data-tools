@@ -11,6 +11,7 @@ importDataServer(
   ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   ignoreWarnings = FALSE,
   importType = "data",
+  options = importOptions(),
   rowNames = reactiveVal(NULL),
   colNames = reactiveVal(NULL),
   customWarningChecks = list(),
@@ -38,6 +39,8 @@ importDataServer(
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
+
+\item{options}{(list) extra options, see \code{importOptions()}}
 
 \item{rowNames}{(reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"}
 

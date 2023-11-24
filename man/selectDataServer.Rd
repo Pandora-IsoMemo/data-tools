@@ -7,6 +7,7 @@
 selectDataServer(
   id,
   importType,
+  options,
   mergeList,
   customNames,
   openPopupReset,
@@ -26,6 +27,8 @@ selectDataServer(
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
+
+\item{options}{(list) extra options, see \code{importOptions()}}
 
 \item{mergeList}{(list) list of selected data}
 

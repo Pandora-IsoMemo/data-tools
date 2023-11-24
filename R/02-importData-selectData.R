@@ -12,7 +12,16 @@ selectDataUI <- function(id,
                          batch,
                          outputAsMatrix,
                          importType,
-                         fileExtension = "zip") {
+                         options,
+                         fileExtension = "zip"
+                         ) {
+
+  for (param in c("ckanFileTypes", "batch", "outputAsMatrix", "fileExtension")) {
+    browser()
+    assign(param, isDepricated(oldParam = get(param),
+                               newParam = options[param]))
+  }
+
   ns <- NS(id)
 
   tagList(
@@ -21,7 +30,8 @@ selectDataUI <- function(id,
                    defaultSource = defaultSource,
                    ckanFileTypes = ckanFileTypes,
                    importType = importType,
-                   fileExtension = fileExtension),
+                   fileExtension = fileExtension,
+                   options = options),
     if (importType == "data")
       checkboxInput(
         ns("withRownames"),
@@ -72,6 +82,7 @@ selectDataUI <- function(id,
 #' @inheritParams uploadModelServer
 selectDataServer <- function(id,
                              importType,
+                             options,
                              mergeList,
                              customNames,
                              openPopupReset,
@@ -87,6 +98,12 @@ selectDataServer <- function(id,
                              ) {
   moduleServer(id,
                function(input, output, session) {
+                 for (param in c("ckanFileTypes", "fileExtension", "mainFolder", "subFolder",
+                                 "rPackageName", "onlySettings", "expectedFileInZip")) {
+                   assign(param, isDepricated(oldParam = get(param),
+                                              newParam = options[param]))
+                 }
+
                  ns <- session$ns
 
                  values <- reactiveValues(
@@ -269,7 +286,13 @@ selectSourceUI <- function(id,
                            defaultSource,
                            ckanFileTypes,
                            importType,
+                           options,
                            fileExtension = "zip") {
+  for (param in c("ckanFileTypes", "fileExtension")) {
+    assign(param, isDepricated(oldParam = get(param),
+                               newParam = options[param]))
+  }
+
   ns <- NS(id)
 
   sourceChoices <- switch(importType,

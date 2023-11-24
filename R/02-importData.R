@@ -11,7 +11,7 @@ importDataUI <- function(id, label = "Import Data") {
   actionButton(ns("openPopup"), label)
 }
 
-#' Data Import Options
+#' Import Options
 #'
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan")
 #' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
@@ -27,31 +27,6 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param batch (logical) use batch import. This parameter is ignored if importType == "model"
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
 #'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
-#'
-#' @return list of extra options for \code{impoertDataServer()} that are relevant if
-#' \code{importType = "data"}
-#'
-#' @export
-dataImportOptions <- function(ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
-                              rowNames = reactiveVal(NULL),
-                              colNames = reactiveVal(NULL),
-                              customWarningChecks = list(),
-                              customErrorChecks = list(),
-                              batch = FALSE,
-                              outputAsMatrix = FALSE) {
-  list(
-    ckanFileTypes = ckanFileTypes,
-    rowNames = rowNames,
-    colNames = colNames,
-    customWarningChecks = customWarningChecks,
-    customErrorChecks = customErrorChecks,
-    batch = batch,
-    outputAsMatrix = outputAsMatrix
-  )
-}
-
-#' Model Import Options
-#'
 #' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
 #'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
@@ -62,37 +37,53 @@ dataImportOptions <- function(ckanFileTypes = c("xls", "xlsx", "csv", "odt", "tx
 #'  This parameter is ignored if importType == "data"
 #' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
 #'  from this R package. This parameter is ignored if importType == "data"
-#'
-#' @return list of extra options for \code{impoertDataServer()} that are relevant if
-#' \code{importType = "model"}
-#'
-#' @export
-modelImportOptions <- function(fileExtension = "zip",
-                               mainFolder = "predefinedModels",
-                               subFolder = NULL,
-                               rPackageName = "",
-                               onlySettings = FALSE) {
-  list(
-    fileExtension = fileExtension,
-    mainFolder = mainFolder,
-    subFolder = subFolder,
-    rPackageName = rPackageName,
-    onlySettings = onlySettings
-  )
-}
-
-#' Zip Import Options
-#'
 #' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
 #'  File names that must be contained in the zip upload.
-#' @return list of extra options for \code{impoertDataServer()} that are relevant if
+#'
+#' @return (list) extra options for \code{impoertDataServer()} that are relevant if
 #' \code{importType = "data"}
 #'
 #' @export
-zipImportOptions <- function(expectedFileInZip = c()) {
-  list(
-    expectedFileInZip = expectedFileInZip
+importOptions <- function(ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                          rowNames = reactiveVal(NULL),
+                          colNames = reactiveVal(NULL),
+                          customWarningChecks = list(),
+                          customErrorChecks = list(),
+                          batch = FALSE,
+                          outputAsMatrix = FALSE,
+                          fileExtension = "zip",
+                          mainFolder = "predefinedModels",
+                          subFolder = NULL,
+                          rPackageName = "",
+                          onlySettings = FALSE,
+                          expectedFileInZip = c()
+                          ) {
+  list(ckanFileTypes = ckanFileTypes,
+      rowNames = rowNames,
+      colNames = colNames,
+      customWarningChecks = customWarningChecks,
+      customErrorChecks = customErrorChecks,
+      batch = batch,
+      outputAsMatrix = outputAsMatrix,
+      fileExtension = fileExtension,
+      mainFolder = mainFolder,
+      subFolder = subFolder,
+      rPackageName = rPackageName,
+      onlySettings = onlySettings,
+      expectedFileInZip = expectedFileInZip
   )
+}
+
+isDepricated <- function(newParam, oldParam) {
+  if (!is.null(oldParam)) {
+    warning(sprintf(
+      "Parameter '%s' will be DEPRECATED soon. Please use 'importOptions()' to set options!",
+      names(newParam)
+    ))
+    return(oldParam)
+  } else {
+    return(newParam[[1]])
+  }
 }
 
 #' Server function for data import
@@ -106,6 +97,7 @@ zipImportOptions <- function(expectedFileInZip = c()) {
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param importType (character) type of import, either "data" or "model" or "zip".
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'.
+#' @param options (list) extra options, see \code{importOptions()}
 #' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
 #' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
@@ -139,6 +131,7 @@ importDataServer <- function(id,
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              ignoreWarnings = FALSE,
                              importType = "data",
+                             options = importOptions(),
                              # parameters for data upload
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),
@@ -195,7 +188,8 @@ importDataServer <- function(id,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
-                       fileExtension = fileExtension
+                       fileExtension = fileExtension,
+                       options = options
                      )
                    )
 
@@ -254,7 +248,8 @@ importDataServer <- function(id,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
                    fileExtension = fileExtension,
-                   expectedFileInZip = expectedFileInZip
+                   expectedFileInZip = expectedFileInZip,
+                   options = options
                  )
 
                  ## disable button accept ----
@@ -476,6 +471,7 @@ checkIfActive <- function(currentTab, tabName) {
 importDataDialog <-
   function(ns,
            title,
+           options,
            ckanFileTypes,
            defaultSource = "ckan",
            batch = FALSE,
@@ -525,7 +521,8 @@ importDataDialog <-
             batch = batch,
             outputAsMatrix = outputAsMatrix,
             importType = importType,
-            fileExtension = fileExtension
+            fileExtension = fileExtension,
+            options = options,
           )
         ),
         if (importType == "data") tabPanel("Prepare",
