@@ -17,7 +17,6 @@ selectDataUI <- function(id,
                          ) {
 
   for (param in c("ckanFileTypes", "batch", "outputAsMatrix", "fileExtension")) {
-    browser()
     assign(param, isDepricated(oldParam = get(param),
                                newParam = options[param]))
   }
@@ -30,8 +29,7 @@ selectDataUI <- function(id,
                    defaultSource = defaultSource,
                    ckanFileTypes = ckanFileTypes,
                    importType = importType,
-                   fileExtension = fileExtension,
-                   options = options),
+                   fileExtension = fileExtension),
     if (importType == "data")
       checkboxInput(
         ns("withRownames"),
@@ -286,13 +284,7 @@ selectSourceUI <- function(id,
                            defaultSource,
                            ckanFileTypes,
                            importType,
-                           options,
                            fileExtension = "zip") {
-  for (param in c("ckanFileTypes", "fileExtension")) {
-    assign(param, isDepricated(oldParam = get(param),
-                               newParam = options[param]))
-  }
-
   ns <- NS(id)
 
   sourceChoices <- switch(importType,

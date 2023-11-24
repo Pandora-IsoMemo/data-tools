@@ -522,7 +522,7 @@ importDataDialog <-
             outputAsMatrix = outputAsMatrix,
             importType = importType,
             fileExtension = fileExtension,
-            options = options,
+            options = options
           )
         ),
         if (importType == "data") tabPanel("Prepare",
