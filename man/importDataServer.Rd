@@ -8,6 +8,7 @@ importDataServer(
   id,
   title = "",
   defaultSource = "ckan",
+  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   ignoreWarnings = FALSE,
   importType = "data",
   rowNames = reactiveVal(NULL),
@@ -30,6 +31,8 @@ importDataServer(
 \item{title}{title of data import module}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 

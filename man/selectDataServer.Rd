@@ -11,6 +11,7 @@ selectDataServer(
   customNames,
   openPopupReset,
   internetCon,
+  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   mainFolder = "predefinedModels",
   subFolder = NULL,
   ignoreWarnings = FALSE,
@@ -33,6 +34,8 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
+
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{mainFolder}{(character) folder containing all loadable .zip files.
 This parameter is ignored if importType == "data"}

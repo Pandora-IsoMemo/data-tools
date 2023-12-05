@@ -14,9 +14,10 @@ test_that("Test module selectSourceServer", {
                  ckanMeta = "",
                  applyMeta = 0,
                  ckanGroup = "isomemo-group",
-                 ckanRecord = "14CARHU",
+                 ckanRecord = "14carhu",
                  ckanResourceTypes = c("xlsx"),
-                 ckanResource = "14CARHU - Radiocarbon Dates of Helsinki University"
+                 ckanResource = "14CARHU - Radiocarbon Dates of Helsinki University",
+                 loadCKAN = 1
                )
 
                expect_equal(session$returned$filename,
@@ -42,9 +43,10 @@ test_that("Test module selectSourceServer", {
                  source = "ckan",
                  ckanMeta = "",
                  applyMeta = 1,
-                 ckanRecord = "AfriArch isotopic dataset",
+                 ckanRecord = "afriarch-isotopic-dataset",
                  ckanResourceTypes = c("xlsx"),
-                 ckanResource = "Isotopic measurements in Excel format"
+                 ckanResource = "Isotopic measurements in Excel format",
+                 loadCKAN = 1
                )
 
                expect_equal(session$returned$filename, "isotopic-measurements-in-excel-format.xlsx")
@@ -67,9 +69,10 @@ test_that("Test module selectSourceServer", {
                  source = "ckan",
                  ckanMeta = "cxbdyfbxdSomeRandomStringYlkdjgl",
                  applyMeta = 1,
-                 ckanRecord = "AfriArch isotopic dataset",
+                 ckanRecord = "afriarch-isotopic-dataset",
                  ckanResourceTypes = c("xlsx"),
-                 ckanResource = "Isotopic measurements in Excel format"
+                 ckanResource = "Isotopic measurements in Excel format",
+                 loadCKAN = 1
                )
 
                expect_null(session$returned$filename)

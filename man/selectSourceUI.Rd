@@ -4,12 +4,20 @@
 \alias{selectSourceUI}
 \title{Select Source UI}
 \usage{
-selectSourceUI(id, defaultSource, importType, fileExtension = "zip")
+selectSourceUI(
+  id,
+  defaultSource,
+  ckanFileTypes,
+  importType,
+  fileExtension = "zip"
+)
 }
 \arguments{
 \item{id}{id of module}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
+
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}

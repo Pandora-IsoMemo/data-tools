@@ -1,4 +1,11 @@
 defaultSource: "file"           # for import of data and models
+# file types that are allowed for import from Pandora ("ckan")
+ckanFileTypes:
+  - "xls"
+  - "xlsx"
+  - "csv"
+  - "odt"
+  - "txt"
 githubRepo: "data-tools"        # for import of models
 mainFolder: "predefinedModels"  # for import of models
 fileExtension: "datatools"      # for download of models

@@ -10,7 +10,8 @@ selectSourceServer(
   internetCon,
   githubRepo,
   folderOnGithub,
-  pathToLocal
+  pathToLocal,
+  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")
 )
 }
 \arguments{
@@ -26,6 +27,8 @@ selectSourceServer(
 correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
 
 \item{pathToLocal}{(character) relative path to the folder storing local files}
+
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 }
 \description{
 Server function of the module

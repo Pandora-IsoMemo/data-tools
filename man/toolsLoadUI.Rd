@@ -4,12 +4,10 @@
 \alias{toolsLoadUI}
 \title{UI function of toolsLoad module}
 \usage{
-toolsLoadUI(id, config)
+toolsLoadUI(id)
 }
 \arguments{
 \item{id}{module id}
-
-\item{config}{(list) list of config variables}
 }
 \description{
 UI function of toolsLoad module

@@ -4,12 +4,10 @@
 \alias{toolsImportServer}
 \title{Server function of toolsImport module}
 \usage{
-toolsImportServer(id, config)
+toolsImportServer(id)
 }
 \arguments{
 \item{id}{module id}
-
-\item{config}{(list) list of config variables}
 }
 \description{
 Server function of toolsImport module
