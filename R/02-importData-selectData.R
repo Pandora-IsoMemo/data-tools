@@ -49,10 +49,10 @@ selectDataUI <- function(id,
     ),
     if (importType == "data")
       div(
-        fluidRow(column(width = 5,
+        fluidRow(column(width = 4,
           actionButton(ns("keepData"), "Submit for data preparation")
         ),
-        column(width = 7,
+        column(width = 8,
                helpText("Enables data manipulation in the tabs: 'Prepare', 'Merge' or 'Query with SQL'.")
         ))
       ) else NULL,
@@ -309,156 +309,45 @@ selectSourceUI <- function(id,
       conditionalPanel(
         condition = "input.source == 'ckan'",
         ns = ns,
-        tags$strong(HTML(
-          paste(
-            "Filter Pandora repositories &nbsp",
-            # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
-            tags$i(
-              class = "glyphicon glyphicon-info-sign",
-              style = sprintf("color:%s;", "#0072B2"),
-              title =
-                paste(
-                  "- Filter 'some', or 'key', or 'words':",
-                  "   'some|key|words'",
-                  "- Filter 'some', and 'key', and 'words':",
-                  "   '(some+)(.*)(key+)(.*)(words+)'",
-                  sep = " \n"
-                )
-            )
-          )
-        )),
-        fluidRow(
-          column(
-            5,
-            style = "margin-top: 0.5em;",
-            textInput(
-              ns("ckanMeta"),
-              label = NULL,
-              value = "",
-              placeholder = "Meta data"
-            )
-          ),
-          column(1,
-                 style = "margin-top: 0.5em; margin-left: -2em",
-                 actionButton(
-                   ns("applyMeta"),
-                   label = NULL,
-                   icon = icon("play")
-                 )),
-          column(
-            6,
-            style = "margin-top: 0.5em; margin-left: 2em",
-            pickerInput(
-              ns("ckanGroup"),
-              label = NULL,
-              choices = c("Check connection ..." = ""),
-              selected = "",
-              multiple = TRUE,
-              options = list(
-                `actions-box` = TRUE,
-                size = 10,
-                `none-selected-text` = "No network filter",
-                `selected-text-format` = "count > 8",
-                style = "backgound:'gray'"
-              )
-            )
-          )
+        fluidRow(column(width = 6,
+          filterCKANRepoUI(ns("repoFilter")),
+          filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
+          loadCKANResourceUI(ns("resourceLoad"))
         ),
-        fluidRow(
-          column(
-            7,
-            selectizeInput(
-              ns("ckanRecord"),
-              "Pandora repository",
-              choices = c("Please check connection ..." = ""),
-              width = "100%",
-              options = list(
-                onFocus = I(
-                  "function() {currentVal = this.getValue(); this.clear(true); }"
-                ),
-                onBlur = I(
-                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                )
-              )
-            )
-          ),
-          column(
-            5,
-            pickerInput(
-              ns("ckanResourceTypes"),
-              label = "Filter file type",
-              choices = ckanFileTypes,
-              selected = ckanFileTypes,
-              multiple = TRUE,
-              options = list(
-                `actions-box` = TRUE,
-                size = 10,
-                `none-selected-text` = "No filter",
-                `deselect-all-text` = "None",
-                `select-all-text` = "All",
-                `selected-text-format` = "count > 8",
-                style = "backgound:'dark-gray'"
-              )
-            )
-          )
-        ),
-        tags$strong("Pandora repository resource"),
-        fluidRow(
-          column(
-            7,
-            style = "margin-top: 0.5em;",
-            selectizeInput(
-              ns("ckanResource"),
-              label = NULL,
-              choices = c("No resource available ..." = ""),
-              width = "100%",
-              options = list(
-                onFocus = I(
-                  "function() {currentVal = this.getValue(); this.clear(true); }"
-                ),
-                onBlur = I(
-                  "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
-                )
-              )
-            )
-          ),
-          column(
-            2,
-            align = "right",
-            actionButton(ns("loadCKAN"), "Load")
-          ),
-          column(
-            3,
-            align = "right",
-            actionButton(ns("resetCKAN"), "Reset")
-          )
-        )
+        column(width = 6,
+               tags$strong("Additional Information for Pandora repository"),
+               dataTableOutput(ns(
+                 "repoInfoTable"
+               ))
+               ))
       ),
-      ## source == file ----
-      conditionalPanel(
-        condition = "input.source == 'file'",
-        ns = ns,
-        fileInput(ns("file"),
-                  "File",
-                  accept = acceptExt,
-                  width = "100%")
-      ),
-      ## source == url ----
-      conditionalPanel(
-        condition = "input.source == 'url'",
-        ns = ns,
-        textInput(ns("url"), "URL", width = "100%"),
-        actionButton(ns("loadUrl"), "Load")
-      ),
-      ## source == model ----
-      conditionalPanel(
-        condition = "input.source == 'remoteModel'",
-        ns = ns,
-        remoteModelsUI(ns("remoteModels"))
-      ),
-  if (importType == "data")  tags$hr() else NULL,
-  if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
-  tags$hr()
+    ## source == file ----
+    conditionalPanel(
+      condition = "input.source == 'file'",
+      ns = ns,
+      fileInput(ns("file"),
+                label = NULL,
+                accept = acceptExt,
+                width = "100%")
+    ),
+    ## source == url ----
+    conditionalPanel(
+      condition = "input.source == 'url'",
+      ns = ns,
+      fluidRow(column(width = 10,
+                      textInput(ns("url"), label = NULL, placeholder = "URL", width = "100%")),
+               column(width = 2,
+                      actionButton(ns("loadUrl"), "Load")))
+    ),
+    ## source == model ----
+    conditionalPanel(
+      condition = "input.source == 'remoteModel'",
+      ns = ns,
+      remoteModelsUI(ns("remoteModels"))
+    ),
+    if (importType == "data")  tags$hr() else NULL,
+    if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
+    tags$hr()
   )
 }
 
@@ -493,7 +382,7 @@ selectSourceServer <- function(id,
                    logDebug("Update after openPopupReset()")
                    # reset
                    reset("file")
-                   updateTextInput(session, "ckanMeta", value = "")
+                   updateTextInput(session, "repoFilter-ckanMeta", value = "")
 
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
@@ -506,26 +395,51 @@ selectSourceServer <- function(id,
                      ckanPackageList <- callAPI(action = "current_package_list_with_resources",
                                                 limit = 1000) %>%
                        withProgress(message = "Loading...")
+
                      ckanPackages(ckanPackageList)
                      # trigger update of ckanGroup, ckanRecord, ckanResourceTypes
                      updatePickerInput(session,
-                                       "ckanGroup",
+                                       "repoFilter-ckanGroup",
                                        choices = getCKANGroupChoices(groupList = ckanGroupList),
                                        selected = character(0))
                      choicesRepo <- getCKANRecordChoices(packageList = ckanPackageList)
                      updateSelectizeInput(session,
-                                          "ckanRecord",
+                                          "resourceFilter-ckanRecord",
                                           choices = choicesRepo,
                                           selected = choicesRepo[1])
                      choicesTypes <- getCKANTypesChoices(packageList = ckanPackageList,
                                                          ckanFileTypes = ckanFileTypes)
                      updatePickerInput(session,
-                                       "ckanResourceTypes",
+                                       "resourceFilter-ckanResourceTypes",
                                        choices = choicesTypes,
                                        selected = choicesTypes)
                    }
                  }) %>%
                    bindEvent(openPopupReset())
+
+                 output$repoInfoTable <- renderDataTable({
+                   validate(need(ckanPackages(), "No connection!"))
+                   validate(need(input[["resourceFilter-ckanRecord"]],
+                                 "Please select a Pandora repository!"))
+
+                   aboutTable <- ckanPackages()[ckanPackages()[["name"]] == input[["resourceFilter-ckanRecord"]], , drop = FALSE] %>%
+                     formatRepositoryList(renameColumns = TRUE)
+                   DT::datatable(
+                     data.frame(
+                       Field = colnames(aboutTable),
+                       Value = as.character(aboutTable[1, ])
+                     ),
+                     filter = "none",
+                     selection = "none",
+                     rownames = FALSE,
+                     options = list(
+                       dom = "t",
+                       searching = FALSE,
+                       scrollX = TRUE,
+                       scrollY = "25rem"
+                     )
+                   )
+                 })
 
                  observe({
                    req(internetCon(), nrow(ckanPackages()) == 0)
@@ -538,13 +452,13 @@ selectSourceServer <- function(id,
                    ckanPackages(ckanPackageList)
 
                    updatePickerInput(session,
-                                     "ckanGroup",
+                                     "repoFilter-ckanGroup",
                                      choices = getCKANGroupChoices(groupList = ckanGroupList))
                    updateSelectizeInput(session,
-                                        "ckanRecord",
+                                        "resourceFilter-ckanRecord",
                                         choices = getCKANRecordChoices(packageList = ckanPackageList))
                    updatePickerInput(session,
-                                     "ckanResourceTypes",
+                                     "resourceFilter-ckanResourceTypes",
                                      choices = getCKANTypesChoices(packageList = ckanPackageList,
                                                                    ckanFileTypes = ckanFileTypes))
                  }) %>%
@@ -560,20 +474,20 @@ selectSourceServer <- function(id,
                    updateTextInput(session, "url", value = "")
 
                    # reset ckanGroup, ckanRecord, ckanResourceTypes
-                   updateTextInput(session, "ckanMeta", value = "")
+                   updateTextInput(session, "repoFilter-ckanMeta", value = "")
                    updatePickerInput(session,
-                                     "ckanGroup",
+                                     "repoFilter-ckanGroup",
                                      choices = getCKANGroupChoices(groupList = ckanNetworks()),
                                      selected = character(0))
                    choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
                    updateSelectizeInput(session,
-                                        "ckanRecord",
+                                        "resourceFilter-ckanRecord",
                                         choices = choicesRepo,
                                         selected = choicesRepo[1])
                    fileTypes <- getCKANTypesChoices(packageList = ckanPackages(),
                                                     ckanFileTypes = ckanFileTypes)
                    updatePickerInput(session,
-                                     "ckanResourceTypes",
+                                     "resourceFilter-ckanResourceTypes",
                                      choices = fileTypes,
                                      selected = fileTypes)
                  }) %>%
@@ -583,81 +497,81 @@ selectSourceServer <- function(id,
                    logDebug("reset CKAN fields")
                    # reset ckanGroup, ckanRecord, ckanResourceTypes
                    # reset meta string
-                   updateTextInput(session, "ckanMeta", value = "")
+                   updateTextInput(session, "repoFilter-ckanMeta", value = "")
                    # reset network filter
                    updatePickerInput(session,
-                                     "ckanGroup",
+                                     "repoFilter-ckanGroup",
                                      choices = getCKANGroupChoices(groupList = ckanNetworks()),
                                      selected = character(0))
                    # reset file type filter
                    fileTypes <- getCKANTypesChoices(packageList = ckanPackages(),
                                                     ckanFileTypes = ckanFileTypes)
                    updatePickerInput(session,
-                                     "ckanResourceTypes",
+                                     "resourceFilter-ckanResourceTypes",
                                      choices = fileTypes,
                                      selected = fileTypes)
 
                    # reset repository
                    choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
                    updateSelectizeInput(session,
-                                        "ckanRecord",
+                                        "resourceFilter-ckanRecord",
                                         choices = choicesRepo,
                                         selected = choicesRepo[1])
                    # reset resource
                    choicesResource <- getCKANResourcesChoices(packageList = ckanPackages())
                    updateSelectizeInput(session,
-                                        "ckanResource",
+                                        "resourceLoad-ckanResource",
                                         choices = choicesResource,
                                         selected = choicesResource[1])
                  }) %>%
-                   bindEvent(input$resetCKAN)
+                   bindEvent(input[["resourceLoad-resetCKAN"]])
 
                  observe({
                    logDebug("Apply Meta filter")
                    updateSelectizeInput(session,
-                                        "ckanRecord",
-                                        choices = getCKANRecordChoices(network = input$ckanGroup,
-                                                                       pattern = input$ckanMeta,
+                                        "resourceFilter-ckanRecord",
+                                        choices = getCKANRecordChoices(network = input[["repoFilter-ckanGroup"]],
+                                                                       pattern = input[["repoFilter-ckanMeta"]],
                                                                        packageList = ckanPackages()))
                    updatePickerInput(session,
-                                     "ckanResourceTypes",
-                                     choices = getCKANTypesChoices(network = input$ckanGroup,
-                                                                   pattern = input$ckanMeta,
+                                     "resourceFilter-ckanResourceTypes",
+                                     choices = getCKANTypesChoices(network = input[["repoFilter-ckanGroup"]],
+                                                                   pattern = input[["repoFilter-ckanMeta"]],
                                                                    packageList = ckanPackages(),
                                                                    ckanFileTypes = ckanFileTypes))
                  }) %>%
-                   bindEvent(input$applyMeta)
+                   bindEvent(input[["repoFilter-applyMeta"]])
 
                  observe({
                    logDebug("Apply Network filter")
                    updateSelectizeInput(session,
-                                        "ckanRecord",
-                                        choices = getCKANRecordChoices(network = input$ckanGroup,
-                                                                       pattern = input$ckanMeta,
+                                        "resourceFilter-ckanRecord",
+                                        choices = getCKANRecordChoices(network = input[["repoFilter-ckanGroup"]],
+                                                                       pattern = input[["repoFilter-ckanMeta"]],
                                                                        packageList = ckanPackages()))
                    updatePickerInput(session,
-                                     "ckanResourceTypes",
-                                     choices = getCKANTypesChoices(network = input$ckanGroup,
-                                                                   pattern = input$ckanMeta,
+                                     "resourceFilter-ckanResourceTypes",
+                                     choices = getCKANTypesChoices(network = input[["repoFilter-ckanGroup"]],
+                                                                   pattern = input[["repoFilter-ckanMeta"]],
                                                                    packageList = ckanPackages(),
                                                                    ckanFileTypes = ckanFileTypes))
                  }) %>%
-                   bindEvent(input$ckanGroup)
+                   bindEvent(input[["repoFilter-ckanGroup"]])
 
                  observe({
                    logDebug("Apply file type filter")
                    # reset and update resource
-                   choicesResource <- getCKANResourcesChoices(fileType = input$ckanResourceTypes,
+                   choicesResource <- getCKANResourcesChoices(fileType = input[["resourceFilter-ckanResourceTypes"]],
                                                               repository = "",
-                                                              network = input$ckanGroup,
-                                                              pattern = input$ckanMeta,
+                                                              network = input[["repoFilter-ckanGroup"]],
+                                                              pattern = input[["repoFilter-ckanMeta"]],
                                                               packageList = ckanPackages())
                    updateSelectizeInput(session,
-                                        "ckanResource",
+                                        "resourceLoad-ckanResource",
                                         choices = choicesResource,
                                         selected = choicesResource[1])
                  }) %>%
-                   bindEvent(input$ckanResourceTypes)
+                   bindEvent(input[["resourceFilter-ckanResourceTypes"]])
 
                  # SEARCH-OPTION: important for custom options of selectizeInput for ckanRecord, ckanResource:
                  # forces update after selection (even with 'Enter') and
@@ -665,38 +579,38 @@ selectSourceServer <- function(id,
                  ###
                  observe({
                    logDebug("Updating ckanRecord after Enter (Pandora dataset)")
-                   req(input$ckanRecord)
+                   req(input[["resourceFilter-ckanRecord"]])
                    # see SEARCH-OPTION
-                   updateSelectizeInput(session, "ckanRecord", selected = input$ckanRecord)
+                   updateSelectizeInput(session, "resourceFilter-ckanRecord", selected = input[["resourceFilter-ckanRecord"]])
                  }) %>%
-                   bindEvent(input$ckanRecord)
+                   bindEvent(input[["resourceFilter-ckanRecord"]])
 
                  observe({
                    logDebug("Updating ckanResource after Enter")
-                   req(input$ckanResource)
+                   req(input[["resourceLoad-ckanResource"]])
                    # see SEARCH-OPTION
-                   updateSelectizeInput(session, "ckanResource", selected = input$ckanResource)
+                   updateSelectizeInput(session, "resourceLoad-ckanResource", selected = input[["resourceLoad-ckanResource"]])
                  }) %>%
-                   bindEvent(input$ckanResource)
+                   bindEvent(input[["resourceLoad-ckanResource"]])
                  ###
 
                  observe({
                    req(internetCon())
                    logDebug("Updating ckanResources()")
 
-                   choicesResource <- getCKANResourcesChoices(fileType = input$ckanResourceTypes,
-                                                              repository = input$ckanRecord,
-                                                              network = input$ckanGroup,
-                                                              pattern = input$ckanMeta,
+                   choicesResource <- getCKANResourcesChoices(fileType = input[["resourceFilter-ckanResourceTypes"]],
+                                                              repository = input[["resourceFilter-ckanRecord"]],
+                                                              network = input[["repoFilter-ckanGroup"]],
+                                                              pattern = input[["repoFilter-ckanMeta"]],
                                                               packageList = ckanPackages())
 
                    updateSelectizeInput(session,
-                                        "ckanResource",
+                                        "resourceLoad-ckanResource",
                                         choices = choicesResource,
                                         selected = choicesResource[1])
                  }) %>%
-                   bindEvent(list(input$ckanRecord, input$ckanResourceTypes,
-                                  input$ckanGroup, input$applyMeta))
+                   bindEvent(list(input[["resourceFilter-ckanRecord"]], input[["resourceFilter-ckanResourceTypes"]],
+                                  input[["repoFilter-ckanGroup"]], input[["repoFilter-applyMeta"]]))
 
                  # UPDATE dataSource ----
                  ## logic for ckan ----
@@ -708,14 +622,14 @@ selectSourceServer <- function(id,
                    dataSource$filename <- NULL
                    dataSource$type <- NULL
 
-                   req(internetCon(), input$ckanResource)
-                   resource <- getResources(fileType = input$ckanResourceTypes,
-                                            repository = input$ckanRecord,
-                                            network = input$ckanGroup,
-                                            pattern = input$ckanMeta)
+                   req(internetCon(), input[["resourceLoad-ckanResource"]])
+                   resource <- getResources(fileType = input[["resourceFilter-ckanResourceTypes"]],
+                                            repository = input[["resourceFilter-ckanRecord"]],
+                                            network = input[["repoFilter-ckanGroup"]],
+                                            pattern = input[["repoFilter-ckanMeta"]])
 
                    req(!is.null(resource), nrow(resource) > 0)
-                   resource <- resource[resource[["name"]] == input$ckanResource, ]
+                   resource <- resource[resource[["name"]] == input[["resourceLoad-ckanResource"]], ]
 
                    req(nrow(resource) > 0)
                    # "file" will be used to load the file
@@ -724,7 +638,7 @@ selectSourceServer <- function(id,
                    dataSource$filename <- basename(resource$url)
                    dataSource$type <- "data"
                  }) %>%
-                   bindEvent(input$loadCKAN)
+                   bindEvent(input[["resourceLoad-loadCKAN"]])
 
                  ## logic for file ----
                  observe({
@@ -932,4 +846,149 @@ previewDataServer <- function(id, dat) {
                    )
                  })
                })
+}
+
+filterCKANRepoUI <- function(id) {
+  ns <- NS(id)
+
+  tagList(
+    tags$strong(HTML(
+      paste(
+        "Filter Pandora repositories &nbsp",
+        # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
+        tags$i(
+          class = "glyphicon glyphicon-info-sign",
+          style = sprintf("color:%s;", "#0072B2"),
+          title =
+            paste(
+              "- Filter 'some', or 'key', or 'words':",
+              "   'some|key|words'",
+              "- Filter 'some', and 'key', and 'words':",
+              "   '(some+)(.*)(key+)(.*)(words+)'",
+              sep = " \n"
+            )
+        )
+      )
+    )),
+    fluidRow(
+      column(
+        5,
+        style = "margin-top: 0.5em;",
+        textInput(
+          ns("ckanMeta"),
+          label = NULL,
+          value = "",
+          placeholder = "Meta data"
+        )
+      ),
+      column(1,
+             style = "margin-top: 0.5em; margin-left: -2em",
+             actionButton(
+               ns("applyMeta"),
+               label = NULL,
+               icon = icon("play")
+             )),
+      column(
+        6,
+        style = "margin-top: 0.5em; margin-left: 2em",
+        pickerInput(
+          ns("ckanGroup"),
+          label = NULL,
+          choices = c("Check connection ..." = ""),
+          selected = "",
+          multiple = TRUE,
+          options = list(
+            `actions-box` = TRUE,
+            size = 10,
+            `none-selected-text` = "No network filter",
+            `selected-text-format` = "count > 8",
+            style = "backgound:'gray'"
+          )
+        )
+      )
+    )
+  )
+}
+
+filterCKANResourceUI <- function(id, ckanFileTypes) {
+  ns <- NS(id)
+
+  tagList(
+    fluidRow(
+      column(
+        7,
+        selectizeInput(
+          ns("ckanRecord"),
+          "Pandora repository",
+          choices = c("Please check connection ..." = ""),
+          width = "100%",
+          options = list(
+            onFocus = I(
+              "function() {currentVal = this.getValue(); this.clear(true); }"
+            ),
+            onBlur = I(
+              "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+            )
+          )
+        )
+      ),
+      column(
+        5,
+        pickerInput(
+          ns("ckanResourceTypes"),
+          label = "Filter file type",
+          choices = ckanFileTypes,
+          selected = ckanFileTypes,
+          multiple = TRUE,
+          options = list(
+            `actions-box` = TRUE,
+            size = 10,
+            `none-selected-text` = "No filter",
+            `deselect-all-text` = "None",
+            `select-all-text` = "All",
+            `selected-text-format` = "count > 8",
+            style = "backgound:'dark-gray'"
+          )
+        )
+      )
+    )
+  )
+}
+
+loadCKANResourceUI <- function(id) {
+  ns <- NS(id)
+
+  tagList(
+    tags$strong("Pandora repository resource"),
+    fluidRow(
+      column(
+        7,
+        style = "margin-top: 0.5em;",
+        selectizeInput(
+          ns("ckanResource"),
+          label = NULL,
+          choices = c("No resource available ..." = ""),
+          width = "100%",
+          options = list(
+            onFocus = I(
+              "function() {currentVal = this.getValue(); this.clear(true); }"
+            ),
+            onBlur = I(
+              "function() {if(this.getValue() == '') {this.setValue(currentVal, true)}}"
+            )
+          )
+        )
+      ),
+      column(
+        2,
+        align = "right",
+        actionButton(ns("loadCKAN"), "Load")
+      ),
+      column(
+        3,
+        align = "right",
+        actionButton(ns("resetCKAN"), "Reset")
+      )
+    )
+  )
 }
