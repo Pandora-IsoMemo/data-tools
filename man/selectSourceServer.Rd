@@ -11,7 +11,8 @@ selectSourceServer(
   githubRepo,
   folderOnGithub,
   pathToLocal,
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")
+  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+  exampleOptions = exampleOptions()
 )
 }
 \arguments{
@@ -29,6 +30,8 @@ correspond to 'pathToLocal' since online and offline files should be the same an
 \item{pathToLocal}{(character) relative path to the folder storing local files}
 
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
+
+\item{exampleOptions}{extra options for remote or local examples}
 }
 \description{
 Server function of the module

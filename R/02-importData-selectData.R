@@ -106,7 +106,8 @@ selectDataServer <- function(id,
                    githubRepo = getGithubMapping(rPackageName),
                    folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
                    pathToLocal = getPathToLocal(mainFolder, subFolder),
-                   ckanFileTypes = ckanFileTypes
+                   ckanFileTypes = ckanFileTypes,
+                   exampleOptions = exampleOptions()
                  )
 
                  # specify file server ----
@@ -469,13 +470,15 @@ selectSourceUI <- function(id,
 #' @inheritParams selectDataServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
+#' @param exampleOptions extra options for remote or local examples
 selectSourceServer <- function(id,
                                openPopupReset,
                                internetCon,
                                githubRepo,
                                folderOnGithub,
                                pathToLocal,
-                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")) {
+                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                               exampleOptions = exampleOptions()) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
