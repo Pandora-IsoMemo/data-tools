@@ -69,6 +69,7 @@ toolsImportServer <- function(id) {
                    "model",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   ckanFileTypes = config()[["ckanModelTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    importType = "model",

@@ -12,7 +12,7 @@ getCKANRecordChoices(network = "", pattern = "", packageList = data.frame())
 
 \item{pattern}{(character) string for meta information search}
 
-\item{packageList}{(data.frame) optional, output of callAPI() from a previous call to the
+\item{packageList}{(data.frame) optional, output of callAPI() e.g. from a previous call to the
 Pandora API.}
 }
 \description{

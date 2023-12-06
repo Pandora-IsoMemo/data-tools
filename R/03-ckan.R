@@ -49,8 +49,8 @@ getCKANRecordChoices <- function(network = "", pattern = "", packageList = data.
     ))
   }
 
-  choices <- repos[["name"]]
-  names(choices) <- repos[["title"]]
+  choices <- repos[["Name"]]
+  names(choices) <- repos[["Repository"]]
 
   c("Select Pandora repository ..." = "", choices)
 }
