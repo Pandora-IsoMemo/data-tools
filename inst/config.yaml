@@ -6,6 +6,9 @@ ckanFileTypes:
   - "csv"
   - "odt"
   - "txt"
+ckanModelTypes:
+  - "zip"
+  - "datatools"
 githubRepo: "data-tools"        # for import of models
 mainFolder: "predefinedModels"  # for import of models
 fileExtension: "datatools"      # for download of models
