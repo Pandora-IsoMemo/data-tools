@@ -573,26 +573,8 @@ selectSourceServer <- function(id,
                  }) %>%
                    bindEvent(input[["resourceFilter-ckanResourceTypes"]])
 
-                 # SEARCH-OPTION: important for custom options of selectizeInput for ckanRecord, ckanResource:
-                 # forces update after selection (even with 'Enter') and
-                 # removes 'onFocus' as well as this.clear(true)
-                 ###
-                 observe({
-                   logDebug("Updating ckanRecord after Enter (Pandora dataset)")
-                   req(input[["resourceFilter-ckanRecord"]])
-                   # see SEARCH-OPTION
-                   updateSelectizeInput(session, "resourceFilter-ckanRecord", selected = input[["resourceFilter-ckanRecord"]])
-                 }) %>%
-                   bindEvent(input[["resourceFilter-ckanRecord"]])
-
-                 observe({
-                   logDebug("Updating ckanResource after Enter")
-                   req(input[["resourceLoad-ckanResource"]])
-                   # see SEARCH-OPTION
-                   updateSelectizeInput(session, "resourceLoad-ckanResource", selected = input[["resourceLoad-ckanResource"]])
-                 }) %>%
-                   bindEvent(input[["resourceLoad-ckanResource"]])
-                 ###
+                 filterCKANResourceServer("resourceFilter")
+                 loadCKANResourceServer("resourceLoad")
 
                  observe({
                    req(internetCon())
@@ -910,6 +892,12 @@ filterCKANRepoUI <- function(id) {
   )
 }
 
+#' Filter CKAN Resource UI
+#'
+#' UI of the module
+#'
+#' @param id id of module
+#' @inheritParams importDataServer
 filterCKANResourceUI <- function(id, ckanFileTypes) {
   ns <- NS(id)
 
@@ -955,6 +943,32 @@ filterCKANResourceUI <- function(id, ckanFileTypes) {
   )
 }
 
+#' Filter CKAN Resource Server
+#'
+#' Server function of the module
+#' @param id id of module
+filterCKANResourceServer <- function(id) {
+  moduleServer(id,
+               function(input, output, session) {
+                 # SEARCH-OPTION: important for custom options of selectizeInput for ckanRecord, ckanResource:
+                 # forces update after selection (even with 'Enter') and
+                 # removes 'onFocus' as well as this.clear(true)
+                 ###
+                 observe({
+                   logDebug("Updating ckanRecord after Enter (Pandora dataset)")
+                   req(input[["ckanRecord"]])
+                   # see SEARCH-OPTION
+                   updateSelectizeInput(session, "ckanRecord", selected = input[["ckanRecord"]])
+                 }) %>%
+                   bindEvent(input[["ckanRecord"]])
+               })
+}
+
+#' Load CKAN Resource UI
+#'
+#' UI of the module
+#'
+#' @param id id of module
 loadCKANResourceUI <- function(id) {
   ns <- NS(id)
 
@@ -991,4 +1005,25 @@ loadCKANResourceUI <- function(id) {
       )
     )
   )
+}
+
+#' Load CKAN Resource Server
+#'
+#' Server function of the module
+#' @param id id of module
+loadCKANResourceServer <- function(id) {
+  moduleServer(id,
+               function(input, output, session) {
+                 # SEARCH-OPTION: important for custom options of selectizeInput for ckanRecord, ckanResource:
+                 # forces update after selection (even with 'Enter') and
+                 # removes 'onFocus' as well as this.clear(true)
+                 ###
+                 observe({
+                   logDebug("Updating ckanResource after Enter")
+                   req(input[["ckanResource"]])
+                   # see SEARCH-OPTION
+                   updateSelectizeInput(session, "ckanResource", selected = input[["ckanResource"]])
+                 }) %>%
+                   bindEvent(input[["ckanResource"]])
+               })
 }
