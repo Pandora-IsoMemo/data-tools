@@ -165,12 +165,14 @@ importDataServer <- function(id,
                    mergeList = mergeList,
                    customNames = customNames,
                    # parameters required to load a model
-                   mainFolder = mainFolder,
-                   subFolder = subFolder,
                    rPackageName = rPackageName,
                    onlySettings = onlySettings,
-                   fileExtension = fileExtension,
-                   expectedFileInZip = expectedFileInZip
+                   expectedFileInZip = expectedFileInZip,
+                   exampleOptions = exampleOptions(
+                     pathToLocal = getPathToLocal(mainFolder, subFolder),
+                     folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
+                     subFolder = subFolder,
+                     fileExtension = fileExtension)
                  )
 
                  ## disable button accept ----

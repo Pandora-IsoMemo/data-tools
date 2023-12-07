@@ -3,8 +3,10 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
-                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
+                         exampleOptions = exampleOptions(
+                           folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                           pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL))
+                         ),
              {
                # Arrange
                print("test select source from ckan")
@@ -33,8 +35,10 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
-                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
+                         exampleOptions = exampleOptions(
+                           folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                           pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL))
+                         ),
              {
                # Arrange
                print("test select source from ckan: apply empty meta filter")
@@ -59,8 +63,10 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
-                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
+                         exampleOptions = exampleOptions(
+                           folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                           pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL))
+                         ),
              {
                # Arrange
                print("test select source from ckan: with meta filter")
@@ -84,8 +90,10 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
-                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
-                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
+                         exampleOptions = exampleOptions(
+                           folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                           pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL))
+                         ),
              {
                # Arrange
                print("test select source from online model")
@@ -105,10 +113,12 @@ test_that("Test module selectSourceServer", {
              args = list(openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(FALSE),
                          githubRepo = "data-tools",
-                         folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
-                         pathToLocal = getPathToLocal("predefinedModels",
-                                                      subFolder = NULL,
-                                                      rPackageName = "DataTools")),
+                         exampleOptions = exampleOptions(
+                           folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
+                           pathToLocal = getPathToLocal("predefinedModels",
+                                                        subFolder = NULL,
+                                                        rPackageName = "DataTools"))
+                         ),
              {
                # Arrange
                print("test select source from local model")

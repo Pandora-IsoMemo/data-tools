@@ -7,6 +7,7 @@
 exampleOptions(
   pathToLocal = file.path(".", "predefinedModels"),
   folderOnGithub = "/predefinedModels",
+  subFolder = NULL,
   fileExtension = "zip"
 )
 }
@@ -15,6 +16,9 @@ exampleOptions(
 
 \item{folderOnGithub}{(character) folder on github where remote files are stored. This should
 correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
+
+\item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
+This parameter is ignored if importType == "data"}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}

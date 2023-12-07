@@ -12,13 +12,11 @@ selectDataServer(
   openPopupReset,
   internetCon,
   ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
-  mainFolder = "predefinedModels",
-  subFolder = NULL,
   ignoreWarnings = FALSE,
   rPackageName = "",
   onlySettings = FALSE,
-  fileExtension = "zip",
-  expectedFileInZip = c()
+  expectedFileInZip = c(),
+  exampleOptions = exampleOptions()
 )
 }
 \arguments{
@@ -37,12 +35,6 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
-\item{mainFolder}{(character) folder containing all loadable .zip files.
-This parameter is ignored if importType == "data"}
-
-\item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
-This parameter is ignored if importType == "data"}
-
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
 \item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
@@ -51,11 +43,10 @@ from this R package. This parameter is ignored if importType == "data"}
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
 This parameter is ignored if importType == "data"}
 
-\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
-
 \item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
 File names that must be contained in the zip upload.}
+
+\item{exampleOptions}{extra options for remote or local examples}
 }
 \description{
 Server function of the module

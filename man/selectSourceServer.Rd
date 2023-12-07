@@ -9,8 +9,6 @@ selectSourceServer(
   openPopupReset,
   internetCon,
   githubRepo,
-  folderOnGithub,
-  pathToLocal,
   ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   exampleOptions = exampleOptions()
 )
@@ -23,11 +21,6 @@ selectSourceServer(
 \item{internetCon}{(reactive) TRUE if there is an internet connection}
 
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
-
-\item{folderOnGithub}{(character) folder on github where remote files are stored. This should
-correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
-
-\item{pathToLocal}{(character) relative path to the folder storing local files}
 
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 

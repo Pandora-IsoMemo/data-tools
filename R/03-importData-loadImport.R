@@ -294,7 +294,6 @@ loadModel <-
     }
 
     # check if import was downloaded from the correct app
-
     ## extract the name of the package without version numbers
     rPackageLoaded <- gsub("[^a-zA-Z]", "", modelImport$version)
 

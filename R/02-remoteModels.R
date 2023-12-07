@@ -39,11 +39,14 @@ remoteModelsUI <-
 #' @param pathToLocal (character) relative path to the folder storing local files
 #' @param folderOnGithub (character) folder on github where remote files are stored. This should
 #' correspond to 'pathToLocal' since online and offline files should be the same and up-to-date
+#' @param subFolder (character) (optional) subfolder containing loadable .zip files.
+#'  This parameter is ignored if importType == "data"
 #' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
 #'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
 #' @return (list) the path to the selected remote (github) or local file
 exampleOptions <- function(pathToLocal = file.path(".", "predefinedModels"),
                            folderOnGithub = "/predefinedModels",
+                           subFolder = NULL,
                            fileExtension = "zip") {
   list(
     pathToLocal = pathToLocal,
@@ -90,10 +93,10 @@ remoteModelsServer <- function(id,
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
 
-                 if (!is.null(rPackageName))
-                   warning("Parameter 'rPackageName' is not in use anymore and will be removed soon.")
-                 if (!is.null(rPackageVersion))
-                   warning("Parameter 'rPackageVersion' is not in use anymore and will be removed soon.")
+                 rPackageName %>%
+                   isDeprecated()
+                 rPackageVersion %>%
+                   isDeprecated()
 
                  observe({
                    logDebug("Update remoteModelChoice")
@@ -195,6 +198,12 @@ remoteModelsServer <- function(id,
                })
 }
 
+isDeprecated <- function(param) {
+  if (!is.null(param))
+    warning(sprintf("Parameter '%s' is not in use anymore and will be removed soon.",
+                    param))
+}
+
 #' Get Local Models
 #'
 #' @inheritParams remoteModelsServer
@@ -203,12 +212,15 @@ getLocalModels <- function(pathToLocal, fileExtension = "zip") {
     dir()
 
   if (length(choices) > 0) {
-    names(choices) <- choices  %>%
-      sub(pattern = sprintf("\\.%s$", fileExtension), replacement = "") %>%
-      sub(pattern = "\\.zip$", replacement = "")
+    names(choices) <- choices %>%
+      removeExtension()
   }
 
   choices
+}
+
+removeExtension <- function(path) {
+  sub('\\..*$', '', basename(path))
 }
 
 #' Check Local Model Dir
@@ -245,9 +257,8 @@ getRemoteModelsFromGithub <-
       unlist()
 
     if (length(choices) > 0) {
-      names(choices) <- choices %>%
-        sub(pattern = sprintf("\\.%s$", fileExtension), replacement = "") %>%
-        sub(pattern = "\\.zip$", replacement = "")
+      names(choices) <- choices  %>%
+        removeExtension()
     }
 
     choices

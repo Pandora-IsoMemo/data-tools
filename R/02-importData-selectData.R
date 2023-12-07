@@ -68,6 +68,7 @@ selectDataUI <- function(id,
 #' @param customNames settings for custom column and row names
 #' @param openPopupReset (reactive) if TRUE reset ckan source inputs
 #' @param internetCon (reactive) TRUE if there is an internet connection
+#' @param exampleOptions extra options for remote or local examples
 #' @inheritParams importDataServer
 #' @inheritParams uploadModelServer
 selectDataServer <- function(id,
@@ -77,13 +78,11 @@ selectDataServer <- function(id,
                              openPopupReset,
                              internetCon,
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
-                             mainFolder = "predefinedModels",
-                             subFolder = NULL,
                              ignoreWarnings = FALSE,
                              rPackageName = "",
                              onlySettings = FALSE,
-                             fileExtension = "zip",
-                             expectedFileInZip = c()
+                             expectedFileInZip = c(),
+                             exampleOptions = exampleOptions()
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -104,8 +103,6 @@ selectDataServer <- function(id,
                    openPopupReset = openPopupReset,
                    internetCon = internetCon,
                    githubRepo = getGithubMapping(rPackageName),
-                   folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
-                   pathToLocal = getPathToLocal(mainFolder, subFolder),
                    ckanFileTypes = ckanFileTypes,
                    exampleOptions = exampleOptions()
                  )
@@ -149,10 +146,10 @@ selectDataServer <- function(id,
                              dec = input[["fileSource-fileType-decSep"]],
                              sheetId = as.numeric(input[["fileSource-fileType-sheet"]]),
                              customNames = customNames,
-                             subFolder = subFolder,
+                             subFolder = exampleOptions$subFolder,
                              rPackageName = rPackageName,
                              onlySettings = onlySettings,
-                             fileExtension = fileExtension),
+                             fileExtension = exampleOptions$fileExtension),
                            importType = importType
                          )
 
@@ -359,13 +356,10 @@ selectSourceUI <- function(id,
 #' @inheritParams selectDataServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
-#' @param exampleOptions extra options for remote or local examples
 selectSourceServer <- function(id,
                                openPopupReset,
                                internetCon,
                                githubRepo,
-                               folderOnGithub,
-                               pathToLocal,
                                ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                                exampleOptions = exampleOptions()) {
   moduleServer(id,
@@ -672,11 +666,12 @@ selectSourceServer <- function(id,
                  pathToRemote <- remoteModelsServer(
                    "remoteModels",
                    githubRepo = githubRepo,
-                   folderOnGithub = folderOnGithub,
-                   pathToLocal = pathToLocal,
+                   folderOnGithub = exampleOptions$folderOnGithub,
+                   pathToLocal = exampleOptions$pathToLocal,
+                   fileExtension = exampleOptions$fileExtension,
                    reloadChoices = openPopupReset,
                    resetSelected = reactive(input$source),
-                   isInternet = internetCon
+                   isInternet = internetCon,
                  )
 
                  observe({
