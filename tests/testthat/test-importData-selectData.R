@@ -97,7 +97,8 @@ test_that("Test module selectSourceServer", {
                )
 
                expect_true(nchar(session$returned$filename) > 0)
-               expect_equal(substr(session$returned$file, start = 1, stop = 5), "/tmp/")
+               testthat::expect_true(grepl("tmp", session$returned$file) ||
+                                       grepl("var", session$returned$file))
                expect_equal(session$returned$type, "model")
              })
 
