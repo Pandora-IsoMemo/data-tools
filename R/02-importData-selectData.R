@@ -104,7 +104,7 @@ selectDataServer <- function(id,
                    internetCon = internetCon,
                    githubRepo = getGithubMapping(rPackageName),
                    ckanFileTypes = ckanFileTypes,
-                   exampleOptions = exampleOptions()
+                   exampleOptions = exampleOptions
                  )
 
                  # specify file server ----
