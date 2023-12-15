@@ -92,7 +92,7 @@ test_that("Test loadModel()", {
     ))
 
     cat(sprintf("length of 'testModel': %s", length(testModel)))
-    cat(names(paste(testModel, collapse = ", ")))
+    cat(paste(names(testModel, collapse = ", ")))
     if (testModel$message$model == "No model results found. ") {
       expect_null(testModel$model)
     } else {
