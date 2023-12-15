@@ -66,6 +66,18 @@ test_that("Test loadModel()", {
       )
     ))
 
+    expect_true(all(
+      c(
+        "data",
+        "inputs",
+        "notes",
+        "message",
+        "messageType",
+        "alertType",
+        "uploadedVersion"
+      ) %in% names(testModel)
+    ))
+
     expMessages <- list(data = "Input data loaded. ",
                         inputs = "Model selection parameters loaded. ",
                         model = c("No model results found. ", "Model results loaded. "))
