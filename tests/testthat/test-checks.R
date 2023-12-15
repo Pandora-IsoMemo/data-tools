@@ -1,6 +1,7 @@
 test_that("Test checkWarningEmptyValues()", {
   testData <- data.frame(x = 1:3,
-                         y = c("a", "b", "c"))
+                         y = c("a", "b", "c"),
+                         z = 8:10)
   expect_equal(checkWarningEmptyValues(testData),
                "Found empty / non-numeric values.")
 
