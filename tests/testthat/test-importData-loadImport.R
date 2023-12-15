@@ -91,6 +91,7 @@ test_that("Test loadModel()", {
       names(testModel$data) %in% expNamesData[[package]]
     ))
 
+    cat(names(paste(testModel$message, collapse = ", ")))
     if (testModel$message$model == "No model results found. ") {
       expect_null(testModel$model)
     } else {
