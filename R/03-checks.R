@@ -8,7 +8,7 @@ checkWarningEmptyValues <- function(data) {
   vals <- data[, -1, drop = FALSE]
 
   if (isTRUE(attr(data, "includeSd"))) {
-    vals <- vals[, seq(2, ncol(vals), by = 2, )]
+    vals <- vals[, seq(2, ncol(vals), by = 2, ), drop = FALSE]
   }
 
   vals <-
@@ -61,5 +61,5 @@ findNumericCol <- function(df) {
   cols <- lapply(df, function(x)
     suppressWarnings(as.numeric(x)))
   unlist(lapply(cols, function(x)
-    ! all(is.na(x))))
+    !all(is.na(x))))
 }
