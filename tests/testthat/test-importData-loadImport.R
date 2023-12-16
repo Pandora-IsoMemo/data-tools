@@ -91,8 +91,6 @@ test_that("Test loadModel()", {
       names(testModel$data) %in% expNamesData[[package]]
     ))
 
-    cat(sprintf("length of 'testModel': %s", length(testModel)))
-    cat(paste(names(testModel), collapse = ", "))
     if (testModel$message$model == "No model results found. ") {
       expect_null(testModel$model)
     } else {

@@ -477,6 +477,10 @@ updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString
     paste0(toupper(substring(someTxt, 1, 1)), substring(someTxt, 2))
   }
 
+  cat(sprintf("length of 'dat': %s \n", length(dat)))
+  cat(paste(names(dat), collapse = ", "))
+  cat("\n")
+
   if (is.null(dat[[element]])) {
     dat$message[[element]] <-
       sprintf("No %s found. ", msgString)
@@ -491,6 +495,7 @@ updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString
       "success"
     # no update of alertType, do not overwrite a possible warning
   }
-
+  cat(paste(unlist(dat$message), collapse = ", "))
+  cat("\n")
   return(dat)
 }
