@@ -92,10 +92,10 @@ test_that("Test loadModel()", {
     ))
 
     warning(sprintf("names message: %s \n", names(testModel$message)))
-    if (testModel$message$model == "No model results found. ") {
-      expect_null(testModel$model)
+    if (testModel$message[["model"]] == "No model results found. ") {
+      expect_null(testModel[["model"]])
     } else {
-      expect_true(length(testModel$model) > 0)
+      expect_true(length(testModel[["model"]]) > 0)
     }
   }
 })
