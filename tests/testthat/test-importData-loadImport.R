@@ -91,7 +91,6 @@ test_that("Test loadModel()", {
       names(testModel$data) %in% expNamesData[[package]]
     ))
 
-    warning(sprintf("names message: %s \n", names(testModel$message)))
     if (testModel$message[["model"]] == "No model results found. ") {
       expect_null(testModel[["model"]])
     } else {
