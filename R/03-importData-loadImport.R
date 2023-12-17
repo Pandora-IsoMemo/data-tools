@@ -480,9 +480,14 @@ updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString
     paste0(toupper(substring(someTxt, 1, 1)), substring(someTxt, 2))
   }
 
-  warning(sprintf("length of 'dat': %s \n names of 'dat': %s \n",
+  warning(sprintf("length of 'dat': %s \n names of 'dat': %s \n element: %s \n",
                   length(dat),
-                  paste(names(dat), collapse = ", ")))
+                  paste(names(dat), collapse = ", "),
+                  element))
+
+  warning(sprintf("names of 'message': %s, \n messages: %s \n",
+                  paste(names(dat$message), collapse = ", "),
+                  paste(unlist(dat$message), collapse = ", ")))
 
   if (is.null(dat[[element]])) {
     dat$message[[element]] <-
@@ -498,9 +503,6 @@ updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString
       "success"
     # no update of alertType, do not overwrite a possible warning
   }
-  warning(sprintf("names of 'message': %s, \n messages: %s \n",
-                  paste(names(dat$message), collapse = ", "),
-                  paste(unlist(dat$message), collapse = ", ")))
 
   return(dat)
 }
