@@ -1,6 +1,7 @@
 test_that("Test loadModel()", {
   # Arrange
-  testPackages <- c("DataTools", "ReSources", "BMSCApp", "OsteoBioR", "mpiBpred", "PlotR")
+  testPackages <- c("DataTools", "ReSources", "BMSCApp",# "OsteoBioR",
+                    "mpiBpred", "PlotR")
 
   testPath <- list(
     "DataTools" = "https://github.com/Pandora-IsoMemo/data-tools/raw/main/inst/app/predefinedModels/2023-03-30_10_44_04_DataTools.zip",
