@@ -498,7 +498,9 @@ updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString
       "success"
     # no update of alertType, do not overwrite a possible warning
   }
-  warning(sprintf("messages: %s \n", paste(unlist(dat$message), collapse = ", ")))
+  warning(sprintf("names of 'message': %s, \n messages: %s \n",
+                  paste(names(dat$message), collapse = ", "),
+                  paste(unlist(dat$message), collapse = ", ")))
 
   return(dat)
 }
