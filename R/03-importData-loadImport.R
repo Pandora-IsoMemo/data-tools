@@ -480,12 +480,10 @@ updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString
     paste0(toupper(substring(someTxt, 1, 1)), substring(someTxt, 2))
   }
 
-  warning(sprintf("length of 'dat': %s \n names of 'dat': %s \n element: %s \n",
+  warning(sprintf("length of 'dat': %s \n names of 'dat': %s \n element: %s \n names of 'message': %s, \n messages: %s \n",
                   length(dat),
                   paste(names(dat), collapse = ", "),
-                  element))
-
-  warning(sprintf("names of 'message': %s, \n messages: %s \n",
+                  element,
                   paste(names(dat$message), collapse = ", "),
                   paste(unlist(dat$message), collapse = ", ")))
 
