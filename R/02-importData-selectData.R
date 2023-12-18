@@ -305,22 +305,23 @@ selectSourceUI <- function(id,
       selected = defaultSource,
       inline = TRUE
     ),
-      ## source == ckan ----
-      conditionalPanel(
-        condition = "input.source == 'ckan'",
-        ns = ns,
-        fluidRow(column(width = 6,
-          filterCKANRepoUI(ns("repoFilter")),
-          filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
-          loadCKANResourceUI(ns("resourceLoad"))
-        ),
-        column(width = 6,
-               tags$strong("Additional Information for Pandora repository"),
-               dataTableOutput(ns(
-                 "repoInfoTable"
-               ))
-               ))
+    tags$br(),
+    ## source == ckan ----
+    conditionalPanel(
+      condition = "input.source == 'ckan'",
+      ns = ns,
+      fluidRow(column(width = 6,
+                      filterCKANRepoUI(ns("repoFilter")),
+                      filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
+                      loadCKANResourceUI(ns("resourceLoad"))
       ),
+      column(width = 6,
+             tags$strong("Additional Information for Pandora repository"),
+             dataTableOutput(ns(
+               "repoInfoTable"
+             ))
+      ))
+    ),
     ## source == file ----
     conditionalPanel(
       condition = "input.source == 'file'",
@@ -420,7 +421,7 @@ selectSourceServer <- function(id,
                  output$repoInfoTable <- renderDataTable({
                    validate(need(ckanPackages(), "No connection!"))
                    validate(need(input[["resourceFilter-ckanRecord"]],
-                                 "Please select a Pandora repository!"))
+                                 "Please select a repository!"))
 
                    aboutTable <- ckanPackages()[ckanPackages()[["name"]] == input[["resourceFilter-ckanRecord"]], , drop = FALSE] %>%
                      formatRepositoryList(renameColumns = TRUE)
@@ -436,7 +437,7 @@ selectSourceServer <- function(id,
                        dom = "t",
                        searching = FALSE,
                        scrollX = TRUE,
-                       scrollY = "25rem"
+                       scrollY = "24rem"
                      )
                    )
                  })
@@ -973,14 +974,12 @@ loadCKANResourceUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    tags$strong("Pandora repository resource"),
     fluidRow(
       column(
         7,
-        style = "margin-top: 0.5em;",
         selectizeInput(
           ns("ckanResource"),
-          label = NULL,
+          label = "Pandora repository resource",
           choices = c("No resource available ..." = ""),
           width = "100%",
           options = list(
@@ -995,11 +994,13 @@ loadCKANResourceUI <- function(id) {
       ),
       column(
         2,
+        style = "margin-top: 1em;",
         align = "right",
         actionButton(ns("loadCKAN"), "Load")
       ),
       column(
         3,
+        style = "margin-top: 1em;",
         align = "right",
         actionButton(ns("resetCKAN"), "Reset")
       )
