@@ -411,7 +411,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = sprintf("%s (%s)", title, packageVersion("DataTools")),
-      style = if (importType == "data") 'height: 1020px' else 'height: 800px',
+      style = if (importType == "data") 'height: 1120px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
         column(4,

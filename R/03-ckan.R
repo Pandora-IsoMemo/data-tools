@@ -29,7 +29,7 @@ getCKANResourcesChoices <-
     choices <- resources[["name"]]
     names(choices) <- sprintf("%s (%s)", resources[["name"]], toupper(resources[["format"]]))
 
-    c("Select Pandora resource ..." = "", choices)
+    c("Select resource ..." = "", choices)
   }
 
 #' Get CKAN Record Choices
@@ -44,15 +44,15 @@ getCKANRecordChoices <- function(network = "", pattern = "", packageList = data.
                            order = TRUE)
   if (length(repos) == 0 || nrow(repos) == 0) {
     return(list(
-      choices = c("No Pandora repository available ..." = ""),
-      selected = c("No Pandora repository available ..." = "")
+      choices = c("No repository available ..." = ""),
+      selected = c("No repository available ..." = "")
     ))
   }
 
   choices <- repos[["Name"]]
   names(choices) <- repos[["Repository"]]
 
-  c("Select Pandora repository ..." = "", choices)
+  c("Select repository ..." = "", choices)
 }
 
 #' Get CKAN Group Choices
@@ -67,8 +67,8 @@ getCKANGroupChoices <- function(groupList = data.frame()) {
 
   if (is.null(networks) || nrow(networks) == 0) {
     return(list(
-      choices = c("No Pandora network available..." = ""),
-      selected = c("No Pandora network available ..." = "")
+      choices = c("No network available..." = ""),
+      selected = c("No network available ..." = "")
     ))
   }
 
