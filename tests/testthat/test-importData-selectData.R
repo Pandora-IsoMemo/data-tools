@@ -11,13 +11,13 @@ test_that("Test module selectSourceServer", {
                # Act
                session$setInputs(
                  source = "ckan",
-                 ckanMeta = "",
-                 applyMeta = 0,
-                 ckanGroup = "isomemo-group",
-                 ckanRecord = "14carhu",
-                 ckanResourceTypes = c("xlsx"),
-                 ckanResource = "14CARHU - Radiocarbon Dates of Helsinki University",
-                 loadCKAN = 1
+                 `repoFilter-ckanMeta` = "",
+                 `repoFilter-applyMeta` = 0,
+                 `repoFilter-ckanGroup` = "isomemo-group",
+                 `resourceFilter-ckanRecord` = "14carhu",
+                 `resourceFilter-ckanResourceTypes` = c("xlsx"),
+                 `resourceLoad-ckanResource` = "14CARHU - Radiocarbon Dates of Helsinki University",
+                 `resourceLoad-loadCKAN` = 1
                )
 
                expect_equal(session$returned$filename,
@@ -41,12 +41,12 @@ test_that("Test module selectSourceServer", {
                # Act
                session$setInputs(
                  source = "ckan",
-                 ckanMeta = "",
-                 applyMeta = 1,
-                 ckanRecord = "afriarch-isotopic-dataset",
-                 ckanResourceTypes = c("xlsx"),
-                 ckanResource = "Isotopic measurements in Excel format",
-                 loadCKAN = 1
+                 `repoFilter-ckanMeta` = "",
+                 `repoFilter-applyMeta` = 1,
+                 `resourceFilter-ckanRecord` = "afriarch-isotopic-dataset",
+                 `resourceFilter-ckanResourceTypes` = c("xlsx"),
+                 `resourceLoad-ckanResource` = "Isotopic measurements in Excel format",
+                 `resourceLoad-loadCKAN` = 1
                )
 
                expect_equal(session$returned$filename, "isotopic-measurements-in-excel-format.xlsx")
@@ -67,12 +67,12 @@ test_that("Test module selectSourceServer", {
                # Act
                session$setInputs(
                  source = "ckan",
-                 ckanMeta = "cxbdyfbxdSomeRandomStringYlkdjgl",
-                 applyMeta = 1,
-                 ckanRecord = "afriarch-isotopic-dataset",
-                 ckanResourceTypes = c("xlsx"),
-                 ckanResource = "Isotopic measurements in Excel format",
-                 loadCKAN = 1
+                 `repoFilter-ckanMeta` = "cxbdyfbxdSomeRandomStringYlkdjgl",
+                 `repoFilter-applyMeta` = 1,
+                 `resourceFilter-ckanRecord` = "afriarch-isotopic-dataset",
+                 `resourceFilter-ckanResourceTypes` = c("xlsx"),
+                 `resourceLoad-ckanResource` = "Isotopic measurements in Excel format",
+                 `resourceLoad-loadCKAN` = 1
                )
 
                expect_null(session$returned$filename)

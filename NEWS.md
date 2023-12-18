@@ -1,5 +1,11 @@
 # DataTools
 
+## Version: 23.12.0
+
+### New Features
+- _Import Data_ module: display of "About" information that is associated to a selected Pandora 
+  Repository (#62)
+
 ## Version: 23.11.0
 
 ### Updates
