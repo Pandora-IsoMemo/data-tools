@@ -8,12 +8,13 @@ checkWarningEmptyValues <- function(data) {
   vals <- data[, -1, drop = FALSE]
 
   if (isTRUE(attr(data, "includeSd"))) {
-    vals <- vals[, seq(2, ncol(vals), by = 2, )]
+    vals <- vals[, seq(2, ncol(vals), by = 2, ), drop = FALSE]
   }
 
   vals <-
     as.data.frame(sapply(vals, function(x)
-      suppressWarnings(as.numeric(x))))
+      suppressWarnings(as.numeric(x))),
+      stringsAsFactors = FALSE)
 
   if (any(is.na(vals) | vals == "")) {
     return("Found empty / non-numeric values.")
@@ -29,7 +30,8 @@ checkWarningEmptyValues <- function(data) {
 #' @param data data to be checked
 #' @export
 checkAnyNonNumericColumns <- function(data) {
-  nNumericCol <- sum(findNumericCol(as.data.frame(data)))
+  nNumericCol <- sum(findNumericCol(as.data.frame(data,
+                                                  stringsAsFactors = FALSE)))
 
   if (nNumericCol < ncol(data)) {
     return("Please provide a dataset with all numeric variables.")
@@ -45,7 +47,8 @@ checkAnyNonNumericColumns <- function(data) {
 #' @param data data to be checked
 #' @export
 checkErrorNoNumericColumns <- function(data) {
-  nNumericCol <- sum(findNumericCol(as.data.frame(data)))
+  nNumericCol <- sum(findNumericCol(as.data.frame(data,
+                                                  stringsAsFactors = FALSE)))
 
   if (nNumericCol < 2) {
     return("Less than 2 columns with numeric values.")
@@ -58,5 +61,5 @@ findNumericCol <- function(df) {
   cols <- lapply(df, function(x)
     suppressWarnings(as.numeric(x)))
   unlist(lapply(cols, function(x)
-    ! all(is.na(x))))
+    !all(is.na(x))))
 }

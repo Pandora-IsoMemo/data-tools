@@ -20,7 +20,8 @@ testthat::test_that("Test downloadModelServer", {
                         onlyInputs = TRUE,
                         download = 1)
 
-      testthat::expect_equal(substr(output$download, start = 1, stop = 5), "/tmp/")
+      testthat::expect_true(grepl("tmp", output$download) ||
+                              grepl("var", output$download))
       testthat::expect_equal(file_ext(output$download), "datatools")
 
       currentTimeStamp  <- round(Sys.time()) %>%

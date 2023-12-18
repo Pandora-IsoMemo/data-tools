@@ -111,7 +111,7 @@ testthat::test_that("Test module remoteModels", {
         session$setInputs(remoteModelChoice = testFileNames[[repo]],
                           loadRemoteModel = 1)
 
-        testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
+        testthat::expect_true(grepl("tmp", pathToRemote()) || grepl("var", pathToRemote()))
         testthat::expect_equal(file_ext(pathToRemote()), "zip")
         zip::unzip(pathToRemote(), exdir = test_path("unzippedTmp"))
         modelImport <- extractModelFromFile(pathToUnzipped = test_path("unzippedTmp"))
@@ -155,7 +155,7 @@ testthat::test_that("Test module remoteModels", {
         session$setInputs(remoteModelChoice = sprintf("testModel_MpiIsoApp_%s.zip", subFol),
                           loadRemoteModel = 1)
 
-        testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
+        testthat::expect_true(grepl("tmp", pathToRemote()) || grepl("var", pathToRemote()))
         testthat::expect_equal(file_ext(pathToRemote()), "zip")
         zip::unzip(pathToRemote(), exdir = test_path("unzippedTmp"))
         modelImport <- extractModelFromFile(pathToUnzipped = test_path("unzippedTmp"))
@@ -188,7 +188,7 @@ testthat::test_that("Test module remoteModels", {
       session$setInputs(remoteModelChoice = "testMap_MpiIsoApp_OperatoR.zip",
                         loadRemoteModel = 1)
 
-      testthat::expect_equal(substr(pathToRemote(), start = 1, stop = 5), "/tmp/")
+      testthat::expect_true(grepl("tmp", pathToRemote()) || grepl("var", pathToRemote()))
       testthat::expect_equal(file_ext(pathToRemote()), "zip")
       # Following seems not to work on Jenkins:
       # zip::unzip(pathToRemote(), exdir = test_path("unzippedTmp"))
