@@ -1,6 +1,7 @@
 test_that("Test checkWarningEmptyValues()", {
   testData <- data.frame(x = 1:3,
-                         y = c("a", "b", "c"))
+                         y = c("a", "b", "c"),
+                         stringsAsFactors = FALSE)
   expect_equal(checkWarningEmptyValues(testData),
                "Found empty / non-numeric values.")
 
@@ -11,7 +12,8 @@ test_that("Test checkWarningEmptyValues()", {
 
 test_that("Test checkAnyNonNumericColumns()", {
   testData <- data.frame(x = 1:3,
-                         y = c("a", "b", "c"))
+                         y = c("a", "b", "c"),
+                         stringsAsFactors = FALSE)
   expect_equal(checkAnyNonNumericColumns(testData),
                "Please provide a dataset with all numeric variables.")
 
@@ -22,7 +24,8 @@ test_that("Test checkAnyNonNumericColumns()", {
 
 test_that("Test checkErrorNoNumericColumns()", {
   testData <- data.frame(x = 1:3,
-                         y = c("a", "b", "c"))
+                         y = c("a", "b", "c"),
+                         stringsAsFactors = FALSE)
   expect_equal(checkErrorNoNumericColumns(testData),
                "Less than 2 columns with numeric values.")
 

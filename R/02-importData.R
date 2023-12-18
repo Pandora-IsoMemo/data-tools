@@ -519,7 +519,7 @@ cutAllLongStrings <- function(df, cutAt = 50) {
 
     cutStrings(charVec = z, cutAt = cutAt)
   }) %>%
-    as.data.frame()
+    as.data.frame(stringsAsFactors = FALSE)
 
   dfColNames <- colnames(df) %>%
     cutStrings(cutAt = max(10, (cutAt - 3)))

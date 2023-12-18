@@ -424,6 +424,7 @@ extractDataFromModel <- function(modelImport, rPackageName) {
          "OsteoBioR" = detectData(modelImport, placeholder),
          "mpiBpred" = c(modelImport[["dataObj"]], modelImport[["data"]]), # one of modelImport[["dataObj"]] (old version) or modelImport[["data"]] (version > 23.09.0) will be NULL
          "PlotR" = detectData(modelImport, placeholder),
+         "BMSCApp" = modelImport$data,
          modelImport$data)
 }
 
@@ -442,6 +443,8 @@ extractInputsFromModel <- function(modelImport, rPackageName) {
          "OsteoBioR" = placeholder,
          "mpiBpred" = extractBPredInput(modelImport),
          "PlotR" = placeholder,
+         "BMSCApp" = modelImport$inputs,
+         "DataTools" = modelImport$inputs,
          modelImport$inputs)
 }
 
