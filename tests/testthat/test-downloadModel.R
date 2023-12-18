@@ -22,7 +22,7 @@ testthat::test_that("Test downloadModelServer", {
 
       testthat::expect_true(grepl("tmp", output$download) ||
                               grepl("var", output$download))
-      testthat::expect_equal(file_ext(output$download), "datatools")
+      testthat::expect_equal(getExtension(output$download), "datatools")
 
       currentTimeStamp  <- round(Sys.time()) %>%
         gsub(pattern = ":", replacement = "-") %>%

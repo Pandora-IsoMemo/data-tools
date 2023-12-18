@@ -141,20 +141,18 @@ remoteModelsServer <- function(id,
                    tmpPath <- NULL
 
                    if (!useLocalModels()) {
-                     tmpPath <- tempfile(fileext = getExtension(input$remoteModelChoice))
                      withProgress(message = "Downloading remote file ...", value = 0.9, {
-                       res <- try(download.file(
-                         sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s",
-                           githubRepo,
-                           folderOnGithub,
-                           input$remoteModelChoice),
-                         destfile = tmpPath
-                       ))
+                       tmpPath <- try(downloadZipToTmp(
+                         url = sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s",
+                                       githubRepo,
+                                       folderOnGithub,
+                                       input$remoteModelChoice),
+                         fileext = getExtension(input$remoteModelChoice, prefix = ".")))
                      })
                    }
 
                    if (useLocalModels() ||
-                       inherits(res, "try-error")) {
+                       inherits(tmpPath, "try-error")) {
                      # FALL BACK IF NO INTERNET CONNECTION
                      pathToLocal <-
                        checkLocalModelDir(pathToLocal = pathToLocal) %>%
@@ -173,6 +171,20 @@ remoteModelsServer <- function(id,
 
                  return(pathToRemote)
                })
+}
+
+#' Download Zip To Tmp
+#'
+#' @inheritParams utils::download.file
+#' @inheritParams base::tempfile
+#'
+#' @return (character) path to the temporary zip file
+downloadZipToTmp <- function(url, fileext = ".zip") {
+  tmpPath <- tempfile(fileext = fileext)
+
+  download.file(url, destfile = tmpPath)
+
+  return(tmpPath)
 }
 
 #' Get Local Models
@@ -253,9 +265,10 @@ getGithubContent <-
   }
 
 
-getExtension <- function(file) {
+getExtension <- function(file, prefix = "") {
+  file <- basename(file)
   res <- strsplit(file, ".", fixed=T)[[1]][-1]
-  paste0(".", res)
+  paste0(prefix, res)
 }
 
 

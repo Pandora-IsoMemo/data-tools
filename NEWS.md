@@ -1,5 +1,12 @@
 # DataTools
 
+## Version: 23.12.2
+
+### Bug Fixes
+- _Import of models from Pandora_: 
+  - an error message occured when trying to load a model from pandora.
+  - fix: adding the missing download of the zip file from the url before unpacking the zip
+
 ## Version: 23.12.0
 
 ### New Features

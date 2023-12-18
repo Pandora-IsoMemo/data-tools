@@ -216,6 +216,7 @@ loadModelWrapper <- function(filepath,
 
   filepath %>%
     checkExtension(fileExtension = fileExtension) %>%
+    getZip() %>%
     loadModel(subFolder = subFolder,
               rPackageName = rPackageName,
               onlySettings = onlySettings,
@@ -227,12 +228,36 @@ loadModelWrapper <- function(filepath,
 checkExtension <- function(filepath,
                            fileExtension = "zip") {
   # check if valid app-specific extension or a zip file
-  if (file_ext(filepath) != fileExtension && file_ext(filepath) != "zip") {
+  if (getExtension(filepath) != fileExtension && getExtension(filepath) != "zip") {
     stop(sprintf("Not a %s file!", expectedExtStrng(fileExtension)))
     return(NULL)
   }
 
   filepath
+}
+
+#' Get Zip
+#'
+#' @inheritParams loadModelWrapper
+#'
+#' @return (character) path to the model file
+getZip <- function(filepath) {
+  if (file.exists(filepath)) {
+    # return path to local file
+    return(filepath)
+  } else if (!is.na(url_parse(filepath)$scheme)) {
+    # download zip from url
+    tmpPath <- try(downloadZipToTmp(
+      url = filepath,
+      fileext = getExtension(filepath, prefix = ".")))
+  }
+
+  if (!inherits(tmpPath, "try-error")) {
+    # return path to local tmp file
+    return(tmpPath)
+  } else {
+    stop("Not a valid URL or local file path")
+  }
 }
 
 expectedExtStrng <- function(fileExtension) {
@@ -259,7 +284,7 @@ loadModel <-
 
     ## unzip file ----
     res <- try({
-      zip::unzip(filepath, exdir = "unzippedTmp")
+      unzip(filepath, exdir = "unzippedTmp")
       modelImport <- extractModelFromFile(pathToUnzipped = "unzippedTmp")
       if (file.exists(file.path("unzippedTmp", "README.txt"))) {
         modelNotes <- readLines(file.path("unzippedTmp", "README.txt"))
@@ -273,17 +298,23 @@ loadModel <-
 
     ## import failures
     if (inherits(res, "try-error")) {
+      errMsg <- ""
+      if (length(res[[1]]) > 0) errMsg <- res[[1]]
+
       stop(
         sprintf(paste(
+          "%s     \n",
           "The file must be a %s file that contains the following files:",
           "help.html, model.rds, README.txt.",
           "If you download a model it will have exactly this format."
-        ), expectedExtStrng(fileExtension))
+        ),
+        errMsg,
+        expectedExtStrng(fileExtension))
       )
       return(NULL)
     }
 
-    if (!exists("modelImport") || !(
+    if (!exists("modelImport") || length(modelImport) == 0 || !(
       # expected names for most apps:
       all(names(modelImport) %in% c("data", "inputs", "values", "model", "version")) ||
       # expected names for "mpiBpred"
