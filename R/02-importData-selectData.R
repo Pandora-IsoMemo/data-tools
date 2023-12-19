@@ -256,6 +256,7 @@ getGithubMapping <- function(rPackage) {
          "OsteoBioR" = "osteo-bior",
          "PlotR" = "plotr",
          "ReSources" = "resources",
+         "MapR" = "MapR",
          "")
 }
 
