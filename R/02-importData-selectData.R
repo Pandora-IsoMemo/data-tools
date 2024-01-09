@@ -477,6 +477,8 @@ selectSourceServer <- function(id,
 
                    # reset ckanGroup, ckanRecord, ckanResourceTypes
                    updateTextInput(session, "repoFilter-ckanMeta", value = "")
+
+                   req(internetCon())
                    updatePickerInput(session,
                                      "repoFilter-ckanGroup",
                                      choices = getCKANGroupChoices(groupList = ckanNetworks()),
@@ -529,6 +531,7 @@ selectSourceServer <- function(id,
                    bindEvent(input[["resourceLoad-resetCKAN"]])
 
                  observe({
+                   req(internetCon())
                    logDebug("Apply Meta filter")
                    updateSelectizeInput(session,
                                         "resourceFilter-ckanRecord",
@@ -545,6 +548,7 @@ selectSourceServer <- function(id,
                    bindEvent(input[["repoFilter-applyMeta"]])
 
                  observe({
+                   req(internetCon())
                    logDebug("Apply Network filter")
                    updateSelectizeInput(session,
                                         "resourceFilter-ckanRecord",

@@ -3,6 +3,7 @@
 export("%>%")
 export(checkAnyNonNumericColumns)
 export(checkErrorNoNumericColumns)
+export(checkNonNumericColumnsExceptFirst)
 export(checkWarningEmptyValues)
 export(cutAllLongStrings)
 export(downUploadButtonServer)

@@ -40,6 +40,30 @@ checkAnyNonNumericColumns <- function(data) {
   TRUE
 }
 
+#' Check Non-Numeric Columns Except First
+#'
+#' Check for any non-numeric columns, exclude the first column. Check can be applied as custom
+#'  checks in importDataServer.
+#'
+#' @param data data to be checked
+#' @export
+checkNonNumericColumnsExceptFirst <- function(data) {
+  if (ncol(data) < 2) {
+    return("Less than 2 columns.")
+  }
+
+  data <- data[, -1, drop = FALSE]
+
+  nNumericCol <- sum(findNumericCol(as.data.frame(data,
+                                                  stringsAsFactors = FALSE)))
+
+  if (nNumericCol < ncol(data)) {
+    return("Please provide a dataset with all numeric variables except the first column.")
+  }
+
+  TRUE
+}
+
 #' Check Error No Numeric Columns
 #'
 #' Check for minimal numeric columns. Check can be applied as customErrorChecks in importDataServer.
