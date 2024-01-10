@@ -12,7 +12,8 @@ selectDataUI <- function(id,
                          batch,
                          outputAsMatrix,
                          importType,
-                         fileExtension = "zip") {
+                         fileExtension = "zip",
+                         options = importOptions()) {
   ns <- NS(id)
 
   tagList(
@@ -32,13 +33,14 @@ selectDataUI <- function(id,
       ) else NULL,
     # check logic for second column
     if (importType == "data" && outputAsMatrix) {
-      checkboxInput(ns("withColnames"), "First row contains colnames", value = TRUE)
+      checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
     } else if (importType == "data") {
-      helpText("The first row in your file need to contain variable names.")
+      helpText("The first row in your file needs to contain column names.")
     } else NULL,
+    options[["customHelpText"]],
     if (importType == "data" && batch) {
       helpText(
-        "The first column in your file need to contain the observation names from the target table."
+        "The first column in your file needs to contain the observation names from the target table."
       )
     } else NULL,
     div(

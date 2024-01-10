@@ -22,7 +22,8 @@ importDataServer(
   subFolder = NULL,
   rPackageName = "",
   onlySettings = FALSE,
-  expectedFileInZip = c()
+  expectedFileInZip = c(),
+  options = importOptions()
 )
 }
 \arguments{
@@ -67,14 +68,16 @@ This parameter is ignored if importType == "data"}
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
 This parameter is ignored if importType == "data"}
 
-\item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
-from this R package. This parameter is ignored if importType == "data"}
+\item{rPackageName}{(character) DEPRECATED. Instead, please use
+\code{options = importOptions(rPackageName = <your package>)}.}
 
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
 This parameter is ignored if importType == "data"}
 
 \item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
 File names that must be contained in the zip upload.}
+
+\item{options}{(list) Extra options for the import module.}
 }
 \description{
 Backend for data import module

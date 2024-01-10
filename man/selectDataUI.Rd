@@ -11,7 +11,8 @@ selectDataUI(
   batch,
   outputAsMatrix,
   importType,
-  fileExtension = "zip"
+  fileExtension = "zip",
+  options = importOptions()
 )
 }
 \arguments{
@@ -31,6 +32,8 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
+
+\item{options}{(list) Extra options for the import module.}
 }
 \description{
 UI of the module
