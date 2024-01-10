@@ -4,12 +4,15 @@
 \alias{importOptions}
 \title{Import Options}
 \usage{
-importOptions(rPackageName = "")
+importOptions(rPackageName = "", customHelpText = NULL)
 }
 \arguments{
 \item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
 from the R package where \code{importDataServer} is called. This parameter is ignored if
 \code{importType == "data"}.}
+
+\item{customHelpText}{(list) A help text element that can be added to a UI definition. Output of
+\code{shiny::helpText(...)}.}
 }
 \description{
 Extra options for the import module.

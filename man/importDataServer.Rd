@@ -23,7 +23,7 @@ importDataServer(
   rPackageName = "",
   onlySettings = FALSE,
   expectedFileInZip = c(),
-  options = importOptions(rPackageName = "")
+  options = importOptions()
 )
 }
 \arguments{

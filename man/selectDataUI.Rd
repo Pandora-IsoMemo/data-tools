@@ -12,7 +12,7 @@ selectDataUI(
   outputAsMatrix,
   importType,
   fileExtension = "zip",
-  options = importOptions(rPackageName = "")
+  options = importOptions()
 )
 }
 \arguments{

@@ -13,7 +13,7 @@ selectDataUI <- function(id,
                          outputAsMatrix,
                          importType,
                          fileExtension = "zip",
-                         options = importOptions(rPackageName = "")) {
+                         options = importOptions()) {
   ns <- NS(id)
 
   tagList(
@@ -34,11 +34,10 @@ selectDataUI <- function(id,
     # check logic for second column
     if (importType == "data" && outputAsMatrix) {
       checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
-    } else if (importType == "data" && options[["rPackageName"]] == "OsteoBioR") {
-      helpText("The first column in your file should contain the IDs for individuals.")
     } else if (importType == "data") {
       helpText("The first row in your file needs to contain column names.")
     } else NULL,
+    options[["customHelpText"]],
     if (importType == "data" && batch) {
       helpText(
         "The first column in your file needs to contain the observation names from the target table."

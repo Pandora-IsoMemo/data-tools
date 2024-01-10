@@ -18,10 +18,14 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
 #'  from the R package where \code{importDataServer} is called. This parameter is ignored if
 #'  \code{importType == "data"}.
+#' @param customHelpText (list) A help text element that can be added to a UI definition. Output of
+#'  \code{shiny::helpText(...)}.
 #'
 #' @export
-importOptions <- function(rPackageName = "") {
-  list(rPackageName = rPackageName)
+importOptions <- function(rPackageName = "",
+                          customHelpText = NULL) {
+  list(rPackageName = rPackageName,
+       customHelpText = customHelpText)
 }
 
 #' Server function for data import
@@ -82,7 +86,7 @@ importDataServer <- function(id,
                              rPackageName = "",
                              onlySettings = FALSE,
                              expectedFileInZip = c(),
-                             options = importOptions(rPackageName = "")
+                             options = importOptions()
                              ) {
   moduleServer(id,
                function(input, output, session) {
@@ -423,7 +427,7 @@ importDataDialog <-
            outputAsMatrix = FALSE,
            importType = "data",
            fileExtension = "zip",
-           options = importOptions(rPackageName = "")) {
+           options = importOptions()) {
 
     if (title == "") {
       title <- switch(importType,
