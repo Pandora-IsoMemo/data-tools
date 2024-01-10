@@ -95,10 +95,6 @@ importDataServer <- function(id,
                  if (options[["rPackageName"]] == "" && rPackageName != "") {
                    options[["rPackageName"]] <- rPackageName
                  }
-
-                 if (options[["rPackageName"]] != "" && rPackageName == "") {
-                    rPackageName <- options[["rPackageName"]]
-                 }
                  # end check
 
                  ns <- session$ns
@@ -197,7 +193,7 @@ importDataServer <- function(id,
                    # parameters required to load a model
                    mainFolder = mainFolder,
                    subFolder = subFolder,
-                   rPackageName = rPackageName,
+                   rPackageName = options[["rPackageName"]],
                    onlySettings = onlySettings,
                    fileExtension = fileExtension,
                    expectedFileInZip = expectedFileInZip
