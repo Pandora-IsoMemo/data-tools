@@ -366,7 +366,6 @@ uploadModelServer <-
                      githubRepo = githubRepo,
                      folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
                      pathToLocal = getPathToLocal(mainFolder, subFolder),
-                     fileExtension = fileExtension,
                      resetSelected = reset,
                      reloadChoices = reloadChoices
                    )
