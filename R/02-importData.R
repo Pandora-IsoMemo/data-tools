@@ -64,6 +64,7 @@ importOptions <- function(rPackageName = "",
 #'  This parameter is ignored if importType == "data"
 #' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
 #'  from this R package. This parameter is ignored if importType == "data"
+#' @param options (list) Extra options for the import module.
 #'
 #' @export
 importDataServer <- function(id,
