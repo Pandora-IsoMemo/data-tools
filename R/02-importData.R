@@ -62,8 +62,8 @@ importOptions <- function(rPackageName = "",
 #'   This parameter is ignored if importType == "data"
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files.
 #'  This parameter is ignored if importType == "data"
-#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
-#'  from this R package. This parameter is ignored if importType == "data"
+#' @param rPackageName (character) DEPRECATED. Instead, please use
+#'  \code{options = importOptions(rPackageName = <your package>)}.
 #' @param options (list) Extra options for the import module.
 #'
 #' @export

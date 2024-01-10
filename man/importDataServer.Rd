@@ -68,8 +68,8 @@ This parameter is ignored if importType == "data"}
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
 This parameter is ignored if importType == "data"}
 
-\item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
-from this R package. This parameter is ignored if importType == "data"}
+\item{rPackageName}{(character) DEPRECATED. Instead, please use
+\code{options = importOptions(rPackageName = <your package>)}.}
 
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
 This parameter is ignored if importType == "data"}
