@@ -11,7 +11,8 @@ selectDataUI(
   batch,
   outputAsMatrix,
   importType,
-  fileExtension = "zip"
+  fileExtension = "zip",
+  options = importOptions(rPackageName = "")
 )
 }
 \arguments{

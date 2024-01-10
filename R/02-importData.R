@@ -11,6 +11,19 @@ importDataUI <- function(id, label = "Import Data") {
   actionButton(ns("openPopup"), label)
 }
 
+#' Import Options
+#'
+#' Extra options for the import module.
+#'
+#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
+#'  from the R package where \code{importDataServer} is called. This parameter is ignored if
+#'  \code{importType == "data"}.
+#'
+#' @export
+importOptions <- function(rPackageName = "") {
+  list(rPackageName = rPackageName)
+}
+
 #' Server function for data import
 #'
 #' Backend for data import module
@@ -68,10 +81,21 @@ importDataServer <- function(id,
                              subFolder = NULL,
                              rPackageName = "",
                              onlySettings = FALSE,
-                             expectedFileInZip = c()
+                             expectedFileInZip = c(),
+                             options = importOptions(rPackageName = "")
                              ) {
   moduleServer(id,
                function(input, output, session) {
+                 # check new options param as long as we need param "rPackageName"
+                 if (options[["rPackageName"]] == "" && rPackageName != "") {
+                   options[["rPackageName"]] <- rPackageName
+                 }
+
+                 if (options[["rPackageName"]] != "" && rPackageName == "") {
+                    rPackageName <- options[["rPackageName"]]
+                 }
+                 # end check
+
                  ns <- session$ns
                  mergeList <- reactiveVal(list())
                  customNames <- reactiveValues(
@@ -111,7 +135,8 @@ importDataServer <- function(id,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
-                       fileExtension = fileExtension
+                       fileExtension = fileExtension,
+                       options = options
                      )
                    )
 
@@ -397,7 +422,8 @@ importDataDialog <-
            batch = FALSE,
            outputAsMatrix = FALSE,
            importType = "data",
-           fileExtension = "zip") {
+           fileExtension = "zip",
+           options = importOptions(rPackageName = "")) {
 
     if (title == "") {
       title <- switch(importType,
@@ -442,7 +468,8 @@ importDataDialog <-
             batch = batch,
             outputAsMatrix = outputAsMatrix,
             importType = importType,
-            fileExtension = fileExtension
+            fileExtension = fileExtension,
+            options = options
           )
         ),
         if (importType == "data") tabPanel("Prepare",
