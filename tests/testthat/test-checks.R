@@ -22,6 +22,24 @@ test_that("Test checkAnyNonNumericColumns()", {
   expect_true(checkAnyNonNumericColumns(testData))
 })
 
+test_that("Test checkAnyNonNumericColumns()", {
+  testData <- data.frame(x = 1:3,
+                         y = c("a", "b", "c"),
+                         stringsAsFactors = FALSE)
+  expect_equal(checkNonNumericColumnsExceptFirst(testData),
+               "Please provide a dataset with all numeric variables except the first column.")
+
+  testData <- data.frame(x = 1:3,
+                         y = 5:7)
+  expect_true(checkNonNumericColumnsExceptFirst(testData))
+
+  testData <- data.frame(a = c("a", "b", "c"),
+                         x = 1:3,
+                         y = 5:7,
+                         stringsAsFactors = FALSE)
+  expect_true(checkNonNumericColumnsExceptFirst(testData))
+})
+
 test_that("Test checkErrorNoNumericColumns()", {
   testData <- data.frame(x = 1:3,
                          y = c("a", "b", "c"),
