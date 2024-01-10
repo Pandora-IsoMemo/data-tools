@@ -196,11 +196,14 @@ getLocalModels <- function(pathToLocal, fileExtension = "zip") {
 
   if (length(choices) > 0) {
     names(choices) <- choices  %>%
-      sub(pattern = sprintf("\\.%s$", fileExtension), replacement = "") %>%
-      sub(pattern = "\\.zip$", replacement = "")
+      removeExtension()
   }
 
   choices
+}
+
+removeExtension <- function(path) {
+  sub('\\..*$', '', basename(path))
 }
 
 #' Check Local Model Dir
@@ -238,8 +241,7 @@ getRemoteModelsFromGithub <-
 
     if (length(choices) > 0) {
       names(choices) <- choices %>%
-        sub(pattern = sprintf("\\.%s$", fileExtension), replacement = "") %>%
-        sub(pattern = "\\.zip$", replacement = "")
+        removeExtension()
     }
 
     choices

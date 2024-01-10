@@ -42,7 +42,7 @@ getCKANRecordChoices <- function(network = "", pattern = "", packageList = data.
                            pattern = pattern,
                            packageList = packageList,
                            order = TRUE)
-  if (is.null(repos) || nrow(repos) == 0) {
+  if (length(repos) == 0 || nrow(repos) == 0) {
     return(list(
       choices = c("No repository available ..." = ""),
       selected = c("No repository available ..." = "")
