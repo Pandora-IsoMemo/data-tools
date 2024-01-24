@@ -316,7 +316,8 @@ selectSourceUI <- function(id,
       fluidRow(column(width = 6,
                       filterCKANRepoUI(ns("repoFilter")),
                       filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
-                      loadCKANResourceUI(ns("resourceLoad"))
+                      loadCKANResourceUI(ns("resourceLoad")),
+                      if (Sys.getenv("DEV_VERSION") == "TRUE") actionButton(ns("loadLink1"), "Load Data Link") else NULL
       ),
       column(width = 6,
              tags$strong("Additional Information for Pandora repository"),
