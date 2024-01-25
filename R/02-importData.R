@@ -141,7 +141,6 @@ importDataServer <- function(id,
                      )
                    )
 
-                   shinyjs::disable(ns("importQuery"), asis = TRUE)
                    shinyjs::disable(ns("downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
                    shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
@@ -152,7 +151,7 @@ importDataServer <- function(id,
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    if (Sys.getenv("DEV_VERSION") != "TRUE") {
                      shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                     shinyjs::hide(ns("importQuery"), asis = TRUE)
+                     shinyjs::hide(ns("dataSelector-fileSource-dataOrLink"), asis = TRUE)
                    }
                  })
 
@@ -164,21 +163,18 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                      shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                     shinyjs::hide(ns("importQuery"), asis = TRUE)
                    } else if (input$tabImport == "Merge") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::show(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                      shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                     shinyjs::hide(ns("importQuery"), asis = TRUE)
                    } else if (input$tabImport == "Query with SQL") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::show(ns("acceptQuery"), asis = TRUE)
                      shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                     shinyjs::hide(ns("importQuery"), asis = TRUE)
                    } else {
                      shinyjs::show(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
@@ -186,10 +182,8 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                      if (Sys.getenv("DEV_VERSION") != "TRUE") {
                        shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                       shinyjs::hide(ns("importQuery"), asis = TRUE)
                      } else {
                        shinyjs::show(ns("downloadDataLink"), asis = TRUE)
-                       shinyjs::show(ns("importQuery"), asis = TRUE)
                      }
                    }
                  })
@@ -477,7 +471,7 @@ importDataDialog <-
         column(
           8,
           align = "right",
-          downloadButton(ns("downloadDataLink"), "Download Query"),
+          downloadButton(ns("downloadDataLink"), "Download Import Link"),
           actionButton(ns("accept"), "Accept"),
           if (importType == "data") actionButton(ns("acceptPrepared"), "Accept") else NULL,
           if (importType == "data") actionButton(ns("acceptMerged"), "Accept Merged") else NULL,
@@ -485,13 +479,6 @@ importDataDialog <-
           actionButton(ns("cancel"), "Cancel")
         )
       )),
-      tagList(
-        fluidRow(column(
-          12,
-          align = "right",
-          style = "margin-top: -0.5em; margin-bottom: -2em",
-          actionButton(ns("importQuery"), "Load Query")
-        )),
       tabsetPanel(
         id = ns("tabImport"),
         selected = "Select",
@@ -514,7 +501,6 @@ importDataDialog <-
                                            mergeDataUI(ns("dataMerger"))) else NULL,
         if (importType == "data") tabPanel("Query with SQL",
                                            queryDataUI(ns("dataQuerier"))) else NULL
-      )
       )
     )
   }

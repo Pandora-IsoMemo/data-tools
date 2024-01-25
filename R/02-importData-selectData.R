@@ -301,12 +301,21 @@ selectSourceUI <- function(id,
   }
 
   tagList(
-    radioButtons(
-      ns("source"),
-      label = NULL,
-      choices = sourceChoices,
-      selected = defaultSource,
-      inline = TRUE
+    fluidRow(
+      column(6,
+             radioButtons(
+               ns("source"),
+               label = NULL,
+               choices = sourceChoices,
+               selected = defaultSource,
+               inline = TRUE)),
+      column(6,
+             align = "right",
+             radioButtons(ns("dataOrLink"),
+                          label = NULL,
+                          choices = c("Load dataset" = "fullData", "Load import link" = "dataLink"),
+                          selected = "fullData",
+                          inline = TRUE))
     ),
     tags$br(),
     ## source == ckan ----
@@ -471,6 +480,15 @@ selectSourceServer <- function(id,
 
                  observe({
                    logDebug("Updating input$source and reset")
+
+                   # disable load data link
+                   if (input$source == "file") {
+                     shinyjs::enable(ns("dataOrLink"), asis = TRUE)
+                   } else {
+                     updateRadioButtons(session, "dataOrLink", selected = "fullData")
+                     shinyjs::disable(ns("dataOrLink"), asis = TRUE)
+                   }
+
                    dataSource$file <- NULL
                    dataSource$filename <- NULL
                    dataSource$type <- NULL
