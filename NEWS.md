@@ -1,5 +1,9 @@
 # DataTools
 
+## Version 24.01.0
+
+Integration of rgpt3 functions into data tools package
+
 ## Version: 23.12.2
 
 ### Bug Fixes
