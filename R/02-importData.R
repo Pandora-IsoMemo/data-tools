@@ -213,7 +213,7 @@ importDataServer <- function(id,
                  )
 
                  ## disable button accept ----
-                 observeEvent(values$dataImport, {
+                 observeEvent(values$dataImport, ignoreNULL = FALSE, {
                    logDebug("Enable/Disable Accept button")
 
                    if (importType == "data") {
@@ -343,13 +343,9 @@ importDataServer <- function(id,
                  }
                  # END: data preparation ----
 
-                 # download or upload a link to data
-                 observeDownloadDataLink(
-                   id,
-                   input = input,
-                   output = output,
-                   session = session
-                 )
+                 # LINK to DATA down-/upload ----
+                 observeDownloadDataLink(id, input = input, output = output, session = session)
+                 observeUploadDataLink(id, input = input, output = output, session = session)
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
@@ -511,6 +507,10 @@ customImportChecks <- function(warnings,
                         customWarningChecks,
                         customErrorChecks,
                         type = "import") {
+  if (length(df) == 0) {
+    errors$load <- "File was reset. Please load a file!"
+  }
+
   ## Import valid?
   if (length(errors$load) == 0) {
     for (i in seq_along(customWarningChecks)) {

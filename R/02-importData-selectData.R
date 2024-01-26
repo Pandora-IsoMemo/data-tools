@@ -134,7 +134,7 @@ selectDataServer <- function(id,
                      values$preview <- NULL
                      values$data <- list()
 
-                     req(dataSource$file)
+                     req(input[["fileSource-dataOrLink"]] == "fullData", dataSource$file)
                      logDebug("Updating values$dataImport")
 
                      withProgress(
@@ -493,28 +493,8 @@ selectSourceServer <- function(id,
                    dataSource$filename <- NULL
                    dataSource$type <- NULL
 
-                   reset("file")
-                   updateTextInput(session, "url", value = "")
-
-                   # reset ckanGroup, ckanRecord, ckanResourceTypes
-                   updateTextInput(session, "repoFilter-ckanMeta", value = "")
-
-                   req(internetCon())
-                   updatePickerInput(session,
-                                     "repoFilter-ckanGroup",
-                                     choices = getCKANGroupChoices(groupList = ckanNetworks()),
-                                     selected = character(0))
-                   choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
-                   updateSelectizeInput(session,
-                                        "resourceFilter-ckanRecord",
-                                        choices = choicesRepo,
-                                        selected = choicesRepo[1])
-                   fileTypes <- getCKANTypesChoices(packageList = ckanPackages(),
-                                                    ckanFileTypes = ckanFileTypes)
-                   updatePickerInput(session,
-                                     "resourceFilter-ckanResourceTypes",
-                                     choices = fileTypes,
-                                     selected = fileTypes)
+                   # Do not reset inputs when switching the input$source!!
+                   # This would also reset input values after importing a data link.
                  }) %>%
                    bindEvent(input$source)
 
