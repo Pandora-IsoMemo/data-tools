@@ -110,6 +110,8 @@ A list with two data tables (if `output_type` is the default
  If `output_type` is "text", only the data table in slot `[[1]]` is returned.
 
  If `output_type` is "meta", only the data table in slot `[[2]]` is returned.
+
+ This function was copied from https://github.com/ben-aaron188/rgpt3.
 }
 \description{
 `gpt3_single_completion()` sends a single [completion

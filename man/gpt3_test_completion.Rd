@@ -12,6 +12,8 @@ completion of the test request (default: TRUE).}
 }
 \value{
 A message of success or failure of the connection.
+
+ This function was copied from https://github.com/ben-aaron188/rgpt3.
 }
 \description{
 `gpt3_test_completion()` sends a basic [completion

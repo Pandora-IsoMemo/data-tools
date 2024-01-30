@@ -26,4 +26,6 @@ The easiest way to store you API key is in a `.txt` file with _only_
   the API key in it (without quotation marks or other common string
   indicators). `gpt3_authenticate()` reads the single file you point it to
   and retrieves the content as authentication key for all requests.
+
+ This function was copied from https://github.com/ben-aaron188/rgpt3.
 }

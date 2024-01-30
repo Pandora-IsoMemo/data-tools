@@ -13,6 +13,8 @@
 #'   the API key in it (without quotation marks or other common string
 #'   indicators). `gpt3_authenticate()` reads the single file you point it to
 #'   and retrieves the content as authentication key for all requests.
+#'
+#'  This function was copied from https://github.com/ben-aaron188/rgpt3.
 gpt3_authenticate = function(path){
   apikey_ = readLines(path)
   pkg.env$api_key = apikey_
@@ -138,6 +140,8 @@ check_apikey_form = function(){
 #'  If `output_type` is "text", only the data table in slot `[[1]]` is returned.
 #'
 #'  If `output_type` is "meta", only the data table in slot `[[2]]` is returned.
+#'
+#'  This function was copied from https://github.com/ben-aaron188/rgpt3.
 gpt3_single_completion = function(prompt_input
                                   , model = 'text-davinci-003'
                                   , output_type = 'complete'
@@ -241,6 +245,8 @@ gpt3_single_completion = function(prompt_input
 #' @param verbose (boolean) if TRUE prints the actual prompt and GPT-3
 #'   completion of the test request (default: TRUE).
 #' @return A message of success or failure of the connection.
+#'
+#'  This function was copied from https://github.com/ben-aaron188/rgpt3.
 gpt3_test_completion = function(verbose=TRUE){
 
   check_apikey_form()
