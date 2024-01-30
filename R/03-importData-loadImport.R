@@ -1,4 +1,23 @@
-loadImport <- function(importType, params, values, filename, expectedFileInZip) {
+loadImport <- function(importType, params, filename, expectedFileInZip) {
+  inputFileSource <- params$inputFileSource
+  values <- params[["values"]]
+
+  # reset values
+  values$warnings <- list()
+  values$errors <- list()
+  values$fileName <- ""
+  values$fileImportSuccess <- NULL
+  values$dataImport <- NULL
+  values$preview <- NULL
+  values$data <- list()
+
+  if (inputFileSource[["fileSource-dataOrLink"]] != "fullData" || is.null(filename)) {
+    return(values)
+  }
+
+  params <- selectImportParams(params = params,
+                               importType = importType)
+
   res <- switch(importType,
          "data" = do.call(loadDataWrapper, params),
          "model" = do.call(loadModelWrapper, params),
@@ -32,12 +51,12 @@ selectImportParams <- function(params,
          "data" = list(values = params$values,
                        filepath = params$dataSource$file,
                        filename = params$dataSource$filename,
-                       type = params$type,
-                       sep = params$sep,
-                       dec = params$dec,
+                       type = params$inputFileSource[["fileSource-fileType-type"]],
+                       sep = params$inputFileSource[["fileSource-fileType-colSep"]],
+                       dec = params$inputFileSource[["fileSource-fileType-decSep"]],
+                       sheetId = as.numeric(params$inputFileSource[["fileSource-fileType-sheet"]]),
                        withRownames = params$customNames$withRownames,
-                       withColnames = params$customNames$withColnames,
-                       sheetId = params$sheetId),
+                       withColnames = params$customNames$withColnames),
          "model" = list(filepath = params$dataSource$file,
                         subFolder = params$subFolder,
                         rPackageName = params$rPackageName,

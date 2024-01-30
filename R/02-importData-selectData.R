@@ -124,47 +124,30 @@ selectDataServer <- function(id,
                    ),
                    ignoreInit = TRUE,
                    {
-                     logDebug("Entering values$dataImport")
-                     # reset values
-                     values$warnings <- list()
-                     values$errors <- list()
-                     values$fileName <- ""
-                     values$fileImportSuccess <- NULL
-                     values$dataImport <- NULL
-                     values$preview <- NULL
-                     values$data <- list()
-
-                     req(input[["fileSource-dataOrLink"]] == "fullData", dataSource$file)
                      logDebug("Updating values$dataImport")
 
-                     withProgress(
+                     withProgress( # start withProgress
                        value = 0.75,
                        message = 'Importing ...', {
-
-                         params <- selectImportParams(
-                           params = list(
-                             values = values,
-                             dataSource = dataSource,
-                             type = input[["fileSource-fileType-type"]],
-                             sep = input[["fileSource-fileType-colSep"]],
-                             dec = input[["fileSource-fileType-decSep"]],
-                             sheetId = as.numeric(input[["fileSource-fileType-sheet"]]),
-                             customNames = customNames,
-                             subFolder = subFolder,
-                             rPackageName = rPackageName,
-                             onlySettings = onlySettings,
-                             fileExtension = fileExtension),
-                           importType = importType
+                         values <- loadImport(
+                           importType = importType,
+                           filename = dataSource$filename,
+                           expectedFileInZip = expectedFileInZip,
+                           params = list(values = values,
+                                         dataSource = dataSource,
+                                         inputFileSource = reactiveValuesToList(
+                                           input)[grepl("fileSource", names(input))],
+                                         customNames = customNames,
+                                         subFolder = subFolder,
+                                         rPackageName = rPackageName,
+                                         onlySettings = onlySettings,
+                                         fileExtension = fileExtension)
                          )
 
-                         values <- loadImport(importType = importType,
-                                              params = params,
-                                              values = values,
-                                              filename = dataSource$filename,
-                                              expectedFileInZip = expectedFileInZip)
-
+                         # enable / disable button
                          if (importType == "data") {
-                           if (isNotValid(values$errors, values$warnings, ignoreWarnings) ||
+                           if (length(values$data) == 0 ||
+                               isNotValid(values$errors, values$warnings, ignoreWarnings) ||
                                input[["fileSource-source"]] == "remoteModel") {
                              shinyjs::disable(ns("keepData"), asis = TRUE)
                            } else {
@@ -174,9 +157,8 @@ selectDataServer <- function(id,
                              values$preview <- values$dataImport
                            }
                          }
-                       })
-                   }
-                 )
+                       }) # end withProgress
+                   }) # end observe loadImport
 
                  output$warning <-
                    renderUI(tagList(lapply(
