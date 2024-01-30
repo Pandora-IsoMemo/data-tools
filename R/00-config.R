@@ -9,7 +9,6 @@ config <- function() {
 pkg.env = new.env()
 pkg.env$api_key = NULL
 
-
 #' Contains the package's base URLs
 #'
 #' @description
