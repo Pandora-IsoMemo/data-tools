@@ -6,6 +6,7 @@
 \usage{
 selectSourceServer(
   id,
+  importType = "data",
   openPopupReset,
   internetCon,
   githubRepo,
@@ -16,6 +17,9 @@ selectSourceServer(
 }
 \arguments{
 \item{id}{id of module}
+
+\item{importType}{(character) type of import, either "data" or "model" or "zip".
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
 

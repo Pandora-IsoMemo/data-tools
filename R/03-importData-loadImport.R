@@ -11,9 +11,7 @@ loadImport <- function(importType, params, filename, expectedFileInZip) {
   values$preview <- NULL
   values$data <- list()
 
-  if (inputFileSource[["fileSource-dataOrLink"]] != "fullData" || is.null(filename)) {
-    return(values)
-  }
+  if (is.null(filename)) return(values)
 
   params <- selectImportParams(params = params,
                                importType = importType)

@@ -141,7 +141,7 @@ importDataServer <- function(id,
                      )
                    )
 
-                   shinyjs::disable(ns("downloadDataLink"), asis = TRUE)
+                   shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
                    shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::disable(ns("acceptMerged"), asis = TRUE)
@@ -149,8 +149,7 @@ importDataServer <- function(id,
                    shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                   if (Sys.getenv("DEV_VERSION") != "TRUE") {
-                     shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                   if (importType != "data" || Sys.getenv("DEV_VERSION") != "TRUE") {
                      shinyjs::hide(ns("dataSelector-fileSource-dataOrLink"), asis = TRUE)
                    }
                  })
@@ -174,16 +173,18 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::show(ns("acceptQuery"), asis = TRUE)
-                     shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                     #shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                    } else {
                      shinyjs::show(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                     if (Sys.getenv("DEV_VERSION") != "TRUE") {
-                       shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                     } else {
+                     if (values$fileImportSuccess == "Data import successful" &&
+                         Sys.getenv("DEV_VERSION") == "TRUE" &&
+                         input[["dataSelector-fileSource-source"]] != "file") {
                        shinyjs::show(ns("downloadDataLink"), asis = TRUE)
+                     } else {
+                       shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                      }
                    }
                  })
@@ -244,14 +245,21 @@ importDataServer <- function(id,
                    if (length(values$dataImport) == 0 ||
                        isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
-                     shinyjs::disable(ns("downloadDataLink"), asis = TRUE)
+                     shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
-                     shinyjs::enable(ns("downloadDataLink"), asis = TRUE)
                      if (importType == "data") {
                        values$fileImportSuccess <-
                          "Data import successful"
+                     }
+
+                     if (values$fileImportSuccess == "Data import successful" &&
+                         Sys.getenv("DEV_VERSION") == "TRUE" &&
+                         input[["dataSelector-fileSource-source"]] != "file") {
+                       shinyjs::show(ns("downloadDataLink"), asis = TRUE)
+                     } else {
+                       shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                      }
                    }
                  })
@@ -345,7 +353,26 @@ importDataServer <- function(id,
 
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session)
-                 observeUploadDataLink(id, input = input, output = output, session = session)
+                 observeUploadDataLink(id, input = input, output = output, session = session,
+                                       importParams = list(
+                                         values = reactiveValues(
+                                           warnings = list(),
+                                           errors = list(),
+                                           fileName = NULL,
+                                           fileImportSuccess = NULL,
+                                           dataImport = NULL,
+                                           preview = NULL,
+                                           data = list()
+                                         ),
+                                         #dataSource = dataSource,
+                                         inputFileSource = reactiveValuesToList(
+                                           input)[grepl("dataSelector-fileSource", names(input))],
+                                         customNames = customNames,
+                                         subFolder = subFolder,
+                                         rPackageName = rPackageName,
+                                         onlySettings = onlySettings,
+                                         fileExtension = fileExtension)
+                 )
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {
@@ -507,7 +534,7 @@ customImportChecks <- function(warnings,
                         customWarningChecks,
                         customErrorChecks,
                         type = "import") {
-  if (length(df) == 0) {
+  if (length(df) == 0 && length(errors$load) == 0) {
     errors$load <- "File was reset. Please load a file!"
   }
 

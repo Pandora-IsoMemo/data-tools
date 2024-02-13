@@ -6,7 +6,7 @@
 \usage{
 selectDataServer(
   id,
-  importType,
+  importType = "data",
   mergeList,
   customNames,
   openPopupReset,

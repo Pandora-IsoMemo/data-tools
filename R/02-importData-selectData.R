@@ -73,7 +73,7 @@ selectDataUI <- function(id,
 #' @inheritParams importDataServer
 #' @inheritParams uploadModelServer
 selectDataServer <- function(id,
-                             importType,
+                             importType = "data",
                              mergeList,
                              customNames,
                              openPopupReset,
@@ -103,6 +103,7 @@ selectDataServer <- function(id,
 
                  dataSource <- selectSourceServer(
                    "fileSource",
+                   importType = importType,
                    openPopupReset = openPopupReset,
                    internetCon = internetCon,
                    githubRepo = getGithubMapping(rPackageName),
@@ -124,9 +125,9 @@ selectDataServer <- function(id,
                    ),
                    ignoreInit = TRUE,
                    {
+                     req(input[["fileSource-dataOrLink"]] == "fullData")
                      logDebug("Updating values$dataImport")
-
-                     withProgress( # start withProgress
+                     withProgress(
                        value = 0.75,
                        message = 'Importing ...', {
                          values <- loadImport(
@@ -143,22 +144,25 @@ selectDataServer <- function(id,
                                          onlySettings = onlySettings,
                                          fileExtension = fileExtension)
                          )
-
-                         # enable / disable button
-                         if (importType == "data") {
-                           if (length(values$data) == 0 ||
-                               isNotValid(values$errors, values$warnings, ignoreWarnings) ||
-                               input[["fileSource-source"]] == "remoteModel") {
-                             shinyjs::disable(ns("keepData"), asis = TRUE)
-                           } else {
-                             shinyjs::enable(ns("keepData"), asis = TRUE)
-                             values$fileImportSuccess <-
-                                 "Data import successful"
-                             values$preview <- values$dataImport
-                           }
-                         }
-                       }) # end withProgress
+                       })
                    }) # end observe loadImport
+
+                 observe({
+                   # enable / disable button
+                   if (importType == "data") {
+                     if (length(values$dataImport) == 0 ||
+                         isNotValid(values$errors, values$warnings, ignoreWarnings) ||
+                         input[["fileSource-source"]] == "remoteModel") {
+                       shinyjs::disable(ns("keepData"), asis = TRUE)
+                     } else {
+                 shinyjs::enable(ns("keepData"), asis = TRUE)
+                       values$fileImportSuccess <-
+                         "Data import successful"
+                       values$preview <- values$dataImport
+                     }
+                   }
+                 }) %>%
+                   bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
 
                  output$warning <-
                    renderUI(tagList(lapply(
@@ -175,16 +179,6 @@ selectDataServer <- function(id,
 
                  if (importType == "data") {
                    previewDataServer("previewDat", dat = reactive(values$preview))
-
-                   observe({
-                     logDebug("Updating input[['fileSource-source']]")
-                     if (input[["fileSource-source"]] == "remoteModel") {
-                       shinyjs::disable(ns("keepData"), asis = TRUE)
-                     } else {
-                       shinyjs::enable(ns("keepData"), asis = TRUE)
-                     }
-                   }) %>%
-                     bindEvent(input[["fileSource-source"]])
 
                    ## button keep data ----
                    observeEvent(input$keepData, {
@@ -307,8 +301,7 @@ selectSourceUI <- function(id,
       fluidRow(column(width = 6,
                       filterCKANRepoUI(ns("repoFilter")),
                       filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
-                      loadCKANResourceUI(ns("resourceLoad")),
-                      if (Sys.getenv("DEV_VERSION") == "TRUE") actionButton(ns("loadLink1"), "Load Data Link") else NULL
+                      loadCKANResourceUI(ns("resourceLoad"))
       ),
       column(width = 6,
              tags$strong("Additional Information for Pandora repository"),
@@ -355,6 +348,7 @@ selectSourceUI <- function(id,
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
 selectSourceServer <- function(id,
+                               importType = "data",
                                openPopupReset,
                                internetCon,
                                githubRepo,
@@ -584,77 +578,41 @@ selectSourceServer <- function(id,
                                   input[["repoFilter-ckanGroup"]], input[["repoFilter-applyMeta"]]))
 
                  # UPDATE dataSource ----
-                 ## logic for ckan ----
+                 ## logic for ckan, file, url, model ----
                  observe({
+                   req(input[["resourceLoad-ckanResource"]])
                    logDebug("load CKAN file")
-
-                   # reset
-                   dataSource$file <- NULL
-                   dataSource$filename <- NULL
-                   dataSource$type <- NULL
-
-                   req(internetCon(), input[["resourceLoad-ckanResource"]])
-                   resource <- getResources(fileType = input[["resourceFilter-ckanResourceTypes"]],
-                                            repository = input[["resourceFilter-ckanRecord"]],
-                                            network = input[["repoFilter-ckanGroup"]],
-                                            pattern = input[["repoFilter-ckanMeta"]])
-
-                   req(!is.null(resource), nrow(resource) > 0)
-                   resource <- resource[resource[["name"]] == input[["resourceLoad-ckanResource"]], ]
-
-                   req(nrow(resource) > 0)
-                   # "file" will be used to load the file
-                   # "filename" will be stored in values$fileName
-                   dataSource$file <- resource$url
-                   dataSource$filename <- basename(resource$url)
-                   dataSource$type <- "data"
+                   dataSource <- dataSource %>%
+                     getDataSource(importType = importType,
+                                   input = input,
+                                   type = "ckan",
+                                   isInternet = internetCon())
                  }) %>%
                    bindEvent(input[["resourceLoad-loadCKAN"]])
 
-                 ## logic for file ----
                  observe({
                    logDebug("Updating input$file")
-                   inFile <- input$file
-
-                   if (is.null(inFile)) {
-                     dataSource$file <- NULL
-                     dataSource$filename <- NULL
-                     dataSource$type <- NULL
-                   } else {
-                     # "file" will be used to load the file
-                     # "filename" will be stored in values$fileName
-                     dataSource$file <- inFile$datapath
-                     dataSource$filename <- inFile$name
-                     dataSource$type <- "data"
-                   }
+                   dataSource <- dataSource %>%
+                     getDataSource(importType = importType,
+                                   input = input,
+                                   type = "file",
+                                   isInternet = internetCon())
                  }) %>%
                    bindEvent(input$file)
 
-                 ## logic for url ----
                  observe({
                    logDebug("Updating input$url")
                    req(input$source == "url", input$url)
-
                    req(trimws(input$url) != "")
-                   tmp <- tempfile()
-                   res <-
-                     try(download.file(input$url, destfile = tmp))
-                   if (inherits(res, "try-error")) {
-                     shinyjs::alert("Could not load remote file")
-                     dataSource$file <- NULL
-                     dataSource$filename <- NULL
-                     dataSource$type <- NULL
-                   } else {
-                     # "file" will be used to load the file
-                     # "filename" will be stored in values$fileName
-                     dataSource$file <- tmp
-                     dataSource$filename <- basename(input$url)
-                     dataSource$type <- "data"
-                   }
+
+                   dataSource <- dataSource %>%
+                     getDataSource(importType = importType,
+                                   input = input,
+                                   type = "url",
+                                   isInternet = internetCon())
                  }) %>%
                    bindEvent(input$loadUrl)
 
-                 ## logic for model ----
                  pathToRemote <- remoteModelsServer(
                    "remoteModels",
                    githubRepo = githubRepo,
@@ -670,23 +628,130 @@ selectSourceServer <- function(id,
                    req(input$source == "remoteModel")
                    logDebug("Updating input$remoteModels")
 
-                   if (is.null(pathToRemote())) {
-                     # reset
-                     dataSource$file <- NULL
-                     dataSource$filename <- NULL
-                     dataSource$type <- NULL
-                   } else {
-                     updateSelectInput(session, "fileType-type", selected = "zip")
-                     dataSource$file <- pathToRemote()
-                     dataSource$filename <- basename(pathToRemote())
-                     dataSource$type <- "model"
-                   }
+                   dataSource <- dataSource %>%
+                     getDataSource(importType = importType,
+                                   input = pathToRemote(),
+                                   type = "model",
+                                   isInternet = internetCon())
+
+                   req(pathToRemote())
+                   updateSelectInput(session, "fileType-type", selected = "zip")
                  }) %>%
                    bindEvent(pathToRemote(), ignoreNULL = FALSE)
+                 # End UPDATE dataSource ----
 
                  dataSource
                })
 }
+
+#' Get Data Source
+#'
+#' @param dataSource (reactiveValues)
+#' @param input (reactiveValues)
+#' @param type (character) source of import, one of "ckan", "file", "url", "model".
+#'  Possible sources for data are: "ckan", "file", "url".
+#'  Possible sources for models are: "ckan", "file", "url", "model".
+#' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
+#'  ignored if \code{type = "file"} or \code{type = "model"}
+#' @inheritParams importDataServer
+#'
+getDataSource <- function(importType, dataSource, input, type = c("ckan", "file", "url", "model"), isInternet = TRUE) {
+  type <- match.arg(type)
+
+  # reset
+  dataSource$file <- NULL
+  dataSource$filename <- NULL
+  dataSource$type <- importType
+
+  dataSource <- switch (type,
+    "ckan" = getSourceCKAN(dataSource, input, isInternet),
+    "file" = getSourceFile(dataSource, input, isInternet),
+    "url" = getSourceUrl(dataSource, input, isInternet),
+    "model" = getSourceModel(dataSource, input, isInternet),
+    dataSource # reset value as default
+  )
+
+  return(dataSource)
+}
+
+#' Get Source CKAN
+#'
+#' @inheritParams getDataSource
+getSourceCKAN <- function(dataSource, input, isInternet) {
+  if (!isInternet) return(dataSource)
+
+  # get resources
+  resource <- getResources(fileType = input[["resourceFilter-ckanResourceTypes"]],
+                           repository = input[["resourceFilter-ckanRecord"]],
+                           network = input[["repoFilter-ckanGroup"]],
+                           pattern = input[["repoFilter-ckanMeta"]])
+
+  if (is.null(resource) || nrow(resource) == 0) return(dataSource)
+
+  # filter resource
+  resource <- resource[resource[["name"]] == input[["resourceLoad-ckanResource"]], ]
+
+  if (nrow(resource) == 0) return(dataSource)
+
+  # "file" will be used to load the file
+  # "filename" will be stored in values$fileName
+  dataSource$file <- resource$url
+  dataSource$filename <- basename(resource$url)
+
+  return(dataSource)
+}
+
+#' Get Source File
+#'
+#' @inheritParams getDataSource
+getSourceFile <- function(dataSource, input, isInternet) {
+  inFile <- input$file
+
+  if (is.null(inFile)) return(dataSource)
+
+  # "file" will be used to load the file
+  # "filename" will be stored in values$fileName
+  dataSource$file <- inFile$datapath
+  dataSource$filename <- inFile$name
+
+  return(dataSource)
+}
+
+#' Get Source Url
+#'
+#' @inheritParams getDataSource
+getSourceUrl <- function(dataSource, input, isInternet) {
+  if (!isInternet) return(dataSource)
+
+  tmp <- tempfile()
+  res <-
+    try(download.file(input$url, destfile = tmp))
+
+  if (inherits(res, "try-error")) {
+    shinyjs::alert("Could not load remote file")
+    return(dataSource)
+  }
+
+  # "file" will be used to load the file
+  # "filename" will be stored in values$fileName
+  dataSource$file <- tmp
+  dataSource$filename <- basename(input$url)
+
+  return(dataSource)
+}
+
+#' Get Source model
+#'
+#' @inheritParams getDataSource
+getSourceModel <- function(dataSource, input, isInternet) {
+  if (is.null(input)) return(dataSource)
+
+  dataSource$file <- input
+  dataSource$filename <- basename(input)
+
+  return(dataSource)
+}
+
 
 #' Select File Type UI
 #'

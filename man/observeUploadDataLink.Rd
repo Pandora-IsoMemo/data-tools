@@ -4,7 +4,7 @@
 \alias{observeUploadDataLink}
 \title{Download a link to import data}
 \usage{
-observeUploadDataLink(id, input, output, session)
+observeUploadDataLink(id, input, output, session, importParams)
 }
 \arguments{
 \item{id}{module id}
