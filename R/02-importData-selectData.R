@@ -585,7 +585,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = input,
-                                   type = "ckan",
+                                   type = input$source,
                                    isInternet = internetCon())
                  }) %>%
                    bindEvent(input[["resourceLoad-loadCKAN"]])
@@ -595,7 +595,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = input,
-                                   type = "file",
+                                   type = input$source,
                                    isInternet = internetCon())
                  }) %>%
                    bindEvent(input$file)
@@ -608,7 +608,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = input,
-                                   type = "url",
+                                   type = input$source,
                                    isInternet = internetCon())
                  }) %>%
                    bindEvent(input$loadUrl)
@@ -631,7 +631,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = pathToRemote(),
-                                   type = "model",
+                                   type = input$source,
                                    isInternet = internetCon())
 
                    req(pathToRemote())
@@ -648,14 +648,14 @@ selectSourceServer <- function(id,
 #'
 #' @param dataSource (reactiveValues)
 #' @param input (reactiveValues)
-#' @param type (character) source of import, one of "ckan", "file", "url", "model".
+#' @param type (character) source of import, one of "ckan", "file", "url", "remoteModel".
 #'  Possible sources for data are: "ckan", "file", "url".
-#'  Possible sources for models are: "ckan", "file", "url", "model".
+#'  Possible sources for models are: "ckan", "file", "url", "remoteModel".
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
-#'  ignored if \code{type = "file"} or \code{type = "model"}
+#'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @inheritParams importDataServer
 #'
-getDataSource <- function(importType, dataSource, input, type = c("ckan", "file", "url", "model"), isInternet = TRUE) {
+getDataSource <- function(importType, dataSource, input, type = c("ckan", "file", "url", "remoteModel"), isInternet = TRUE) {
   type <- match.arg(type)
 
   # reset
@@ -667,8 +667,8 @@ getDataSource <- function(importType, dataSource, input, type = c("ckan", "file"
     "ckan" = getSourceCKAN(dataSource, input, isInternet),
     "file" = getSourceFile(dataSource, input, isInternet),
     "url" = getSourceUrl(dataSource, input, isInternet),
-    "model" = getSourceModel(dataSource, input, isInternet),
-    dataSource # reset value as default
+    "remoteModel" = getSourceModel(dataSource, input, isInternet),
+    dataSource # the reset value as default
   )
 
   return(dataSource)

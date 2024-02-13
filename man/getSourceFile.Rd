@@ -12,7 +12,7 @@ getSourceFile(dataSource, input, isInternet)
 \item{input}{(reactiveValues)}
 
 \item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
-ignored if \code{type = "file"} or \code{type = "model"}}
+ignored if \code{type = "file"} or \code{type = "remoteModel"}}
 }
 \description{
 Get Source File

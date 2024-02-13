@@ -8,7 +8,7 @@ getDataSource(
   importType,
   dataSource,
   input,
-  type = c("ckan", "file", "url", "model"),
+  type = c("ckan", "file", "url", "remoteModel"),
   isInternet = TRUE
 )
 }
@@ -20,12 +20,12 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{input}{(reactiveValues)}
 
-\item{type}{(character) source of import, one of "ckan", "file", "url", "model".
+\item{type}{(character) source of import, one of "ckan", "file", "url", "remoteModel".
 Possible sources for data are: "ckan", "file", "url".
-Possible sources for models are: "ckan", "file", "url", "model".}
+Possible sources for models are: "ckan", "file", "url", "remoteModel".}
 
 \item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
-ignored if \code{type = "file"} or \code{type = "model"}}
+ignored if \code{type = "file"} or \code{type = "remoteModel"}}
 }
 \description{
 Get Data Source
