@@ -17,6 +17,7 @@ Imports:
   htmltools,
   httr,
   futile.logger,
+  jsonlite,
   magrittr,
   openxlsx,
   readxl,

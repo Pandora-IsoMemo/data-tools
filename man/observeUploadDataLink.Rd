@@ -14,6 +14,8 @@ observeUploadDataLink(id, input, output, session, importParams)
 \item{output}{output object from server function}
 
 \item{session}{session from server function}
+
+\item{importParams}{(list) importParams}
 }
 \description{
 Download a link to import data
