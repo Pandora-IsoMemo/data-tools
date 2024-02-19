@@ -50,6 +50,16 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
     import = list()
   )
 
+  values <- reactiveValues(
+    warnings = list(),
+    errors = list(),
+    fileName = NULL,
+    fileImportSuccess = NULL,
+    dataImport = NULL,
+    preview = NULL,
+    data = list()
+  )
+
   # observe upload from file and fill "user" inputs
   observe({
     req(input[["dataSelector-fileSource-dataOrLink"]] == "dataLink")
@@ -103,18 +113,18 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
         value = 0.75,
         message = 'Importing ...', {
           values <- loadImport(
-            importType = importType,
-            filename = dataSource$filename,
+            importType = "data",
+            filename = dataSource$filename, # -> getDataSource() ...
             expectedFileInZip = expectedFileInZip,
             params = list(values = values,
-                          dataSource = dataSource,
+                          dataSource = dataSource, #-> getDataSource() ...
                           inputFileSource = reactiveValuesToList(
                             input)[grepl("fileSource", names(input))],
-                          customNames = customNames,
-                          subFolder = subFolder,
-                          rPackageName = rPackageName,
-                          onlySettings = onlySettings,
-                          fileExtension = fileExtension)
+                          customNames = importParams$customNames,
+                          subFolder = importParams$subFolder,
+                          rPackageName = importParams$rPackageName,
+                          onlySettings = importParams$onlySettings,
+                          fileExtension = importParams$fileExtension)
           )
         })
     }

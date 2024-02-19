@@ -1,6 +1,6 @@
 loadImport <- function(importType, params, filename, expectedFileInZip) {
-  inputFileSource <- params$inputFileSource
-  values <- params[["values"]]
+  #inputFileSource <- params$inputFileSource # why? it is included in params ...
+  values <- params[["values"]] # to pass on the "reactiveValues" object
 
   # reset values
   values$warnings <- list()
@@ -48,7 +48,6 @@ selectImportParams <- function(params,
   switch(importType,
          "data" = list(values = params$values,
                        filepath = params$dataSource$file,
-                       filename = params$dataSource$filename,
                        type = params$inputFileSource[["fileSource-fileType-type"]],
                        sep = params$inputFileSource[["fileSource-fileType-colSep"]],
                        dec = params$inputFileSource[["fileSource-fileType-decSep"]],
@@ -146,7 +145,6 @@ fillValuesFromZip <- function(values, filename, importZip, expectedFileInZip) {
 #'
 #' @param values (list) list with import specifications
 #' @param filepath (character) url or path
-#' @param filename (character) url or file name
 #' @param type (character) file type input
 #' @param sep (character) column separator input
 #' @param dec (character) decimal separator input
@@ -155,7 +153,6 @@ fillValuesFromZip <- function(values, filename, importZip, expectedFileInZip) {
 #' @param sheetId (numeric) sheet id
 loadDataWrapper <- function(values,
                             filepath,
-                            filename,
                             type,
                             sep,
                             dec,
@@ -202,7 +199,8 @@ loadDataWrapper <- function(values,
 
   }
 
-  values$fileName <- filename
+  values$fileName <- filepath %>%
+    basename()
 
   values
 }

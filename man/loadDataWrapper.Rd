@@ -7,7 +7,6 @@
 loadDataWrapper(
   values,
   filepath,
-  filename,
   type,
   sep,
   dec,
@@ -20,8 +19,6 @@ loadDataWrapper(
 \item{values}{(list) list with import specifications}
 
 \item{filepath}{(character) url or path}
-
-\item{filename}{(character) url or file name}
 
 \item{type}{(character) file type input}
 
