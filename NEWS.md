@@ -1,5 +1,13 @@
 # DataTools
 
+## Version 24.01.0
+
+Integration of rgpt3 functions into data tools package
+
+**Note:** The functions were copied from <https://github.com/ben-aaron188/rgpt3> 
+& <https://github.com/gasparl/rgpt3/tree/main>
+Please refer to the original R-Packages for more details.
+
 ## Version: 23.12.2
 
 ### Bug Fixes

@@ -494,7 +494,7 @@ removeOpenGptCon <- function() {
   if (exists("api_key")) {
     # remove gpt connection if exists
     api_key <- NULL
-    invisible(capture.output(rgpt3:::gpt3_endsession()))
+    invisible(capture.output(gpt3_endsession()))
   }
 }
 

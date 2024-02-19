@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 23.12.2.4
+Version: 24.01.0
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
@@ -10,9 +10,8 @@ Description: Helpful functions and modules that can be applied across the Isomem
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-Remotes:
-  github::ben-aaron188/rgpt3
 Imports:
+  data.table,
   dplyr,
   DT,
   htmltools,
@@ -20,7 +19,6 @@ Imports:
   futile.logger,
   magrittr,
   openxlsx,
-  rgpt3,
   readxl,
   Pandora (>= 23.12.0),
   RSQLite,

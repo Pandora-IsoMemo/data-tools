@@ -7,7 +7,6 @@
 #' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData
 #'  formatRepositoryList
 #' @importFrom readxl excel_sheets
-#' @importFrom rgpt3 gpt3_authenticate gpt3_single_completion gpt3_test_completion
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
 #' @importFrom shinyalert shinyalert
