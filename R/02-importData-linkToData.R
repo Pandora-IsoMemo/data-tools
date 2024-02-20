@@ -6,20 +6,20 @@
 #' @param session session from server function
 observeDownloadDataLink <- function(id, input, output, session) {
   dataLinkDownload <- reactive({
-      allInputs <- reactiveValuesToList(input)
+    allInputs <- reactiveValuesToList(input)
 
-      sourceInputs <- allInputs[names(allInputs)[
-        grepl("dataSelector", names(allInputs)) &
-          !grepl("previewDat", names(allInputs)) &
-          !grepl("repoInfoTable", names(allInputs))
-      ]]
+    sourceInputs <- allInputs[names(allInputs)[
+      grepl("dataSelector", names(allInputs)) &
+        !grepl("previewDat", names(allInputs)) &
+        !grepl("repoInfoTable", names(allInputs))
+    ]]
 
-      list(
-        source = sourceInputs,
-        preparation = NULL,
-        merging = NULL,
-        query = NULL
-      )
+    list(
+      source = sourceInputs,
+      preparation = NULL,
+      merging = NULL,
+      query = NULL
+    )
   })
 
   output$downloadDataLink <- downloadHandler(
@@ -33,7 +33,7 @@ observeDownloadDataLink <- function(id, input, output, session) {
             sep = "_")
     },
     content = function(file) {
-      jsonlite::write_json(dataLinkDownload(), file)
+      jsonlite::write_json(dataLinkDownload(), file, null = "null")
     }
   )
 }
@@ -50,6 +50,10 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
     loaded = 0,
     import = list()
   )
+
+  dataSource <- reactiveValues(file = NULL,
+                               filename = NULL,
+                               type = NULL)
 
   values <- reactiveValues(
     warnings = list(),
@@ -74,7 +78,7 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
     req(fileType == "json")
 
     # read json
-    dataLinkUpload$import <- jsonlite::read_json(file$datapath)
+    dataLinkUpload$import <- jsonlite::read_json(file$datapath, simplifyVector = TRUE)
 
     req(length(dataLinkUpload$import) > 0,
         length(dataLinkUpload$import[["source"]]) > 0)
@@ -104,12 +108,23 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
     # load data from ckan
     ## apply load button ckan if ckan:
     if (loadedSourceInputs[["dataSelector-fileSource-source"]] == "ckan") {
+
+      importParams$isInternet()
+      # if there is no internet stop, since cannot load file to get filename/path ...
+
+      # filter inputs
+      fileSourceInputs <- loadedSourceInputs[names(loadedSourceInputs)[
+        grepl("fileSource", names(loadedSourceInputs))
+      ]]
+
+      names(fileSourceInputs) <- gsub(pattern = "dataSelector-fileSource-",
+                                      replacement = "",
+                                      names(fileSourceInputs))
+
+      dataSource <- getDataSource(importType = importParams$importType,
+                                  input = fileSourceInputs, type = fileSourceInputs[["source"]])
+
       browser()
-
-      # !!!! use loadedSourceInputs for
-      # - inputFileSource,
-      # - source -> getDataSource()
-
       withProgress(
         value = 0.75,
         message = 'Importing ...', {
@@ -118,7 +133,7 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
             filename = dataSource$filename, # -> getDataSource() ...
             expectedFileInZip = expectedFileInZip,
             params = list(values = values,
-                          dataSource = dataSource, #-> getDataSource() ...
+                          dataSource = dataSource,
                           inputFileSource = reactiveValuesToList(
                             input)[grepl("fileSource", names(input))],
                           customNames = importParams$customNames,

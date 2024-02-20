@@ -459,10 +459,10 @@ selectSourceServer <- function(id,
 
                    # disable load data link
                    if (input$source == "file") {
-                     shinyjs::enable(ns("dataOrLink"), asis = TRUE)
+                     shinyjs::show(ns("dataOrLink"), asis = TRUE)
                    } else {
                      updateRadioButtons(session, "dataOrLink", selected = "fullData")
-                     shinyjs::disable(ns("dataOrLink"), asis = TRUE)
+                     shinyjs::hide(ns("dataOrLink"), asis = TRUE)
                    }
 
                    dataSource$file <- NULL
@@ -585,7 +585,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = input,
-                                   type = input$source,
+                                   type = "ckan",
                                    isInternet = internetCon())
                  }) %>%
                    bindEvent(input[["resourceLoad-loadCKAN"]])
@@ -595,7 +595,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = input,
-                                   type = input$source,
+                                   type = "file",
                                    isInternet = internetCon())
                  }) %>%
                    bindEvent(input$file)
@@ -608,7 +608,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = input,
-                                   type = input$source,
+                                   type = "url",
                                    isInternet = internetCon())
                  }) %>%
                    bindEvent(input$loadUrl)
@@ -631,7 +631,7 @@ selectSourceServer <- function(id,
                    dataSource <- dataSource %>%
                      getDataSource(importType = importType,
                                    input = pathToRemote(),
-                                   type = input$source,
+                                   type = "remoteModel",
                                    isInternet = internetCon())
 
                    req(pathToRemote())
@@ -655,7 +655,13 @@ selectSourceServer <- function(id,
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @inheritParams importDataServer
 #'
-getDataSource <- function(importType, dataSource, input, type = c("ckan", "file", "url", "remoteModel"), isInternet = TRUE) {
+getDataSource <- function(dataSource = list(file = NULL,
+                                            filename = NULL,
+                                            type = NULL),
+                          importType,
+                          input,
+                          type = c("ckan", "file", "url", "remoteModel"),
+                          isInternet = TRUE) {
   type <- match.arg(type)
 
   # reset

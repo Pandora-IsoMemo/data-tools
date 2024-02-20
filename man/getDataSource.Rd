@@ -5,18 +5,18 @@
 \title{Get Data Source}
 \usage{
 getDataSource(
+  dataSource = list(file = NULL, filename = NULL, type = NULL),
   importType,
-  dataSource,
   input,
   type = c("ckan", "file", "url", "remoteModel"),
   isInternet = TRUE
 )
 }
 \arguments{
+\item{dataSource}{(reactiveValues)}
+
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
-
-\item{dataSource}{(reactiveValues)}
 
 \item{input}{(reactiveValues)}
 

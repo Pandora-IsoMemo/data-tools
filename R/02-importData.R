@@ -364,7 +364,8 @@ importDataServer <- function(id,
                                            preview = NULL,
                                            data = list()
                                          ),
-                                         #dataSource = dataSource,
+                                         importType = importType,
+                                         isInternet = internetCon,
                                          inputFileSource = reactiveValuesToList(
                                            input)[grepl("dataSelector-fileSource", names(input))],
                                          customNames = customNames,
