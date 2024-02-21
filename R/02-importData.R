@@ -352,7 +352,8 @@ importDataServer <- function(id,
                  # END: data preparation ----
 
                  # LINK to DATA down-/upload ----
-                 observeDownloadDataLink(id, input = input, output = output, session = session)
+                 observeDownloadDataLink(id, input = input, output = output, session = session,
+                                         mergeList = mergeList)
                  observeUploadDataLink(id, input = input, output = output, session = session,
                                        importParams = list(
                                          values = reactiveValues(
@@ -372,7 +373,8 @@ importDataServer <- function(id,
                                          subFolder = subFolder,
                                          rPackageName = rPackageName,
                                          onlySettings = onlySettings,
-                                         fileExtension = fileExtension)
+                                         fileExtension = fileExtension),
+                                       mergeList
                  )
 
                  ## ACCEPT buttons ----
@@ -656,7 +658,7 @@ formatForImport <-
       return (df)
 
     ### format column names for import ----
-    colnames(df) <- colnames(df) %>%
+    df <- df %>%
       formatColumnNames(silent = silent)
 
     if (outputAsMatrix) {
@@ -689,9 +691,10 @@ formatForImport <-
 #'
 #' Replaces all not alpha-numeric characters in the names of columns with a dot.
 #'
-#' @param vNames (character) names of the imported data's columns
+#' @param df (character) data
 #' @param silent (logical) set TRUE prevent notification of warnings
-formatColumnNames <- function(vNames, silent = FALSE) {
+formatColumnNames <- function(df, silent = FALSE) {
+  vNames <- colnames(df)
   message <- NULL
 
   if (any(grepl("[^[:alnum:] | ^\\. | ^\\_]", vNames))) {
@@ -751,7 +754,8 @@ formatColumnNames <- function(vNames, silent = FALSE) {
     shinyjs::alert(message)
   }
 
-  return(vNames)
+  colnames(df) <- vNames
+  return(df)
 }
 
 

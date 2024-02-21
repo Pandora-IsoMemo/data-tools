@@ -2,9 +2,9 @@
 % Please edit documentation in R/02-importData-linkToData.R
 \name{observeUploadDataLink}
 \alias{observeUploadDataLink}
-\title{Download a link to import data}
+\title{Observe Upload of a link to import data}
 \usage{
-observeUploadDataLink(id, input, output, session, importParams)
+observeUploadDataLink(id, input, output, session, importParams, mergeList)
 }
 \arguments{
 \item{id}{module id}
@@ -16,7 +16,9 @@ observeUploadDataLink(id, input, output, session, importParams)
 \item{session}{session from server function}
 
 \item{importParams}{(list) importParams}
+
+\item{mergeList}{(reactiveVal) list of data imports}
 }
 \description{
-Download a link to import data
+Observe Upload of a link to import data
 }

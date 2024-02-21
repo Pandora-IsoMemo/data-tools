@@ -185,8 +185,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                    if (!is.null(result$data)) {
                      ### format column names for import ----
-                     colnames(result$data) <-
-                       colnames(result$data) %>%
+                     result$data <- result$data %>%
                        formatColumnNames(silent = TRUE)
                    }
 

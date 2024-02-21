@@ -4,7 +4,7 @@
 \alias{observeDownloadDataLink}
 \title{Download a link to import data}
 \usage{
-observeDownloadDataLink(id, input, output, session)
+observeDownloadDataLink(id, input, output, session, mergeList)
 }
 \arguments{
 \item{id}{module id}
@@ -14,6 +14,8 @@ observeDownloadDataLink(id, input, output, session)
 \item{output}{output object from server function}
 
 \item{session}{session from server function}
+
+\item{mergeList}{(reactiveVal) list of data imports}
 }
 \description{
 Download a link to import data

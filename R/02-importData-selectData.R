@@ -183,13 +183,6 @@ selectDataServer <- function(id,
                    ## button keep data ----
                    observeEvent(input$keepData, {
                      logDebug("Updating input$keepData")
-                     newData <- list(data = values$dataImport,
-                                     history = list())
-                     ### format column names for import ----
-                     colnames(newData$data) <-
-                       colnames(newData$data) %>%
-                       formatColumnNames(silent = TRUE)
-
                      notifications <- c()
                      if (customNames$withRownames) {
                        notifications <- c(notifications,
@@ -201,7 +194,10 @@ selectDataServer <- function(id,
                        updateMergeList(
                          mergeList = mergeList(),
                          fileName = values$fileName,
-                         newData = newData,
+                         newData = list(data = values$dataImport %>%
+                                          formatColumnNames(silent = TRUE),
+                                        source = getSourceInputs(input),
+                                        history = list()),
                          notifications = notifications
                        )
                      mergeList(newMergeList$mergeList)

@@ -262,8 +262,7 @@ mergeDataServer <- function(id, mergeList) {
 
                      # return result
                      ### format column names for import ----
-                     colnames(joinedData) <-
-                       colnames(joinedData) %>%
+                     joinedData <- joinedData %>%
                        formatColumnNames(silent = TRUE)
 
                      joinedResult$data <- joinedData

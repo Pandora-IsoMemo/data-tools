@@ -4,21 +4,21 @@
 #' @param input input object from server function
 #' @param output output object from server function
 #' @param session session from server function
-observeDownloadDataLink <- function(id, input, output, session) {
+#' @param mergeList (reactiveVal) list of data imports
+observeDownloadDataLink <- function(id, input, output, session, mergeList) {
   dataLinkDownload <- reactive({
-    allInputs <- reactiveValuesToList(input)
+    # remove data from list objects (only the source will be exported)
+    mergeListExport <- lapply(mergeList(), function(x) {
+      x[["data"]] <- NULL
+      x})
 
-    sourceInputs <- allInputs[names(allInputs)[
-      grepl("dataSelector", names(allInputs)) &
-        !grepl("previewDat", names(allInputs)) &
-        !grepl("repoInfoTable", names(allInputs))
-    ]]
-
-    list(
-      source = sourceInputs,
-      preparation = NULL,
-      merging = NULL,
-      query = NULL
+    # add current source selection
+    c(
+      setNames(object = list(list(data = NULL,
+                                  source = getSourceInputs(input),
+                                  history = list())),
+               nm = "activeSourceInput"),
+      mergeListExport
     )
   })
 
@@ -38,14 +38,25 @@ observeDownloadDataLink <- function(id, input, output, session) {
   )
 }
 
-#' Download a link to import data
+getSourceInputs <- function(input) {
+  allInputs <- reactiveValuesToList(input)
+
+  allInputs[names(allInputs)[
+    grepl("fileSource-", names(allInputs)) &
+      !grepl("-repoInfoTable_", names(allInputs)) &
+      !grepl("-shinyjs-", names(allInputs))
+  ]]
+}
+
+#' Observe Upload of a link to import data
 #'
 #' @param id module id
 #' @param input input object from server function
 #' @param output output object from server function
 #' @param session session from server function
 #' @param importParams (list) importParams
-observeUploadDataLink <- function(id, input, output, session, importParams) {
+#' @param mergeList (reactiveVal) list of data imports
+observeUploadDataLink <- function(id, input, output, session, importParams, mergeList) {
   dataLinkUpload <- reactiveValues(
     loaded = 0,
     import = list()
@@ -79,6 +90,9 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
 
     # read json
     dataLinkUpload$import <- jsonlite::read_json(file$datapath, simplifyVector = TRUE)
+
+    browser()
+    # NOW: LOGIC TO READ from mergeList ....
 
     req(length(dataLinkUpload$import) > 0,
         length(dataLinkUpload$import[["source"]]) > 0)
@@ -130,7 +144,7 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
         message = 'Importing ...', {
           values <- loadImport(
             importType = "data",
-            filename = dataSource$filename, # -> getDataSource() ...
+            filename = dataSource$filename,
             expectedFileInZip = expectedFileInZip,
             params = list(values = values,
                           dataSource = dataSource,
@@ -146,4 +160,6 @@ observeUploadDataLink <- function(id, input, output, session, importParams) {
     }
   }) %>%
     bindEvent(dataLinkUpload$loaded)
+
+  # do not return values but update "mergeList()"
 }
