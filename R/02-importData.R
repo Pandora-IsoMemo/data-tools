@@ -137,6 +137,7 @@ importDataServer <- function(id,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
                        fileExtension = fileExtension,
+                       isInternet = internetCon(),
                        options = options
                      )
                    )
@@ -355,7 +356,7 @@ importDataServer <- function(id,
                  observeDownloadDataLink(id, input = input, output = output, session = session,
                                          mergeList = mergeList)
                  observeUploadDataLink(id, input = input, output = output, session = session,
-                                       importParams = list(
+                                       parentParams = list(
                                          values = reactiveValues(
                                            warnings = list(),
                                            errors = list(),
@@ -471,6 +472,7 @@ importDataDialog <-
            outputAsMatrix = FALSE,
            importType = "data",
            fileExtension = "zip",
+           isInternet = FALSE,
            options = importOptions()) {
 
     if (title == "") {
@@ -518,6 +520,7 @@ importDataDialog <-
             outputAsMatrix = outputAsMatrix,
             importType = importType,
             fileExtension = fileExtension,
+            isInternet = isInternet,
             options = options
           )
         ),

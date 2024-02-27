@@ -295,11 +295,13 @@ selectSourceUI <- function(id,
                           choices = c("Load dataset" = "fullData", "Load import link" = "dataLink"),
                           selected = "fullData",
                           inline = TRUE),
-             conditionalPanel(
-               ns = ns,
-               condition = !isInternet,
-               helpText("No internet connection!")
-             )
+             if (!isInternet) {
+               conditionalPanel(
+                 ns = ns,
+                 condition = "input.source == 'file'",
+                 helpText("No internet connection!")
+               )
+               } else NULL
       )
     ),
     tags$br(),
