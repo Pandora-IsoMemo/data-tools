@@ -5,6 +5,8 @@
 #' UI of the module
 #'
 #' @param id id of module
+#' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
+#'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @inheritParams importDataServer
 selectDataUI <- function(id,
                          defaultSource,
@@ -13,6 +15,7 @@ selectDataUI <- function(id,
                          outputAsMatrix,
                          importType,
                          fileExtension = "zip",
+                         isInternet = FALSE,
                          options = importOptions()) {
   ns <- NS(id)
 
@@ -22,6 +25,7 @@ selectDataUI <- function(id,
                    defaultSource = defaultSource,
                    ckanFileTypes = ckanFileTypes,
                    importType = importType,
+                   isInternet = isInternet,
                    fileExtension = fileExtension),
     if (importType == "data")
       checkboxInput(
@@ -239,11 +243,14 @@ getGithubMapping <- function(rPackage) {
 #' UI of the module
 #'
 #' @param id id of module
+#' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
+#'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @inheritParams importDataServer
 selectSourceUI <- function(id,
                            defaultSource,
                            ckanFileTypes,
                            importType,
+                           isInternet,
                            fileExtension = "zip") {
   ns <- NS(id)
 
@@ -287,7 +294,13 @@ selectSourceUI <- function(id,
                           label = NULL,
                           choices = c("Load dataset" = "fullData", "Load import link" = "dataLink"),
                           selected = "fullData",
-                          inline = TRUE))
+                          inline = TRUE),
+             conditionalPanel(
+               ns = ns,
+               condition = !isInternet,
+               helpText("No internet connection!")
+             )
+      )
     ),
     tags$br(),
     ## source == ckan ----

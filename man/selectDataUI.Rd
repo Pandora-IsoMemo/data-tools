@@ -12,6 +12,7 @@ selectDataUI(
   outputAsMatrix,
   importType,
   fileExtension = "zip",
+  isInternet = FALSE,
   options = importOptions()
 )
 }
@@ -32,6 +33,9 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
+
+\item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
+ignored if \code{type = "file"} or \code{type = "remoteModel"}}
 
 \item{options}{(list) Extra options for the import module.}
 }
