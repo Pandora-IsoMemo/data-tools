@@ -131,24 +131,23 @@ selectDataServer <- function(id,
                    {
                      req(input[["fileSource-dataOrLink"]] == "fullData")
                      logDebug("Updating values$dataImport")
-                     withProgress(
-                       value = 0.75,
-                       message = 'Importing ...', {
-                         values <- loadImport(
-                           importType = importType,
-                           filename = dataSource$filename,
-                           expectedFileInZip = expectedFileInZip,
-                           params = list(values = values,
-                                         dataSource = dataSource,
-                                         inputFileSource = reactiveValuesToList(
-                                           input)[grepl("fileSource", names(input))],
-                                         customNames = customNames,
-                                         subFolder = subFolder,
-                                         rPackageName = rPackageName,
-                                         onlySettings = onlySettings,
-                                         fileExtension = fileExtension)
-                         )
-                       })
+
+                     values <- loadImport(
+                       importType = importType,
+                       filename = dataSource[["filename"]],
+                       expectedFileInZip = expectedFileInZip,
+                       params = list(values = values,
+                                     dataSource = dataSource,
+                                     inputFileSource = reactiveValuesToList(
+                                       input)[grepl("fileSource", names(input))],
+                                     customNames = customNames,
+                                     subFolder = subFolder,
+                                     rPackageName = rPackageName,
+                                     onlySettings = onlySettings,
+                                     fileExtension = fileExtension)
+                     ) %>%
+                       withProgress(value = 0.75,
+                                    message = sprintf("Importing '%s' ...", dataSource[["filename"]]))
                    }) # end observe loadImport
 
                  observe({

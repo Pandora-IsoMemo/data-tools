@@ -186,24 +186,22 @@ loadFileFromLink <- function(loadedSourceInputs, values, parentParams) {
                               type = fileSourceInputs[["fileSource-source"]])
 
   # load data
-  withProgress(
-    value = 0.75,
-    message = sprintf("Importing '%s' from link ...", dataSource[["filename"]]), {
-      values <- loadImport(
-        importType = "data",
-        filename = dataSource$filename,
-        expectedFileInZip = expectedFileInZip,
-        params = list(values = values,
-                      dataSource = dataSource,
-                      inputFileSource = fileSourceInputs %>%
-                        removeNamespacePattern(pattern = c("dataSelector")),
-                      customNames = parentParams$customNames,
-                      subFolder = parentParams$subFolder,
-                      rPackageName = parentParams$rPackageName,
-                      onlySettings = parentParams$onlySettings,
-                      fileExtension = parentParams$fileExtension)
-      )
-    })
+  values <- loadImport(
+    importType = "data",
+    filename = dataSource$filename,
+    expectedFileInZip = expectedFileInZip,
+    params = list(values = values,
+                  dataSource = dataSource,
+                  inputFileSource = fileSourceInputs %>%
+                    removeNamespacePattern(pattern = c("dataSelector")),
+                  customNames = parentParams$customNames,
+                  subFolder = parentParams$subFolder,
+                  rPackageName = parentParams$rPackageName,
+                  onlySettings = parentParams$onlySettings,
+                  fileExtension = parentParams$fileExtension)
+  ) %>%
+    withProgress(value = 0.75,
+                 message = sprintf("Importing '%s' from link ...", dataSource[["filename"]]))
 
   return(values)
 }
