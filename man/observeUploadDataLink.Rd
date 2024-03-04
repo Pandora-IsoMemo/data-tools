@@ -4,7 +4,7 @@
 \alias{observeUploadDataLink}
 \title{Observe Upload of a link to import data}
 \usage{
-observeUploadDataLink(id, input, output, session, importParams, mergeList)
+observeUploadDataLink(id, input, output, session, parentParams, mergeList)
 }
 \arguments{
 \item{id}{module id}
@@ -15,7 +15,7 @@ observeUploadDataLink(id, input, output, session, importParams, mergeList)
 
 \item{session}{session from server function}
 
-\item{importParams}{(list) importParams}
+\item{parentParams}{(list) parentParams}
 
 \item{mergeList}{(reactiveVal) list of data imports}
 }

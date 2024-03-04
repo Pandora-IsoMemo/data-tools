@@ -54,9 +54,9 @@ getSourceInputs <- function(input) {
 #' @param input input object from server function
 #' @param output output object from server function
 #' @param session session from server function
-#' @param importParams (list) importParams
+#' @param parentParams (list) parentParams
 #' @param mergeList (reactiveVal) list of data imports
-observeUploadDataLink <- function(id, input, output, session, importParams, mergeList) {
+observeUploadDataLink <- function(id, input, output, session, parentParams, mergeList) {
   dataLinkUpload <- reactiveValues(
     loaded = 0,
     import = list()
@@ -76,7 +76,7 @@ observeUploadDataLink <- function(id, input, output, session, importParams, merg
     data = list()
   )
 
-  # observe upload from file and fill "user" inputs
+  # observe upload of a link to data from file and read json and fill "user" inputs
   observe({
     req(input[["dataSelector-fileSource-dataOrLink"]] == "dataLink")
 
@@ -91,75 +91,132 @@ observeUploadDataLink <- function(id, input, output, session, importParams, merg
     # read json
     dataLinkUpload$import <- jsonlite::read_json(file$datapath, simplifyVector = TRUE)
 
-    browser()
-    # NOW: LOGIC TO READ from mergeList ....
-
     req(length(dataLinkUpload$import) > 0,
-        length(dataLinkUpload$import[["source"]]) > 0)
-
-    # loadedSourceInputs will be a list later
-    loadedSourceInputs <- dataLinkUpload$import[["source"]]
+        length(dataLinkUpload$import[[1]][["source"]]) > 0)
 
     ## update inputs ----
-    inputIDs <- names(loadedSourceInputs)
-    inputIDs <- inputIDs[inputIDs %in% names(input)]
+    # updating is only working if there is an internet connection
+    # we only save links to online files ...
 
-    for (i in 1:length(inputIDs)) {
-      session$sendInputMessage(inputIDs[i],  list(value = loadedSourceInputs[[inputIDs[i]]]))
-    }
+    # load input values of sourceInputs
+    updateUserInputs(id, input = input, output = output, session = session,
+                     userInputs = dataLinkUpload$import[["activeSourceInputs"]][["source"]])
 
-    dataLinkUpload$loaded <- dataLinkUpload$loaded + 1
+    # loadedSourceInputs <- dataLinkUpload$import[["activeSourceInput"]][["source"]]
+    # inputIDs <- names(loadedSourceInputs)
+    # inputIDs <- inputIDs[inputIDs %in% names(input)]
+    #
+    # for (i in 1:length(inputIDs)) {
+    #   session$sendInputMessage(inputIDs[i],  list(value = loadedSourceInputs[[inputIDs[i]]]))
+    # }
+
+    #dataLinkUpload$loaded <- dataLinkUpload$loaded + 1
   }) %>%
     bindEvent(input[["dataSelector-fileSource-file"]])
 
   # observe if a link was imported and load the data from the "link"
   observe({
-    req(dataLinkUpload$loaded > 0)
+    req(length(dataLinkUpload$import) > 0) #dataLinkUpload$loaded > 0) # parentParams$isInternet()
 
-    # loadedSourceInputs must be a list later
-    loadedSourceInputs <- dataLinkUpload$import[["source"]]
+    linkNames <- dataLinkUpload$import %>%
+      names()
 
-    # load data from ckan
-    ## apply load button ckan if ckan:
-    if (loadedSourceInputs[["dataSelector-fileSource-source"]] == "ckan") {
 
-      importParams$isInternet()
-      # if there is no internet stop, since cannot load file to get filename/path ...
+    browser()
+    i <- linkNames[2]
 
-      # filter inputs
-      fileSourceInputs <- loadedSourceInputs[names(loadedSourceInputs)[
-        grepl("fileSource", names(loadedSourceInputs))
-      ]]
+    # create a loop over names ... ----
+    loadedSourceInputs <- dataLinkUpload$import[[i]][["source"]]
 
-      names(fileSourceInputs) <- gsub(pattern = "dataSelector-fileSource-",
-                                      replacement = "",
-                                      names(fileSourceInputs))
+    values <- loadFileFromLink(loadedSourceInputs,
+                               values = values,
+                               parentParams = parentParams)
 
-      dataSource <- getDataSource(importType = importParams$importType,
-                                  input = fileSourceInputs, type = fileSourceInputs[["source"]])
+    # update mergeList() ----
+    newMergeList <-
+      updateMergeList(
+        mergeList = mergeList(),
+        fileName = values$fileName,
+        newData = list(data = values$dataImport %>%
+                         formatColumnNames(silent = TRUE),
+                       source = loadedSourceInputs,
+                       history = list()),
+        notifications = c()
+      )
+    mergeList(newMergeList$mergeList)
+    # end loop
 
-      browser()
-      withProgress(
-        value = 0.75,
-        message = 'Importing ...', {
-          values <- loadImport(
-            importType = "data",
-            filename = dataSource$filename,
-            expectedFileInZip = expectedFileInZip,
-            params = list(values = values,
-                          dataSource = dataSource,
-                          inputFileSource = reactiveValuesToList(
-                            input)[grepl("fileSource", names(input))],
-                          customNames = importParams$customNames,
-                          subFolder = importParams$subFolder,
-                          rPackageName = importParams$rPackageName,
-                          onlySettings = importParams$onlySettings,
-                          fileExtension = importParams$fileExtension)
-          )
-        })
-    }
   }) %>%
-    bindEvent(dataLinkUpload$loaded)
+    bindEvent(dataLinkUpload$import)
+}
 
-  # do not return values but update "mergeList()"
+#' Update User Inputs
+#'
+#' @param id module id
+#' @param input input object from server function
+#' @param output output object from server function
+#' @param session session from server function
+#' @param userInputs (list) list of inputs to be updated
+updateUserInputs <- function(id, input, output, session, userInputs) {
+  ## get and filter input names
+  inputIDs <- names(userInputs)
+  inputIDs <- inputIDs[inputIDs %in% names(input)]
+
+  # update values
+  for (i in 1:length(inputIDs)) {
+    session$sendInputMessage(inputIDs[i], list(value = userInputs[[inputIDs[i]]]))
+  }
+}
+
+loadFileFromLink <- function(loadedSourceInputs, values, parentParams) {
+  # load only online data
+  if (!(loadedSourceInputs[["fileSource-source"]] %in% c("ckan", "url"))) {
+    return(values)
+  }
+
+  # filter inputs
+  fileSourceInputs <- loadedSourceInputs[names(loadedSourceInputs)[
+    grepl("fileSource", names(loadedSourceInputs))
+  ]]
+
+  # get file (path) and filename
+  dataSource <- getDataSource(importType = parentParams$importType,
+                              input = fileSourceInputs %>%
+                                removeNamespacePattern(pattern = c("dataSelector", "fileSource")),
+                              type = fileSourceInputs[["fileSource-source"]])
+
+  # load data
+  withProgress(
+    value = 0.75,
+    message = sprintf("Importing '%s' from link ...", dataSource[["filename"]]), {
+      values <- loadImport(
+        importType = "data",
+        filename = dataSource$filename,
+        expectedFileInZip = expectedFileInZip,
+        params = list(values = values,
+                      dataSource = dataSource,
+                      inputFileSource = fileSourceInputs %>%
+                        removeNamespacePattern(pattern = c("dataSelector")),
+                      customNames = parentParams$customNames,
+                      subFolder = parentParams$subFolder,
+                      rPackageName = parentParams$rPackageName,
+                      onlySettings = parentParams$onlySettings,
+                      fileExtension = parentParams$fileExtension)
+      )
+    })
+
+  return(values)
+}
+
+removeNamespacePattern <- function(inputs, pattern) {
+  if (length(pattern) == 0) return(inputs)
+  if (!inherits(pattern, "character")) return(inputs)
+
+  for (p in pattern) {
+    names(inputs) <- names(inputs) %>%
+      gsub(pattern = sprintf("%s-", p),
+           replacement = "")
+  }
+
+  return(inputs)
 }
