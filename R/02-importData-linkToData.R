@@ -59,7 +59,8 @@ getSourceInputs <- function(input) {
 #' @param mergeList (reactiveVal) list of data imports
 observeUploadDataLink <- function(id, input, output, session, parentParams, mergeList) {
   dataLinkUpload <- reactiveValues(
-    import = list()
+    import = list(),
+    load = 0
   )
 
   dataSource <- reactiveValues(file = NULL,
@@ -107,9 +108,9 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
     for (i in linkNames[linkNames != nmLastInputs()]) {
       loadedSourceInputs <- dataLinkUpload$import[[i]][["source"]]
 
-      values <- loadFileFromLink(loadedSourceInputs,
-                                 values = values,
-                                 parentParams = parentParams)
+      values <- values %>%
+        loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
+                         parentParams = parentParams)
 
       # catch eror of import?? ----
       req(values$dataImport)
@@ -137,12 +138,23 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
       updateUserInputs(id, input = input, output = output, session = session,
                        userInputs = lastUserInputValues[["source"]])
 
-      values <- loadFileFromLink(loadedSourceInputs = lastUserInputValues[["source"]],
-                                 values = values,
-                                 parentParams = parentParams)
+      # directly loading the file is not working
+      # the file is currently reset when switching between radioButtons "Pandora Platform", "File", "URL"
+      #dataLinkUpload[["load"]] <- dataLinkUpload[["load"]] + 1
     }
   }) %>%
     bindEvent(dataLinkUpload$import)
+
+  # see comment from: dataLinkUpload[["load"]]
+  # observe({
+  #   req(dataLinkUpload[["load"]] > 0)
+  #   values <- values %>%
+  #     loadFileFromLink(loadedSourceInputs = dataLinkUpload$import[[nmLastInputs()]][["source"]],
+  #                      parentParams = parentParams)
+  # }) %>%
+  #   bindEvent(dataLinkUpload[["load"]])
+
+  #return(values)
 }
 
 nmLastInputs <- function() "lastSelectDataInputs"
@@ -165,7 +177,10 @@ updateUserInputs <- function(id, input, output, session, userInputs) {
   }
 }
 
-loadFileFromLink <- function(loadedSourceInputs, values, parentParams) {
+loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
+  loadedSourceInputs <- loadedSourceInputs %>%
+    removeNamespacePattern(pattern = c("dataSelector"))
+
   # load only online data
   if (!(loadedSourceInputs[["fileSource-source"]] %in% c("ckan", "url"))) {
     return(values)
@@ -179,7 +194,7 @@ loadFileFromLink <- function(loadedSourceInputs, values, parentParams) {
   # get file (path) and filename
   dataSource <- getDataSource(importType = parentParams$importType,
                               input = fileSourceInputs %>%
-                                removeNamespacePattern(pattern = c("dataSelector", "fileSource")),
+                                removeNamespacePattern(pattern = c("fileSource")),
                               type = fileSourceInputs[["fileSource-source"]])
 
   # load data
@@ -188,8 +203,7 @@ loadFileFromLink <- function(loadedSourceInputs, values, parentParams) {
     expectedFileInZip = parentParams$expectedFileInZip,
     params = list(values = values,
                   dataSource = dataSource,
-                  inputFileSource = fileSourceInputs %>%
-                    removeNamespacePattern(pattern = c("dataSelector")),
+                  inputFileSource = fileSourceInputs,
                   customNames = parentParams$customNames,
                   subFolder = parentParams$subFolder,
                   rPackageName = parentParams$rPackageName,

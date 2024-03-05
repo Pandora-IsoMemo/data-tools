@@ -385,10 +385,12 @@ selectSourceServer <- function(id,
 
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
+                     shinyjs::disable(ns("dataOrLink"), asis = TRUE)
                      updateRadioButtons(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection ...")
                      shinyjs::disable(ns("loadUrl"), asis = TRUE)
                    } else {
+                     shinyjs::enable(ns("dataOrLink"), asis = TRUE)
                      ckanGroupList <- callAPI(action = "group_list", all_fields = "true")
                      ckanNetworks(ckanGroupList)
                      ckanPackageList <- callAPI(action = "current_package_list_with_resources",
