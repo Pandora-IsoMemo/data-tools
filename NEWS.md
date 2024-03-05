@@ -2,10 +2,10 @@
 
 ## Version 24.03.0
 
-- option to download 'import links' to the imported data if data loading was successful in advance
+- option to download 'import links' to the imported data if data loading was successful in advance (#55)
   - stores only user inputs to file imports, not the data itself
   - all links to data that were 'submitted for data preparation' are stored also
-- option to upload 'import links' containing user inputs for data imports from a local .json file
+- option to upload 'import links' containing user inputs for data imports from a local .json file (#55)
 
 ## Version 24.01.0
 
