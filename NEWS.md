@@ -1,5 +1,12 @@
 # DataTools
 
+## Version 24.03.0
+
+- option to download 'import links' to the imported data if data loading was successful in advance
+  - stores only user inputs to file imports, not the data itself
+  - all links to data that were 'submitted for data preparation' are stored also
+- option to upload 'import links' containing user inputs for data imports from a local .json file
+
 ## Version 24.01.0
 
 Integration of rgpt3 functions into data tools package
