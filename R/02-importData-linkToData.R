@@ -17,7 +17,7 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList) {
       setNames(object = list(list(data = NULL,
                                   source = getSourceInputs(input),
                                   history = list())),
-               nm = "activeSourceInput"),
+               nm = nmLastInputs()),
       mergeListExport
     )
   })
@@ -58,7 +58,6 @@ getSourceInputs <- function(input) {
 #' @param mergeList (reactiveVal) list of data imports
 observeUploadDataLink <- function(id, input, output, session, parentParams, mergeList) {
   dataLinkUpload <- reactiveValues(
-    loaded = 0,
     import = list()
   )
 
@@ -88,67 +87,70 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
 
     req(fileType == "json")
 
-    # read json
+    # read json ----
     dataLinkUpload$import <- jsonlite::read_json(file$datapath, simplifyVector = TRUE)
-
-    req(length(dataLinkUpload$import) > 0,
-        length(dataLinkUpload$import[[1]][["source"]]) > 0)
-
-    ## update inputs ----
-    # updating is only working if there is an internet connection
-    # we only save links to online files ...
-
-    # load input values of sourceInputs
-    updateUserInputs(id, input = input, output = output, session = session,
-                     userInputs = dataLinkUpload$import[["activeSourceInputs"]][["source"]])
-
-    # loadedSourceInputs <- dataLinkUpload$import[["activeSourceInput"]][["source"]]
-    # inputIDs <- names(loadedSourceInputs)
-    # inputIDs <- inputIDs[inputIDs %in% names(input)]
-    #
-    # for (i in 1:length(inputIDs)) {
-    #   session$sendInputMessage(inputIDs[i],  list(value = loadedSourceInputs[[inputIDs[i]]]))
-    # }
-
-    #dataLinkUpload$loaded <- dataLinkUpload$loaded + 1
   }) %>%
     bindEvent(input[["dataSelector-fileSource-file"]])
 
   # observe if a link was imported and load the data from the "link"
   observe({
-    req(length(dataLinkUpload$import) > 0) #dataLinkUpload$loaded > 0) # parentParams$isInternet()
+    req(length(dataLinkUpload$import) > 0)
+
+    lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
+
+    # update user inputs ----
+    if (!is.null(lastUserInputValues) &&
+        "source" %in% names(lastUserInputValues) &&
+        length(lastUserInputValues[["source"]]) > 0) {
+      # updating is only working if there is an internet connection
+      # we only save links to online files ...
+
+      # load input values of sourceInputs
+      updateUserInputs(id, input = input, output = output, session = session,
+                       userInputs = lastUserInputValues[["source"]])
+
+      # loadedSourceInputs <- lastUserInputValues[["source"]]
+      # inputIDs <- names(loadedSourceInputs)
+      # inputIDs <- inputIDs[inputIDs %in% names(input)]
+      #
+      # for (i in 1:length(inputIDs)) {
+      #   session$sendInputMessage(inputIDs[i],  list(value = loadedSourceInputs[[inputIDs[i]]]))
+      # }
+    }
+
+    browser()
+    req(parentParams$isInternet())
 
     linkNames <- dataLinkUpload$import %>%
       names()
 
+    for (i in linkNames[linkNames != nmLastInputs()]) {
+      loadedSourceInputs <- dataLinkUpload$import[[i]][["source"]]
 
-    browser()
-    i <- linkNames[2]
+      values <- loadFileFromLink(loadedSourceInputs,
+                                 values = values,
+                                 parentParams = parentParams)
 
-    # create a loop over names ... ----
-    loadedSourceInputs <- dataLinkUpload$import[[i]][["source"]]
-
-    values <- loadFileFromLink(loadedSourceInputs,
-                               values = values,
-                               parentParams = parentParams)
-
-    # update mergeList() ----
-    newMergeList <-
-      updateMergeList(
-        mergeList = mergeList(),
-        fileName = values$fileName,
-        newData = list(data = values$dataImport %>%
-                         formatColumnNames(silent = TRUE),
-                       source = loadedSourceInputs,
-                       history = list()),
-        notifications = c()
-      )
-    mergeList(newMergeList$mergeList)
-    # end loop
-
+      # catch eror of import?? ----
+      req(values$dataImport)
+      # update mergeList() ----
+      newMergeList <-
+        updateMergeList(
+          mergeList = mergeList(),
+          fileName = values$fileName,
+          newData = list(data = values$dataImport %>%
+                           formatColumnNames(silent = TRUE),
+                         source = loadedSourceInputs,
+                         history = list()),
+          notifications = c()
+        )
+      mergeList(newMergeList$mergeList)
+    }
   }) %>%
     bindEvent(dataLinkUpload$import)
 }
+
+nmLastInputs <- function() "lastSelectDataInputs"
 
 #' Update User Inputs
 #'
@@ -188,8 +190,7 @@ loadFileFromLink <- function(loadedSourceInputs, values, parentParams) {
   # load data
   values <- loadImport(
     importType = "data",
-    filename = dataSource$filename,
-    expectedFileInZip = expectedFileInZip,
+    expectedFileInZip = parentParams$expectedFileInZip,
     params = list(values = values,
                   dataSource = dataSource,
                   inputFileSource = fileSourceInputs %>%

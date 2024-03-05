@@ -1,5 +1,5 @@
-loadImport <- function(importType, params, filename, expectedFileInZip) {
-  #inputFileSource <- params$inputFileSource # why? it is included in params ...
+loadImport <- function(importType, params, expectedFileInZip) {
+  filename <- params[["dataSource"]][["filename"]]
   values <- params[["values"]] # to pass on the "reactiveValues" object
 
   # reset values

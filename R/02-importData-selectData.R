@@ -134,7 +134,6 @@ selectDataServer <- function(id,
 
                      values <- loadImport(
                        importType = importType,
-                       filename = dataSource[["filename"]],
                        expectedFileInZip = expectedFileInZip,
                        params = list(values = values,
                                      dataSource = dataSource,

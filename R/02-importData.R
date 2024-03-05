@@ -374,7 +374,8 @@ importDataServer <- function(id,
                                          subFolder = subFolder,
                                          rPackageName = rPackageName,
                                          onlySettings = onlySettings,
-                                         fileExtension = fileExtension),
+                                         fileExtension = fileExtension,
+                                         expectedFileInZip = expectedFileInZip),
                                        mergeList
                  )
 
