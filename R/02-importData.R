@@ -58,7 +58,7 @@ importOptions <- function(rPackageName = "",
 #'  File names that must be contained in the zip upload.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
 #'  This parameter is ignored if importType == "data"
-#' @param mainFolder (character) folder containing all loadable .zip files.
+#' @param mainFolder (character) DEPRECATED. folder containing all loadable .zip files.
 #'   This parameter is ignored if importType == "data"
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files.
 #'  This parameter is ignored if importType == "data"
@@ -82,7 +82,7 @@ importDataServer <- function(id,
                              outputAsMatrix = FALSE,
                              # parameters for model upload
                              fileExtension = "zip",
-                             mainFolder = "predefinedModels",
+                             mainFolder = NULL,
                              subFolder = NULL,
                              rPackageName = "",
                              onlySettings = FALSE,
@@ -90,6 +90,8 @@ importDataServer <- function(id,
                              options = importOptions()
                              ) {
   defaultSource <- match.arg(defaultSource)
+  if (!is.null(mainFolder)) warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
+
   moduleServer(id,
                function(input, output, session) {
                  # check new options param as long as we need param "rPackageName"
@@ -212,7 +214,6 @@ importDataServer <- function(id,
                    mergeList = mergeList,
                    customNames = customNames,
                    # parameters required to load a model
-                   mainFolder = mainFolder,
                    subFolder = subFolder,
                    rPackageName = options[["rPackageName"]],
                    onlySettings = onlySettings,

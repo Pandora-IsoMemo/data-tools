@@ -83,7 +83,6 @@ selectDataServer <- function(id,
                              openPopupReset,
                              internetCon,
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
-                             mainFolder = "predefinedModels",
                              subFolder = NULL,
                              ignoreWarnings = FALSE,
                              rPackageName = "",
@@ -111,8 +110,14 @@ selectDataServer <- function(id,
                    openPopupReset = openPopupReset,
                    internetCon = internetCon,
                    githubRepo = getGithubMapping(rPackageName),
-                   folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
-                   pathToLocal = getPathToLocal(mainFolder, subFolder),
+                   folderOnGithub = getFolderOnGithub(
+                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     subFolder = subFolder
+                     ),
+                   pathToLocal = getPathToLocal(
+                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     subFolder = subFolder
+                     ),
                    ckanFileTypes = ckanFileTypes
                  )
 
@@ -631,9 +636,9 @@ selectSourceServer <- function(id,
                  pathToRemote <- remoteModelsServer(
                    "remoteModels",
                    githubRepo = githubRepo,
-                   folderOnGithub = paste0("/", getSpecsForRemotes(importType)[["folder"]]), #folderOnGithub, #
-                   pathToLocal = file.path(".", getSpecsForRemotes(importType)[["folder"]]), #pathToLocal, #
-                   fileExtension = getSpecsForRemotes(importType)[["extension"]], #"zip", #
+                   folderOnGithub = folderOnGithub,
+                   pathToLocal = pathToLocal,
+                   fileExtension = getSpecsForRemotes(importType)[["extension"]],
                    reloadChoices = openPopupReset,
                    resetSelected = reactive(input$source),
                    isInternet = internetCon
@@ -658,19 +663,6 @@ selectSourceServer <- function(id,
 
                  dataSource
                })
-}
-
-getSpecsForRemotes <- function(importType) {
-  if (importType != "data") {
-    folder <- "predefinedModels"
-    extension <- "zip"
-  } else {
-    folder <- "dataLinks"
-    extension <- "json"
-  }
-
-  list(folder = folder,
-       extension = extension)
 }
 
 #' Get Data Source

@@ -422,6 +422,19 @@ getPathToLocal <- function(mainFolder, subFolder, rPackageName = NULL) {
   }
 }
 
+getSpecsForRemotes <- function(importType) {
+  if (importType != "data") {
+    folder <- "predefinedModels"
+    extension <- "zip"
+  } else {
+    folder <- "dataLinks"
+    extension <- "json"
+  }
+
+  list(folder = folder,
+       extension = extension)
+}
+
 dataLoadedAlert <-
   function(warnings,
            uploadedVersion,
