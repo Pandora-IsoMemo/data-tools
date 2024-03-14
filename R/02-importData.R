@@ -69,7 +69,7 @@ importOptions <- function(rPackageName = "",
 #' @export
 importDataServer <- function(id,
                              title = "",
-                             defaultSource = "ckan",
+                             defaultSource = c("ckan", "file", "url", "remoteModel"),
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              ignoreWarnings = FALSE,
                              importType = "data",
@@ -89,6 +89,7 @@ importDataServer <- function(id,
                              expectedFileInZip = c(),
                              options = importOptions()
                              ) {
+  defaultSource <- match.arg(defaultSource)
   moduleServer(id,
                function(input, output, session) {
                  # check new options param as long as we need param "rPackageName"
@@ -143,6 +144,7 @@ importDataServer <- function(id,
                    )
 
                    shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                   shinyjs::disable(ns("dataSelector-keepData"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
                    shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::disable(ns("acceptMerged"), asis = TRUE)
@@ -150,7 +152,9 @@ importDataServer <- function(id,
                    shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                   if (importType != "data" || Sys.getenv("DEV_VERSION") != "TRUE") {
+                   if (
+                     #importType != "data" ||
+                     Sys.getenv("DEV_VERSION") != "TRUE") {
                      shinyjs::hide(ns("dataSelector-fileSource-dataOrLink"), asis = TRUE)
                    }
                  })
@@ -180,9 +184,11 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                     if (values$fileImportSuccess == "Data import successful" &&
-                         Sys.getenv("DEV_VERSION") == "TRUE" &&
-                         input[["dataSelector-fileSource-source"]] != "file") {
+                     if (!is.null(values$fileImportSuccess) &&
+                         values$fileImportSuccess == "Data import successful" &&
+                         Sys.getenv("DEV_VERSION") == "TRUE"# &&
+                         #input[["dataSelector-fileSource-source"]] != "file"
+                         ) {
                        shinyjs::show(ns("downloadDataLink"), asis = TRUE)
                      } else {
                        shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
@@ -246,18 +252,21 @@ importDataServer <- function(id,
                    if (length(values$dataImport) == 0 ||
                        isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
+                     shinyjs::disable(ns("dataSelector-keepData"), asis = TRUE)
                      shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
                      if (importType == "data") {
+                       shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
                      }
 
                      if (values$fileImportSuccess == "Data import successful" &&
-                         Sys.getenv("DEV_VERSION") == "TRUE" &&
-                         input[["dataSelector-fileSource-source"]] != "file") {
+                         Sys.getenv("DEV_VERSION") == "TRUE" #&&
+                         #input[["dataSelector-fileSource-source"]] != "file"
+                         ) {
                        shinyjs::show(ns("downloadDataLink"), asis = TRUE)
                      } else {
                        shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
@@ -534,12 +543,12 @@ importDataDialog <-
             options = options
           )
         ),
+        if (importType == "data") tabPanel("Query with SQL",
+                                           queryDataUI(ns("dataQuerier"))) else NULL,
         if (importType == "data") tabPanel("Prepare",
                                            prepareDataUI(ns("dataPreparer"))) else NULL,
         if (importType == "data") tabPanel("Merge",
-                                           mergeDataUI(ns("dataMerger"))) else NULL,
-        if (importType == "data") tabPanel("Query with SQL",
-                                           queryDataUI(ns("dataQuerier"))) else NULL
+                                           mergeDataUI(ns("dataMerger"))) else NULL
       )
     )
   }

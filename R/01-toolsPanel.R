@@ -10,7 +10,7 @@ toolsImportUI <- function(id) {
     sidebarPanel(
       width = 2,
       style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
-      importDataUI(ns("localData"), "Import Data"),
+      importDataUI(ns("localData"), "Import Data (local)"),
       tags$br(),
       tags$br(),
       importDataUI(ns("ckanData"), "Import CKAN Data"),
@@ -51,7 +51,8 @@ toolsImportServer <- function(id) {
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
-                   defaultSource = "ckan"
+                   defaultSource = "ckan",
+                   rPackageName = config()[["rPackageName"]]
                  )
 
                  importedBatchData <- importDataServer(
@@ -62,7 +63,8 @@ toolsImportServer <- function(id) {
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    batch = TRUE,
-                   outputAsMatrix = TRUE
+                   outputAsMatrix = TRUE,
+                   rPackageName = config()[["rPackageName"]]
                  )
 
                  importedModel <- importDataServer(

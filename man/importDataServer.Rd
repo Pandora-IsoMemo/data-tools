@@ -7,7 +7,7 @@
 importDataServer(
   id,
   title = "",
-  defaultSource = "ckan",
+  defaultSource = c("ckan", "file", "url", "remoteModel"),
   ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   ignoreWarnings = FALSE,
   importType = "data",

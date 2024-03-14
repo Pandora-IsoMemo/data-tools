@@ -59,7 +59,7 @@ selectDataUI <- function(id,
           actionButton(ns("keepData"), "Submit for data preparation")
         ),
         column(width = 8,
-               helpText("Enables data manipulation in the tabs: 'Prepare', 'Merge' or 'Query with SQL'.")
+               helpText("Enables data manipulation in the tabs: 'Query with SQL', 'Prepare', or 'Merge'.")
         ))
       ) else NULL,
     if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL
@@ -255,7 +255,8 @@ selectSourceUI <- function(id,
   sourceChoices <- switch(importType,
                           data = c("Pandora Platform" = "ckan",
                                    "File" = "file",
-                                   "URL" = "url"),
+                                   "URL" = "url",
+                                   "Online Data Link" = "remoteModel"),
                           model = c("Pandora Platform" = "ckan",
                                     "File" = "file",
                                     "URL" = "url",
@@ -266,18 +267,13 @@ selectSourceUI <- function(id,
                                   "Online Zip" = "remoteModel")
   )
 
-  if (!(defaultSource %in% sourceChoices)) {
-    warning(sprintf("Parameter `defaultSource` = %s not available, using 'file' as default.",
-                    defaultSource))
-    defaultSource <- "file"
-  }
-
   acceptExt <- NULL
   if (importType %in% c("model", "zip") && !is.null(fileExtension) && fileExtension != "") {
     acceptExt <- sprintf(".%s", fileExtension)
   }
 
   tagList(
+    # source selection ----
     fluidRow(
       column(6,
              radioButtons(
@@ -303,7 +299,8 @@ selectSourceUI <- function(id,
       )
     ),
     tags$br(),
-    ## source == ckan ----
+    # source == ckan/file/url/model ----
+    ## source == ckan
     conditionalPanel(
       condition = "input.source == 'ckan'",
       ns = ns,
@@ -319,7 +316,7 @@ selectSourceUI <- function(id,
              ))
       ))
     ),
-    ## source == file ----
+    ## source == file
     conditionalPanel(
       condition = "input.source == 'file'",
       ns = ns,
@@ -328,7 +325,7 @@ selectSourceUI <- function(id,
                 accept = acceptExt,
                 width = "100%")
     ),
-    ## source == url ----
+    ## source == url
     conditionalPanel(
       condition = "input.source == 'url'",
       ns = ns,
@@ -337,14 +334,21 @@ selectSourceUI <- function(id,
                column(width = 2,
                       actionButton(ns("loadUrl"), "Load")))
     ),
-    ## source == model ----
+    ## source == model
     conditionalPanel(
       condition = "input.source == 'remoteModel'",
       ns = ns,
       remoteModelsUI(ns("remoteModels"))
     ),
+    # filetype (if data import) ----
     if (importType == "data")  tags$hr() else NULL,
-    if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
+    if (importType == "data")  {
+      conditionalPanel(
+        condition = "input.dataOrLink == 'fullData'",
+        ns = ns,
+        selectFileTypeUI(ns("fileType"), importType = importType)
+      )
+      } else NULL,
     tags$hr()
   )
 }
@@ -385,7 +389,7 @@ selectSourceServer <- function(id,
 
                    if (!internetCon()) {
                      warning("selectSourceServer: No internet connection!")
-                     shinyjs::disable(ns("dataOrLink"), asis = TRUE)
+                     #shinyjs::disable(ns("dataOrLink"), asis = TRUE)
                      updateRadioButtons(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection ...")
                      shinyjs::disable(ns("loadUrl"), asis = TRUE)
@@ -473,7 +477,7 @@ selectSourceServer <- function(id,
                      shinyjs::show(ns("dataOrLink"), asis = TRUE)
                    } else {
                      updateRadioButtons(session, "dataOrLink", selected = "fullData")
-                     shinyjs::hide(ns("dataOrLink"), asis = TRUE)
+                     #shinyjs::hide(ns("dataOrLink"), asis = TRUE)
                    }
 
                    dataSource$file <- NULL
@@ -627,8 +631,9 @@ selectSourceServer <- function(id,
                  pathToRemote <- remoteModelsServer(
                    "remoteModels",
                    githubRepo = githubRepo,
-                   folderOnGithub = folderOnGithub,
-                   pathToLocal = pathToLocal,
+                   folderOnGithub = paste0("/", getSpecsForRemotes(importType)[["folder"]]), #folderOnGithub, #
+                   pathToLocal = file.path(".", getSpecsForRemotes(importType)[["folder"]]), #pathToLocal, #
+                   fileExtension = getSpecsForRemotes(importType)[["extension"]], #"zip", #
                    reloadChoices = openPopupReset,
                    resetSelected = reactive(input$source),
                    isInternet = internetCon
@@ -653,6 +658,19 @@ selectSourceServer <- function(id,
 
                  dataSource
                })
+}
+
+getSpecsForRemotes <- function(importType) {
+  if (importType != "data") {
+    folder <- "predefinedModels"
+    extension <- "zip"
+  } else {
+    folder <- "dataLinks"
+    extension <- "json"
+  }
+
+  list(folder = folder,
+       extension = extension)
 }
 
 #' Get Data Source
