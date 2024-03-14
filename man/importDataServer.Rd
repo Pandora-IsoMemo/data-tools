@@ -10,7 +10,7 @@ importDataServer(
   defaultSource = c("ckan", "file", "url", "remoteModel"),
   ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   ignoreWarnings = FALSE,
-  importType = "data",
+  importType = c("data", "model", "zip"),
   rowNames = reactiveVal(NULL),
   colNames = reactiveVal(NULL),
   customWarningChecks = list(),

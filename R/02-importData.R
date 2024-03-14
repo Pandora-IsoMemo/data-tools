@@ -72,7 +72,7 @@ importDataServer <- function(id,
                              defaultSource = c("ckan", "file", "url", "remoteModel"),
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              ignoreWarnings = FALSE,
-                             importType = "data",
+                             importType = c("data", "model", "zip"),
                              # parameters for data upload
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),
@@ -90,6 +90,8 @@ importDataServer <- function(id,
                              options = importOptions()
                              ) {
   defaultSource <- match.arg(defaultSource)
+  importType <- match.arg(importType)
+
   if (!is.null(mainFolder)) warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
 
   moduleServer(id,
