@@ -25,11 +25,6 @@ loadImport <- function(importType, params, expectedFileInZip) {
          "zip" = do.call(loadZipWrapper, params)) %>%
     tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
 
-  if (importType == "data") {
-    # entries of values were updated within 'loadDataWrapper'
-    return(res)
-  }
-
   if (importType == "model") {
     # set entries of 'values' for 'model' (success, warnings, errors, ...)
     return(values %>%
@@ -44,7 +39,7 @@ loadImport <- function(importType, params, expectedFileInZip) {
                                expectedFileInZip = expectedFileInZip))
   }
 
-  # default:
+  # default (importType == "data"):
   res
 }
 
@@ -82,7 +77,7 @@ selectImportParams <- function(params,
 #'
 #' @param importedModel (list) output of loadModel()
 #' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
-#' @param filename (reactive) name of the loaded file
+#' @param filename (character) name of the loaded file
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
 fillValuesFromModel <- function(values, filename, importedModel) {
@@ -106,7 +101,7 @@ fillValuesFromModel <- function(values, filename, importedModel) {
 #'  errors are displayed inside the pop-up modal.
 #'
 #' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
-#' @param filename (reactive) name of the loaded file
+#' @param filename (character) name of the loaded file
 #' @param importZip (list) output of loadModel()
 #' @inheritParams importDataServer
 #'

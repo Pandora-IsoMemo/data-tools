@@ -9,7 +9,7 @@ fillValuesFromZip(values, filename, importZip, expectedFileInZip)
 \arguments{
 \item{values}{(reactiveValues) empty list of values in the format of the output of loadDataWrapper}
 
-\item{filename}{(reactive) name of the loaded file}
+\item{filename}{(character) name of the loaded file}
 
 \item{importZip}{(list) output of loadModel()}
 
