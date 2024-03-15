@@ -4,7 +4,13 @@
 \alias{selectDataUI}
 \title{Select Data UI}
 \usage{
-selectDataUI(id, batch, outputAsMatrix, importType, options = importOptions())
+selectDataUI(
+  id,
+  batch,
+  outputAsMatrix,
+  importType,
+  customHelpText = importOptions()[["customHelpText"]]
+)
 }
 \arguments{
 \item{id}{id of module}
@@ -17,10 +23,8 @@ e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
-\item{options}{(list) Extra options for the import module.}
-
-\item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
-ignored if \code{type = "file"} or \code{type = "remoteModel"}}
+\item{customHelpText}{(list) A help text element that can be added to a UI definition. Output of
+\code{shiny::helpText(...)}.}
 }
 \description{
 UI of the module

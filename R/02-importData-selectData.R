@@ -5,14 +5,13 @@
 #' UI of the module
 #'
 #' @param id id of module
-#' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
-#'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @inheritParams importDataServer
+#' @inheritParams importOptions
 selectDataUI <- function(id,
                          batch,
                          outputAsMatrix,
                          importType,
-                         options = importOptions()) {
+                         customHelpText = importOptions()[["customHelpText"]]) {
   ns <- NS(id)
 
   tagList(
@@ -32,7 +31,7 @@ selectDataUI <- function(id,
     } else if (importType == "data") {
       helpText("The first row in your file needs to contain column names.")
     } else NULL,
-    options[["customHelpText"]],
+    customHelpText,
     if (importType == "data" && batch) {
       helpText(
         "The first column in your file needs to contain the observation names from the target table."

@@ -493,14 +493,6 @@ importDataServer <- function(id,
                })
 }
 
-# Helper Functions ----
-
-checkIfActive <- function(currentTab, tabName) {
-  if (is.null(currentTab)) return(FALSE)
-
-  currentTab == tabName
-}
-
 # import data dialog UI ----
 importDataDialog <-
   function(ns,
@@ -564,7 +556,7 @@ importDataDialog <-
               batch = batch,
               outputAsMatrix = outputAsMatrix,
               importType = importType,
-              options = options
+              customHelpText = options[["customHelpText"]]
             )
           )
         ),
@@ -577,6 +569,14 @@ importDataDialog <-
       )
     )
   }
+
+# Helper Functions ----
+
+checkIfActive <- function(currentTab, tabName) {
+  if (is.null(currentTab)) return(FALSE)
+
+  currentTab == tabName
+}
 
 customImportChecks <- function(warnings,
                         errors,
