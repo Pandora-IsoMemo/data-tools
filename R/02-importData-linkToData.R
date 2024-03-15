@@ -63,9 +63,9 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
     load = 0
   )
 
-  dataSource <- reactiveValues(file = NULL,
-                               filename = NULL,
-                               type = NULL)
+  # dataSource <- reactiveValues(file = NULL,
+  #                              filename = NULL,
+  #                              type = NULL)
 
   values <- reactiveValues(
     warnings = list(),
@@ -77,7 +77,7 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
     data = list()
   )
 
-  # observe upload of a link to data from file and read json and fill "user" inputs
+  # observe upload of a link to data from file and read json
   observe({
     req(input[["dataSelector-fileSource-dataOrLink"]] == "dataLink")
     logDebug("linkToData: observe radioButtons")
@@ -112,7 +112,7 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
         loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
                          parentParams = parentParams)
 
-      # catch eror of import?? ----
+      # catch error of import?? ----
       req(values$dataImport)
       # update mergeList() ----
       newMergeList <-
@@ -177,6 +177,13 @@ updateUserInputs <- function(id, input, output, session, userInputs) {
   }
 }
 
+#' Load File From Link
+#'
+#' Load a file a link points to
+#'
+#' @param values (reactiveValues)
+#' @param loadedSourceInputs (list) user inputs from the dataLink file
+#' @param parentParams (list) list of parameters from parent module
 loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
   loadedSourceInputs <- loadedSourceInputs %>%
     removeNamespacePattern(pattern = c("dataSelector"))
@@ -192,10 +199,12 @@ loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
   ]]
 
   # get file (path) and filename
-  dataSource <- getDataSource(importType = parentParams$importType,
-                              input = fileSourceInputs %>%
+  dataSource <- getDataSource(input = fileSourceInputs %>%
                                 removeNamespacePattern(pattern = c("fileSource")),
-                              type = fileSourceInputs[["fileSource-source"]])
+                              type = fileSourceInputs[["fileSource-source"]]) %>%
+    addSourceType(importType = parentParams$importType,
+                  source = fileSourceInputs[["fileSource-source"]],
+                  inputDataOrLink = "fullData")
 
   # load data
   values <- loadImport(

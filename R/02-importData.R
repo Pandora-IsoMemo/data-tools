@@ -112,6 +112,23 @@ importDataServer <- function(id,
                  )
                  internetCon <- reactiveVal(FALSE)
 
+                 # dataSource <- selectSourceServer(
+                 #   "fileSource",
+                 #   importType = importType,
+                 #   openPopupReset = reactive(input$openPopup > 0),
+                 #   internetCon = internetCon,
+                 #   githubRepo = getGithubMapping(rPackageName),
+                 #   folderOnGithub = getFolderOnGithub(
+                 #     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                 #     subFolder = subFolder
+                 #   ),
+                 #   pathToLocal = getPathToLocal(
+                 #     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                 #     subFolder = subFolder
+                 #   ),
+                 #   ckanFileTypes = ckanFileTypes
+                 # )
+
                  observe({
                    logDebug("Update withRownames")
                    customNames$withRownames <-
@@ -212,6 +229,7 @@ importDataServer <- function(id,
                    internetCon = internetCon,
                    openPopupReset = reactive(input$openPopup > 0),
                    ignoreWarnings = ignoreWarnings,
+                   #dataSource = dataSource,
                    # parameters required to load data
                    mergeList = mergeList,
                    customNames = customNames,
@@ -534,16 +552,25 @@ importDataDialog <-
         selected = "Select",
         tabPanel(
           "Select",
-          selectDataUI(
-            ns("dataSelector"),
-            defaultSource = defaultSource,
-            ckanFileTypes = ckanFileTypes,
-            batch = batch,
-            outputAsMatrix = outputAsMatrix,
-            importType = importType,
-            fileExtension = fileExtension,
-            isInternet = isInternet,
-            options = options
+          tagList(
+            # tags$br(),
+            # selectSourceUI(ns("fileSource"),
+            #                defaultSource = defaultSource,
+            #                ckanFileTypes = ckanFileTypes,
+            #                importType = importType,
+            #                isInternet = isInternet,
+            #                fileExtension = fileExtension),
+            selectDataUI(
+              ns("dataSelector"),
+              defaultSource = defaultSource,
+              ckanFileTypes = ckanFileTypes,
+              batch = batch,
+              outputAsMatrix = outputAsMatrix,
+              importType = importType,
+              fileExtension = fileExtension,
+              isInternet = isInternet,
+              options = options
+            )
           )
         ),
         if (importType == "data") tabPanel("Query with SQL",
@@ -594,84 +621,6 @@ isNotValid <- function(errors, warnings, ignoreWarnings) {
     (!ignoreWarnings &&
        length(unlist(warnings, use.names = FALSE)) > 0)
 }
-
-#' Cut All Strings
-#'
-#' Cuts strings of character and factor columns if a string is longer than cutAt parameter.
-#' Factors are converted to characters before cutting.
-#'
-#' @param df (data.frame) data.frame with character and non-character columns
-#' @param cutAt (numeric) number of characters after which to cut the entries of an character-column
-#' @export
-cutAllLongStrings <- function(df, cutAt = 50) {
-  if (is.null(df)) {
-    return(NULL)
-  }
-
-  if (any(sapply(df, is.factor)))
-    warning("factors are converted to character")
-
-  df <- lapply(df, function(z) {
-    if (is.factor(z)) {
-      z <- as.character(z)
-    }
-
-    if (!is.character(z)) {
-      return(z)
-    }
-
-    cutStrings(charVec = z, cutAt = cutAt)
-  }) %>%
-    as.data.frame(stringsAsFactors = FALSE)
-
-  dfColNames <- colnames(df) %>%
-    cutStrings(cutAt = max(10, (cutAt - 3)))
-  colnames(df) <- dfColNames
-
-  df
-}
-
-
-#' Cut Strings
-#'
-#' @param charVec (character) character vector
-#' @param cutAt (numeric) number of characters after which to cut the entries of an character-column
-cutStrings <- function(charVec, cutAt = 50) {
-  if (any(nchar(charVec) > cutAt, na.rm = TRUE)) {
-    index <- !is.na(charVec) & nchar(charVec) > cutAt
-    charVec[index] <-
-      paste0(substr(charVec[index], 1, cutAt), "...")
-  }
-
-  charVec
-}
-
-
-#' get nRow
-#'
-#' @param headOnly (logical) if TRUE, set maximal number of rows to n
-#' @param type (character) file type
-#' @param n (numeric) maximal number of rows if headOnly
-getNrow <- function(headOnly, type, n = 3) {
-  if (headOnly) {
-    if (type == "xlsx")
-      return(1:n)
-    else
-      if (type == "ods")
-        return(paste0("A1:C", n))
-    else
-      return(n)
-  } else {
-    if (type %in% c("xlsx", "ods"))
-      return(NULL)
-    else
-      if (type == "xls")
-        return(Inf)
-    else
-      return(-999)
-  }
-}
-
 
 formatForImport <-
   function(df,
@@ -787,34 +736,4 @@ formatColumnNames <- function(df, silent = FALSE) {
 addIncIfDuplicate <- function(vNames, isDuplicate, inc = 1) {
   vNames[isDuplicate] <- paste0(vNames[isDuplicate], ".", inc)
   vNames
-}
-
-
-#' Get Sheet Selection
-#'
-#' @param filepath (character) url or path
-getSheetSelection <- function(filepath) {
-  if (is.null(filepath))
-    return(list())
-
-  fileSplit <- strsplit(filepath, split = "\\.")[[1]]
-  typeOfFile <- fileSplit[length(fileSplit)]
-
-  if (!(typeOfFile %in% c("xls", "xlsx")))
-    return(NULL)
-
-  if (typeOfFile == "xlsx") {
-    # loadWorkbook() is also able to handle url's
-    sheetNames <- loadWorkbook(filepath) %>% names()
-  } else if (typeOfFile == "xls") {
-    sheetNames <- excel_sheets(filepath)
-  }
-
-  if (length(sheetNames) == 0)
-    return(NULL)
-
-  sheets <- 1:length(sheetNames)
-  names(sheets) <- sheetNames
-
-  sheets
 }
