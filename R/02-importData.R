@@ -292,19 +292,18 @@ importDataServer <- function(id,
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
+
                      if (importType == "data") {
                        shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
-                     }
 
-                     if (values$fileImportSuccess == "Data import successful" &&
-                         Sys.getenv("DEV_VERSION") == "TRUE" #&&
-                         #input[["dataSelector-fileSource-source"]] != "file"
-                         ) {
-                       shinyjs::show(ns("downloadDataLink"), asis = TRUE)
-                     } else {
-                       shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                       if (values$fileImportSuccess == "Data import successful" &&
+                           Sys.getenv("DEV_VERSION") == "TRUE") {
+                         shinyjs::show(ns("downloadDataLink"), asis = TRUE)
+                       } else {
+                         shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                       }
                      }
                    }
                  })

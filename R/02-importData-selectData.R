@@ -15,7 +15,6 @@ selectDataUI <- function(id,
   ns <- NS(id)
 
   tagList(
-    if (importType == "data")  tags$hr() else NULL,
     if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
     if (importType == "data")
       checkboxInput(
@@ -52,7 +51,7 @@ selectDataUI <- function(id,
                helpText("Enables data manipulation in the tabs: 'Query with SQL', 'Prepare', or 'Merge'.")
         ))
       ) else NULL,
-    if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL
+    if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL,
   )
 }
 
@@ -129,7 +128,7 @@ selectDataServer <- function(id,
                    }) # end observe loadImport
 
                  observe({
-                   # enable / disable button
+                   logDebug("Enable/Disable keepData button")
                    if (importType == "data") {
                      if (length(values$dataImport) == 0 ||
                          isNotValid(values$errors, values$warnings, ignoreWarnings) ||

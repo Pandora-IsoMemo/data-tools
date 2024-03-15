@@ -44,21 +44,21 @@ selectSourceUI <- function(id,
                choices = sourceChoices,
                selected = defaultSource,
                inline = TRUE)),
-      column(6,
-             align = "right",
-             radioButtons(ns("dataOrLink"),
-                          label = NULL,
-                          choices = c("Load dataset" = "fullData", "Load import link" = "dataLink"),
-                          selected = "fullData",
-                          inline = TRUE),
-             if (!isInternet) {
+      if (importType == "data") {
+        column(6,
+               align = "right",
                conditionalPanel(
                  ns = ns,
                  condition = "input.source == 'file'",
-                 helpText("No internet connection!")
+                 radioButtons(ns("dataOrLink"),
+                              label = NULL,
+                              choices = c("Load Dataset" = "fullData", "Load Data Link" = "dataLink"),
+                              selected = "fullData",
+                              inline = TRUE),
+                 if (!isInternet) helpText("No internet connection!") else NULL
                )
-             } else NULL
-      )
+        )
+      } else NULL
     ),
     tags$br(),
     # source == ckan/file/url/model ----
