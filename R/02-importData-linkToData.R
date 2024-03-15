@@ -212,7 +212,7 @@ loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
     expectedFileInZip = parentParams$expectedFileInZip,
     params = list(values = values,
                   dataSource = dataSource,
-                  inputFileSource = fileSourceInputs,
+                  inputFileType = fileSourceInputs,
                   customNames = parentParams$customNames,
                   subFolder = parentParams$subFolder,
                   rPackageName = parentParams$rPackageName,

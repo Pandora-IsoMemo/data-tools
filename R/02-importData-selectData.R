@@ -9,24 +9,15 @@
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @inheritParams importDataServer
 selectDataUI <- function(id,
-                         defaultSource,
-                         ckanFileTypes,
                          batch,
                          outputAsMatrix,
                          importType,
-                         fileExtension = "zip",
-                         isInternet = FALSE,
                          options = importOptions()) {
   ns <- NS(id)
 
   tagList(
-    tags$br(),
-    selectSourceUI(ns("fileSource"),
-                   defaultSource = defaultSource,
-                   ckanFileTypes = ckanFileTypes,
-                   importType = importType,
-                   isInternet = isInternet,
-                   fileExtension = fileExtension),
+    if (importType == "data")  tags$hr() else NULL,
+    if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
     if (importType == "data")
       checkboxInput(
         ns("withRownames"),
@@ -72,18 +63,14 @@ selectDataUI <- function(id,
 #' @param id id of module
 #' @param mergeList (list) list of selected data
 #' @param customNames settings for custom column and row names
-#' @param openPopupReset (reactive) if TRUE reset ckan source inputs
-#' @param internetCon (reactive) TRUE if there is an internet connection
+#' @param dataSource (reactiveValues) path, filename and type, output of \code{selectSourceServer()}
 #' @inheritParams importDataServer
 #' @inheritParams uploadModelServer
 selectDataServer <- function(id,
                              importType = "data",
                              mergeList,
                              customNames,
-                             openPopupReset,
-                             internetCon,
-                             #dataSource,
-                             ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                             dataSource,
                              subFolder = NULL,
                              ignoreWarnings = FALSE,
                              rPackageName = "",
@@ -105,31 +92,17 @@ selectDataServer <- function(id,
                    data = list()
                  )
 
-                 dataSource <- selectSourceServer(
-                   "fileSource",
-                   importType = importType,
-                   openPopupReset = openPopupReset,
-                   internetCon = internetCon,
-                   githubRepo = getGithubMapping(rPackageName),
-                   folderOnGithub = getFolderOnGithub(
-                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
-                     subFolder = subFolder
-                     ),
-                   pathToLocal = getPathToLocal(
-                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
-                     subFolder = subFolder
-                     ),
-                   ckanFileTypes = ckanFileTypes
-                 )
+                 # logic to select sheet ----
+                 selectFileTypeServer("fileType", dataSource)
 
                  # specify file server ----
                  observeEvent(
                    list(
                      dataSource$file,
-                     input[["fileSource-fileType-type"]],
-                     input[["fileSource-fileType-colSep"]],
-                     input[["fileSource-fileType-decSep"]],
-                     input[["fileSource-fileType-sheet"]],
+                     input[["fileType-type"]],
+                     input[["fileType-colSep"]],
+                     input[["fileType-decSep"]],
+                     input[["fileType-sheet"]],
                      customNames$withRownames,
                      customNames$withColnames
                    ),
@@ -137,7 +110,6 @@ selectDataServer <- function(id,
                    {
                      req(dataSource$type)
                      req(dataSource$type != "dataLink")
-                     #req(input[["fileSource-dataOrLink"]] == "fullData")
                      logDebug("Updating values$dataImport")
 
                      values <- loadImport(
@@ -145,8 +117,8 @@ selectDataServer <- function(id,
                        expectedFileInZip = expectedFileInZip,
                        params = list(values = values,
                                      dataSource = dataSource,
-                                     inputFileSource = reactiveValuesToList(
-                                       input)[grepl("fileSource", names(input))],
+                                     inputFileType = reactiveValuesToList(
+                                       input)[grepl("fileType", names(input))],
                                      customNames = customNames,
                                      subFolder = subFolder,
                                      rPackageName = rPackageName,
@@ -162,7 +134,7 @@ selectDataServer <- function(id,
                    if (importType == "data") {
                      if (length(values$dataImport) == 0 ||
                          isNotValid(values$errors, values$warnings, ignoreWarnings) ||
-                         input[["fileSource-source"]] == "remoteModel") {
+                         dataSource$type == "dataLink") {
                        shinyjs::disable(ns("keepData"), asis = TRUE)
                      } else {
                  shinyjs::enable(ns("keepData"), asis = TRUE)

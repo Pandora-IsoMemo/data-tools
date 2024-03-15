@@ -102,15 +102,6 @@ selectSourceUI <- function(id,
       ns = ns,
       remoteModelsUI(ns("remoteModels"))
     ),
-    # filetype (if data import) ----
-    if (importType == "data")  tags$hr() else NULL,
-    if (importType == "data")  {
-      conditionalPanel(
-        condition = "input.dataOrLink == 'fullData'",
-        ns = ns,
-        selectFileTypeUI(ns("fileType"), importType = importType)
-      )
-    } else NULL,
     tags$hr()
   )
 }
@@ -139,9 +130,6 @@ selectSourceServer <- function(id,
                  dataSource <- reactiveValues(file = NULL,
                                               filename = NULL,
                                               type = NULL)
-
-                 # logic to setup ckan ----
-                 selectFileTypeServer("fileType", dataSource)
 
                  observe({
                    req(isTRUE(openPopupReset()))

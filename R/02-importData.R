@@ -112,23 +112,6 @@ importDataServer <- function(id,
                  )
                  internetCon <- reactiveVal(FALSE)
 
-                 # dataSource <- selectSourceServer(
-                 #   "fileSource",
-                 #   importType = importType,
-                 #   openPopupReset = reactive(input$openPopup > 0),
-                 #   internetCon = internetCon,
-                 #   githubRepo = getGithubMapping(rPackageName),
-                 #   folderOnGithub = getFolderOnGithub(
-                 #     mainFolder = getSpecsForRemotes(importType)[["folder"]],
-                 #     subFolder = subFolder
-                 #   ),
-                 #   pathToLocal = getPathToLocal(
-                 #     mainFolder = getSpecsForRemotes(importType)[["folder"]],
-                 #     subFolder = subFolder
-                 #   ),
-                 #   ckanFileTypes = ckanFileTypes
-                 # )
-
                  observe({
                    logDebug("Update withRownames")
                    customNames$withRownames <-
@@ -222,14 +205,28 @@ importDataServer <- function(id,
                    removeModal()
                  })
 
+                 dataSource <- selectSourceServer(
+                   "fileSource",
+                   importType = importType,
+                   openPopupReset = reactive(input$openPopup > 0),
+                   internetCon = internetCon,
+                   githubRepo = getGithubMapping(rPackageName),
+                   folderOnGithub = getFolderOnGithub(
+                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     subFolder = subFolder
+                   ),
+                   pathToLocal = getPathToLocal(
+                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     subFolder = subFolder
+                   ),
+                   ckanFileTypes = ckanFileTypes
+                 )
+
                  values <- selectDataServer(
                    "dataSelector",
                    importType = importType,
-                   ckanFileTypes = ckanFileTypes,
-                   internetCon = internetCon,
-                   openPopupReset = reactive(input$openPopup > 0),
                    ignoreWarnings = ignoreWarnings,
-                   #dataSource = dataSource,
+                   dataSource = dataSource,
                    # parameters required to load data
                    mergeList = mergeList,
                    customNames = customNames,
@@ -399,8 +396,10 @@ importDataServer <- function(id,
                                            ),
                                            importType = importType,
                                            isInternet = internetCon,
-                                           inputFileSource = reactiveValuesToList(
-                                             input)[grepl("dataSelector-fileSource", names(input))],
+                                           # inputFileSource = reactiveValuesToList(
+                                           #   input)[grepl("fileSource", names(input))],
+                                           # inputDataSelector = reactiveValuesToList(
+                                           #   input)[grepl("dataSelector", names(input))],
                                            customNames = customNames,
                                            subFolder = subFolder,
                                            rPackageName = rPackageName,
@@ -553,22 +552,18 @@ importDataDialog <-
         tabPanel(
           "Select",
           tagList(
-            # tags$br(),
-            # selectSourceUI(ns("fileSource"),
-            #                defaultSource = defaultSource,
-            #                ckanFileTypes = ckanFileTypes,
-            #                importType = importType,
-            #                isInternet = isInternet,
-            #                fileExtension = fileExtension),
+            tags$br(),
+            selectSourceUI(ns("fileSource"),
+                           defaultSource = defaultSource,
+                           ckanFileTypes = ckanFileTypes,
+                           importType = importType,
+                           isInternet = isInternet,
+                           fileExtension = fileExtension),
             selectDataUI(
               ns("dataSelector"),
-              defaultSource = defaultSource,
-              ckanFileTypes = ckanFileTypes,
               batch = batch,
               outputAsMatrix = outputAsMatrix,
               importType = importType,
-              fileExtension = fileExtension,
-              isInternet = isInternet,
               options = options
             )
           )
