@@ -4,7 +4,15 @@
 \alias{observeUploadDataLink}
 \title{Observe Upload of a link to import data}
 \usage{
-observeUploadDataLink(id, input, output, session, parentParams, mergeList)
+observeUploadDataLink(
+  id,
+  input,
+  output,
+  session,
+  dataSource,
+  parentParams,
+  mergeList
+)
 }
 \arguments{
 \item{id}{module id}

@@ -177,7 +177,10 @@ selectDataServer <- function(id,
                          fileName = values$fileName,
                          newData = list(data = values$dataImport %>%
                                           formatColumnNames(silent = TRUE),
-                                        source = getSourceInputs(input),
+                                        input = list(
+                                          source = dataSource$input,
+                                          file = getFileInputs(input)
+                                        ),
                                         history = list()),
                          notifications = notifications
                        )
@@ -202,15 +205,23 @@ selectDataServer <- function(id,
                })
 }
 
-getGithubMapping <- function(rPackage) {
+#' Get Github Mapping
+#'
+#' Maps the R package name to the respective Github repository
+#'
+#' @param rPackage (character) name of the R package (as in the Description file)
+getGithubMapping <- function(rPackage = c("BMSCApp", "DataTools", "mpiBpred", "MpiIsoApp",
+                                          "OsteoBioR", "PlotR", "ReSources", "MapR")) {
+  if (rPackage == "") return("")
+
+  rPackage <- match.arg(rPackage)
   switch(rPackage,
          "BMSCApp" = "bmsc-app",
          "DataTools" = "data-tools",
          "mpiBpred" = "bpred",
          "MpiIsoApp" = "iso-app",
          "OsteoBioR" = "osteo-bior",
-         "PlotR" = "plotr",
+         "PlotR" = "PlotR",
          "ReSources" = "resources",
-         "MapR" = "MapR",
-         "")
+         "MapR" = "MapR")
 }

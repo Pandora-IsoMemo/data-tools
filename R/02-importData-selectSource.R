@@ -129,7 +129,8 @@ selectSourceServer <- function(id,
                  ckanPackages <- reactiveVal(data.frame())
                  dataSource <- reactiveValues(file = NULL,
                                               filename = NULL,
-                                              type = NULL)
+                                              type = NULL,
+                                              input = NULL)
 
                  observe({
                    req(isTRUE(openPopupReset()))
@@ -234,6 +235,7 @@ selectSourceServer <- function(id,
                    dataSource$file <- NULL
                    dataSource$filename <- NULL
                    dataSource$type <- NULL
+                   dataSource$input <- NULL
 
                    # Do not reset inputs when switching the input$source!!
                    # This would also reset input values after importing a data link.
@@ -402,7 +404,8 @@ selectSourceServer <- function(id,
                    logDebug("Updating input$remoteModels")
 
                    dataSource <- dataSource %>%
-                     getDataSource(input = pathToRemote(),
+                     getDataSource(input = input,
+                                   pathToFile = pathToRemote(),
                                    type = "remoteModel",
                                    isInternet = internetCon()) %>%
                      addSourceType(importType = importType,

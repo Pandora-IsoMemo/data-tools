@@ -238,6 +238,45 @@ importDataServer <- function(id,
                    expectedFileInZip = expectedFileInZip
                  )
 
+                 # LINK to DATA down-/upload ----
+                 observeDownloadDataLink(id, input = input, output = output, session = session,
+                                         mergeList = mergeList)
+                 valuesFromDataLink <-
+                   observeUploadDataLink(id, input = input, output = output, session = session,
+                                         dataSource = dataSource,
+                                         parentParams = list(
+                                           values = reactiveValues(
+                                             warnings = list(),
+                                             errors = list(),
+                                             fileName = NULL,
+                                             fileImportSuccess = NULL,
+                                             dataImport = NULL,
+                                             preview = NULL,
+                                             data = list()
+                                           ),
+                                           importType = importType,
+                                           isInternet = internetCon,
+                                           # inputFileSource = reactiveValuesToList(
+                                           #   input)[grepl("fileSource", names(input))],
+                                           # inputDataSelector = reactiveValuesToList(
+                                           #   input)[grepl("dataSelector", names(input))],
+                                           customNames = customNames,
+                                           subFolder = subFolder,
+                                           rPackageName = options[["rPackageName"]],
+                                           onlySettings = onlySettings,
+                                           fileExtension = fileExtension,
+                                           expectedFileInZip = expectedFileInZip),
+                                         mergeList
+                   )
+
+                 # see comment from: dataLinkUpload[["load"]]
+                 # observe({
+                 #   logDebug("importData: observe import from link")
+                 #   for (nm in names(valuesFromDataLink)) {
+                 #     values[[nm]] <- valuesFromDataLink[[nm]]
+                 #   }
+                 # }) %>% bindEvent(valuesFromDataLink$dataImport)
+
                  ## disable button accept ----
                  observeEvent(values$dataImport, ignoreNULL = FALSE, {
                    logDebug("Enable/Disable Accept button")
@@ -378,44 +417,6 @@ importDataServer <- function(id,
                                ignoreInit = TRUE)
                  }
                  # END: data preparation ----
-
-                 # LINK to DATA down-/upload ----
-                 observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList)
-                 valuesFromDataLink <-
-                   observeUploadDataLink(id, input = input, output = output, session = session,
-                                         parentParams = list(
-                                           values = reactiveValues(
-                                             warnings = list(),
-                                             errors = list(),
-                                             fileName = NULL,
-                                             fileImportSuccess = NULL,
-                                             dataImport = NULL,
-                                             preview = NULL,
-                                             data = list()
-                                           ),
-                                           importType = importType,
-                                           isInternet = internetCon,
-                                           # inputFileSource = reactiveValuesToList(
-                                           #   input)[grepl("fileSource", names(input))],
-                                           # inputDataSelector = reactiveValuesToList(
-                                           #   input)[grepl("dataSelector", names(input))],
-                                           customNames = customNames,
-                                           subFolder = subFolder,
-                                           rPackageName = options[["rPackageName"]],
-                                           onlySettings = onlySettings,
-                                           fileExtension = fileExtension,
-                                           expectedFileInZip = expectedFileInZip),
-                                         mergeList
-                   )
-
-                 # see comment from: dataLinkUpload[["load"]]
-                 # observe({
-                 #   logDebug("importData: observe import from link")
-                 #   for (nm in names(valuesFromDataLink)) {
-                 #     values[[nm]] <- valuesFromDataLink[[nm]]
-                 #   }
-                 # }) %>% bindEvent(valuesFromDataLink$dataImport)
 
                  ## ACCEPT buttons ----
                  observeEvent(input$accept, {

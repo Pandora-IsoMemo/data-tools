@@ -16,7 +16,10 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList) {
     # add current source selection
     c(
       setNames(object = list(list(data = NULL,
-                                  source = getSourceInputs(input),
+                                  input = list(
+                                    file = getFileInputs(input),
+                                    source = getFileInputs(input, type = "source")
+                                    ),
                                   history = list())),
                nm = nmLastInputs()),
       mergeListExport
@@ -39,14 +42,31 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList) {
   )
 }
 
-getSourceInputs <- function(input) {
+#' Get File Inputs
+#'
+#' Filter all inputs for file inputs or for source inputs
+#'
+#' @param input (reactiveValue) input
+#' @param type (character) type of inputs
+getFileInputs <- function(input, type = c("file", "source")) {
+  type <- match.arg(type)
+
+  pattern <- switch (type,
+                     "file" = "fileType-",
+                     "source" = "fileSource-"
+  )
+
   allInputs <- reactiveValuesToList(input)
 
-  allInputs[names(allInputs)[
-    grepl("fileSource-", names(allInputs)) &
-      !grepl("-repoInfoTable_", names(allInputs)) &
-      !grepl("-shinyjs-", names(allInputs))
+  allInputs <- allInputs[names(allInputs)[
+    !grepl("repoInfoTable_", names(allInputs)) &
+      !grepl("shinyjs-", names(allInputs))
   ]]
+
+  # set pattern dependent on namespace
+  pattern <- ifelse(any(grepl(pattern, names(allInputs))), pattern, "")
+
+  allInputs[names(allInputs)[grepl(pattern, names(allInputs))]]
 }
 
 #' Observe Upload of a link to import data
@@ -57,15 +77,11 @@ getSourceInputs <- function(input) {
 #' @param session session from server function
 #' @param parentParams (list) parentParams
 #' @param mergeList (reactiveVal) list of data imports
-observeUploadDataLink <- function(id, input, output, session, parentParams, mergeList) {
+observeUploadDataLink <- function(id, input, output, session, dataSource, parentParams, mergeList) {
   dataLinkUpload <- reactiveValues(
     import = list(),
     load = 0
   )
-
-  # dataSource <- reactiveValues(file = NULL,
-  #                              filename = NULL,
-  #                              type = NULL)
 
   values <- reactiveValues(
     warnings = list(),
@@ -77,36 +93,35 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
     data = list()
   )
 
-  # observe upload of a link to data from file and read json
+  # observe upload of a dataSource and read json
   observe({
-    req(input[["dataSelector-fileSource-dataOrLink"]] == "dataLink")
-    logDebug("linkToData: observe radioButtons")
+    req(dataSource$type == "dataLink")
+    logDebug("linkToData: observe dataSource$file")
 
     # check if upload is a json file
-    file <- input[["dataSelector-fileSource-file"]]
-    fileType <- file$datapath %>%
+    fileType <- dataSource$filename %>%
       basename() %>%
       getExtension()
 
     req(fileType == "json")
 
     # read json ----
-    dataLinkUpload$import <- jsonlite::read_json(file$datapath, simplifyVector = TRUE)
+    dataLinkUpload$import <- jsonlite::read_json(dataSource$file, simplifyVector = TRUE)
   }) %>%
-    bindEvent(input[["dataSelector-fileSource-file"]])
+    bindEvent(dataSource$file)
 
   observe({
     logDebug("linkToData: observe import")
     req(length(dataLinkUpload$import) > 0)
-
     req(parentParams$isInternet())
 
     linkNames <- dataLinkUpload$import %>%
       names()
-
+browser()
     logDebug("linkToData: load data")
     for (i in linkNames[linkNames != nmLastInputs()]) {
-      loadedSourceInputs <- dataLinkUpload$import[[i]][["source"]]
+      loadedFileInputs <- dataLinkUpload$import[[i]][["input"]][["file"]]
+      loadedSourceInputs <- dataLinkUpload$import[[i]][["input"]][["source"]]
 
       values <- values %>%
         loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
@@ -145,37 +160,10 @@ observeUploadDataLink <- function(id, input, output, session, parentParams, merg
   }) %>%
     bindEvent(dataLinkUpload$import)
 
-  # see comment from: dataLinkUpload[["load"]]
-  # observe({
-  #   req(dataLinkUpload[["load"]] > 0)
-  #   values <- values %>%
-  #     loadFileFromLink(loadedSourceInputs = dataLinkUpload$import[[nmLastInputs()]][["source"]],
-  #                      parentParams = parentParams)
-  # }) %>%
-  #   bindEvent(dataLinkUpload[["load"]])
-
   #return(values)
 }
 
 nmLastInputs <- function() "lastSelectDataInputs"
-
-#' Update User Inputs
-#'
-#' @param id module id
-#' @param input input object from server function
-#' @param output output object from server function
-#' @param session session from server function
-#' @param userInputs (list) list of inputs to be updated
-updateUserInputs <- function(id, input, output, session, userInputs) {
-  ## get and filter input names
-  inputIDs <- names(userInputs)
-  inputIDs <- inputIDs[inputIDs %in% names(input)]
-
-  # update values
-  for (i in 1:length(inputIDs)) {
-    session$sendInputMessage(inputIDs[i], list(value = userInputs[[inputIDs[i]]]))
-  }
-}
 
 #' Load File From Link
 #'
@@ -185,6 +173,7 @@ updateUserInputs <- function(id, input, output, session, userInputs) {
 #' @param loadedSourceInputs (list) user inputs from the dataLink file
 #' @param parentParams (list) list of parameters from parent module
 loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
+  browser()
   loadedSourceInputs <- loadedSourceInputs %>%
     removeNamespacePattern(pattern = c("dataSelector"))
 
@@ -236,4 +225,24 @@ removeNamespacePattern <- function(inputs, pattern) {
   }
 
   return(inputs)
+}
+
+#' Update User Inputs
+#'
+#' @param id module id
+#' @param input input object from server function
+#' @param output output object from server function
+#' @param session session from server function
+#' @param userInputs (list) list of inputs to be updated
+#'
+#' @export
+updateUserInputs <- function(id, input, output, session, userInputs) {
+  ## get and filter input names
+  inputIDs <- names(userInputs)
+  inputIDs <- inputIDs[inputIDs %in% names(input)]
+
+  # update values
+  for (i in 1:length(inputIDs)) {
+    session$sendInputMessage(inputIDs[i], list(value = userInputs[[inputIDs[i]]]))
+  }
 }

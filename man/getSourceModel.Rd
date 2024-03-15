@@ -4,15 +4,14 @@
 \alias{getSourceModel}
 \title{Get Source model}
 \usage{
-getSourceModel(dataSource, input, isInternet)
+getSourceModel(dataSource, input, pathToFile = NULL)
 }
 \arguments{
 \item{dataSource}{(reactiveValues)}
 
 \item{input}{(reactiveValues)}
 
-\item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
-ignored if \code{type = "file"} or \code{type = "remoteModel"}}
+\item{pathToFile}{(character) file path, ignored if \code{type != "remoteModel"}}
 }
 \description{
 Get Source model

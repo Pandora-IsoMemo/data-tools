@@ -5,10 +5,11 @@
 \title{Get Data Source}
 \usage{
 getDataSource(
-  dataSource = list(file = NULL, filename = NULL, type = NULL),
+  dataSource = list(file = NULL, filename = NULL, type = NULL, input = NULL),
   input,
   type = c("ckan", "file", "url", "remoteModel"),
-  isInternet = TRUE
+  isInternet = TRUE,
+  pathToFile = NULL
 )
 }
 \arguments{
@@ -22,6 +23,8 @@ Possible sources for models are: "ckan", "file", "url", "remoteModel".}
 
 \item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
 ignored if \code{type = "file"} or \code{type = "remoteModel"}}
+
+\item{pathToFile}{(character) file path, ignored if \code{type != "remoteModel"}}
 }
 \description{
 Get Data Source

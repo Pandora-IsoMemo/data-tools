@@ -7,23 +7,27 @@
 #'  Possible sources for models are: "ckan", "file", "url", "remoteModel".
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
+#' @param pathToFile (character) file path, ignored if \code{type != "remoteModel"}
 getDataSource <- function(dataSource = list(file = NULL,
                                             filename = NULL,
-                                            type = NULL),
+                                            type = NULL,
+                                            input = NULL),
                           input,
                           type = c("ckan", "file", "url", "remoteModel"),
-                          isInternet = TRUE) {
+                          isInternet = TRUE,
+                          pathToFile = NULL) {
   type <- match.arg(type)
 
   # reset
   dataSource$file <- NULL
   dataSource$filename <- NULL
+  dataSource$input <- NULL
 
   dataSource <- switch (type,
                         "ckan" = getSourceCKAN(dataSource, input, isInternet),
-                        "file" = getSourceFile(dataSource, input, isInternet),
+                        "file" = getSourceFile(dataSource, input),
                         "url" = getSourceUrl(dataSource, input, isInternet),
-                        "remoteModel" = getSourceModel(dataSource, input, isInternet),
+                        "remoteModel" = getSourceModel(dataSource, input, pathToFile),
                         dataSource # the reset value as default
   )
 
@@ -73,6 +77,7 @@ getSourceCKAN <- function(dataSource, input, isInternet) {
   # "filename" will be stored in values$fileName
   dataSource$file <- resource$url
   dataSource$filename <- basename(resource$url)
+  dataSource$input <- getFileInputs(input, type = "source")
 
   return(dataSource)
 }
@@ -80,7 +85,7 @@ getSourceCKAN <- function(dataSource, input, isInternet) {
 #' Get Source File
 #'
 #' @inheritParams getDataSource
-getSourceFile <- function(dataSource, input, isInternet) {
+getSourceFile <- function(dataSource, input) {
   inFile <- input$file
 
   if (is.null(inFile)) return(dataSource)
@@ -89,6 +94,7 @@ getSourceFile <- function(dataSource, input, isInternet) {
   # "filename" will be stored in values$fileName
   dataSource$file <- inFile$datapath
   dataSource$filename <- inFile$name
+  dataSource$input <- getFileInputs(input, type = "source")
 
   return(dataSource)
 }
@@ -112,6 +118,7 @@ getSourceUrl <- function(dataSource, input, isInternet) {
   # "filename" will be stored in values$fileName
   dataSource$file <- tmp
   dataSource$filename <- basename(input$url)
+  dataSource$input <- getFileInputs(input, type = "source")
 
   return(dataSource)
 }
@@ -119,11 +126,12 @@ getSourceUrl <- function(dataSource, input, isInternet) {
 #' Get Source model
 #'
 #' @inheritParams getDataSource
-getSourceModel <- function(dataSource, input, isInternet) {
-  if (is.null(input)) return(dataSource)
+getSourceModel <- function(dataSource, input, pathToFile = NULL) {
+  if (is.null(pathToFile)) return(dataSource)
 
-  dataSource$file <- input
-  dataSource$filename <- basename(input)
+  dataSource$file <- pathToFile
+  dataSource$filename <- basename(pathToFile)
+  dataSource$input <- getFileInputs(input, type = "source")
 
   return(dataSource)
 }
