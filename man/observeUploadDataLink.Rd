@@ -23,6 +23,8 @@ observeUploadDataLink(
 
 \item{session}{session from server function}
 
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
+
 \item{parentParams}{(list) parentParams}
 
 \item{mergeList}{(reactiveVal) list of data imports}

@@ -5,7 +5,7 @@
 \title{Get Data Source}
 \usage{
 getDataSource(
-  dataSource = list(file = NULL, filename = NULL, type = NULL, input = NULL),
+  dataSource = reactiveValues(file = NULL, filename = NULL, type = NULL, input = NULL),
   input,
   type = c("ckan", "file", "url", "remoteModel"),
   isInternet = TRUE,
@@ -13,7 +13,7 @@ getDataSource(
 )
 }
 \arguments{
-\item{dataSource}{(reactiveValues)}
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{input}{(reactiveValues)}
 

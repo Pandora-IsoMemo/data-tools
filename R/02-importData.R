@@ -245,21 +245,7 @@ importDataServer <- function(id,
                    observeUploadDataLink(id, input = input, output = output, session = session,
                                          dataSource = dataSource,
                                          parentParams = list(
-                                           values = reactiveValues(
-                                             warnings = list(),
-                                             errors = list(),
-                                             fileName = NULL,
-                                             fileImportSuccess = NULL,
-                                             dataImport = NULL,
-                                             preview = NULL,
-                                             data = list()
-                                           ),
-                                           importType = importType,
                                            isInternet = internetCon,
-                                           # inputFileSource = reactiveValuesToList(
-                                           #   input)[grepl("fileSource", names(input))],
-                                           # inputDataSelector = reactiveValuesToList(
-                                           #   input)[grepl("dataSelector", names(input))],
                                            customNames = customNames,
                                            subFolder = subFolder,
                                            rPackageName = options[["rPackageName"]],
@@ -268,14 +254,6 @@ importDataServer <- function(id,
                                            expectedFileInZip = expectedFileInZip),
                                          mergeList
                    )
-
-                 # see comment from: dataLinkUpload[["load"]]
-                 # observe({
-                 #   logDebug("importData: observe import from link")
-                 #   for (nm in names(valuesFromDataLink)) {
-                 #     values[[nm]] <- valuesFromDataLink[[nm]]
-                 #   }
-                 # }) %>% bindEvent(valuesFromDataLink$dataImport)
 
                  ## disable button accept ----
                  observeEvent(values$dataImport, ignoreNULL = FALSE, {

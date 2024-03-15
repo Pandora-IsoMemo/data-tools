@@ -7,7 +7,7 @@
 addSourceType(dataSource, importType, source, inputDataOrLink)
 }
 \arguments{
-\item{dataSource}{(reactiveValues)}
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{importType}{(character) what kind of import is expected: either "data", "model" or "zip"}
 

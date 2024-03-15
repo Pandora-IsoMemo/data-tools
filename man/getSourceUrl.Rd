@@ -7,7 +7,7 @@
 getSourceUrl(dataSource, input, isInternet)
 }
 \arguments{
-\item{dataSource}{(reactiveValues)}
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{input}{(reactiveValues)}
 

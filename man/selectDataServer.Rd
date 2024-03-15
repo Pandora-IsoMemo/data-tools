@@ -28,7 +28,7 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
 \item{customNames}{settings for custom column and row names}
 
-\item{dataSource}{(reactiveValues) path, filename and type, output of \code{selectSourceServer()}}
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
 This parameter is ignored if importType == "data"}

@@ -9,7 +9,7 @@ selectFileTypeServer(id, dataSource)
 \arguments{
 \item{id}{id of module}
 
-\item{dataSource}{(reactive) data source from selectSourceServer()}
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 }
 \description{
 Server function of the module

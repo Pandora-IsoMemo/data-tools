@@ -58,7 +58,7 @@ selectFileTypeUI <- function(id, importType) {
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param dataSource (reactive) data source from selectSourceServer()
+#' @inheritParams selectDataServer
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {

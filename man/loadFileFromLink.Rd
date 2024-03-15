@@ -4,12 +4,20 @@
 \alias{loadFileFromLink}
 \title{Load File From Link}
 \usage{
-loadFileFromLink(values, loadedSourceInputs, parentParams)
+loadFileFromLink(
+  values = reactiveValues(warnings = list(), errors = list(), fileName = NULL,
+    fileImportSuccess = NULL, dataImport = NULL, preview = NULL, data = list()),
+  loadedSourceInputs,
+  loadedFileInputs,
+  parentParams
+)
 }
 \arguments{
 \item{values}{(reactiveValues)}
 
-\item{loadedSourceInputs}{(list) user inputs from the dataLink file}
+\item{loadedSourceInputs}{(list) user inputs from the dataLink file specifying the source}
+
+\item{loadedFileInputs}{(list) user inputs from the dataLink file specifying the file}
 
 \item{parentParams}{(list) list of parameters from parent module}
 }

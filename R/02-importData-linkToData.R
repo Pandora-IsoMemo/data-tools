@@ -56,7 +56,11 @@ getFileInputs <- function(input, type = c("file", "source")) {
                      "source" = "fileSource-"
   )
 
-  allInputs <- reactiveValuesToList(input)
+  if (inherits(input, "reactivevalues")) {
+    allInputs <- reactiveValuesToList(input)
+  } else {
+    allInputs <- input
+  }
 
   allInputs <- allInputs[names(allInputs)[
     !grepl("repoInfoTable_", names(allInputs)) &
@@ -77,20 +81,11 @@ getFileInputs <- function(input, type = c("file", "source")) {
 #' @param session session from server function
 #' @param parentParams (list) parentParams
 #' @param mergeList (reactiveVal) list of data imports
+#' @inheritParams selectDataServer
 observeUploadDataLink <- function(id, input, output, session, dataSource, parentParams, mergeList) {
   dataLinkUpload <- reactiveValues(
     import = list(),
     load = 0
-  )
-
-  values <- reactiveValues(
-    warnings = list(),
-    errors = list(),
-    fileName = NULL,
-    fileImportSuccess = NULL,
-    dataImport = NULL,
-    preview = NULL,
-    data = list()
   )
 
   # observe upload of a dataSource and read json
@@ -117,17 +112,16 @@ observeUploadDataLink <- function(id, input, output, session, dataSource, parent
 
     linkNames <- dataLinkUpload$import %>%
       names()
-browser()
+
     logDebug("linkToData: load data")
     for (i in linkNames[linkNames != nmLastInputs()]) {
       loadedFileInputs <- dataLinkUpload$import[[i]][["input"]][["file"]]
       loadedSourceInputs <- dataLinkUpload$import[[i]][["input"]][["source"]]
 
-      values <- values %>%
-        loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
-                         parentParams = parentParams)
+      values <- loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
+                                 loadedFileInputs = loadedFileInputs,
+                                 parentParams = parentParams)
 
-      # catch error of import?? ----
       req(values$dataImport)
       # update mergeList() ----
       newMergeList <-
@@ -170,29 +164,34 @@ nmLastInputs <- function() "lastSelectDataInputs"
 #' Load a file a link points to
 #'
 #' @param values (reactiveValues)
-#' @param loadedSourceInputs (list) user inputs from the dataLink file
+#' @param loadedSourceInputs (list) user inputs from the dataLink file specifying the source
+#' @param loadedFileInputs (list) user inputs from the dataLink file specifying the file
 #' @param parentParams (list) list of parameters from parent module
-loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
-  browser()
+loadFileFromLink <- function(values = reactiveValues(warnings = list(),
+                                                     errors = list(),
+                                                     fileName = NULL,
+                                                     fileImportSuccess = NULL,
+                                                     dataImport = NULL,
+                                                     preview = NULL,
+                                                     data = list()),
+                             loadedSourceInputs,
+                             loadedFileInputs,
+                             parentParams) {
   loadedSourceInputs <- loadedSourceInputs %>%
-    removeNamespacePattern(pattern = c("dataSelector"))
+    removeNamespacePattern(pattern = c("dataSelector")) %>%
+    removeNamespacePattern(pattern = c("fileSource"))
 
   # load only online data
-  if (!(loadedSourceInputs[["fileSource-source"]] %in% c("ckan", "url"))) {
+  if (!(loadedSourceInputs[["source"]] %in% c("ckan", "url"))) {
     return(values)
   }
 
-  # filter inputs
-  fileSourceInputs <- loadedSourceInputs[names(loadedSourceInputs)[
-    grepl("fileSource", names(loadedSourceInputs))
-  ]]
-
   # get file (path) and filename
-  dataSource <- getDataSource(input = fileSourceInputs %>%
-                                removeNamespacePattern(pattern = c("fileSource")),
-                              type = fileSourceInputs[["fileSource-source"]]) %>%
-    addSourceType(importType = parentParams$importType,
-                  source = fileSourceInputs[["fileSource-source"]],
+  dataSource <- getDataSource(input = loadedSourceInputs,
+                              type = loadedSourceInputs[["source"]],
+                              isInternet = parentParams$isInternet) %>%
+    addSourceType(importType = "data",
+                  source = loadedSourceInputs[["source"]],
                   inputDataOrLink = "fullData")
 
   # load data
@@ -201,7 +200,7 @@ loadFileFromLink <- function(values, loadedSourceInputs, parentParams) {
     expectedFileInZip = parentParams$expectedFileInZip,
     params = list(values = values,
                   dataSource = dataSource,
-                  inputFileType = fileSourceInputs,
+                  inputFileType = loadedFileInputs,
                   customNames = parentParams$customNames,
                   subFolder = parentParams$subFolder,
                   rPackageName = parentParams$rPackageName,

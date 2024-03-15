@@ -1,6 +1,6 @@
 #' Get Data Source
 #'
-#' @param dataSource (reactiveValues)
+#' @inheritParams selectDataServer
 #' @param input (reactiveValues)
 #' @param type (character) source of import, one of "ckan", "file", "url", "remoteModel".
 #'  Possible sources for data are: "ckan", "file", "url".
@@ -8,10 +8,10 @@
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @param pathToFile (character) file path, ignored if \code{type != "remoteModel"}
-getDataSource <- function(dataSource = list(file = NULL,
-                                            filename = NULL,
-                                            type = NULL,
-                                            input = NULL),
+getDataSource <- function(dataSource = reactiveValues(file = NULL,
+                                                      filename = NULL,
+                                                      type = NULL,
+                                                      input = NULL),
                           input,
                           type = c("ckan", "file", "url", "remoteModel"),
                           isInternet = TRUE,
@@ -36,7 +36,7 @@ getDataSource <- function(dataSource = list(file = NULL,
 
 #' Get Source Type
 #'
-#' @param dataSource (reactiveValues)
+#' @inheritParams selectDataServer
 #' @param importType (character) what kind of import is expected: either "data", "model" or "zip"
 #' @param source (character) selected option to load data from: either "ckan", "file", "url" or "remoteModel"
 #' @param inputDataOrLink (character) either "fullData" or "dataLink" option

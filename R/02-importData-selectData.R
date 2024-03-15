@@ -62,7 +62,7 @@ selectDataUI <- function(id,
 #' @param id id of module
 #' @param mergeList (list) list of selected data
 #' @param customNames settings for custom column and row names
-#' @param dataSource (reactiveValues) path, filename and type, output of \code{selectSourceServer()}
+#' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
 #' @inheritParams importDataServer
 #' @inheritParams uploadModelServer
 selectDataServer <- function(id,
