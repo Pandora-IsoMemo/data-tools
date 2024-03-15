@@ -29,8 +29,10 @@ downloadModelServer(
 
 \item{model}{(reactive) model output object}
 
-\item{rPackageName}{(character) name of the package (as in the description file) in which this
-module is applied, e.g. "mpiBpred"}
+\item{rPackageName}{(character) name of the package (as in the Description file) in which this
+module is called. If not NULL, than the uploaded file must be a downloaded file
+from the R package where \code{importDataServer} was called. This parameter is ignored if
+\code{importType == "data"}.}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 

@@ -15,8 +15,9 @@ importDataUI <- function(id, label = "Import Data") {
 #'
 #' Extra options for the import module.
 #'
-#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
-#'  from the R package where \code{importDataServer} is called. This parameter is ignored if
+#' @param rPackageName (character) name of the package (as in the Description file) in which this
+#'  module is called. If not NULL, than the uploaded file must be a downloaded file
+#'  from the R package where \code{importDataServer} was called. This parameter is ignored if
 #'  \code{importType == "data"}.
 #' @param customHelpText (list) A help text element that can be added to a UI definition. Output of
 #'  \code{shiny::helpText(...)}.
@@ -94,14 +95,13 @@ importDataServer <- function(id,
 
   if (!is.null(mainFolder)) warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
 
+  # check new options param as long as we need param "rPackageName"
+  if (options[["rPackageName"]] == "" && rPackageName != "") {
+    options[["rPackageName"]] <- rPackageName
+  }
+
   moduleServer(id,
                function(input, output, session) {
-                 # check new options param as long as we need param "rPackageName"
-                 if (options[["rPackageName"]] == "" && rPackageName != "") {
-                   options[["rPackageName"]] <- rPackageName
-                 }
-                 # end check
-
                  ns <- session$ns
                  mergeList <- reactiveVal(list())
                  customNames <- reactiveValues(
@@ -210,7 +210,7 @@ importDataServer <- function(id,
                    importType = importType,
                    openPopupReset = reactive(input$openPopup > 0),
                    internetCon = internetCon,
-                   githubRepo = getGithubMapping(rPackageName),
+                   githubRepo = getGithubMapping(options[["rPackageName"]]),
                    folderOnGithub = getFolderOnGithub(
                      mainFolder = getSpecsForRemotes(importType)[["folder"]],
                      subFolder = subFolder
@@ -402,7 +402,7 @@ importDataServer <- function(id,
                                            #   input)[grepl("dataSelector", names(input))],
                                            customNames = customNames,
                                            subFolder = subFolder,
-                                           rPackageName = rPackageName,
+                                           rPackageName = options[["rPackageName"]],
                                            onlySettings = onlySettings,
                                            fileExtension = fileExtension,
                                            expectedFileInZip = expectedFileInZip),
