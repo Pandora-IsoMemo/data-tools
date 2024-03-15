@@ -562,7 +562,7 @@ customImportChecks <- function(warnings,
                         customErrorChecks,
                         type = "import") {
   if (length(df) == 0 && length(errors$load) == 0) {
-    errors$load <- "File was reset. Please load a file!"
+    errors$load <- "No data. Please load a file!"
   }
 
   ## Import valid?

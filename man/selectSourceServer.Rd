@@ -21,6 +21,10 @@ selectSourceServer(
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
+\item{openPopupReset}{(reactive) TRUE if popup is (re-)opened}
+
+\item{internetCon}{(reactive) TRUE if there is an internet connection}
+
 \item{githubRepo}{(character) name of used github repository, e.g. "bpred"}
 
 \item{folderOnGithub}{(character) folder on github where remote files are stored. This should

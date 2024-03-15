@@ -52,7 +52,7 @@ selectDataUI <- function(id,
                helpText("Enables data manipulation in the tabs: 'Query with SQL', 'Prepare', or 'Merge'.")
         ))
       ) else NULL,
-    if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL,
+    if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL
   )
 }
 
