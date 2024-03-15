@@ -157,7 +157,6 @@ importDataServer <- function(id,
                    shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    if (
-                     #importType != "data" ||
                      Sys.getenv("DEV_VERSION") != "TRUE") {
                      shinyjs::hide(ns("dataSelector-fileSource-dataOrLink"), asis = TRUE)
                    }

@@ -189,7 +189,7 @@ loadFileFromLink <- function(values = reactiveValues(warnings = list(),
   # get file (path) and filename
   dataSource <- getDataSource(input = loadedSourceInputs,
                               type = loadedSourceInputs[["source"]],
-                              isInternet = parentParams$isInternet) %>%
+                              isInternet = TRUE) %>%
     addSourceType(importType = "data",
                   source = loadedSourceInputs[["source"]],
                   inputDataOrLink = "fullData")

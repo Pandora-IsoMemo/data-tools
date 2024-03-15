@@ -15,7 +15,7 @@ selectDataUI <- function(id,
   ns <- NS(id)
 
   tagList(
-    if (importType == "data")  selectFileTypeUI(ns("fileType"), importType = importType) else NULL,
+    if (importType == "data")  selectFileTypeUI(ns("fileType")) else NULL,
     if (importType == "data")
       checkboxInput(
         ns("withRownames"),
@@ -36,6 +36,7 @@ selectDataUI <- function(id,
         "The first column in your file needs to contain the observation names from the target table."
       )
     } else NULL,
+    # show warnings for data and model import!
     div(
       style = "height: 9em",
       div(class = "text-warning", uiOutput(ns("warning"))),

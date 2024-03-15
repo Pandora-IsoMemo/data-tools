@@ -5,25 +5,19 @@
 #' UI of the module
 #'
 #' @param id id of module
-#' @inheritParams importDataServer
-selectFileTypeUI <- function(id, importType) {
+selectFileTypeUI <- function(id) {
   ns <- NS(id)
-
-  fileTypes <- switch(importType,
-                      data = c("xls(x)" = "xlsx",
-                               "csv",
-                               "ods",
-                               "txt"),
-                      model = c("zip"),
-                      zip = c("zip"))
 
   tagList(fluidRow(
     column(4,
            selectInput(
              ns("type"),
              "File type",
-             choices = fileTypes,
-             selected = fileTypes[1]
+             choices = c("xls(x)" = "xlsx",
+                         "csv",
+                         "ods",
+                         "txt"),
+             selected = "xlsx"
            )),
     column(
       8,
