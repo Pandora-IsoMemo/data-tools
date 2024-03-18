@@ -1,3 +1,22 @@
+downloadDataLinkUI <-
+  function(ns, downloadBtnID = "downloadDataLink", text = "") {
+    fluidRow(
+      column(6,
+             tags$html(
+               HTML(
+                 "<b>Data link</b> &nbsp;&nbsp;"
+               )
+             ),
+             helpText("Download the file path information as .json for later upload.")
+      ),
+      column(6,
+             align = "right",
+             style = "margin-top: 0.5em",
+             downloadButton(ns(downloadBtnID), "Download Data Link")
+      )
+    )
+  }
+
 #' Download a link to import data
 #'
 #' @param id module id
@@ -5,28 +24,35 @@
 #' @param output output object from server function
 #' @param session session from server function
 #' @param mergeList (reactiveVal) list of data imports
-observeDownloadDataLink <- function(id, input, output, session, mergeList) {
+#' @param downloadBtnID (character) ID of the downloadButton
+observeDownloadDataLink <- function(id, input, output, session, mergeList, downloadBtnID = "downloadDataLink") {
   dataLinkDownload <- reactive({
     logDebug("linkToData: create download")
-    # remove data from list objects (only the source will be exported)
-    mergeListExport <- lapply(mergeList(), function(x) {
-      x[["data"]] <- NULL
-      x})
 
-    # add current source selection
+    # export only data links from original (unprocessed) data submitted via button "Create Query with data"
+    mergeListExport <- mergeList() %>% filterUnprocessed()
+
+    # remove data from list objects (only the source will be exported)
+    mergeListExport <- lapply(mergeListExport, function(x) {
+      x[["data"]] <- NULL
+      x
+    })
+
+    # add current inputs
     c(
       setNames(object = list(list(data = NULL,
                                   input = list(
-                                    file = getFileInputs(input),
-                                    source = getFileInputs(input, type = "source")
-                                    ),
-                                  history = list())),
+                                    file = getFileInputs(input, type = "file"),
+                                    source = getFileInputs(input, type = "source"),
+                                    query = getFileInputs(input, type = "query")
+                                    )
+                                  )),
                nm = nmLastInputs()),
       mergeListExport
     )
   })
 
-  output$downloadDataLink <- downloadHandler(
+  output[[downloadBtnID]] <- downloadHandler(
     filename = function() {
       paste(round(Sys.time()) %>%
               gsub(pattern = ":", replacement = "-") %>%
@@ -42,18 +68,30 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList) {
   )
 }
 
+#' Filter Unprocessed
+#'
+#' @inheritParams selectDataServer
+filterUnprocessed <- function(mergeList) {
+  if (length(mergeList) == 0) return(mergeList)
+
+  mergeList[sapply(mergeList, function(x) {
+    !is.null(attr(x, "unprocessed")) && attr(x, "unprocessed")
+  })]
+}
+
 #' Get File Inputs
 #'
 #' Filter all inputs for file inputs or for source inputs
 #'
 #' @param input (reactiveValue) input
 #' @param type (character) type of inputs
-getFileInputs <- function(input, type = c("file", "source")) {
+getFileInputs <- function(input, type = c("file", "source", "query")) {
   type <- match.arg(type)
 
   pattern <- switch (type,
                      "file" = "fileType-",
-                     "source" = "fileSource-"
+                     "source" = "fileSource-",
+                     "query" = "dataQuerier-"
   )
 
   if (inherits(input, "reactivevalues")) {
@@ -64,7 +102,10 @@ getFileInputs <- function(input, type = c("file", "source")) {
 
   allInputs <- allInputs[names(allInputs)[
     !grepl("repoInfoTable_", names(allInputs)) &
-      !grepl("shinyjs-", names(allInputs))
+      !grepl("shinyjs-", names(allInputs)) &
+      !grepl("inMemoryTables_", names(allInputs)) &
+      !grepl("inMemoryColumns_", names(allInputs)) &
+      !grepl("previewDat-", names(allInputs))
   ]]
 
   # set pattern dependent on namespace
@@ -110,10 +151,34 @@ observeUploadDataLink <- function(id, input, output, session, dataSource, parent
     req(length(dataLinkUpload$import) > 0)
     req(parentParams$isInternet())
 
+    # update user inputs ----
+    logDebug("linkToData: update user inputs")
+    lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
+    if (!is.null(lastUserInputValues) &&
+        "input" %in% names(lastUserInputValues) &&
+        length(lastUserInputValues[["input"]]) > 0) {
+      for (nm in names(lastUserInputValues[["input"]])) {
+        updateUserInputs(id, input = input, output = output, session = session,
+                         userInputs = lastUserInputValues[["input"]][[nm]])
+      }
+
+      # implicit update of input$sqlCommand is not working
+      # -> explecitly reset value to allow update with query from dataLink
+      updateAceEditor(session = session,
+                      "dataQuerier-sqlCommand",
+                      value = "")
+      # -> send queryString via attr
+      if ("query" %in% names(lastUserInputValues[["input"]])) {
+        sqlCommandInput <- lastUserInputValues[["input"]][["query"]][["dataQuerier-sqlCommand"]]
+      } else {
+        sqlCommandInput <- ""
+      }
+    }
+
+    # update mergeList() ----
+    logDebug("linkToData: load data")
     linkNames <- dataLinkUpload$import %>%
       names()
-
-    logDebug("linkToData: load data")
     for (i in linkNames[linkNames != nmLastInputs()]) {
       loadedFileInputs <- dataLinkUpload$import[[i]][["input"]][["file"]]
       loadedSourceInputs <- dataLinkUpload$import[[i]][["input"]][["source"]]
@@ -123,33 +188,25 @@ observeUploadDataLink <- function(id, input, output, session, dataSource, parent
                                  parentParams = parentParams)
 
       req(values$dataImport)
-      # update mergeList() ----
+      newData <- list(data = values$dataImport %>%
+                        formatColumnNames(silent = TRUE),
+                      input = list(
+                        file = loadedFileInputs,
+                        source = loadedSourceInputs
+                      ))
+      # enables download of data links:
+      attr(newData, "unprocessed") <- TRUE
+      # send queryString for input$sqlCommand via attr:
+      if (sqlCommandInput != "") attr(newData, "sqlCommandInput") <- sqlCommandInput
+
       newMergeList <-
         updateMergeList(
           mergeList = mergeList(),
           fileName = values$fileName,
-          newData = list(data = values$dataImport %>%
-                           formatColumnNames(silent = TRUE),
-                         source = loadedSourceInputs,
-                         history = list()),
+          newData = newData,
           notifications = c()
         )
       mergeList(newMergeList$mergeList)
-    }
-
-    # update user inputs ----
-    logDebug("linkToData: update user inputs")
-    lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
-    if (!is.null(lastUserInputValues) &&
-        "source" %in% names(lastUserInputValues) &&
-        length(lastUserInputValues[["source"]]) > 0) {
-
-      updateUserInputs(id, input = input, output = output, session = session,
-                       userInputs = lastUserInputValues[["source"]])
-
-      # directly loading the file is not working
-      # the file is currently reset when switching between radioButtons "Pandora Platform", "File", "URL"
-      #dataLinkUpload[["load"]] <- dataLinkUpload[["load"]] + 1
     }
   }) %>%
     bindEvent(dataLinkUpload$import)

@@ -15,44 +15,61 @@ selectDataUI <- function(id,
   ns <- NS(id)
 
   tagList(
-    if (importType == "data")  selectFileTypeUI(ns("fileType")) else NULL,
-    if (importType == "data")
-      checkboxInput(
-        ns("withRownames"),
-        paste(if (batch)
-          "Second"
-          else
-            "First", "column contains rownames")
-      ) else NULL,
-    # check logic for second column
-    if (importType == "data" && outputAsMatrix) {
-      checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
-    } else if (importType == "data") {
-      helpText("The first row in your file needs to contain column names.")
-    } else NULL,
-    customHelpText,
-    if (importType == "data" && batch) {
-      helpText(
-        "The first column in your file needs to contain the observation names from the target table."
+    fluidRow(
+      column(6,
+             if (importType == "data")
+               checkboxInput(
+                 ns("withRownames"),
+                 paste(if (batch)
+                   "Second"
+                   else
+                     "First", "column contains rownames")
+               ) else NULL,
+             # check logic for second column
+             if (importType == "data" && outputAsMatrix) {
+               checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
+             } else if (importType == "data") {
+               helpText("The first row in your file needs to contain column names.")
+             } else NULL,
+             customHelpText,
+             if (importType == "data" && batch) {
+               helpText(
+                 "The first column in your file needs to contain the observation names from the target table."
+               )
+             } else NULL,
+             # show warnings for data and model import!
+             div(
+               style = "height: 9em",
+               div(class = "text-warning", uiOutput(ns("warning"))),
+               div(class = "text-danger", uiOutput(ns("error"))),
+               div(class = "text-success", uiOutput(ns("success")))
+             )),
+      column(6,
+             if (importType == "data")  selectFileTypeUI(ns("fileType")) else NULL
       )
-    } else NULL,
-    # show warnings for data and model import!
-    div(
-      style = "height: 9em",
-      div(class = "text-warning", uiOutput(ns("warning"))),
-      div(class = "text-danger", uiOutput(ns("error"))),
-      div(class = "text-success", uiOutput(ns("success")))
-    ),
+      ),
     if (importType == "data")
       div(
-        fluidRow(column(width = 4,
-          actionButton(ns("keepData"), "Submit for data preparation")
-        ),
-        column(width = 8,
-               helpText("Enables data manipulation in the tabs: 'Query with SQL', 'Prepare', or 'Merge'.")
-        ))
-      ) else NULL,
-    if (importType == "data") previewDataUI(ns("previewDat"), title = "Preview data") else NULL
+        previewDataUI(ns("previewDat"), title = "Preview data"),
+        downloadDataLinkUI(ns = ns,
+                           text = "Download the file path information as .json for later upload."),
+        fluidRow(
+          column(6,
+                 tags$html(
+                   HTML(
+                     "<b>Data processing</b> &nbsp;&nbsp; (Optional)"
+                   )
+                 ),
+                 helpText("Use the loaded file for data processing in the tabs: 'Query with SQL' or 'Prepare' / 'Merge'.")
+          ),
+          column(6,
+                 align = "right",
+                 style = "margin-top: 1.5em",
+                 actionButton(ns("keepDataForQuery"), "Create Query with data"),
+                 actionButton(ns("keepData"), "Prepare / Merge data")
+          )
+        )
+      ) else NULL
   )
 }
 
@@ -60,7 +77,8 @@ selectDataUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param mergeList (list) list of selected data
+#' @param mergeList (reactiveVal) list of data imports submitted for data processing via buttons
+#'  'Create Query with data' or 'Prepare / Merge data'
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
 #' @inheritParams importDataServer
@@ -135,8 +153,10 @@ selectDataServer <- function(id,
                          isNotValid(values$errors, values$warnings, ignoreWarnings) ||
                          dataSource$type == "dataLink") {
                        shinyjs::disable(ns("keepData"), asis = TRUE)
+                       shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
                      } else {
-                 shinyjs::enable(ns("keepData"), asis = TRUE)
+                       shinyjs::enable(ns("keepData"), asis = TRUE)
+                       shinyjs::enable(ns("keepDataForQuery"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
                        values$preview <- values$dataImport
@@ -162,12 +182,50 @@ selectDataServer <- function(id,
                    previewDataServer("previewDat", dat = reactive(values$preview))
 
                    ## button keep data ----
-                   observeEvent(input$keepData, {
+                   newDataForMergeList <- reactiveVal(NULL)
+
+                   observe({
                      logDebug("Updating input$keepData")
+
+                     newData <- list(data = values$dataImport %>%
+                                       formatColumnNames(silent = TRUE),
+                                     input = list(
+                                       source = dataSource$input,
+                                       file = getFileInputs(input)
+                                     ))
+                     attr(newData, "unprocessed") <- FALSE # disables download of data links
+
+                     newDataForMergeList(newData)
+
+                     # disable "keepData" to prevent loading data twice
+                     shinyjs::disable(ns("keepData"), asis = TRUE)
+                   }) %>%
+                     bindEvent(input$keepData)
+
+                   observe({
+                     logDebug("Updating input$keepDataForQuery")
+
+                     newData <- list(data = values$dataImport %>%
+                                       formatColumnNames(silent = TRUE),
+                                     input = list(
+                                       source = dataSource$input,
+                                       file = getFileInputs(input)
+                                     ))
+                     attr(newData, "unprocessed") <- TRUE # enables download of data links
+
+                     newDataForMergeList(newData)
+
+                     # disable "keepData" to prevent loading data twice
+                     shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
+                   }) %>%
+                     bindEvent(input$keepDataForQuery)
+
+                   observe({
+                     logDebug("Updating mergeList()")
                      notifications <- c()
                      if (customNames$withRownames) {
                        notifications <- c(notifications,
-                                          "Rownames are not preserved when applying data preparation.")
+                                          "Rownames are not preserved when applying data processing.")
                      }
 
                      # update mergeList() ----
@@ -175,30 +233,21 @@ selectDataServer <- function(id,
                        updateMergeList(
                          mergeList = mergeList(),
                          fileName = values$fileName,
-                         newData = list(data = values$dataImport %>%
-                                          formatColumnNames(silent = TRUE),
-                                        input = list(
-                                          source = dataSource$input,
-                                          file = getFileInputs(input)
-                                        ),
-                                        history = list()),
+                         newData = newDataForMergeList(),
                          notifications = notifications
                        )
                      mergeList(newMergeList$mergeList)
                      notifications <- newMergeList$notifications
 
-                     showNotification(HTML(sprintf(
-                       "Submitted files: <br>%s",
-                       paste(names(mergeList()), collapse = ",<br>")
-                     )),
-                     type = "message")
+                     showNotification(HTML(sprintf("File for data processing: <br>%s",
+                                                   values$fileName)),
+                                      type = "message")
 
                      if (length(notifications) > 0) {
                        shinyjs::info(paste0(notifications, collapse = "\n"))
                      }
-                     # disable "keepData" to prevent loading data twice
-                     shinyjs::disable(ns("keepData"), asis = TRUE)
-                   })
+                   }) %>%
+                     bindEvent(newDataForMergeList())
                  }
 
                  values

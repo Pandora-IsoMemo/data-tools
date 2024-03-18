@@ -24,7 +24,8 @@ selectDataServer(
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
-\item{mergeList}{(list) list of selected data}
+\item{mergeList}{(reactiveVal) list of data imports submitted for data processing via buttons
+'Create Query with data' or 'Prepare / Merge data'}
 
 \item{customNames}{settings for custom column and row names}
 

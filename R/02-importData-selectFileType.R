@@ -8,44 +8,39 @@
 selectFileTypeUI <- function(id) {
   ns <- NS(id)
 
-  tagList(fluidRow(
-    column(4,
-           selectInput(
-             ns("type"),
-             "File type",
-             choices = c("xls(x)" = "xlsx",
-                         "csv",
-                         "ods",
-                         "txt"),
-             selected = "xlsx"
-           )),
-    column(
-      8,
-      conditionalPanel(
-        condition = paste0("input.type == 'csv' || input.type == 'txt'"),
-        ns = ns,
-        fluidRow(column(
-          width = 5,
-          textInput(ns("colSep"), "column separator:", value = ",")
-        ),
-        column(
-          width = 5,
-          textInput(ns("decSep"), "decimal separator:", value = ".")
-        ))
-      ),
-      conditionalPanel(
-        condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
-        ns = ns,
-        selectInput(
-          ns("sheet"),
-          "Sheet",
-          selected = 1,
-          choices = 1:10,
-          width = "100%"
-        )
-      )
+  tagList(
+    fluidRow(
+      column(6,
+             selectInput(
+               ns("type"),
+               "File type",
+               choices = c("xls(x)" = "xlsx",
+                           "csv",
+                           "ods",
+                           "txt"),
+               selected = "xlsx"
+             )
+             ),
+      column(6,
+             conditionalPanel(
+               condition = paste0("input.type == 'csv' || input.type == 'txt'"),
+               ns = ns,
+               textInput(ns("colSep"), "column separator:", value = ","),
+               textInput(ns("decSep"), "decimal separator:", value = ".")
+             ),
+             conditionalPanel(
+               condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
+               ns = ns,
+               selectInput(
+                 ns("sheet"),
+                 "Sheet",
+                 selected = 1,
+                 choices = 1:10
+               )
+             )
+             )
     )
-  ))
+    )
 }
 
 #' Select File Type Server

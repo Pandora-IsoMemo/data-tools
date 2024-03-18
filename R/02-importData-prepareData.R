@@ -460,8 +460,7 @@ splitColumnsServer <- function(id, preparedData) {
 #' @param notifications (character) previous notifications
 updateMergeList <- function(mergeList, fileName, newData, notifications = "") {
   if (length(mergeList) > 0 && fileName %in% names(mergeList)) {
-    mergeList[[fileName]] <- list(data = newData$data,
-                                  history = newData$history)
+    mergeList[[fileName]] <- newData
     notifications <- c(notifications,
                        "File was already selected and reloaded successfully now.")
   } else {

@@ -271,7 +271,6 @@ mergeDataServer <- function(id, mergeList) {
                    message = 'merging data ...')
 
                    # UPDATE MERGELIST ----
-                   # TO DO: keep inputs ----
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$fileNameJoined,
                                                    newData = list(data = joinedResult$data,

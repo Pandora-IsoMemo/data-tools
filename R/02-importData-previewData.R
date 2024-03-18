@@ -20,7 +20,8 @@ previewDataUI <- function(id, title = "Preview data") {
     fluidRow(column(12,
                     dataTableOutput(ns(
                       "preview"
-                    ))))
+                    )))),
+    tags$br(), tags$br()
   )
 }
 

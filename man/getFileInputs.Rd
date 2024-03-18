@@ -4,7 +4,7 @@
 \alias{getFileInputs}
 \title{Get File Inputs}
 \usage{
-getFileInputs(input, type = c("file", "source"))
+getFileInputs(input, type = c("file", "source", "query"))
 }
 \arguments{
 \item{input}{(reactiveValue) input}

@@ -147,8 +147,10 @@ importDataServer <- function(id,
                      )
                    )
 
-                   shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("dataSelector-keepData"), asis = TRUE)
+                   shinyjs::disable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
+                   shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
+                   shinyjs::disable(ns("dataQuerier-downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
                    shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::disable(ns("acceptMerged"), asis = TRUE)
@@ -156,10 +158,6 @@ importDataServer <- function(id,
                    shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                   if (
-                     Sys.getenv("DEV_VERSION") != "TRUE") {
-                     shinyjs::hide(ns("dataSelector-fileSource-dataOrLink"), asis = TRUE)
-                   }
                  })
 
                  observeEvent(input$tabImport, {
@@ -169,13 +167,11 @@ importDataServer <- function(id,
                      shinyjs::show(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                     shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                    } else if (input$tabImport == "Merge") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::show(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
-                     shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                    } else if (input$tabImport == "Query with SQL") {
                      shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
@@ -188,13 +184,10 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                      if (!is.null(values$fileImportSuccess) &&
-                         values$fileImportSuccess == "Data import successful" &&
-                         Sys.getenv("DEV_VERSION") == "TRUE"# &&
-                         #input[["dataSelector-fileSource-source"]] != "file"
-                         ) {
-                       shinyjs::show(ns("downloadDataLink"), asis = TRUE)
+                         values$fileImportSuccess == "Data import successful") {
+                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                      } else {
-                       shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                       shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                      }
                    }
                  })
@@ -239,7 +232,13 @@ importDataServer <- function(id,
 
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList)
+                                         mergeList = mergeList,
+                                         downloadBtnID = "dataSelector-downloadDataLink")
+
+                 observeDownloadDataLink(id, input = input, output = output, session = session,
+                                         mergeList = mergeList,
+                                         downloadBtnID = "dataQuerier-downloadDataLink")
+
                  valuesFromDataLink <-
                    observeUploadDataLink(id, input = input, output = output, session = session,
                                          dataSource = dataSource,
@@ -287,22 +286,18 @@ importDataServer <- function(id,
                        isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
                      shinyjs::disable(ns("dataSelector-keepData"), asis = TRUE)
-                     shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
+                     shinyjs::disable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
+                     shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
 
                      if (importType == "data") {
                        shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
+                       shinyjs::enable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
+                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
-
-                       if (values$fileImportSuccess == "Data import successful" &&
-                           Sys.getenv("DEV_VERSION") == "TRUE") {
-                         shinyjs::show(ns("downloadDataLink"), asis = TRUE)
-                       } else {
-                         shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
-                       }
                      }
                    }
                  })
@@ -493,7 +488,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = sprintf("%s (%s)", title, packageVersion("DataTools")),
-      style = if (importType == "data") 'height: 1120px' else 'height: 800px',
+      style = if (importType == "data") 'height: 1100px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
         column(4,
@@ -507,11 +502,10 @@ importDataDialog <-
         column(
           8,
           align = "right",
-          downloadButton(ns("downloadDataLink"), "Download Import Link"),
           actionButton(ns("accept"), "Accept"),
-          if (importType == "data") actionButton(ns("acceptPrepared"), "Accept") else NULL,
-          if (importType == "data") actionButton(ns("acceptMerged"), "Accept Merged") else NULL,
-          if (importType == "data") actionButton(ns("acceptQuery"), "Accept Query") else NULL,
+          if (importType == "data") actionButton(ns("acceptPrepared"), "Accept Prepared Data") else NULL,
+          if (importType == "data") actionButton(ns("acceptMerged"), "Accept Merged Data") else NULL,
+          if (importType == "data") actionButton(ns("acceptQuery"), "Accept Queried Data") else NULL,
           actionButton(ns("cancel"), "Cancel")
         )
       )),
@@ -562,7 +556,7 @@ customImportChecks <- function(warnings,
                         customErrorChecks,
                         type = "import") {
   if (length(df) == 0 && length(errors$load) == 0) {
-    errors$load <- "No data. Please load a file!"
+    errors$load <- "No data. Please load a file and check the file type!"
   }
 
   ## Import valid?

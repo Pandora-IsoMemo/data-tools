@@ -75,7 +75,6 @@ toolsImportServer <- function(id) {
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    importType = "model",
-                   mainFolder = config()[["mainFolder"]],
                    fileExtension = config()[["fileExtension"]],
                    rPackageName = config()[["rPackageName"]]
                  )
