@@ -163,17 +163,17 @@ importDataServer <- function(id,
                  observeEvent(input$tabImport, {
                    logDebug("Updating input$tabImport")
                    if (input$tabImport == "Prepare") {
-                     shinyjs::hide(ns("accept"), asis = TRUE)
+                     #shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::show(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    } else if (input$tabImport == "Merge") {
-                     shinyjs::hide(ns("accept"), asis = TRUE)
+                     #shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::show(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                    } else if (input$tabImport == "Query with SQL") {
-                     shinyjs::hide(ns("accept"), asis = TRUE)
+                     #shinyjs::hide(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::show(ns("acceptQuery"), asis = TRUE)
@@ -397,18 +397,28 @@ importDataServer <- function(id,
 
                    req(values$dataImport)
 
-                   res <- values$dataImport
-                   if (importType == "data") {
-                     res <- res %>%
-                       formatForImport(
-                         outputAsMatrix = outputAsMatrix,
-                         includeSd = input$includeSd,
-                         dfNames = customNames,
-                         silent = TRUE
-                       )
-                   }
+                   # res <- values$dataImport
+                   # if (importType == "data") {
+                   #   res <- res %>%
+                   #     formatForImport(
+                   #       outputAsMatrix = outputAsMatrix,
+                   #       includeSd = input$includeSd,
+                   #       dfNames = customNames,
+                   #       silent = TRUE
+                   #     )
+                   # }
+                   #
+                   # values$data[[values$fileName]] <- res
 
-                   values$data[[values$fileName]] <- res
+                   values <- values %>%
+                     acceptData(importType = importType,
+                                tabname = input[["tabImport"]],
+                                queriedData = queriedData()[[1]],
+                                preparedData = preparedData$data,
+                                joinedData = joinedData()[[1]],
+                                customNames = customNames,
+                                outputAsMatrix = outputAsMatrix)
+
                  })
 
                  if (importType == "data") {
@@ -434,7 +444,8 @@ importDataServer <- function(id,
                      removeOpenGptCon()
                      customNames$withRownames <- FALSE
                      customNames$withColnames <- TRUE
-                     values$data[[names(joinedData())[1]]] <-
+                     values$fileName <- names(joinedData())[1]
+                     values$data[[values$fileName]] <-
                        joinedData()[[1]] %>%
                        formatForImport(
                          outputAsMatrix = outputAsMatrix,
@@ -449,7 +460,8 @@ importDataServer <- function(id,
                      removeOpenGptCon()
                      customNames$withRownames <- FALSE
                      customNames$withColnames <- TRUE
-                     values$data[[names(queriedData())[1]]] <-
+                     values$fileName <- names(queriedData())[1]
+                     values$data[[values$fileName]] <-
                        queriedData()[[1]] %>%
                        formatForImport(
                          outputAsMatrix = outputAsMatrix,
@@ -463,6 +475,52 @@ importDataServer <- function(id,
                  # currently only the data is returned, not the path(s) to the source(s)
                  reactive(values$data)
                })
+}
+
+acceptData <- function(values,
+                       importType,
+                       tabname = input[["tabImport"]],
+                       queriedData = queriedData()[[1]],
+                       preparedData = preparedData$data,
+                       joinedData = joinedData()[[1]],
+                       customNames,
+                       outputAsMatrix) {
+  if (length(values$dataImport) == 0) {
+    values$data <- list()
+    return(values)
+  }
+
+  if (importType != "data") {
+    values$data[[values$fileName]] <- values$dataImport
+    return(values)
+  }
+
+  res <- switch (tabname,
+                 "Select" = values$dataImport,
+                 "Query with SQL" = queriedData,
+                 "Prepare" = preparedData,
+                 "Merge" = joinedData
+  )
+
+  if (length(res) == 0) {
+    values$data <- list()
+    return(values)
+  }
+
+  if (tabname %in% c("Query with SQL", "Merge")) {
+    customNames$withRownames <- FALSE
+    customNames$withColnames <- TRUE
+  }
+
+  values$data[[values$fileName]] <-
+    res %>%
+    formatForImport(
+      outputAsMatrix = outputAsMatrix,
+      includeSd = FALSE,
+      dfNames = customNames
+    )
+
+  return(values)
 }
 
 # import data dialog UI ----
