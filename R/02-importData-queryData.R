@@ -79,6 +79,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  unprocessedData <- reactiveVal(NULL)
 
                  observe({
+                   logDebug("QueryData: observe mergeList()")
                    unprocessedData(mergeList() %>%
                                      filterUnprocessed())
                  }) %>%
@@ -86,7 +87,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  observe({
                    req(length(unprocessedData()) > 0)
-
+                   logDebug("QueryData: update inMemoryDB and input$sqlCommand")
                    tmpDB <- inMemoryDB()
                    # reset db (remove tables if the become "processed data")
                    for (i in dbListTables(tmpDB)) {
@@ -194,6 +195,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  })
 
                  observe({
+                   logDebug("QueryData: observe sqlCommandFromGpt()")
                    updateAceEditor(session = session,
                                    "sqlCommand",
                                    value = sqlCommandFromGpt())
@@ -204,7 +206,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  observe({
                    req(length(unprocessedData()) > 0, input$applyQuery > 0)
-
+                   logDebug("QueryData: observe input$applyQuery")
                    result$data <- NULL
                    result$import <- NULL
                    tmpDB <- inMemoryDB()
@@ -372,7 +374,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                  observe({
                    req(isActiveTab())
-                   logDebug("check internet connection")
+                   logDebug("gptServer: check internet connection")
 
                    internetCon(has_internet())
                    if (internetCon()) {
@@ -401,7 +403,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                  observe({
                    req(internetCon())
-                   logDebug("update gptPrompt")
+                   logDebug("gptServer: update gptPrompt")
                    updateAceEditor(
                      session = session,
                      "gptPrompt",
@@ -415,7 +417,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                  observe({
                    req(internetCon())
-                   logDebug("update input$apiKey")
+                   logDebug("gptServer: update input$apiKey")
 
                    inFile <- input$apiKey
 
@@ -462,7 +464,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                  observe({
                    req(internetCon())
-                   logDebug("button input$applyPrompt")
+                   logDebug("gptServer: button input$applyPrompt")
                    # reset output
                    sqlCommand(NULL)
 
