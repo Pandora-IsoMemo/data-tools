@@ -396,7 +396,7 @@ selectSourceServer <- function(id,
                    pathToLocal = pathToLocal,
                    fileExtension = getSpecsForRemotes(importType)[["extension"]],
                    reloadChoices = openPopupReset,
-                   resetSelected = reactive(input$source),
+                   resetSelected = reactive(list(input$source, openPopupReset())),
                    isInternet = internetCon
                  )
 
