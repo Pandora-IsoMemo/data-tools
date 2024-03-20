@@ -16,7 +16,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableX"),
           "Select table x",
-          choices = c("Please submit data under 'Select' ..." = ""),
+          choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
           width = "100%"
         )
       ),
@@ -28,7 +28,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableY"),
           "Select table y",
-          choices = c("Please submit data under 'Select' ..." = ""),
+          choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
           width = "100%"
         )
       ),

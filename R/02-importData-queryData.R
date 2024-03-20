@@ -267,7 +267,7 @@ gptUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    useShinyjs(),
+    shinyjs::useShinyjs(),
     disabled(checkboxInput(
       ns("useGPT"),
       "Use AI PEITHO data operations",

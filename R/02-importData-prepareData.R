@@ -13,7 +13,7 @@ prepareDataUI <- function(id) {
     selectInput(
       ns("dataToPrep"),
       "Select a File",
-      choices = c("Please submit data under 'Select' ..." = ""),
+      choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
       width = "75%"
     ),
     renameColumnsUI(ns("renameCols")),

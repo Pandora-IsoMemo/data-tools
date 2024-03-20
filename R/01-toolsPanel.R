@@ -3,6 +3,8 @@
 #' @param id module id
 #'
 #' @importFrom stats setNames
+#'
+#' @export
 toolsImportUI <- function(id) {
   ns <- NS(id)
 
@@ -33,6 +35,8 @@ toolsImportUI <- function(id) {
 #' Server function of toolsImport module
 #'
 #' @param id module id
+#'
+#' @export
 toolsImportServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
@@ -122,6 +126,7 @@ toolsImportServer <- function(id) {
 #'
 #' @importFrom stats setNames
 #'
+#' @export
 toolsLoadUI <- function(id) {
   ns <- NS(id)
 
@@ -163,6 +168,8 @@ toolsLoadUI <- function(id) {
 #' Server function of toolsLoad module
 #'
 #' @param id module id
+#'
+#' @export
 toolsLoadServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
