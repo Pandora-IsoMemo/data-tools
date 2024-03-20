@@ -4,15 +4,15 @@ downloadDataLinkUI <-
       column(6,
              tags$html(
                HTML(
-                 "<b>Data link</b> &nbsp;&nbsp;"
+                 "<b>Data query</b> &nbsp;&nbsp;"
                )
              ),
-             helpText("Download the file path information as .json for later upload.")
+             helpText(text)
       ),
       column(6,
              align = "right",
              style = "margin-top: 0.5em",
-             downloadButton(ns(downloadBtnID), "Download Data Link")
+             downloadButton(ns(downloadBtnID), "Download Query as .json")
       )
     )
   }

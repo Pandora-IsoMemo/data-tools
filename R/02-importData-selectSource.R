@@ -18,7 +18,7 @@ selectSourceUI <- function(id,
                           data = c("Pandora Platform" = "ckan",
                                    "File" = "file",
                                    "URL" = "url",
-                                   "Online Data Link" = "remoteModel"),
+                                   "Online Data Query" = "remoteModel"),
                           model = c("Pandora Platform" = "ckan",
                                     "File" = "file",
                                     "URL" = "url",
@@ -52,7 +52,7 @@ selectSourceUI <- function(id,
                  condition = "input.source == 'file'",
                  radioButtons(ns("dataOrLink"),
                               label = NULL,
-                              choices = c("Load Dataset" = "fullData", "Load Data Link" = "dataLink"),
+                              choices = c("Load Dataset" = "fullData", "Load Data Query" = "dataLink"),
                               selected = "fullData",
                               inline = TRUE),
                  if (!isInternet) helpText("No internet connection!") else NULL
@@ -100,7 +100,7 @@ selectSourceUI <- function(id,
     conditionalPanel(
       condition = "input.source == 'remoteModel'",
       ns = ns,
-      remoteModelsUI(ns("remoteModels"))
+      remoteModelsUI(ns("remoteModels"), selectLabel = "Load online data query")
     ),
     tags$hr()
   )

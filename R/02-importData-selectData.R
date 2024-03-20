@@ -65,8 +65,8 @@ selectDataUI <- function(id,
           column(6,
                  align = "right",
                  style = "margin-top: 1.5em",
-                 actionButton(ns("keepDataForQuery"), "Create Query with data"),
-                 actionButton(ns("keepData"), "Prepare / Merge data")
+                 actionButton(ns("keepDataForQuery"), "Create Query from file"),
+                 actionButton(ns("keepData"), "Prepare / Merge file(s)")
           )
         )
       ) else NULL

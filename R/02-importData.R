@@ -126,6 +126,18 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(input[["dataSelector-withColnames"]])
 
+                 output$selectDataDialog <- renderUI({
+                   if (input[["fileSource-source"]] != "remoteModel") {
+                     selectDataUI(
+                       ns("dataSelector"),
+                       batch = batch,
+                       outputAsMatrix = outputAsMatrix,
+                       importType = importType,
+                       customHelpText = options[["customHelpText"]]
+                     )
+                   } else NULL
+                 })
+
                  observeEvent(input$openPopup, {
                    logDebug("Check internet and showModal import")
 
@@ -177,7 +189,6 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::show(ns("acceptQuery"), asis = TRUE)
-                     #shinyjs::hide(ns("downloadDataLink"), asis = TRUE)
                    } else {
                      shinyjs::show(ns("accept"), asis = TRUE)
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
@@ -522,13 +533,7 @@ importDataDialog <-
                            importType = importType,
                            isInternet = isInternet,
                            fileExtension = fileExtension),
-            selectDataUI(
-              ns("dataSelector"),
-              batch = batch,
-              outputAsMatrix = outputAsMatrix,
-              importType = importType,
-              customHelpText = options[["customHelpText"]]
-            )
+            uiOutput(ns("selectDataDialog"))
           )
         ),
         if (importType == "data") tabPanel("Query with SQL",
