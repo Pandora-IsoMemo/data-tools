@@ -8,6 +8,10 @@ testthat::test_that("Test queryDataServer", {
     `table2` = list(data = testFile2,
                     history = list())
   )
+  testMergeList <- lapply(testMergeList, function(x) {
+    attr(x, "unprocessed") <- TRUE # enables download of data links
+    x
+  })
 
   shiny::testServer(queryDataServer,
                     args = list(mergeList = reactiveVal(testMergeList),

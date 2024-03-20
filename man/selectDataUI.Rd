@@ -6,21 +6,14 @@
 \usage{
 selectDataUI(
   id,
-  defaultSource,
-  ckanFileTypes,
   batch,
   outputAsMatrix,
   importType,
-  fileExtension = "zip",
-  options = importOptions()
+  customHelpText = importOptions()[["customHelpText"]]
 )
 }
 \arguments{
 \item{id}{id of module}
-
-\item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
-
-\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
 
@@ -30,10 +23,8 @@ e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
-\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
-
-\item{options}{(list) Extra options for the import module.}
+\item{customHelpText}{(list) A help text element that can be added to a UI definition. Output of
+\code{shiny::helpText(...)}.}
 }
 \description{
 UI of the module

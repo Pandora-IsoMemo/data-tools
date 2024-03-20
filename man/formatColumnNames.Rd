@@ -4,10 +4,10 @@
 \alias{formatColumnNames}
 \title{Format Column Names}
 \usage{
-formatColumnNames(vNames, silent = FALSE)
+formatColumnNames(df, silent = FALSE)
 }
 \arguments{
-\item{vNames}{(character) names of the imported data's columns}
+\item{df}{(character) data}
 
 \item{silent}{(logical) set TRUE prevent notification of warnings}
 }

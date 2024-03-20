@@ -3,8 +3,8 @@ testthat::test_that("Test module mergeSettings", {
     readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
 
   for (i in 1:length(testMergeList)) {
-    colnames(testMergeList[[i]]$dataImport) <-
-      colnames(testMergeList[[i]]$dataImport) %>%
+    testMergeList[[i]]$dataImport <-
+      testMergeList[[i]]$dataImport %>%
       formatColumnNames(silent = TRUE)
   }
 

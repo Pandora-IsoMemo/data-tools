@@ -1,6 +1,7 @@
 test_that("Test module selectSourceServer", {
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
+             args = list(importType = "data",
+                         openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
                          folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
@@ -30,7 +31,8 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
+             args = list(importType = "data",
+                         openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
                          folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
@@ -56,7 +58,8 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
+             args = list(importType = "data",
+                         openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
                          folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
@@ -77,11 +80,12 @@ test_that("Test module selectSourceServer", {
 
                expect_null(session$returned$filename)
                expect_null(session$returned$file)
-               expect_null(session$returned$type)
+               expect_equal(session$returned$type, "data")
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
+             args = list(importType = "model",
+                         openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(has_internet()),
                          githubRepo = "bpred",
                          folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
@@ -103,7 +107,8 @@ test_that("Test module selectSourceServer", {
              })
 
   testServer(selectSourceServer,
-             args = list(openPopupReset = reactive(TRUE),
+             args = list(importType = "model",
+                         openPopupReset = reactive(TRUE),
                          internetCon = reactiveVal(FALSE),
                          githubRepo = "data-tools",
                          folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),

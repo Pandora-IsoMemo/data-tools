@@ -13,7 +13,7 @@ prepareDataUI <- function(id) {
     selectInput(
       ns("dataToPrep"),
       "Select a File",
-      choices = c("Please submit data under 'Select' ..." = ""),
+      choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
       width = "75%"
     ),
     renameColumnsUI(ns("renameCols")),
@@ -450,14 +450,17 @@ splitColumnsServer <- function(id, preparedData) {
 
 #' Update Merge List
 #'
+#' Checks if an object that should be added is already existing in mergeList. If so, the existing
+#'  object will be replaced (updated). This is important to keep most recent changes from data
+#'  preparation steps.
+#'
 #' @param mergeList list of files that were submitted for data preparation
 #' @param fileName (character) name of the file to be updated or added to the merge list
 #' @param newData (list) data and history of the data source and the changes
 #' @param notifications (character) previous notifications
 updateMergeList <- function(mergeList, fileName, newData, notifications = "") {
   if (length(mergeList) > 0 && fileName %in% names(mergeList)) {
-    mergeList[[fileName]] <- list(data = newData$data,
-                                  history = newData$history)
+    mergeList[[fileName]] <- newData
     notifications <- c(notifications,
                        "File was already selected and reloaded successfully now.")
   } else {

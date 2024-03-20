@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 24.01.0
+Version: 24.03.0
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
@@ -17,6 +17,7 @@ Imports:
   htmltools,
   httr,
   futile.logger,
+  jsonlite,
   magrittr,
   openxlsx,
   readxl,
@@ -37,5 +38,5 @@ Suggests:
   devtools,
   lintr (>= 1.0.2),
   testthat (>= 2.0.0)
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.1
 URL: https://pandora-isomemo.github.io/data-tools/

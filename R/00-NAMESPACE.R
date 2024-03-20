@@ -3,11 +3,12 @@
 #' @importFrom DT datatable renderDataTable dataTableOutput
 #' @importFrom htmltools save_html
 #' @importFrom httr GET content timeout
+#' @importFrom jsonlite read_json write_json
 #' @importFrom openxlsx loadWorkbook
 #' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData
 #'  formatRepositoryList
 #' @importFrom readxl excel_sheets
-#' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable SQLite
+#' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable dbRemoveTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
 #' @importFrom shinyalert shinyalert
 #' @importFrom shinyjs alert disable disabled enable hide hidden info reset runjs show useShinyjs

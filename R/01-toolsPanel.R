@@ -3,6 +3,8 @@
 #' @param id module id
 #'
 #' @importFrom stats setNames
+#'
+#' @export
 toolsImportUI <- function(id) {
   ns <- NS(id)
 
@@ -10,7 +12,7 @@ toolsImportUI <- function(id) {
     sidebarPanel(
       width = 2,
       style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
-      importDataUI(ns("localData"), "Import Data"),
+      importDataUI(ns("localData"), "Import Data (local)"),
       tags$br(),
       tags$br(),
       importDataUI(ns("ckanData"), "Import CKAN Data"),
@@ -33,6 +35,8 @@ toolsImportUI <- function(id) {
 #' Server function of toolsImport module
 #'
 #' @param id module id
+#'
+#' @export
 toolsImportServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
@@ -51,7 +55,8 @@ toolsImportServer <- function(id) {
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
-                   defaultSource = "ckan"
+                   defaultSource = "ckan",
+                   rPackageName = config()[["rPackageName"]]
                  )
 
                  importedBatchData <- importDataServer(
@@ -62,7 +67,8 @@ toolsImportServer <- function(id) {
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    batch = TRUE,
-                   outputAsMatrix = TRUE
+                   outputAsMatrix = TRUE,
+                   rPackageName = config()[["rPackageName"]]
                  )
 
                  importedModel <- importDataServer(
@@ -73,7 +79,6 @@ toolsImportServer <- function(id) {
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    importType = "model",
-                   mainFolder = config()[["mainFolder"]],
                    fileExtension = config()[["fileExtension"]],
                    rPackageName = config()[["rPackageName"]]
                  )
@@ -121,6 +126,7 @@ toolsImportServer <- function(id) {
 #'
 #' @importFrom stats setNames
 #'
+#' @export
 toolsLoadUI <- function(id) {
   ns <- NS(id)
 
@@ -162,6 +168,8 @@ toolsLoadUI <- function(id) {
 #' Server function of toolsLoad module
 #'
 #' @param id module id
+#'
+#' @export
 toolsLoadServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {

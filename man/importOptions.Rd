@@ -7,8 +7,9 @@
 importOptions(rPackageName = "", customHelpText = NULL)
 }
 \arguments{
-\item{rPackageName}{(character) If not NULL, than the uploaded file must be a downloaded file
-from the R package where \code{importDataServer} is called. This parameter is ignored if
+\item{rPackageName}{(character) name of the package (as in the Description file) in which this
+module is called. If not NULL, than the uploaded file must be a downloaded file
+from the R package where \code{importDataServer} was called. This parameter is ignored if
 \code{importType == "data"}.}
 
 \item{customHelpText}{(list) A help text element that can be added to a UI definition. Output of
