@@ -424,7 +424,7 @@ getSpecsForRemotes <- function(importType) {
     folder <- "predefinedModels"
     extension <- "zip"
   } else {
-    folder <- "dataLinks"
+    folder <- "dataQueries"
     extension <- "json"
   }
 
