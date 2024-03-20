@@ -2,10 +2,12 @@
 
 ## Version 24.03.0
 
-- option to download 'import links' to the imported data if data loading was successful in advance (#55)
-  - stores only user inputs to file imports, not the data itself
-  - all links to data that were 'submitted for data preparation' are stored also
-- option to upload 'import links' containing user inputs for data imports from a local .json file (#55)
+- option to download 'data queries' as .json file if data loading was successful in advance (#55)
+  - stores only user inputs and file path information, not the data itself
+  - save data queries that were created under 'Query with SQL'
+- option to upload 'data queries' containing user inputs for data imports from a .json file
+- option to upload 'data queries' containing user inputs for data imports from github from .json 
+file
 
 ## Version 24.01.0
 
