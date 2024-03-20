@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.01.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.03.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,7 @@
 <span>  <span class="va">defaultSource</span>,</span>
 <span>  <span class="va">ckanFileTypes</span>,</span>
 <span>  <span class="va">importType</span>,</span>
+<span>  <span class="va">isInternet</span>,</span>
 <span>  fileExtension <span class="op">=</span> <span class="st">"zip"</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -71,6 +72,11 @@
 <dt>importType</dt>
 <dd><p>(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.</p></dd>
+
+
+<dt>isInternet</dt>
+<dd><p>(logical) set TRUE, if there is an internet connection. This parameter is
+ignored if <code>type = "file"</code> or <code>type = "remoteModel"</code></p></dd>
 
 
 <dt>fileExtension</dt>

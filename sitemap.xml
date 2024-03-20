@@ -16,6 +16,9 @@
     <loc>https://pandora-isomemo.github.io/data-tools/news/index.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/addSourceType.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/checkAnyNonNumericColumns.html</loc>
   </url>
   <url>
@@ -49,13 +52,13 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/downUploadButtonUI.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/downloadFileToTmp.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/downloadModelServer.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/downloadModelUI.html</loc>
-  </url>
-  <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/downloadZipToTmp.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/extractMergeNotification.html</loc>
@@ -82,6 +85,9 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceUI.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/filterUnprocessed.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/formatColumnNames.html</loc>
   </url>
   <url>
@@ -94,16 +100,22 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getCKANResourcesChoices.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getDataSource.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getFileInputs.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getFolderOnGithub.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getGithubContent.html</loc>
   </url>
   <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/getLocalModels.html</loc>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getGithubMapping.html</loc>
   </url>
   <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/getNrow.html</loc>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getLocalModels.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getPathToLocal.html</loc>
@@ -113,6 +125,18 @@
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getSheetSelection.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getSourceCKAN.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getSourceFile.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getSourceModel.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/getSourceUrl.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getZip.html</loc>
@@ -169,6 +193,9 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/loadDataWrapper.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/loadFileFromLink.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/loadModel.html</loc>
   </url>
   <url>
@@ -188,6 +215,12 @@
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/mergeSettingsUI.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/observeDownloadDataLink.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/observeUploadDataLink.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/pipe.html</loc>
@@ -287,6 +320,9 @@
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/updateNameEntryIfDuplicate.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/updateUserInputs.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/uploadModelServer.html</loc>

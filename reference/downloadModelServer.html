@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.01.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.03.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,8 +81,10 @@
 
 
 <dt>rPackageName</dt>
-<dd><p>(character) name of the package (as in the description file) in which this
-module is applied, e.g. "mpiBpred"</p></dd>
+<dd><p>(character) name of the package (as in the Description file) in which this
+module is called. If not NULL, than the uploaded file must be a downloaded file
+from the R package where <code>importDataServer</code> was called. This parameter is ignored if
+<code>importType == "data"</code>.</p></dd>
 
 
 <dt>subFolder</dt>
