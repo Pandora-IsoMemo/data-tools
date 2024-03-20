@@ -10,6 +10,9 @@ queryDataUI <- function(id) {
 
   tagList(
     tags$br(),
+    tags$strong("In-memory tables available for SQL query:"),
+    helpText(width = "100%",
+             "Only files with unprocessed data that were loaded directly from a source ('Pandora Platform', 'File' or 'URL') can be used."),
     dataTableOutput(ns("inMemoryTables")),
     tags$br(),
     dataTableOutput(ns("inMemoryColumns")),
@@ -45,7 +48,7 @@ queryDataUI <- function(id) {
     textOutput(ns("nRowsQueriedData")),
     previewDataUI(ns("previewDat"), title = "Preview result of query"),
     downloadDataLinkUI(ns = ns,
-                       text = "Download the path information of files and the SQL query as .json for later upload."),
+                       text = "Download the file path information and the SQL query as .json for later upload."),
   )
 }
 
@@ -141,7 +144,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  output$inMemoryTables <- renderDataTable({
                    validate(need(
                      !is.null(tableIds()),
-                     "In-memory tables: Please submit data under 'Select' ..."
+                     "Tables: Please load data under 'Select' and press 'Create Query from file' ..."
                    ))
 
                    req(tableIds())
@@ -151,7 +154,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      filter = "none",
                      selection = "none",
                      rownames = FALSE,
-                     colnames = c("ID", "In-memory tables with unprocessed data"),
+                     colnames = c("ID", "Tables (with unprocessed data)"),
                      options = list(
                        dom = "t",
                        ordering = FALSE,
@@ -166,7 +169,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  output$inMemoryColumns <- renderDataTable({
                    validate(need(
                      !is.null(tableIds()),
-                     "In-memory columns: Please submit data under 'Select' ..."
+                     "Columns: Please load data under 'Select' and press 'Create Query from file' ..."
                    ))
 
                    req(tableIds())
@@ -182,7 +185,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      filter = "none",
                      selection = "none",
                      rownames = FALSE,
-                     colnames = c("ID", "In-memory columns"),
+                     colnames = c("ID", "Columns"),
                      options = list(
                        dom = "t",
                        ordering = FALSE,

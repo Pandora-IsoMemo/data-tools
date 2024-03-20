@@ -1,15 +1,15 @@
 downloadDataLinkUI <-
   function(ns, downloadBtnID = "downloadDataLink", text = "") {
     fluidRow(
-      column(6,
+      column(8,
              tags$html(
                HTML(
                  "<b>Data query</b> &nbsp;&nbsp;"
                )
              ),
-             helpText(text)
+             helpText(width = "100%", text)
       ),
-      column(6,
+      column(4,
              align = "right",
              style = "margin-top: 0.5em",
              downloadButton(ns(downloadBtnID), "Download Query as .json")

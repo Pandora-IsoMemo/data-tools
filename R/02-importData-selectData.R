@@ -60,7 +60,8 @@ selectDataUI <- function(id,
                      "<b>Data processing</b> &nbsp;&nbsp; (Optional)"
                    )
                  ),
-                 helpText("Use the loaded file for data processing in the tabs: 'Query with SQL' or 'Prepare' / 'Merge'.")
+                 helpText(width = "100%",
+                          "Use the loaded file for data processing in the tabs: 'Query with SQL' or 'Prepare' / 'Merge'.")
           ),
           column(6,
                  align = "right",
