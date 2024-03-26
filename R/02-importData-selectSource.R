@@ -72,7 +72,8 @@ selectSourceUI <- function(id,
                       loadCKANResourceUI(ns("resourceLoad"))
       ),
       column(width = 6,
-             tags$strong("Additional Information for Pandora repository"),
+             tags$strong("Additional information about the repository from ",
+                         tags$a("Pandora", href = "https://pandora.earth/", target = "_blank")),
              dataTableOutput(ns(
                "repoInfoTable"
              ))
