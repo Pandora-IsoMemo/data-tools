@@ -127,7 +127,11 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
-                   if (input[["fileSource-source"]] != "remoteModel") {
+                   if (input[["fileSource-source"]] == "remoteModel" ||
+                       (input[["fileSource-source"]] == "file" &&
+                        input[["fileSource-dataOrLink"]] == "dataLink")) {
+                     NULL
+                   } else {
                      selectDataUI(
                        ns("dataSelector"),
                        batch = batch,
@@ -135,7 +139,7 @@ importDataServer <- function(id,
                        importType = importType,
                        customHelpText = options[["customHelpText"]]
                      )
-                   } else NULL
+                   }
                  })
 
                  observeEvent(input$openPopup, {
