@@ -129,6 +129,7 @@ importDataServer <- function(id,
                  output$selectDataDialog <- renderUI({
                    if (input[["fileSource-source"]] == "remoteModel" ||
                        (input[["fileSource-source"]] == "file" &&
+                        !is.null(input[["fileSource-dataOrLink"]]) &&
                         input[["fileSource-dataOrLink"]] == "dataLink")) {
                      NULL
                    } else {
