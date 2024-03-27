@@ -389,16 +389,16 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                    req(key)
                    withProgress({
-                     invisible(capture.output(gpt3_authenticate(key)))
+                     invisible(capture.output(rgpt_authenticate(key)))
 
                      # check connection
                      connSuccess <- NULL
-                     connSuccess <- gpt3_test_completion() %>%
+                     connSuccess <- rgpt_test_completion() %>%
                        validateAccess() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
 
                      if (!is.null(connSuccess) &&
-                         !is.null(connSuccess[[1]][["gpt3"]])) {
+                         !is.null(connSuccess[[1]][["rgpt"]])) {
                        show("temperature")
                        show("maxTokens")
                        show("n")
@@ -431,8 +431,8 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                    req(validConnection())
                    withProgress({
-                     res <- gpt3_single_completion(
-                       prompt_input = paste("Write an SQL query to", input$gptPrompt),
+                     res <- rgpt_single(
+                       prompt_content = paste("Write an SQL query to", input$gptPrompt),
                        temperature = input$temperature,
                        max_tokens = input$maxTokens,
                        n = input$n
@@ -441,14 +441,14 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
-                   message = 'sending request to gpt ...')
+                   message = 'sending request to OpenAI ...')
 
                    # gptOut is only needed for tests
                    gptOut(res)
 
-                   req(res[[1]][["gpt3"]])
+                   req(res[[1]][["rgpt"]])
                    # remove preceding lines
-                   command <- res[[1]][["gpt3"]] %>%
+                   command <- res[[1]][["rgpt"]] %>%
                      gsub(pattern = "^\n+", replacement = "")
                    sqlCommand(command)
                  }) %>%
@@ -475,7 +475,7 @@ validateKey <- function(filepath) {
 }
 
 validateAccess <- function(gptOut) {
-  if (is.null(gptOut[[1]][["gpt3"]])) {
+  if (is.null(gptOut[[1]][["rgpt"]])) {
     stop("No output available for test prompt. Probably the key is not valid.")
   }
 
@@ -483,7 +483,7 @@ validateAccess <- function(gptOut) {
 }
 
 validateCompletion <- function(gptOut) {
-  if (is.null(gptOut[[1]][["gpt3"]])) {
+  if (is.null(gptOut[[1]][["rgpt"]])) {
     warning("No output available.")
   }
 
@@ -494,7 +494,7 @@ removeOpenGptCon <- function() {
   if (exists("api_key")) {
     # remove gpt connection if exists
     api_key <- NULL
-    invisible(capture.output(gpt3_endsession()))
+    invisible(capture.output(rgpt_endsession()))
   }
 }
 
