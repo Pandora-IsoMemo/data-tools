@@ -270,28 +270,30 @@ rgpt_single = function(prompt_role = 'user'
   return(output)
 
 }
-#' Make a test request to the GPT-3 API
+
+#' Make a test request to the GPT API
 #'
-#' @description `gpt3_test_completion()` sends a basic [completion
-#'   request](https://beta.openai.com/docs/api-reference/completions) to the
-#'   Open AI GPT-3 API.
-#' @param verbose (boolean) if TRUE prints the actual prompt and GPT-3
-#'   completion of the test request (default: TRUE).
+#' @description
+#' `rgpt_test_completion()` sends a basic 
+#' [completion request](https://beta.openai.com/docs/api-reference/completions) 
+#' to the Open AI GPT API.
+#' This function was copied from https://github.com/ben-aaron188/rgpt3.
+#' @param verbose (boolean) if TRUE prints the actual prompt and GPT completion 
+#' of the test request (default: TRUE).
 #' @return A message of success or failure of the connection.
-#'
-#'  This function was copied from https://github.com/ben-aaron188/rgpt3.
-gpt3_test_completion = function(verbose=TRUE){
+#' @examples
+#' rgpt_test_completion()
+#' @export
+rgpt_test_completion = function(verbose=T){
 
   check_apikey_form()
 
   test_prompt = 'Write a story about R Studio: '
-  test_output = gpt3_single_completion(prompt_input = test_prompt
-                                       , max_tokens = 100)
+  test_output = rgpt_single(prompt_content = test_prompt
+                                  , max_tokens = 100)
   print(paste0('.. test successful ..'))
 
-  if(verbose==TRUE){
-    # print(paste0('Requested completion for this prompt --> ', test_prompt))
-    # print(paste0('GPT-3 completed --> ', test_output))
+  if(verbose==T){
     test_output
   }
 
