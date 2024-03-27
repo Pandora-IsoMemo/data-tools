@@ -15,12 +15,6 @@
 #' the API key in it (without quotation marks or other common string 
 #' indicators). `rgpt_authenticate()` reads the single file you point it to and 
 #' retrieves the content as authentication key for all requests.
-#' @examples
-#' # Starting a session:
-#' rgpt_authenticate(path = './YOURPATH/access_key.txt')
-# '
-#' # After you are finished:
-#' rgpt_endsession()
 rgpt_authenticate = function(path){
   apikey_ = readLines(path)
   pkg.env$api_key = apikey_
@@ -29,7 +23,7 @@ rgpt_authenticate = function(path){
 
 rgpt_endsession = function(){
   pkg.env$api_key = "---"
-  rm(api_key)
+  rm(pkg.env$api_key)
   print('-- session ended: you need to re-authenticate again next time.')
 }
 
@@ -63,6 +57,23 @@ check_apikey_form = function(){
 #'   - `logit_bias`: [https://platform.openai.com/docs/api-reference/chat/create#chat/create-logit_bias](https://platform.openai.com/docs/api-reference/chat/create#chat/create-logit_bias)
 #'   - `stream`: [https://platform.openai.com/docs/api-reference/chat/create#chat/create-stream](https://platform.openai.com/docs/api-reference/chat/create#chat/create-stream)
 #'
+#' # First authenticate with your API key via `rgpt_authenticate('pathtokey')`
+#'
+#' # Once authenticated:
+#'
+#' ## Simple request with defaults:
+#' `rgpt_single(prompt_content = 'You are a teacher: explain to me what science is')`
+#'
+#' ## Instruct a GPT model to write ten research ideas of max. 150 tokens with
+#' some controls: 
+#' `rgpt_single(prompt_role = 'user', 
+#' prompt_content = 'Write a research idea about using text data to understand human behaviour:' ,
+#' temperature = 0.8 , n = 10 , max_tokens = 150)`
+#'
+#' ## For fully reproducible results, we need to set a seed, e.g., `seed = 42`,
+#' e.g.: `rgpt_single(prompt_content = 'Finish this sentence: There is no
+#' easier way to learn R than' , temperature = 0.7 , seed = 42 , max_tokens =
+#' 50)`
 #' @param prompt_role character (default: 'user') that contains the role for the
 #' prompt message in the GPT (chat) message format. Must be one of 'system', 
 #' assistant', 'user' (default), see 
@@ -106,15 +117,16 @@ check_apikey_form = function(){
 #' choices to generate for each input message. **Note: Because this parameter 
 #' generates many completions, it can quickly consume your token quota.** Use
 #' carefully and ensure that you have reasonable settings for max_tokens and
-#' stop._) @param stop character or character vector (default: NULL) that
-#' specifies after which character value when the completion should end (from
-#' the official API documentation: _Up to 4 sequences where the API will stop
-#' generating further tokens._) @param presence_penalty numeric (default: 0)
-#' between -2.00  and +2.00 to determine the penalisation of repetitiveness if a
-#' token already exists (from the official API documentation: _Number between
-#' -2.0 and 2.0. Positive values penalize new tokens based on whether they
-#' appear in the text so far, increasing the model's likelihood to talk about
-#' new topics._). See also:
+#' stop._) 
+#' @param stop character or character vector (default: NULL) that specifies 
+#' after which character value when the completion should end (from the official 
+#' API documentation: _Up to 4 sequences where the API will stop generating 
+#' further tokens._) 
+#' @param presence_penalty numeric (default: 0) between -2.00  and +2.00 to 
+#' determine the penalisation of repetitiveness if a token already exists (from 
+#' the official API documentation: _Number between -2.0 and 2.0. Positive values 
+#' penalize new tokens based on whether they appear in the text so far, 
+#' increasing the model's likelihood to talk about new topics._). See also:
 #' [https://beta.openai.com/docs/api-reference/parameter-details](https://beta.openai.com/docs/api-reference/parameter-details)
 #' @param frequency_penalty numeric (default: 0) between -2.00  and +2.00 to
 #' determine the penalisation of repetitiveness based on the frequency of a
@@ -147,23 +159,6 @@ check_apikey_form = function(){
 #' If `output_type` is "meta", only the data table in slot [[2]] is returned.
 #'
 #' If `output_type` is "logprobs", only the data table in slot [[3]] is returned.
-#' @examples
-#' # First authenticate with your API key via `rgpt_authenticate('pathtokey')`
-#'
-#' # Once authenticated:
-#'
-#' ## Simple request with defaults:
-#' rgpt_single(prompt_content = 'You are a teacher: explain to me what science is')
-#'
-#' ## Instruct a GPT model to write ten research ideas of max. 150 tokens with
-#' some controls: rgpt_single(prompt_role = 'user', prompt_content = 'Write a
-#' research idea about using text data to understand human behaviour:' ,
-#' temperature = 0.8 , n = 10 , max_tokens = 150)
-#'
-#' ## For fully reproducible results, we need to set a seed, e.g., `seed = 42`,
-#' e.g.: rgpt_single(prompt_content = 'Finish this sentence:/n There is no
-#' easier way to learn R than' , temperature = 0.7 , seed = 42 , max_tokens =
-#' 50)
 #'
 rgpt_single = function(prompt_role = 'user'
                           , prompt_content
@@ -225,9 +220,9 @@ rgpt_single = function(prompt_role = 'user'
                         , logprobs = logprobs
   )
 
-  request_base = httr::POST(url = url.chat_completions
+  request_base = httr::POST(url = pkg.env$url.chat_completions
     , body = parameter_list 
-    , httr::add_headers(Authorization = paste("Bearer", api_key)) 
+    , httr::add_headers(Authorization = paste("Bearer", pkg.env$api_key)) 
     , encode = "json")
 
   request_content = httr::content(request_base)
@@ -350,8 +345,6 @@ rgpt_single = function(prompt_role = 'user'
 #' @param verbose (boolean) if TRUE prints the actual prompt and GPT completion 
 #' of the test request (default: TRUE).
 #' @return A message of success or failure of the connection.
-#' @examples
-#' rgpt_test_completion()
 rgpt_test_completion = function(verbose=T){
 
   check_apikey_form()

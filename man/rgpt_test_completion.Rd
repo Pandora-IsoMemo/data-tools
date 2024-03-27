@@ -19,6 +19,3 @@ A message of success or failure of the connection.
 to the Open AI GPT API.
 This function was copied from https://github.com/ben-aaron188/rgpt3.
 }
-\examples{
-rgpt_test_completion()
-}

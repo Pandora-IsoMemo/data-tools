@@ -28,9 +28,3 @@ the API key in it (without quotation marks or other common string
 indicators). `rgpt_authenticate()` reads the single file you point it to and 
 retrieves the content as authentication key for all requests.
 }
-\examples{
-# Starting a session:
-rgpt_authenticate(path = './YOURPATH/access_key.txt')
-# After you are finished:
-rgpt_endsession()
-}

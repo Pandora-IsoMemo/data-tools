@@ -72,15 +72,18 @@ request (from the official API documentation: _How many chat completion
 choices to generate for each input message. **Note: Because this parameter 
 generates many completions, it can quickly consume your token quota.** Use
 carefully and ensure that you have reasonable settings for max_tokens and
-stop._) @param stop character or character vector (default: NULL) that
-specifies after which character value when the completion should end (from
-the official API documentation: _Up to 4 sequences where the API will stop
-generating further tokens._) @param presence_penalty numeric (default: 0)
-between -2.00  and +2.00 to determine the penalisation of repetitiveness if a
-token already exists (from the official API documentation: _Number between
--2.0 and 2.0. Positive values penalize new tokens based on whether they
-appear in the text so far, increasing the model's likelihood to talk about
-new topics._). See also:
+stop._)}
+
+\item{stop}{character or character vector (default: NULL) that specifies 
+after which character value when the completion should end (from the official 
+API documentation: _Up to 4 sequences where the API will stop generating 
+further tokens._)}
+
+\item{presence_penalty}{numeric (default: 0) between -2.00  and +2.00 to 
+determine the penalisation of repetitiveness if a token already exists (from 
+the official API documentation: _Number between -2.0 and 2.0. Positive values 
+penalize new tokens based on whether they appear in the text so far, 
+increasing the model's likelihood to talk about new topics._). See also:
 [https://beta.openai.com/docs/api-reference/parameter-details](https://beta.openai.com/docs/api-reference/parameter-details)}
 
 \item{frequency_penalty}{numeric (default: 0) between -2.00  and +2.00 to
@@ -135,23 +138,22 @@ and reproduced below.
 Parameters not included/supported:
   - `logit_bias`: [https://platform.openai.com/docs/api-reference/chat/create#chat/create-logit_bias](https://platform.openai.com/docs/api-reference/chat/create#chat/create-logit_bias)
   - `stream`: [https://platform.openai.com/docs/api-reference/chat/create#chat/create-stream](https://platform.openai.com/docs/api-reference/chat/create#chat/create-stream)
-}
-\examples{
+
 # First authenticate with your API key via `rgpt_authenticate('pathtokey')`
 
 # Once authenticated:
 
 ## Simple request with defaults:
-rgpt_single(prompt_content = 'You are a teacher: explain to me what science is')
+`rgpt_single(prompt_content = 'You are a teacher: explain to me what science is')`
 
 ## Instruct a GPT model to write ten research ideas of max. 150 tokens with
-some controls: rgpt_single(prompt_role = 'user', prompt_content = 'Write a
-research idea about using text data to understand human behaviour:' ,
-temperature = 0.8 , n = 10 , max_tokens = 150)
+some controls: 
+`rgpt_single(prompt_role = 'user', 
+prompt_content = 'Write a research idea about using text data to understand human behaviour:' ,
+temperature = 0.8 , n = 10 , max_tokens = 150)`
 
 ## For fully reproducible results, we need to set a seed, e.g., `seed = 42`,
-e.g.: rgpt_single(prompt_content = 'Finish this sentence:/n There is no
+e.g.: `rgpt_single(prompt_content = 'Finish this sentence: There is no
 easier way to learn R than' , temperature = 0.7 , seed = 42 , max_tokens =
-50)
-
+50)`
 }
