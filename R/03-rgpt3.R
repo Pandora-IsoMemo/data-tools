@@ -21,7 +21,6 @@
 # '
 #' # After you are finished:
 #' rgpt_endsession()
-#' @export
 rgpt_authenticate = function(path){
   apikey_ = readLines(path)
   pkg.env$api_key = apikey_
@@ -166,7 +165,6 @@ check_apikey_form = function(){
 #' easier way to learn R than' , temperature = 0.7 , seed = 42 , max_tokens =
 #' 50)
 #'
-#' @export
 rgpt_single = function(prompt_role = 'user'
                           , prompt_content
                           , seed = NULL
@@ -354,7 +352,6 @@ rgpt_single = function(prompt_role = 'user'
 #' @return A message of success or failure of the connection.
 #' @examples
 #' rgpt_test_completion()
-#' @export
 rgpt_test_completion = function(verbose=T){
 
   check_apikey_form()
