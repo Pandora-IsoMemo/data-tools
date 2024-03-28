@@ -130,10 +130,10 @@ testthat::test_that("Test queryDataServer", {
 
 testthat::test_that("Test gptServer", {
   testthat::expect_error(validateKey(
-    testthat::test_path("test-importData_gpt3_invalidKeyFormat.txt")
+    testthat::test_path("test-importData_rgpt_invalidKeyFormat.txt")
   ))
   testthat::expect_error(validateKey(
-    testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
+    testthat::test_path("test-importData_rgpt_validKeyFormat.txt")
   ), regexp = NA)
 
   shiny::testServer(gptServer,
@@ -147,10 +147,10 @@ testthat::test_that("Test gptServer", {
                         apiKey =
                           structure(
                             list(
-                              name = "test-importData_gpt3_validKeyFormat.txt",
+                              name = "test-importData_rgpt_validKeyFormat.txt",
                               size = 10L,
                               type = "text/plain",
-                              datapath = testthat::test_path("test-importData_gpt3_validKeyFormat.txt")
+                              datapath = testthat::test_path("test-importData_rgpt_validKeyFormat.txt")
                             ),
                             class = "data.frame",
                             row.names = c(NA, -1L)

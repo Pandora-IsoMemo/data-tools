@@ -431,11 +431,12 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                    req(key)
                    withProgress({
-                     invisible(capture.output(gpt3_authenticate(key)))
+                     invisible(capture.output(rgpt_authenticate(key)))
 
                      # check connection
                      connSuccess <- NULL
-                     connSuccess <- gpt3_test_completion() %>%
+                     browser()
+                     connSuccess <- rgpt_test_completion() %>%
                        validateAccess() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
 
@@ -446,8 +447,8 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        show("n")
                        validConnection(TRUE)
                      } else {
-                       if (exists("api_key")) {
-                         api_key <- NULL
+                       if (exists("api_key", envir = pkg.env)) {
+                         pkg.env$api_key <- NULL
                        }
                        hide("temperature")
                        hide("maxTokens")
@@ -473,8 +474,8 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                    req(validConnection())
                    withProgress({
-                     res <- gpt3_single_completion(
-                       prompt_input = paste("Write an SQL query to", input$gptPrompt),
+                     res <- rgpt_single(
+                       prompt_content = paste("Write an SQL query to", input$gptPrompt),
                        temperature = input$temperature,
                        max_tokens = input$maxTokens,
                        n = input$n
@@ -483,7 +484,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
-                   message = 'sending request to gpt ...')
+                   message = 'sending request to OpenAI ...')
 
                    # gptOut is only needed for tests
                    gptOut(res)
@@ -533,10 +534,10 @@ validateCompletion <- function(gptOut) {
 }
 
 removeOpenGptCon <- function() {
-  if (exists("api_key")) {
+  if (exists("api_key", envir = pkg.env)) {
     # remove gpt connection if exists
-    api_key <- NULL
-    invisible(capture.output(gpt3_endsession()))
+    pkg.env$api_key <- NULL
+    invisible(capture.output(rgpt_endsession()))
   }
 }
 
