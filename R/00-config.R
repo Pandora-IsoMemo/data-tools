@@ -10,4 +10,4 @@ config <- function() {
 #' @field url.completions The URL for the completions endpoint
 pkg.env <- new.env()
 pkg.env$api_key <- NULL
-pkg.env$url.completions = "https://api.openai.com/v1/completions"
+pkg.env$url.chat_completions <- "https://api.openai.com/v1/chat/completions"

@@ -16,8 +16,8 @@
 #' indicators). `rgpt_authenticate()` reads the single file you point it to and 
 #' retrieves the content as authentication key for all requests.
 rgpt_authenticate = function(path){
-  apikey_ = readLines(path)
-  pkg.env$api_key = apikey_
+  apikey_ <- readLines(path)
+  pkg.env$api_key <- apikey_
   print(paste0("Will use --> ", pkg.env$api_key, " for authentication."))
 }
 
@@ -28,8 +28,7 @@ rgpt_endsession = function(){
 }
 
 check_apikey_form = function(){
-
-  if(exists(x = 'pkg.env$api_key') == FALSE){
+  if(exists("api_key", envir = pkg.env) == FALSE){
     warning("Use rgpt_authenticate() to set your API key")
   } else if(nchar(pkg.env$api_key) < 10){
 
@@ -163,7 +162,7 @@ check_apikey_form = function(){
 rgpt_single = function(prompt_role = 'user'
                           , prompt_content
                           , seed = NULL
-                          , model = 'gpt-4-0125-preview'
+                          , model = 'gpt-3.5-turbo-1106'
                           , output_type = 'complete'
                           , max_tokens = 100
                           , temperature = 1.0
