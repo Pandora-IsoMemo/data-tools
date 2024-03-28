@@ -163,7 +163,7 @@ rgpt_single = function(prompt_role = 'user'
                           , prompt_content
                           , seed = NULL
                           , model = 'gpt-3.5-turbo-1106'
-                          , output_type = 'complete'
+                          , output_type = 'text'
                           , max_tokens = 100
                           , temperature = 1.0
                           , top_p = 1
@@ -171,7 +171,7 @@ rgpt_single = function(prompt_role = 'user'
                           , stop = NULL
                           , presence_penalty = 0
                           , frequency_penalty = 0
-                          , logprobs = T
+                          , logprobs = FALSE
 ){
 
   models = c('gpt-3.5-turbo-0125'
