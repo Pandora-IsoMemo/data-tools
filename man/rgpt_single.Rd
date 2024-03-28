@@ -9,7 +9,7 @@ rgpt_single(
   prompt_content,
   seed = NULL,
   model = "gpt-3.5-turbo-1106",
-  output_type = "complete",
+  output_type = "text",
   max_tokens = 100,
   temperature = 1,
   top_p = 1,
@@ -17,7 +17,7 @@ rgpt_single(
   stop = NULL,
   presence_penalty = 0,
   frequency_penalty = 0,
-  logprobs = T
+  logprobs = FALSE
 )
 }
 \arguments{
