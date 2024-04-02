@@ -9,6 +9,7 @@ downloadModelServer(
   dat,
   inputs,
   model,
+  customList = reactive(list()),
   rPackageName,
   subFolder = NULL,
   fileExtension = "zip",
@@ -25,9 +26,13 @@ downloadModelServer(
 
 \item{dat}{(reactive) user data}
 
-\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list}
+\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the
+default "inputs" list from shiny}
 
 \item{model}{(reactive) model output object}
+
+\item{customList}{(reactive) reactive list of objects to be stored for later upload, e.g. a list
+of lists that store output of modules for user inputs}
 
 \item{rPackageName}{(character) name of the package (as in the Description file) in which this
 module is called. If not NULL, than the uploaded file must be a downloaded file

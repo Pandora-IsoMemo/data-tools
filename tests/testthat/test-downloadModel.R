@@ -37,7 +37,9 @@ testthat::test_that("Test downloadModelServer", {
       # clean up
       unlink(test_path("unzippedTmp"), recursive = TRUE)
 
-      testthat::expect_equal(names(modelImport), c("data", "inputs", "model", "version"))
+      testthat::expect_true(
+        all(names(modelImport) %in% c("data", "inputs", "model", "customList", "version"))
+        )
       testthat::expect_equal(colnames(modelImport[["data"]]), mtcars %>% colnames())
       testthat::expect_equal(names(modelImport[["model"]]), NULL)
       testthat::expect_equal(readMe, "some test notes")

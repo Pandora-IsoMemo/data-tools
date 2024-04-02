@@ -30,7 +30,8 @@ downUploadButtonServer(
 
 \item{dat}{(reactive) user data}
 
-\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list}
+\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the
+default "inputs" list from shiny}
 
 \item{model}{(reactive) model output object}
 

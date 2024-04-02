@@ -144,8 +144,11 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #'
 #' @param id namespace id
 #' @param dat (reactive) user data
-#' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list
+#' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the
+#'  default "inputs" list from shiny
 #' @param model (reactive) model output object
+#' @param customList (reactive) reactive list of objects to be stored for later upload, e.g. a list
+#'  of lists that store output of modules for user inputs
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
 #'  "bpred", "bmsc"
@@ -167,6 +170,7 @@ downloadModelServer <-
            dat,
            inputs,
            model,
+           customList = reactive(list()),
            rPackageName,
            subFolder = NULL,
            fileExtension = "zip",
@@ -218,6 +222,7 @@ downloadModelServer <-
                            file.path(zipdir, "README.txt")
                          helpfile <- file.path(zipdir, "help.html")
 
+                         # prepare export ----
                          dataExport <- dat()
 
                          inputExport <- reactiveValuesToList(inputs)
@@ -225,6 +230,10 @@ downloadModelServer <-
                          inputExport <-
                            inputExport[!sapply(inputExport, is.null)]
 
+                         # add custom list of inputs
+                         customListExport <- customList()
+
+                         # remove model output if only inputs should be stored
                          if (input$onlyInputs ||
                              is.null(model()) || onlySettings) {
                            modelExport <- NULL
@@ -240,6 +249,7 @@ downloadModelServer <-
                              data = dataExport,
                              inputs = inputExport,
                              model = modelExport,
+                             customList = customListExport,
                              version = versionExport
                            ),
                            file = modelfile,
@@ -391,6 +401,7 @@ uploadModelServer <-
                      uploadedData$data <- res$data
                      uploadedData$inputs <- res$inputs
                      uploadedData$model <- res$model
+                     uploadedData$customList <- res$customList
                    })
 
                    return(uploadedData)

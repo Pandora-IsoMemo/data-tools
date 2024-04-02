@@ -1,7 +1,14 @@
 # DataTools
 
+## Version 24.04.0
+
+### Updates
+- model download: new parameter to export a custom list of objects to be stored for later upload, 
+ e.g. objects that store outputs of modules with user inputs
+
 ## Version 24.03.0
 
+### New Features
 - option to download 'data queries' as .json file if data loading was successful in advance (#55)
   - stores only user inputs and file path information, not the data itself
   - save data queries that were created under 'Query with SQL'
@@ -11,6 +18,7 @@ file
 
 ## Version 24.01.0
 
+### Updates
 Integration of rgpt3 functions into data tools package
 
 **Note:** The functions were copied from <https://github.com/ben-aaron188/rgpt3> 

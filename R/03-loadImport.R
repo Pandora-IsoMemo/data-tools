@@ -81,7 +81,6 @@ selectImportParams <- function(params,
 #'
 #' @return (list) list of values in the format of the output of loadDataWrapper
 fillValuesFromModel <- function(values, filename, importedModel) {
-  values$dataImport <- importedModel[c("data", "inputs", "model", "notes")]
   values$fileName <- filename
 
   success <- importedModel$message[importedModel$messageType == "success"]
@@ -91,6 +90,10 @@ fillValuesFromModel <- function(values, filename, importedModel) {
   values$fileImportSuccess <- success
   values$warnings <- list(load = warnings)
   values$errors <- list(load = errors)
+
+  # remove internal elements from import
+  internalElements <- c("message", "messageType", "alertType", "uploadedVersion")
+  values$dataImport <- importedModel[!(names(importedModel) %in% internalElements)]
 
   values
 }
