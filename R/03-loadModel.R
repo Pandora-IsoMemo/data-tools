@@ -72,6 +72,7 @@ loadModel <-
     # clean up
     unlink("unzippedTmp", recursive = TRUE)
 
+    ## check unzipped ----
     ## import failures
     if (inherits(res, "try-error")) {
       errMsg <- ""
@@ -90,9 +91,10 @@ loadModel <-
       return(NULL)
     }
 
+    ## check file format ----
     if (!exists("modelImport") || length(modelImport) == 0 || !(
       # expected names for most apps:
-      all(names(modelImport) %in% c("data", "inputs", "values", "model", "version")) ||
+      all(names(modelImport) %in% c("data", "inputs", "values", "model", "customList", "version")) ||
       # expected names for "mpiBpred"
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
     )) {
@@ -100,6 +102,7 @@ loadModel <-
       return(NULL)
     }
 
+    ## check app/version ----
     # check if import was downloaded from the correct app
 
     ## extract the name of the package without version numbers
@@ -119,6 +122,7 @@ loadModel <-
       return(NULL)
     }
 
+    ## check subfolder ----
     # Currently, this check is relevant for the iso-app where sub-models are stored in sub-folders
     # and the name of the sub-model is kept inside $version.
     if (!is.null(rPackageName) &&
@@ -141,7 +145,7 @@ loadModel <-
       return(NULL)
     }
 
-    # Data check: which data objects are available (data, inputs and model?) ----
+    # check import: which objects are available (data, inputs and model?) ----
     dat <- list(
       data = NULL,
       inputs = NULL,
@@ -243,8 +247,8 @@ extractInputsFromModel <- function(modelImport, rPackageName) {
   # are empty, the inputs are loaded with dat$data <- modelImport$values.
   placeholder <- list()
   attr(placeholder, "note") <- switch(rPackageName,
-                                      "OsteoBioR" = "Find input values in $dmodel.",
-                                      "PlotR" = "Find input values in $data or $dmodel.")
+                                      "OsteoBioR" = "Find input values in $model.",
+                                      "PlotR" = "Find input values in $data or $model.")
 
   switch(rPackageName,
          "ReSources" = c(modelImport$values, modelImport$inputs), # either modelImport$values (old version) or modelImport$inputs (version > 23.09.0) is NULL
