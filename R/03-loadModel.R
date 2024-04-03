@@ -1,207 +1,3 @@
-loadImport <- function(importType, params, values, filename, expectedFileInZip) {
-  res <- switch(importType,
-         "data" = do.call(loadDataWrapper, params),
-         "model" = do.call(loadModelWrapper, params),
-         "zip" = do.call(loadZipWrapper, params)) %>%
-    tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
-
-  if (importType == "model") {
-    return(fillValuesFromModel(values = values, filename = filename, importedModel = res))
-  }
-
-  if (importType == "zip") {
-    return(fillValuesFromZip(values = values,
-                             filename = filename,
-                             importZip = res,
-                             expectedFileInZip = expectedFileInZip))
-  }
-
-  res
-}
-
-
-#' Select Import params
-#'
-#' @param params (list) named list of parameters required to import data or a model
-#' @inheritParams importDataServer
-#'
-#' @return (list) named list of parameters required for the particular importType
-selectImportParams <- function(params,
-                               importType) {
-  switch(importType,
-         "data" = list(values = params$values,
-                       filepath = params$dataSource$file,
-                       filename = params$dataSource$filename,
-                       type = params$type,
-                       sep = params$sep,
-                       dec = params$dec,
-                       withRownames = params$customNames$withRownames,
-                       withColnames = params$customNames$withColnames,
-                       sheetId = params$sheetId),
-         "model" = list(filepath = params$dataSource$file,
-                        subFolder = params$subFolder,
-                        rPackageName = params$rPackageName,
-                        onlySettings = params$onlySettings,
-                        fileExtension = params$fileExtension),
-         "zip" = list(filepath = params$dataSource$file,
-                      fileExtension = params$fileExtension)
-  )
-}
-
-#' Fill Values From Model
-#'
-#' Format list of model data to be compatible with the import module such that success, warnings and
-#'  errors are displayed inside the pop-up modal.
-#'
-#' @param importedModel (list) output of loadModel()
-#' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
-#' @param filename (reactive) name of the loaded file
-#'
-#' @return (list) list of values in the format of the output of loadDataWrapper
-fillValuesFromModel <- function(values, filename, importedModel) {
-  values$dataImport <- importedModel[c("data", "inputs", "model", "notes")]
-  values$fileName <- filename
-
-  success <- importedModel$message[importedModel$messageType == "success"]
-  warnings <- importedModel$message[importedModel$messageType == "warning"]
-  errors <- importedModel$message[importedModel$messageType == "error"]
-
-  values$fileImportSuccess <- success
-  values$warnings <- list(load = warnings)
-  values$errors <- list(load = errors)
-
-  values
-}
-
-
-#' Fill Values From Zip
-#'
-#' Set values, warning and error messages for the import module such that success, warnings and
-#'  errors are displayed inside the pop-up modal.
-#'
-#' @param values (reactiveValues) empty list of values in the format of the output of loadDataWrapper
-#' @param filename (reactive) name of the loaded file
-#' @param importZip (list) output of loadModel()
-#' @inheritParams importDataServer
-#'
-#' @return (list) list of values in the format of the output of loadDataWrapper
-fillValuesFromZip <- function(values, filename, importZip, expectedFileInZip) {
-  unzippedFiles <- tryCatch({
-    zip::unzip(importZip, exdir = "unzippedTmp")
-    #zip::unzip(importZip, exdir = tempdir())
-    list.files("unzippedTmp")
-    },
-    error = function(cond) {
-      values$errors <-
-        list(load = paste("Could not unzip file:", cond$message))
-      NULL
-    },
-    warning = function(cond) {
-      values$warnings <- list(load = paste("Warning:", cond$message))
-      NULL
-    }
-  )
-
-  # clean up
-  unlink("unzippedTmp", recursive = TRUE)
-
-  if (is.null(unzippedFiles)) {
-    values$dataImport <- NULL
-  } else if (length(expectedFileInZip) > 0 && !all(expectedFileInZip %in% unzippedFiles)) {
-    values$errors <-
-      list(load = "Expected files not found!")
-    values$dataImport <- NULL
-  } else {
-    ## Import technically successful
-    values$dataImport <- importZip
-    values$fileImportSuccess <- "Zip import successful"
-  }
-
-  values$fileName <- filename
-
-  values
-}
-
-
-# Functions to IMPORT DATA files ----
-
-#' Load Data Wrapper
-#'
-#' @param values (list) list with import specifications
-#' @param filepath (character) url or path
-#' @param filename (character) url or file name
-#' @param type (character) file type input
-#' @param sep (character) column separator input
-#' @param dec (character) decimal separator input
-#' @param withRownames (logical) contains rownames input
-#' @param withColnames (logical) contains colnames input
-#' @param sheetId (numeric) sheet id
-loadDataWrapper <- function(values,
-                            filepath,
-                            filename,
-                            type,
-                            sep,
-                            dec,
-                            withRownames,
-                            withColnames,
-                            sheetId) {
-  df <- tryCatch(
-    loadData(
-      path = filepath,
-      type = type,
-      sep = sep,
-      dec = dec,
-      colNames = withColnames,
-      sheet = sheetId
-    ),
-    error = function(cond) {
-      values$errors <-
-        list(load = paste("Could not read in file:", cond$message))
-      NULL
-    },
-    warning = function(cond) {
-      values$warnings <- list(load = paste("Warning:", cond$message))
-      NULL
-    }
-  )
-
-  if (is.null(df)) {
-    values$dataImport <- NULL
-  } else {
-    ## Import technically successful
-    if (withRownames) {
-      rn <- df[, 1]
-      if (any(is.na(suppressWarnings(as.integer(rn))))) {
-        rn <- as.character(rn)
-      } else {
-        rn <- as.integer(rn)
-      }
-
-      df <- df[, -1, drop = FALSE]
-      values$dataImport <- as.data.frame(df, row.names = rn)
-    } else {
-      values$dataImport <- as.data.frame(df)
-    }
-
-  }
-
-  values$fileName <- filename
-
-  values
-}
-
-# Functions to IMPORT ZIP objects ----
-
-#' Load Zip Wrapper
-#'
-#' @param filepath (character) path to the model file
-#' @inheritParams uploadModelServer
-loadZipWrapper <- function(filepath, fileExtension = "zip" ) {
- filepath %>%
-    checkExtension(fileExtension = fileExtension) %>%
-    tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
-}
-
 # Functions to IMPORT MODEL objects ----
 
 #' Load Model Wrapper
@@ -224,18 +20,6 @@ loadModelWrapper <- function(filepath,
     tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
 }
 
-
-checkExtension <- function(filepath,
-                           fileExtension = "zip") {
-  # check if valid app-specific extension or a zip file
-  if (getExtension(filepath) != fileExtension && getExtension(filepath) != "zip") {
-    stop(sprintf("Not a %s file!", expectedExtStrng(fileExtension)))
-    return(NULL)
-  }
-
-  filepath
-}
-
 #' Get Zip
 #'
 #' @inheritParams loadModelWrapper
@@ -247,7 +31,7 @@ getZip <- function(filepath) {
     return(filepath)
   } else if (!is.na(url_parse(filepath)$scheme)) {
     # download zip from url
-    tmpPath <- try(downloadZipToTmp(
+    tmpPath <- try(downloadFileToTmp(
       url = filepath,
       fileext = getExtension(filepath, prefix = ".")))
   }
@@ -257,14 +41,6 @@ getZip <- function(filepath) {
     return(tmpPath)
   } else {
     stop("Not a valid URL or local file path")
-  }
-}
-
-expectedExtStrng <- function(fileExtension) {
-  if (fileExtension == "zip") {
-    return(".zip")
-  } else {
-    return(sprintf(".%s or .zip", fileExtension))
   }
 }
 
@@ -319,7 +95,7 @@ loadModel <-
       all(names(modelImport) %in% c("data", "inputs", "values", "model", "version")) ||
       # expected names for "mpiBpred"
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
-        )) {
+    )) {
       stop("File format not valid or depricated. Model object not found.")
       return(NULL)
     }

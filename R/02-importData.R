@@ -15,8 +15,9 @@ importDataUI <- function(id, label = "Import Data") {
 #'
 #' Extra options for the import module.
 #'
-#' @param rPackageName (character) If not NULL, than the uploaded file must be a downloaded file
-#'  from the R package where \code{importDataServer} is called. This parameter is ignored if
+#' @param rPackageName (character) name of the package (as in the Description file) in which this
+#'  module is called. If not NULL, than the uploaded file must be a downloaded file
+#'  from the R package where \code{importDataServer} was called. This parameter is ignored if
 #'  \code{importType == "data"}.
 #' @param customHelpText (list) A help text element that can be added to a UI definition. Output of
 #'  \code{shiny::helpText(...)}.
@@ -58,7 +59,7 @@ importOptions <- function(rPackageName = "",
 #'  File names that must be contained in the zip upload.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
 #'  This parameter is ignored if importType == "data"
-#' @param mainFolder (character) folder containing all loadable .zip files.
+#' @param mainFolder (character) DEPRECATED. folder containing all loadable .zip files.
 #'   This parameter is ignored if importType == "data"
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files.
 #'  This parameter is ignored if importType == "data"
@@ -69,10 +70,10 @@ importOptions <- function(rPackageName = "",
 #' @export
 importDataServer <- function(id,
                              title = "",
-                             defaultSource = "ckan",
+                             defaultSource = c("ckan", "file", "url", "remoteModel"),
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              ignoreWarnings = FALSE,
-                             importType = "data",
+                             importType = c("data", "model", "zip"),
                              # parameters for data upload
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),
@@ -82,21 +83,25 @@ importDataServer <- function(id,
                              outputAsMatrix = FALSE,
                              # parameters for model upload
                              fileExtension = "zip",
-                             mainFolder = "predefinedModels",
+                             mainFolder = NULL,
                              subFolder = NULL,
                              rPackageName = "",
                              onlySettings = FALSE,
                              expectedFileInZip = c(),
                              options = importOptions()
                              ) {
+  defaultSource <- match.arg(defaultSource)
+  importType <- match.arg(importType)
+
+  if (!is.null(mainFolder)) warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
+
+  # check new options param as long as we need param "rPackageName"
+  if (options[["rPackageName"]] == "" && rPackageName != "") {
+    options[["rPackageName"]] <- rPackageName
+  }
+
   moduleServer(id,
                function(input, output, session) {
-                 # check new options param as long as we need param "rPackageName"
-                 if (options[["rPackageName"]] == "" && rPackageName != "") {
-                   options[["rPackageName"]] <- rPackageName
-                 }
-                 # end check
-
                  ns <- session$ns
                  mergeList <- reactiveVal(list())
                  customNames <- reactiveValues(
@@ -121,6 +126,23 @@ importDataServer <- function(id,
                  }) %>%
                    bindEvent(input[["dataSelector-withColnames"]])
 
+                 output$selectDataDialog <- renderUI({
+                   if (input[["fileSource-source"]] == "remoteModel" ||
+                       (input[["fileSource-source"]] == "file" &&
+                        !is.null(input[["fileSource-dataOrLink"]]) &&
+                        input[["fileSource-dataOrLink"]] == "dataLink")) {
+                     NULL
+                   } else {
+                     selectDataUI(
+                       ns("dataSelector"),
+                       batch = batch,
+                       outputAsMatrix = outputAsMatrix,
+                       importType = importType,
+                       customHelpText = options[["customHelpText"]]
+                     )
+                   }
+                 })
+
                  observeEvent(input$openPopup, {
                    logDebug("Check internet and showModal import")
 
@@ -137,10 +159,15 @@ importDataServer <- function(id,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
                        fileExtension = fileExtension,
+                       isInternet = internetCon(),
                        options = options
                      )
                    )
 
+                   shinyjs::disable(ns("dataSelector-keepData"), asis = TRUE)
+                   shinyjs::disable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
+                   shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
+                   shinyjs::disable(ns("dataQuerier-downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
                    shinyjs::disable(ns("acceptPrepared"), asis = TRUE)
                    shinyjs::disable(ns("acceptMerged"), asis = TRUE)
@@ -172,6 +199,12 @@ importDataServer <- function(id,
                      shinyjs::hide(ns("acceptPrepared"), asis = TRUE)
                      shinyjs::hide(ns("acceptMerged"), asis = TRUE)
                      shinyjs::hide(ns("acceptQuery"), asis = TRUE)
+                     if (!is.null(values$fileImportSuccess) &&
+                         values$fileImportSuccess == "Data import successful") {
+                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
+                     } else {
+                       shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
+                     }
                    }
                  })
 
@@ -180,18 +213,32 @@ importDataServer <- function(id,
                    removeModal()
                  })
 
+                 dataSource <- selectSourceServer(
+                   "fileSource",
+                   importType = importType,
+                   openPopupReset = reactive(input$openPopup > 0),
+                   internetCon = internetCon,
+                   githubRepo = getGithubMapping(options[["rPackageName"]]),
+                   folderOnGithub = getFolderOnGithub(
+                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     subFolder = subFolder
+                   ),
+                   pathToLocal = getPathToLocal(
+                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     subFolder = subFolder
+                   ),
+                   ckanFileTypes = ckanFileTypes
+                 )
+
                  values <- selectDataServer(
                    "dataSelector",
                    importType = importType,
-                   ckanFileTypes = ckanFileTypes,
-                   internetCon = internetCon,
-                   openPopupReset = reactive(input$openPopup > 0),
                    ignoreWarnings = ignoreWarnings,
+                   dataSource = dataSource,
                    # parameters required to load data
                    mergeList = mergeList,
                    customNames = customNames,
                    # parameters required to load a model
-                   mainFolder = mainFolder,
                    subFolder = subFolder,
                    rPackageName = options[["rPackageName"]],
                    onlySettings = onlySettings,
@@ -199,8 +246,31 @@ importDataServer <- function(id,
                    expectedFileInZip = expectedFileInZip
                  )
 
+                 # LINK to DATA down-/upload ----
+                 observeDownloadDataLink(id, input = input, output = output, session = session,
+                                         mergeList = mergeList,
+                                         downloadBtnID = "dataSelector-downloadDataLink")
+
+                 observeDownloadDataLink(id, input = input, output = output, session = session,
+                                         mergeList = mergeList,
+                                         downloadBtnID = "dataQuerier-downloadDataLink")
+
+                 valuesFromDataLink <-
+                   observeUploadDataLink(id, input = input, output = output, session = session,
+                                         dataSource = dataSource,
+                                         parentParams = list(
+                                           isInternet = internetCon,
+                                           customNames = customNames,
+                                           subFolder = subFolder,
+                                           rPackageName = options[["rPackageName"]],
+                                           onlySettings = onlySettings,
+                                           fileExtension = fileExtension,
+                                           expectedFileInZip = expectedFileInZip),
+                                         mergeList
+                   )
+
                  ## disable button accept ----
-                 observeEvent(values$dataImport, {
+                 observeEvent(values$dataImport, ignoreNULL = FALSE, {
                    logDebug("Enable/Disable Accept button")
 
                    if (importType == "data") {
@@ -231,10 +301,17 @@ importDataServer <- function(id,
                    if (length(values$dataImport) == 0 ||
                        isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                      shinyjs::disable(ns("accept"), asis = TRUE)
+                     shinyjs::disable(ns("dataSelector-keepData"), asis = TRUE)
+                     shinyjs::disable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
+                     shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                      values$fileImportSuccess <- NULL
                    } else {
                      shinyjs::enable(ns("accept"), asis = TRUE)
+
                      if (importType == "data") {
+                       shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
+                       shinyjs::enable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
+                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
                      }
@@ -334,8 +411,6 @@ importDataServer <- function(id,
                    removeModal()
                    removeOpenGptCon()
 
-
-
                    req(values$dataImport)
 
                    res <- values$dataImport
@@ -406,14 +481,6 @@ importDataServer <- function(id,
                })
 }
 
-# Helper Functions ----
-
-checkIfActive <- function(currentTab, tabName) {
-  if (is.null(currentTab)) return(FALSE)
-
-  currentTab == tabName
-}
-
 # import data dialog UI ----
 importDataDialog <-
   function(ns,
@@ -424,6 +491,7 @@ importDataDialog <-
            outputAsMatrix = FALSE,
            importType = "data",
            fileExtension = "zip",
+           isInternet = FALSE,
            options = importOptions()) {
 
     if (title == "") {
@@ -436,7 +504,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = sprintf("%s (%s)", title, packageVersion("DataTools")),
-      style = if (importType == "data") 'height: 1120px' else 'height: 800px',
+      style = if (importType == "data") 'height: 1100px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
         column(4,
@@ -451,9 +519,9 @@ importDataDialog <-
           8,
           align = "right",
           actionButton(ns("accept"), "Accept"),
-          if (importType == "data") actionButton(ns("acceptPrepared"), "Accept") else NULL,
-          if (importType == "data") actionButton(ns("acceptMerged"), "Accept Merged") else NULL,
-          if (importType == "data") actionButton(ns("acceptQuery"), "Accept Query") else NULL,
+          if (importType == "data") actionButton(ns("acceptPrepared"), "Accept Prepared Data") else NULL,
+          if (importType == "data") actionButton(ns("acceptMerged"), "Accept Merged Data") else NULL,
+          if (importType == "data") actionButton(ns("acceptQuery"), "Accept Queried Data") else NULL,
           actionButton(ns("cancel"), "Cancel")
         )
       )),
@@ -462,26 +530,34 @@ importDataDialog <-
         selected = "Select",
         tabPanel(
           "Select",
-          selectDataUI(
-            ns("dataSelector"),
-            defaultSource = defaultSource,
-            ckanFileTypes = ckanFileTypes,
-            batch = batch,
-            outputAsMatrix = outputAsMatrix,
-            importType = importType,
-            fileExtension = fileExtension,
-            options = options
+          tagList(
+            tags$br(),
+            selectSourceUI(ns("fileSource"),
+                           defaultSource = defaultSource,
+                           ckanFileTypes = ckanFileTypes,
+                           importType = importType,
+                           isInternet = isInternet,
+                           fileExtension = fileExtension),
+            uiOutput(ns("selectDataDialog"))
           )
         ),
+        if (importType == "data") tabPanel("Query with SQL",
+                                           queryDataUI(ns("dataQuerier"))) else NULL,
         if (importType == "data") tabPanel("Prepare",
                                            prepareDataUI(ns("dataPreparer"))) else NULL,
         if (importType == "data") tabPanel("Merge",
-                                           mergeDataUI(ns("dataMerger"))) else NULL,
-        if (importType == "data") tabPanel("Query with SQL",
-                                           queryDataUI(ns("dataQuerier"))) else NULL
+                                           mergeDataUI(ns("dataMerger"))) else NULL
       )
     )
   }
+
+# Helper Functions ----
+
+checkIfActive <- function(currentTab, tabName) {
+  if (is.null(currentTab)) return(FALSE)
+
+  currentTab == tabName
+}
 
 customImportChecks <- function(warnings,
                         errors,
@@ -489,6 +565,10 @@ customImportChecks <- function(warnings,
                         customWarningChecks,
                         customErrorChecks,
                         type = "import") {
+  if (length(df) == 0 && length(errors$load) == 0) {
+    errors$load <- "No data. Please load a file and check the file type!"
+  }
+
   ## Import valid?
   if (length(errors$load) == 0) {
     for (i in seq_along(customWarningChecks)) {
@@ -518,84 +598,6 @@ isNotValid <- function(errors, warnings, ignoreWarnings) {
        length(unlist(warnings, use.names = FALSE)) > 0)
 }
 
-#' Cut All Strings
-#'
-#' Cuts strings of character and factor columns if a string is longer than cutAt parameter.
-#' Factors are converted to characters before cutting.
-#'
-#' @param df (data.frame) data.frame with character and non-character columns
-#' @param cutAt (numeric) number of characters after which to cut the entries of an character-column
-#' @export
-cutAllLongStrings <- function(df, cutAt = 50) {
-  if (is.null(df)) {
-    return(NULL)
-  }
-
-  if (any(sapply(df, is.factor)))
-    warning("factors are converted to character")
-
-  df <- lapply(df, function(z) {
-    if (is.factor(z)) {
-      z <- as.character(z)
-    }
-
-    if (!is.character(z)) {
-      return(z)
-    }
-
-    cutStrings(charVec = z, cutAt = cutAt)
-  }) %>%
-    as.data.frame(stringsAsFactors = FALSE)
-
-  dfColNames <- colnames(df) %>%
-    cutStrings(cutAt = max(10, (cutAt - 3)))
-  colnames(df) <- dfColNames
-
-  df
-}
-
-
-#' Cut Strings
-#'
-#' @param charVec (character) character vector
-#' @param cutAt (numeric) number of characters after which to cut the entries of an character-column
-cutStrings <- function(charVec, cutAt = 50) {
-  if (any(nchar(charVec) > cutAt, na.rm = TRUE)) {
-    index <- !is.na(charVec) & nchar(charVec) > cutAt
-    charVec[index] <-
-      paste0(substr(charVec[index], 1, cutAt), "...")
-  }
-
-  charVec
-}
-
-
-#' get nRow
-#'
-#' @param headOnly (logical) if TRUE, set maximal number of rows to n
-#' @param type (character) file type
-#' @param n (numeric) maximal number of rows if headOnly
-getNrow <- function(headOnly, type, n = 3) {
-  if (headOnly) {
-    if (type == "xlsx")
-      return(1:n)
-    else
-      if (type == "ods")
-        return(paste0("A1:C", n))
-    else
-      return(n)
-  } else {
-    if (type %in% c("xlsx", "ods"))
-      return(NULL)
-    else
-      if (type == "xls")
-        return(Inf)
-    else
-      return(-999)
-  }
-}
-
-
 formatForImport <-
   function(df,
            outputAsMatrix,
@@ -606,7 +608,7 @@ formatForImport <-
       return (df)
 
     ### format column names for import ----
-    colnames(df) <- colnames(df) %>%
+    df <- df %>%
       formatColumnNames(silent = silent)
 
     if (outputAsMatrix) {
@@ -639,9 +641,10 @@ formatForImport <-
 #'
 #' Replaces all not alpha-numeric characters in the names of columns with a dot.
 #'
-#' @param vNames (character) names of the imported data's columns
+#' @param df (character) data
 #' @param silent (logical) set TRUE prevent notification of warnings
-formatColumnNames <- function(vNames, silent = FALSE) {
+formatColumnNames <- function(df, silent = FALSE) {
+  vNames <- colnames(df)
   message <- NULL
 
   if (any(grepl("[^[:alnum:] | ^\\. | ^\\_]", vNames))) {
@@ -701,41 +704,12 @@ formatColumnNames <- function(vNames, silent = FALSE) {
     shinyjs::alert(message)
   }
 
-  return(vNames)
+  colnames(df) <- vNames
+  return(df)
 }
 
 
 addIncIfDuplicate <- function(vNames, isDuplicate, inc = 1) {
   vNames[isDuplicate] <- paste0(vNames[isDuplicate], ".", inc)
   vNames
-}
-
-
-#' Get Sheet Selection
-#'
-#' @param filepath (character) url or path
-getSheetSelection <- function(filepath) {
-  if (is.null(filepath))
-    return(list())
-
-  fileSplit <- strsplit(filepath, split = "\\.")[[1]]
-  typeOfFile <- fileSplit[length(fileSplit)]
-
-  if (!(typeOfFile %in% c("xls", "xlsx")))
-    return(NULL)
-
-  if (typeOfFile == "xlsx") {
-    # loadWorkbook() is also able to handle url's
-    sheetNames <- loadWorkbook(filepath) %>% names()
-  } else if (typeOfFile == "xls") {
-    sheetNames <- excel_sheets(filepath)
-  }
-
-  if (length(sheetNames) == 0)
-    return(NULL)
-
-  sheets <- 1:length(sheetNames)
-  names(sheets) <- sheetNames
-
-  sheets
 }

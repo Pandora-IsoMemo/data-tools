@@ -16,5 +16,7 @@ updateMergeList(mergeList, fileName, newData, notifications = "")
 \item{notifications}{(character) previous notifications}
 }
 \description{
-Update Merge List
+Checks if an object that should be added is already existing in mergeList. If so, the existing
+ object will be replaced (updated). This is important to keep most recent changes from data
+ preparation steps.
 }
