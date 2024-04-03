@@ -477,7 +477,8 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        prompt_content = paste("Write an SQL query to", input$gptPrompt),
                        temperature = input$temperature,
                        max_tokens = input$maxTokens,
-                       n = input$n
+                       n = input$n,
+                       output_type='text'
                      ) %>%
                        validateCompletion() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
