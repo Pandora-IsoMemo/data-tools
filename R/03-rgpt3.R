@@ -322,15 +322,15 @@ rgpt_single = function(prompt_role = 'user'
 
 
   if(output_type == 'complete'){
-    output = list(core_output
-                  , meta_output
-                  , logprobs_output)
+    output = list('core_output' = core_output
+                  ,'meta_ouput' = meta_output
+                  , 'logprobs_output' = logprobs_output)
   } else if(output_type == 'meta'){
-    output = meta_output
+    output = list('meta_output' = meta_output)
   } else if(output_type == 'text'){
-    output = core_output
+    output = list('core_output' = core_output)
   } else if(output_type == 'logprobs'){
-    output = logprobs_output
+    output = list('logprobs_output' = logprobs_output)
   }
 
   return(output)

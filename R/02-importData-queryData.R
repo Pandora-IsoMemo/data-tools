@@ -394,11 +394,11 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                      # check connection
                      connSuccess <- NULL
                      connSuccess <- rgpt_test_completion() %>%
-                       #validateAccess() %>%
+                       validateAccess() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
 
                      if (!is.null(connSuccess) &&
-                         !is.null(connSuccess[[1]][["gpt3"]])) {
+                         !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
                        show("temperature")
                        show("maxTokens")
                        show("n")
@@ -437,7 +437,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        max_tokens = input$maxTokens,
                        n = input$n
                      ) %>%
-                       #validateCompletion() %>%
+                       validateCompletion() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
@@ -446,9 +446,9 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    # gptOut is only needed for tests
                    gptOut(res)
 
-                   req(res[[1]][["gpt3"]])
+                   req(res[["core_output"]][["gpt_content"]])
                    # remove preceding lines
-                   command <- res[[1]][["gpt3"]] %>%
+                   command <- res[["core_output"]][["gpt_content"]] %>%
                      gsub(pattern = "^\n+", replacement = "")
                    sqlCommand(command)
                  }) %>%
@@ -475,7 +475,7 @@ validateKey <- function(filepath) {
 }
 
 validateAccess <- function(gptOut) {
-  if (is.null(gptOut[[1]][["gpt3"]])) {
+  if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
     stop("No output available for test prompt. Probably the key is not valid.")
   }
 
@@ -483,7 +483,7 @@ validateAccess <- function(gptOut) {
 }
 
 validateCompletion <- function(gptOut) {
-  if (is.null(gptOut[[1]][["gpt3"]])) {
+  if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
     warning("No output available.")
   }
 
