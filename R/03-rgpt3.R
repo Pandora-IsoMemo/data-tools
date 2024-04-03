@@ -323,7 +323,7 @@ rgpt_single = function(prompt_role = 'user'
 
   if(output_type == 'complete'){
     output = list('core_output' = core_output
-                  ,'meta_ouput' = meta_output
+                  ,'meta_output' = meta_output
                   , 'logprobs_output' = logprobs_output)
   } else if(output_type == 'meta'){
     output = list('meta_output' = meta_output)
