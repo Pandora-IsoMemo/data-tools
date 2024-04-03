@@ -7,15 +7,15 @@
 rgpt_test_completion(verbose = T)
 }
 \arguments{
-\item{verbose}{(boolean) if TRUE prints the actual prompt and GPT completion 
+\item{verbose}{(boolean) if TRUE prints the actual prompt and GPT completion
 of the test request (default: TRUE).}
 }
 \value{
 A message of success or failure of the connection.
 }
 \description{
-`rgpt_test_completion()` sends a basic 
-[completion request](https://beta.openai.com/docs/api-reference/completions) 
+`rgpt_test_completion()` sends a basic
+[completion request](https://beta.openai.com/docs/api-reference/completions)
 to the Open AI GPT API.
 This function was copied from https://github.com/ben-aaron188/rgpt3.
 }

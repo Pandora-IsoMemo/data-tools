@@ -9,7 +9,7 @@ rgpt_single(
   prompt_content,
   seed = NULL,
   model = "gpt-3.5-turbo-1106",
-  output_type = "text",
+  output_type = "complete",
   max_tokens = 100,
   temperature = 1,
   top_p = 1,
@@ -22,67 +22,67 @@ rgpt_single(
 }
 \arguments{
 \item{prompt_role}{character (default: 'user') that contains the role for the
-prompt message in the GPT (chat) message format. Must be one of 'system', 
-assistant', 'user' (default), see 
+prompt message in the GPT (chat) message format. Must be one of 'system',
+assistant', 'user' (default), see
 [https://platform.openai.com/docs/guides/chat](https://platform.openai.com/docs/guides/chat)}
 
-\item{prompt_content}{character that contains the content for the prompt 
-message in the GPT (chat) message format, see 
-[https://platform.openai.com/docs/guides/chat](https://platform.openai.com/docs/guides/chat). 
+\item{prompt_content}{character that contains the content for the prompt
+message in the GPT (chat) message format, see
+[https://platform.openai.com/docs/guides/chat](https://platform.openai.com/docs/guides/chat).
 This is the key instruction that the GPT model receives.}
 
-\item{seed}{numeric (optional) the seed to control reproducibility of the 
-completions. If NULL, no seed will be used and results may differ at each 
+\item{seed}{numeric (optional) the seed to control reproducibility of the
+completions. If NULL, no seed will be used and results may differ at each
 completion. See:
 [https://platform.openai.com/docs/api-reference/chat/create#chat-create-seed](https://platform.openai.com/docs/api-reference/chat/create#chat-create-seed)}
 
-\item{model}{a character vector that indicates the 
-[GPT model](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) 
-to use; currently supported are: 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo', 
-'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-0613', 
-'gpt-3.5-turbo-16k-0613', 'gpt-4', 'gpt-4-0613', 'gpt-4-0125-preview' 
+\item{model}{a character vector that indicates the
+[GPT model](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo)
+to use; currently supported are: 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo',
+'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-0613',
+'gpt-3.5-turbo-16k-0613', 'gpt-4', 'gpt-4-0613', 'gpt-4-0125-preview'
 '(default, = GPT-4 Turbo)}
 
-\item{output_type}{character determining the output provided: "complete" 
+\item{output_type}{character determining the output provided: "complete"
 '(default), "text" or "meta"}
 
-\item{max_tokens}{numeric (default: 100) indicating the maximum number of 
-tokens that the completion request should return (from the official API 
-documentation: _The maximum number of tokens allowed for the generated 
-answer. By default, the number of tokens the model can return will be 
+\item{max_tokens}{numeric (default: 100) indicating the maximum number of
+tokens that the completion request should return (from the official API
+documentation: _The maximum number of tokens allowed for the generated
+answer. By default, the number of tokens the model can return will be
 '(4096 - prompt tokens)._)}
 
-\item{temperature}{numeric (default: 1.0) specifying the sampling strategy 
-of the possible completions (from the official API documentation: _What 
-sampling temperature to use, between 0 and 2. Higher values like 0.8 will 
-make the output more random, while lower values like 0.2 will make it more 
-focused and deterministic. We generally recommend altering this or `top_p` 
+\item{temperature}{numeric (default: 1.0) specifying the sampling strategy
+of the possible completions (from the official API documentation: _What
+sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+make the output more random, while lower values like 0.2 will make it more
+focused and deterministic. We generally recommend altering this or `top_p`
 but not both._)}
 
-\item{top_p}{numeric (default: 1) specifying sampling strategy as an 
+\item{top_p}{numeric (default: 1) specifying sampling strategy as an
 alternative to the temperature sampling (from the official API documentation:
-_An alternative to sampling with temperature, called nucleus sampling, where 
-the model considers the results of the tokens with top_p probability mass. 
-So 0.1 means only the tokens comprising the top 10% probability mass are 
-considered. We generally recommend altering this or `temperature` but not 
+_An alternative to sampling with temperature, called nucleus sampling, where
+the model considers the results of the tokens with top_p probability mass.
+So 0.1 means only the tokens comprising the top 10% probability mass are
+considered. We generally recommend altering this or `temperature` but not
 both._)}
 
-\item{n}{numeric (default: 1) specifying the number of completions per 
-request (from the official API documentation: _How many chat completion 
-choices to generate for each input message. **Note: Because this parameter 
+\item{n}{numeric (default: 1) specifying the number of completions per
+request (from the official API documentation: _How many chat completion
+choices to generate for each input message. **Note: Because this parameter
 generates many completions, it can quickly consume your token quota.** Use
 carefully and ensure that you have reasonable settings for max_tokens and
 stop._)}
 
-\item{stop}{character or character vector (default: NULL) that specifies 
-after which character value when the completion should end (from the official 
-API documentation: _Up to 4 sequences where the API will stop generating 
+\item{stop}{character or character vector (default: NULL) that specifies
+after which character value when the completion should end (from the official
+API documentation: _Up to 4 sequences where the API will stop generating
 further tokens._)}
 
-\item{presence_penalty}{numeric (default: 0) between -2.00  and +2.00 to 
-determine the penalisation of repetitiveness if a token already exists (from 
-the official API documentation: _Number between -2.0 and 2.0. Positive values 
-penalize new tokens based on whether they appear in the text so far, 
+\item{presence_penalty}{numeric (default: 0) between -2.00  and +2.00 to
+determine the penalisation of repetitiveness if a token already exists (from
+the official API documentation: _Number between -2.0 and 2.0. Positive values
+penalize new tokens based on whether they appear in the text so far,
 increasing the model's likelihood to talk about new topics._). See also:
 [https://beta.openai.com/docs/api-reference/parameter-details](https://beta.openai.com/docs/api-reference/parameter-details)}
 
@@ -121,9 +121,9 @@ If `output_type` is "meta", only the data table in slot [[2]] is returned.
 If `output_type` is "logprobs", only the data table in slot [[3]] is returned.
 }
 \description{
-`rgpt_single()` sends a single 
-[chat completion request](https://platform.openai.com/docs/guides/chat) to 
-the Open AI GPT API. This function allows you to specify the role and content 
+`rgpt_single()` sends a single
+[chat completion request](https://platform.openai.com/docs/guides/chat) to
+the Open AI GPT API. This function allows you to specify the role and content
 for your API call.
  This function was copied from https://github.com/ben-aaron188/rgpt3.
 }
@@ -131,8 +131,8 @@ for your API call.
 For a general guide on the completion requests, see
 [https://platform.openai.com/docs/api-reference/chat](https://platform.openai.com/docs/api-reference/chat).
 This function provides you with an R wrapper to send requests with the full
-range of request parameters as detailed on 
-[https://beta.openai.com/docs/api-reference/completions](https://beta.openai.com/docs/api-reference/completions) 
+range of request parameters as detailed on
+[https://beta.openai.com/docs/api-reference/completions](https://beta.openai.com/docs/api-reference/completions)
 and reproduced below.
 
 Parameters not included/supported:
@@ -147,8 +147,8 @@ Parameters not included/supported:
 `rgpt_single(prompt_content = 'You are a teacher: explain to me what science is')`
 
 ## Instruct a GPT model to write ten research ideas of max. 150 tokens with
-some controls: 
-`rgpt_single(prompt_role = 'user', 
+some controls:
+`rgpt_single(prompt_role = 'user',
 prompt_content = 'Write a research idea about using text data to understand human behaviour:' ,
 temperature = 0.8 , n = 10 , max_tokens = 150)`
 

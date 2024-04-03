@@ -1,19 +1,19 @@
 #' Set up the authentication with your API key
 #'
 #' @description
-#' Access to GPT's functions requires an API key that you obtain from 
-#' [https://openai.com/api/](https://openai.com/api/). `rgpt_authenticate()` 
-#' looks for your API key in a file that you provide the path to and ensures 
-#' you can connect to the models. `rgpt_endsession()` overwrites your API key 
-#' _for this session_ (it is recommended that you run this when you are done). 
-#' `check_apikey_form()` is a simple check if any information has been provided 
+#' Access to GPT's functions requires an API key that you obtain from
+#' [https://openai.com/api/](https://openai.com/api/). `rgpt_authenticate()`
+#' looks for your API key in a file that you provide the path to and ensures
+#' you can connect to the models. `rgpt_endsession()` overwrites your API key
+#' _for this session_ (it is recommended that you run this when you are done).
+#' `check_apikey_form()` is a simple check if any information has been provided
 #' at all.
 #' This function was copied from https://github.com/ben-aaron188/rgpt3.
 #' @param path The file path to the API key
 #' @return A confirmation message
-#' @details The easiest way to store you API key is in a `.txt` file with _only_ 
-#' the API key in it (without quotation marks or other common string 
-#' indicators). `rgpt_authenticate()` reads the single file you point it to and 
+#' @details The easiest way to store you API key is in a `.txt` file with _only_
+#' the API key in it (without quotation marks or other common string
+#' indicators). `rgpt_authenticate()` reads the single file you point it to and
 #' retrieves the content as authentication key for all requests.
 rgpt_authenticate = function(path){
   apikey_ <- readLines(path)
@@ -40,16 +40,16 @@ check_apikey_form = function(){
 #' Makes a single chat completion request to the GPT API for all chat models
 #'
 #' @description
-#' `rgpt_single()` sends a single 
-#' [chat completion request](https://platform.openai.com/docs/guides/chat) to 
-#' the Open AI GPT API. This function allows you to specify the role and content 
+#' `rgpt_single()` sends a single
+#' [chat completion request](https://platform.openai.com/docs/guides/chat) to
+#' the Open AI GPT API. This function allows you to specify the role and content
 #' for your API call.
 #'  This function was copied from https://github.com/ben-aaron188/rgpt3.
 #' @details For a general guide on the completion requests, see
 #' [https://platform.openai.com/docs/api-reference/chat](https://platform.openai.com/docs/api-reference/chat).
 #' This function provides you with an R wrapper to send requests with the full
-#' range of request parameters as detailed on 
-#' [https://beta.openai.com/docs/api-reference/completions](https://beta.openai.com/docs/api-reference/completions) 
+#' range of request parameters as detailed on
+#' [https://beta.openai.com/docs/api-reference/completions](https://beta.openai.com/docs/api-reference/completions)
 #' and reproduced below.
 #'
 #' Parameters not included/supported:
@@ -64,8 +64,8 @@ check_apikey_form = function(){
 #' `rgpt_single(prompt_content = 'You are a teacher: explain to me what science is')`
 #'
 #' ## Instruct a GPT model to write ten research ideas of max. 150 tokens with
-#' some controls: 
-#' `rgpt_single(prompt_role = 'user', 
+#' some controls:
+#' `rgpt_single(prompt_role = 'user',
 #' prompt_content = 'Write a research idea about using text data to understand human behaviour:' ,
 #' temperature = 0.8 , n = 10 , max_tokens = 150)`
 #'
@@ -74,57 +74,57 @@ check_apikey_form = function(){
 #' easier way to learn R than' , temperature = 0.7 , seed = 42 , max_tokens =
 #' 50)`
 #' @param prompt_role character (default: 'user') that contains the role for the
-#' prompt message in the GPT (chat) message format. Must be one of 'system', 
-#' assistant', 'user' (default), see 
+#' prompt message in the GPT (chat) message format. Must be one of 'system',
+#' assistant', 'user' (default), see
 #' [https://platform.openai.com/docs/guides/chat](https://platform.openai.com/docs/guides/chat)
-#' @param prompt_content character that contains the content for the prompt 
-#' message in the GPT (chat) message format, see 
-#' [https://platform.openai.com/docs/guides/chat](https://platform.openai.com/docs/guides/chat). 
+#' @param prompt_content character that contains the content for the prompt
+#' message in the GPT (chat) message format, see
+#' [https://platform.openai.com/docs/guides/chat](https://platform.openai.com/docs/guides/chat).
 #' This is the key instruction that the GPT model receives.
-#' @param seed numeric (optional) the seed to control reproducibility of the 
-#' completions. If NULL, no seed will be used and results may differ at each 
+#' @param seed numeric (optional) the seed to control reproducibility of the
+#' completions. If NULL, no seed will be used and results may differ at each
 #' completion. See:
 #' [https://platform.openai.com/docs/api-reference/chat/create#chat-create-seed](https://platform.openai.com/docs/api-reference/chat/create#chat-create-seed)
-#' @param model a character vector that indicates the 
-#' [GPT model](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo) 
-#' to use; currently supported are: 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo', 
-#' 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-0613', 
-#' 'gpt-3.5-turbo-16k-0613', 'gpt-4', 'gpt-4-0613', 'gpt-4-0125-preview' 
+#' @param model a character vector that indicates the
+#' [GPT model](https://platform.openai.com/docs/models/gpt-4-and-gpt-4-turbo)
+#' to use; currently supported are: 'gpt-3.5-turbo-0125', 'gpt-3.5-turbo',
+#' 'gpt-3.5-turbo-1106', 'gpt-3.5-turbo-16k', 'gpt-3.5-turbo-0613',
+#' 'gpt-3.5-turbo-16k-0613', 'gpt-4', 'gpt-4-0613', 'gpt-4-0125-preview'
 #' '(default, = GPT-4 Turbo)
-#' @param output_type character determining the output provided: "complete" 
+#' @param output_type character determining the output provided: "complete"
 #' '(default), "text" or "meta"
-#' @param max_tokens numeric (default: 100) indicating the maximum number of 
-#' tokens that the completion request should return (from the official API 
-#' documentation: _The maximum number of tokens allowed for the generated 
-#' answer. By default, the number of tokens the model can return will be 
+#' @param max_tokens numeric (default: 100) indicating the maximum number of
+#' tokens that the completion request should return (from the official API
+#' documentation: _The maximum number of tokens allowed for the generated
+#' answer. By default, the number of tokens the model can return will be
 #' '(4096 - prompt tokens)._)
-#' @param temperature numeric (default: 1.0) specifying the sampling strategy 
-#' of the possible completions (from the official API documentation: _What 
-#' sampling temperature to use, between 0 and 2. Higher values like 0.8 will 
-#' make the output more random, while lower values like 0.2 will make it more 
-#' focused and deterministic. We generally recommend altering this or `top_p` 
+#' @param temperature numeric (default: 1.0) specifying the sampling strategy
+#' of the possible completions (from the official API documentation: _What
+#' sampling temperature to use, between 0 and 2. Higher values like 0.8 will
+#' make the output more random, while lower values like 0.2 will make it more
+#' focused and deterministic. We generally recommend altering this or `top_p`
 #' but not both._)
-#' @param top_p numeric (default: 1) specifying sampling strategy as an 
+#' @param top_p numeric (default: 1) specifying sampling strategy as an
 #' alternative to the temperature sampling (from the official API documentation:
-#' _An alternative to sampling with temperature, called nucleus sampling, where 
-#' the model considers the results of the tokens with top_p probability mass. 
-#' So 0.1 means only the tokens comprising the top 10% probability mass are 
-#' considered. We generally recommend altering this or `temperature` but not 
+#' _An alternative to sampling with temperature, called nucleus sampling, where
+#' the model considers the results of the tokens with top_p probability mass.
+#' So 0.1 means only the tokens comprising the top 10% probability mass are
+#' considered. We generally recommend altering this or `temperature` but not
 #' both._)
-#' @param n numeric (default: 1) specifying the number of completions per 
-#' request (from the official API documentation: _How many chat completion 
-#' choices to generate for each input message. **Note: Because this parameter 
+#' @param n numeric (default: 1) specifying the number of completions per
+#' request (from the official API documentation: _How many chat completion
+#' choices to generate for each input message. **Note: Because this parameter
 #' generates many completions, it can quickly consume your token quota.** Use
 #' carefully and ensure that you have reasonable settings for max_tokens and
-#' stop._) 
-#' @param stop character or character vector (default: NULL) that specifies 
-#' after which character value when the completion should end (from the official 
-#' API documentation: _Up to 4 sequences where the API will stop generating 
-#' further tokens._) 
-#' @param presence_penalty numeric (default: 0) between -2.00  and +2.00 to 
-#' determine the penalisation of repetitiveness if a token already exists (from 
-#' the official API documentation: _Number between -2.0 and 2.0. Positive values 
-#' penalize new tokens based on whether they appear in the text so far, 
+#' stop._)
+#' @param stop character or character vector (default: NULL) that specifies
+#' after which character value when the completion should end (from the official
+#' API documentation: _Up to 4 sequences where the API will stop generating
+#' further tokens._)
+#' @param presence_penalty numeric (default: 0) between -2.00  and +2.00 to
+#' determine the penalisation of repetitiveness if a token already exists (from
+#' the official API documentation: _Number between -2.0 and 2.0. Positive values
+#' penalize new tokens based on whether they appear in the text so far,
 #' increasing the model's likelihood to talk about new topics._). See also:
 #' [https://beta.openai.com/docs/api-reference/parameter-details](https://beta.openai.com/docs/api-reference/parameter-details)
 #' @param frequency_penalty numeric (default: 0) between -2.00  and +2.00 to
@@ -163,7 +163,7 @@ rgpt_single = function(prompt_role = 'user'
                           , prompt_content
                           , seed = NULL
                           , model = 'gpt-3.5-turbo-1106'
-                          , output_type = 'text'
+                          , output_type = 'complete'
                           , max_tokens = 100
                           , temperature = 1.0
                           , top_p = 1
@@ -220,8 +220,8 @@ rgpt_single = function(prompt_role = 'user'
   )
 
   request_base = httr::POST(url = pkg.env$url.chat_completions
-    , body = parameter_list 
-    , httr::add_headers(Authorization = paste("Bearer", pkg.env$api_key)) 
+    , body = parameter_list
+    , httr::add_headers(Authorization = paste("Bearer", pkg.env$api_key))
     , encode = "json")
 
   request_content = httr::content(request_base)
@@ -252,6 +252,9 @@ rgpt_single = function(prompt_role = 'user'
         logprobs_output$token[i] = data_logprobs[[i]]$token
         logprobs_output$logprob[i] = data_logprobs[[i]]$logprob
       }
+    }
+    else {
+      logprobs_output = 'no logprobs requested'
     }
 
   } else if(n > 1){
@@ -337,11 +340,11 @@ rgpt_single = function(prompt_role = 'user'
 #' Make a test request to the GPT API
 #'
 #' @description
-#' `rgpt_test_completion()` sends a basic 
-#' [completion request](https://beta.openai.com/docs/api-reference/completions) 
+#' `rgpt_test_completion()` sends a basic
+#' [completion request](https://beta.openai.com/docs/api-reference/completions)
 #' to the Open AI GPT API.
 #' This function was copied from https://github.com/ben-aaron188/rgpt3.
-#' @param verbose (boolean) if TRUE prints the actual prompt and GPT completion 
+#' @param verbose (boolean) if TRUE prints the actual prompt and GPT completion
 #' of the test request (default: TRUE).
 #' @return A message of success or failure of the connection.
 rgpt_test_completion = function(verbose=T){

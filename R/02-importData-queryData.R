@@ -393,9 +393,8 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                      # check connection
                      connSuccess <- NULL
-                     browser()
                      connSuccess <- rgpt_test_completion() %>%
-                       validateAccess() %>%
+                       #validateAccess() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
 
                      if (!is.null(connSuccess) &&
@@ -438,7 +437,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        max_tokens = input$maxTokens,
                        n = input$n
                      ) %>%
-                       validateCompletion() %>%
+                       #validateCompletion() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
