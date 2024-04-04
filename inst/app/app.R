@@ -1,5 +1,6 @@
+library(DataTools)
 # setup app
-ui <- fluidPage(useShinyjs(), # Set up shinyjs
+ui <- fluidPage(shinyjs::useShinyjs(), # Set up shinyjs
                 tagList(
                   navbarPage(
                     title = paste("Test App", utils::packageVersion("DataTools")),

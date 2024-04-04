@@ -142,12 +142,13 @@ remoteModelsServer <- function(id,
 
                    if (!useLocalModels()) {
                      withProgress(message = "Downloading remote file ...", value = 0.9, {
-                       tmpPath <- try(downloadZipToTmp(
+                       tmpPath <- try(downloadFileToTmp(
                          url = sprintf("https://github.com/Pandora-IsoMemo/%s/raw/main/inst/app%s/%s",
                                        githubRepo,
                                        folderOnGithub,
                                        input$remoteModelChoice),
-                         fileext = getExtension(input$remoteModelChoice, prefix = ".")))
+                         fileext = getExtension(input$remoteModelChoice, prefix = ".")
+                         ))
                      })
                    }
 
@@ -179,7 +180,7 @@ remoteModelsServer <- function(id,
 #' @inheritParams base::tempfile
 #'
 #' @return (character) path to the temporary zip file
-downloadZipToTmp <- function(url, fileext = ".zip") {
+downloadFileToTmp <- function(url, fileext = ".zip") {
   tmpPath <- tempfile(fileext = fileext)
 
   download.file(url, destfile = tmpPath)

@@ -19,9 +19,8 @@ downUploadButtonUI <-
 #' downUploadButton module server
 #'
 #' @param id module id
-#' @param rPackageName (character) name of the package (as in the description file) in which this
-#'  module is applied, e.g. "mpiBpred"
 #' @param title title used inside the modal
+#' @inheritParams importOptions
 #' @inheritParams downloadModelServer
 #' @inheritParams uploadModelUI
 #' @inheritParams uploadModelServer
@@ -147,8 +146,6 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #' @param dat (reactive) user data
 #' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list
 #' @param model (reactive) model output object
-#' @param rPackageName (character) name of the package (as in the description file) in which this
-#'  module is applied, e.g. "mpiBpred"
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
 #'  "bpred", "bmsc"
@@ -162,6 +159,7 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #'  file is a connection.
 #' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
+#' @inheritParams importOptions
 #'
 #' @export
 downloadModelServer <-
@@ -334,8 +332,7 @@ uploadModelUI <- function(id,
 #' @param mainFolder (character) folder containing all loadable .zip files. For most apps this
 #' is folder "predefinedModels". In most apps it can be found under "inst/app/".
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
-#' @param rPackageName (character) If not NULL, than the uploaded file must come from this R
-#'  package
+#' @inheritParams importOptions
 #' @inheritParams remoteModelsServer
 #'
 #' @export
@@ -420,6 +417,19 @@ getPathToLocal <- function(mainFolder, subFolder, rPackageName = NULL) {
   } else {
     file.path(".", res)
   }
+}
+
+getSpecsForRemotes <- function(importType) {
+  if (importType != "data") {
+    folder <- "predefinedModels"
+    extension <- "zip"
+  } else {
+    folder <- "dataQueries"
+    extension <- "json"
+  }
+
+  list(folder = folder,
+       extension = extension)
 }
 
 dataLoadedAlert <-

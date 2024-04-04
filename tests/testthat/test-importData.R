@@ -422,10 +422,12 @@ test_that("cutAllLongStrings function", {
 
 
 test_that("Test formatColumnNames()", {
-  vNames <- c("_abc", "12h_gf", "#j.f", "jg-$jhfl+4", "abc.(237)")
+  dat <- matrix(data = 1:5,
+                nrow = 1, ncol = 5,
+                dimnames = list(NULL, c("_abc", "12h_gf", "#j.f", "jg-$jhfl+4", "abc.(237)")))
 
   expect_equal(
-    formatColumnNames(vNames, silent = TRUE),
+    colnames(formatColumnNames(dat, silent = TRUE)),
     c(".abc", "x12h_gf", ".j.f", "jg..jhfl.4", "abc..237.")
   )
 })

@@ -16,7 +16,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableX"),
           "Select table x",
-          choices = c("Please submit data under 'Select' ..." = ""),
+          choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
           width = "100%"
         )
       ),
@@ -28,7 +28,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableY"),
           "Select table y",
-          choices = c("Please submit data under 'Select' ..." = ""),
+          choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
           width = "100%"
         )
       ),
@@ -262,8 +262,7 @@ mergeDataServer <- function(id, mergeList) {
 
                      # return result
                      ### format column names for import ----
-                     colnames(joinedData) <-
-                       colnames(joinedData) %>%
+                     joinedData <- joinedData %>%
                        formatColumnNames(silent = TRUE)
 
                      joinedResult$data <- joinedData
@@ -272,7 +271,6 @@ mergeDataServer <- function(id, mergeList) {
                    message = 'merging data ...')
 
                    # UPDATE MERGELIST ----
-                   # TO DO: keep inputs ----
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$fileNameJoined,
                                                    newData = list(data = joinedResult$data,

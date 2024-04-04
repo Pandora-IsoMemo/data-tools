@@ -6,13 +6,10 @@
 \usage{
 selectDataServer(
   id,
-  importType,
+  importType = "data",
   mergeList,
   customNames,
-  openPopupReset,
-  internetCon,
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
-  mainFolder = "predefinedModels",
+  dataSource,
   subFolder = NULL,
   ignoreWarnings = FALSE,
   rPackageName = "",
@@ -27,18 +24,12 @@ selectDataServer(
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
 
-\item{mergeList}{(list) list of selected data}
+\item{mergeList}{(reactiveVal) list of data imports submitted for data processing via buttons
+'Create Query with data' or 'Prepare / Merge data'}
 
 \item{customNames}{settings for custom column and row names}
 
-\item{openPopupReset}{(reactive) if TRUE reset ckan source inputs}
-
-\item{internetCon}{(reactive) TRUE if there is an internet connection}
-
-\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
-
-\item{mainFolder}{(character) folder containing all loadable .zip files.
-This parameter is ignored if importType == "data"}
+\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
 This parameter is ignored if importType == "data"}
