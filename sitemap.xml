@@ -142,15 +142,6 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/getZip.html</loc>
   </url>
   <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/gpt3_authenticate.html</loc>
-  </url>
-  <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/gpt3_single_completion.html</loc>
-  </url>
-  <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/gpt3_test_completion.html</loc>
-  </url>
-  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/gptServer.html</loc>
   </url>
   <url>
@@ -262,6 +253,15 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/renameExistingNames.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/rgpt_authenticate.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/rgpt_single.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/rgpt_test_completion.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/selectDataServer.html</loc>
   </url>
   <url>
@@ -329,8 +329,5 @@
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/uploadModelUI.html</loc>
-  </url>
-  <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/url.completions.html</loc>
   </url>
 </urlset>
