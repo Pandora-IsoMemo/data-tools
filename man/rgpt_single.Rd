@@ -8,7 +8,7 @@ rgpt_single(
   prompt_role = "user",
   prompt_content,
   seed = NULL,
-  model = "gpt-3.5-turbo-1106",
+  model = "gpt-4-0125-preview",
   output_type = "complete",
   max_tokens = 100,
   temperature = 1,
