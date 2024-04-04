@@ -321,12 +321,12 @@ gptUI <- function(id) {
             min = 0,
             max = 4000,
           ) %>% hidden()
-        ),
-        column(2,
-               style = "margin-top: 1em;",
-               numericInput(
-                 ns("n"), "N", value = 1, min = 0
-               ) %>% hidden())
+        )#,
+        # column(2,
+        #        style = "margin-top: 1em;",
+        #        numericInput(
+        #          ns("n"), "N", value = 1, min = 0
+        #        ) %>% hidden())
       ),
       conditionalPanel(
         condition = "output.showGpt",
@@ -398,7 +398,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                      disable("useGPT")
                      hide("temperature")
                      hide("maxTokens")
-                     hide("n")
+                     #hide("n")
                      validConnection(FALSE)
                    }
                  }) %>%
@@ -443,7 +443,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                          !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
                        show("temperature")
                        show("maxTokens")
-                       show("n")
+                       #show("n")
                        validConnection(TRUE)
                      } else {
                        if (exists("api_key", envir = pkg.env)) {
@@ -477,7 +477,8 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        prompt_content = paste("Write an SQL query to", input$gptPrompt),
                        temperature = input$temperature,
                        max_tokens = input$maxTokens,
-                       n = input$n
+                       #n = input$n,
+                       output_type='text'
                      ) %>%
                        validateCompletion() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
