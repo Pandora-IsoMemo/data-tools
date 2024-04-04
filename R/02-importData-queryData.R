@@ -321,12 +321,12 @@ gptUI <- function(id) {
             min = 0,
             max = 4000,
           ) %>% hidden()
-        ),
-        column(2,
-               style = "margin-top: 1em;",
-               numericInput(
-                 ns("n"), "N", value = 1, min = 0
-               ) %>% hidden())
+        )#,
+        # column(2,
+        #        style = "margin-top: 1em;",
+        #        numericInput(
+        #          ns("n"), "N", value = 1, min = 0
+        #        ) %>% hidden())
       ),
       conditionalPanel(
         condition = "output.showGpt",
@@ -398,7 +398,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                      disable("useGPT")
                      hide("temperature")
                      hide("maxTokens")
-                     hide("n")
+                     #hide("n")
                      validConnection(FALSE)
                    }
                  }) %>%
@@ -431,23 +431,23 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                    req(key)
                    withProgress({
-                     invisible(capture.output(gpt3_authenticate(key)))
+                     invisible(capture.output(rgpt_authenticate(key)))
 
                      # check connection
                      connSuccess <- NULL
-                     connSuccess <- gpt3_test_completion() %>%
+                     connSuccess <- rgpt_test_completion() %>%
                        validateAccess() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
 
                      if (!is.null(connSuccess) &&
-                         !is.null(connSuccess[[1]][["gpt3"]])) {
+                         !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
                        show("temperature")
                        show("maxTokens")
-                       show("n")
+                       #show("n")
                        validConnection(TRUE)
                      } else {
-                       if (exists("api_key")) {
-                         api_key <- NULL
+                       if (exists("api_key", envir = pkg.env)) {
+                         pkg.env$api_key <- NULL
                        }
                        hide("temperature")
                        hide("maxTokens")
@@ -473,24 +473,25 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                    req(validConnection())
                    withProgress({
-                     res <- gpt3_single_completion(
-                       prompt_input = paste("Write an SQL query to", input$gptPrompt),
+                     res <- rgpt_single(
+                       prompt_content = paste("Write an SQL query to", input$gptPrompt),
                        temperature = input$temperature,
                        max_tokens = input$maxTokens,
-                       n = input$n
+                       #n = input$n,
+                       output_type='text'
                      ) %>%
                        validateCompletion() %>%
                        tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
-                   message = 'sending request to gpt ...')
+                   message = 'sending request to OpenAI ...')
 
                    # gptOut is only needed for tests
                    gptOut(res)
 
-                   req(res[[1]][["gpt3"]])
+                   req(res[["core_output"]][["gpt_content"]])
                    # remove preceding lines
-                   command <- res[[1]][["gpt3"]] %>%
+                   command <- res[["core_output"]][["gpt_content"]] %>%
                      gsub(pattern = "^\n+", replacement = "")
                    sqlCommand(command)
                  }) %>%
@@ -517,7 +518,7 @@ validateKey <- function(filepath) {
 }
 
 validateAccess <- function(gptOut) {
-  if (is.null(gptOut[[1]][["gpt3"]])) {
+  if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
     stop("No output available for test prompt. Probably the key is not valid.")
   }
 
@@ -525,7 +526,7 @@ validateAccess <- function(gptOut) {
 }
 
 validateCompletion <- function(gptOut) {
-  if (is.null(gptOut[[1]][["gpt3"]])) {
+  if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
     warning("No output available.")
   }
 
@@ -533,10 +534,10 @@ validateCompletion <- function(gptOut) {
 }
 
 removeOpenGptCon <- function() {
-  if (exists("api_key")) {
+  if (exists("api_key", envir = pkg.env)) {
     # remove gpt connection if exists
-    api_key <- NULL
-    invisible(capture.output(gpt3_endsession()))
+    pkg.env$api_key <- NULL
+    invisible(capture.output(rgpt_endsession()))
   }
 }
 
