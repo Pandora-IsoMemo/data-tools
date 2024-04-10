@@ -105,18 +105,14 @@ getSourceFile <- function(dataSource, input) {
 getSourceUrl <- function(dataSource, input, isInternet) {
   if (!isInternet) return(dataSource)
 
-  tmp <- tempfile()
-  res <-
-    try(download.file(input$url, destfile = tmp))
-
-  if (inherits(res, "try-error")) {
-    shinyjs::alert("Could not load remote file")
-    return(dataSource)
-  }
+  tmpPath <- try(downloadFileToTmp(
+    url = input$url,
+    fileext = getExtension(basename(input$url), prefix = ".")
+  ))
 
   # "file" will be used to load the file
   # "filename" will be stored in values$fileName
-  dataSource$file <- tmp
+  dataSource$file <- tmpPath
   dataSource$filename <- basename(input$url)
   dataSource$input <- getFileInputs(input, type = "source")
 

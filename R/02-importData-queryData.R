@@ -536,7 +536,6 @@ validateCompletion <- function(gptOut) {
 removeOpenGptCon <- function() {
   if (exists("api_key", envir = pkg.env)) {
     # remove gpt connection if exists
-    pkg.env$api_key <- NULL
     invisible(capture.output(rgpt_endsession()))
   }
 }

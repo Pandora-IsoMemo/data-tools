@@ -1,3 +1,9 @@
+# DataTools 24.04.2
+
+## Bug Fixes
+- fix import of model zips from url (#80)
+- fix issue when trying to end an open rgpt session
+
 # DataTools 24.04.1
 
 ## Bug Fixes
