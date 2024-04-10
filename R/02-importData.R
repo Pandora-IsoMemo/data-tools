@@ -220,11 +220,11 @@ importDataServer <- function(id,
                    internetCon = internetCon,
                    githubRepo = getGithubMapping(options[["rPackageName"]]),
                    folderOnGithub = getFolderOnGithub(
-                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
                      subFolder = subFolder
                    ),
                    pathToLocal = getPathToLocal(
-                     mainFolder = getSpecsForRemotes(importType)[["folder"]],
+                     mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
                      subFolder = subFolder
                    ),
                    ckanFileTypes = ckanFileTypes

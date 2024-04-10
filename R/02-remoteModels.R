@@ -317,52 +317,52 @@ has_internet <- function(timeout = 2) {
 
 # note: this test app only works correctly if bpred is installed locally
 
-uiRemotePath <- fluidPage(shinyjs::useShinyjs(),
-                          fluidRow(
-                            column(
-                              width = 4,
-                              tags$h3("Load from github"),
-                              remoteModelsUI(id = "remote"),
-                              tags$hr(),
-                              textOutput("path")
-                            ),
-                            column(
-                              width = 4,
-                              tags$h3("Load only from package"),
-                              remoteModelsUI(id = "local"),
-                              tags$hr(),
-                              textOutput("pathLocal")
-                            ),
-                            column(
-                              width = 4,
-                              tags$h3("Load from package with warning"),
-                              remoteModelsUI(id = "warning"),
-                              tags$hr(),
-                              textOutput("pathWithWarning")
-                            )
-                          ))
-
-serverRemotePath <- function(input, output, session) {
-  pathToModels <- remoteModelsServer(
-    "remote",
-    githubRepo = "bpred",
-    pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
-  )
-  pathToLocal <- remoteModelsServer(
-    "local",
-    githubRepo = "bpred",
-    onlyLocalModels = reactive(TRUE),
-    pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
-  )
-  pathWithWarning <- remoteModelsServer(
-    "warning",
-    githubRepo = "lalala",
-    pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
-  )
-
-  output$path <- renderText(pathToModels())
-  output$pathLocal <- renderText(pathToLocal())
-  output$pathWithWarning <- renderText(pathWithWarning())
-}
-
-shinyApp(uiRemotePath, serverRemotePath)
+# uiRemotePath <- fluidPage(shinyjs::useShinyjs(),
+#                           fluidRow(
+#                             column(
+#                               width = 4,
+#                               tags$h3("Load from github"),
+#                               remoteModelsUI(id = "remote"),
+#                               tags$hr(),
+#                               textOutput("path")
+#                             ),
+#                             column(
+#                               width = 4,
+#                               tags$h3("Load only from package"),
+#                               remoteModelsUI(id = "local"),
+#                               tags$hr(),
+#                               textOutput("pathLocal")
+#                             ),
+#                             column(
+#                               width = 4,
+#                               tags$h3("Load from package with warning"),
+#                               remoteModelsUI(id = "warning"),
+#                               tags$hr(),
+#                               textOutput("pathWithWarning")
+#                             )
+#                           ))
+#
+# serverRemotePath <- function(input, output, session) {
+#   pathToModels <- remoteModelsServer(
+#     "remote",
+#     githubRepo = "bpred",
+#     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
+#   )
+#   pathToLocal <- remoteModelsServer(
+#     "local",
+#     githubRepo = "bpred",
+#     onlyLocalModels = reactive(TRUE),
+#     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
+#   )
+#   pathWithWarning <- remoteModelsServer(
+#     "warning",
+#     githubRepo = "lalala",
+#     pathToLocal = file.path("..", "bpred", "inst", "app", "predefinedModels")
+#   )
+#
+#   output$path <- renderText(pathToModels())
+#   output$pathLocal <- renderText(pathToLocal())
+#   output$pathWithWarning <- renderText(pathWithWarning())
+# }
+#
+# shinyApp(uiRemotePath, serverRemotePath)

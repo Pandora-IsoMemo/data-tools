@@ -395,7 +395,6 @@ selectSourceServer <- function(id,
                    githubRepo = githubRepo,
                    folderOnGithub = folderOnGithub,
                    pathToLocal = pathToLocal,
-                   fileExtension = getSpecsForRemotes(importType)[["extension"]],
                    reloadChoices = openPopupReset,
                    resetSelected = reactive(list(input$source, openPopupReset())),
                    isInternet = internetCon
