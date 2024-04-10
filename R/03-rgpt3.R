@@ -23,7 +23,7 @@ rgpt_authenticate = function(path){
 
 rgpt_endsession = function(){
   pkg.env$api_key = "---"
-  rm(api_key, envir = pkg.env)
+  rm("api_key", envir = pkg.env)
   print('-- session ended: you need to re-authenticate again next time.')
 }
 
