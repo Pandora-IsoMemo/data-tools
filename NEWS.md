@@ -1,10 +1,16 @@
-# DataTools 24.04.0
+# DataTools 24.04.1
 
 ## Bug Fixes
 - fix config of path to the zip examples
 
+# DataTools 24.04.0
+
+## Updates
+- integration of the most recent version of rgpt functions into data tools package
+
 # DataTools 24.03.0
 
+## New Features
 - option to download 'data queries' as .json file if data loading was successful in advance (#55)
   - stores only user inputs and file path information, not the data itself
   - save data queries that were created under 'Query with SQL'
@@ -14,7 +20,7 @@ file
 
 # DataTools 24.01.0
 
-## Bug Fixes
+## Updates
 - Integration of rgpt3 functions into data tools package
   - **Note:** The functions were copied from <https://github.com/ben-aaron188/rgpt3> 
 & <https://github.com/gasparl/rgpt3/tree/main>

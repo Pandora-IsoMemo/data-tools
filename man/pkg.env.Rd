@@ -5,7 +5,7 @@
 \alias{pkg.env}
 \title{globals}
 \format{
-An object of class \code{environment} of length 1.
+An object of class \code{environment} of length 2.
 }
 \usage{
 pkg.env
@@ -13,4 +13,12 @@ pkg.env
 \description{
 Contains the package's global variables
 }
+\section{Fields}{
+
+\describe{
+\item{\code{api_key}}{The OpenAI API key}
+
+\item{\code{url.completions}}{The URL for the completions endpoint}
+}}
+
 \keyword{datasets}
