@@ -5,7 +5,7 @@ test_that("Test loadModel()", {
   testPath <- list(
     "DataTools" = "https://github.com/Pandora-IsoMemo/data-tools/raw/main/inst/app/predefinedModels/2023-03-30_10_44_04_DataTools.zip",
     "ReSources" = "https://github.com/Pandora-IsoMemo/resources/raw/main/inst/app/predefinedModels/Brown_Bear_Data.zip",
-    "BMSCApp" = "https://github.com/Pandora-IsoMemo/bmsc-app/raw/main/inst/app/predefinedModels/testModel_BMSCApp.zip",
+    "BMSCApp" = "https://github.com/Pandora-IsoMemo/bmsc-app/raw/main/inst/app/predefinedModels/2024-04-24_test-model.bmsc",
     "OsteoBioR" = "https://github.com/Pandora-IsoMemo/osteo-bior/raw/main/inst/app/predefinedModels/2022-11-16_TEST-Inputs_OsteoBioR.zip",
     "mpiBpred" = "https://github.com/Pandora-IsoMemo/bpred/raw/main/inst/app/predefinedModels/2020-04-15_18_59_33_bpred.zip",
     "PlotR" = "https://github.com/Pandora-IsoMemo/plotr/raw/main/inst/app/predefinedModels/online_test_inputs.zip"
@@ -35,11 +35,20 @@ test_that("Test loadModel()", {
   )
 
   for (package in testPackages) {
-    print(sprintf("test loadModel() with package: %s and file extension: %s", package, "zipofapp"))
+    if(Sys.info()["sysname"] != "Linux" && package == "BMSCApp") {
+      # skip test for non-linux systems since unzip is failing
+      next
+    }
+
+    testExtension <- testPath[[package]] %>%
+      basename() %>%
+      getExtension()
+
+    print(sprintf("test loadModel() with package: %s and file extension: %s", package, testExtension))
     # Act
 
     # create tmp file
-    tmpPath <- tempfile(fileext = paste0(".", "zipofapp"))
+    tmpPath <- tempfile(fileext = paste0(".", testExtension))
 
     # fill tmp file
     try(download.file(testPath[[package]], destfile = tmpPath))
@@ -50,7 +59,7 @@ test_that("Test loadModel()", {
       subFolder = NULL,
       rPackageName = package,
       onlySettings = FALSE,
-      fileExtension = "zipofapp"
+      fileExtension = testExtension
     )
 
     expect_true(all(

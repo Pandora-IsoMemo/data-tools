@@ -69,6 +69,7 @@ mergeDataUI <- function(id) {
         "nRowsJoinedData"
       )))
     ),
+    tags$hr(),
     previewDataUI(ns("previewDat"), title = "Preview merged data")
   )
 }
