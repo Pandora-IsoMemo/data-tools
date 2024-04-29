@@ -97,6 +97,11 @@ testthat::test_that("Test module remoteModels", {
   )
 
   for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
+    if(Sys.info()["sysname"] != "Linux" && repo == "bmsc-app") {
+      # skip test for non-linux systems since unzip is failing
+      next
+    }
+
     testServer(
       remoteModelsServer,
       args = list(
