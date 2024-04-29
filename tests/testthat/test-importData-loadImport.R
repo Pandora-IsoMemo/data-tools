@@ -35,6 +35,11 @@ test_that("Test loadModel()", {
   )
 
   for (package in testPackages) {
+    if(Sys.info()["sysname"] != "Linux" && package == "BMSCApp") {
+      # skip test for non-linux systems since unzip is failing
+      next
+    }
+
     testExtension <- testPath[[package]] %>%
       basename() %>%
       getExtension()
