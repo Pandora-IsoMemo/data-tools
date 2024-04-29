@@ -35,11 +35,15 @@ test_that("Test loadModel()", {
   )
 
   for (package in testPackages) {
-    print(sprintf("test loadModel() with package: %s and file extension: %s", package, "zipofapp"))
+    testExtension <- testPath[[package]] %>%
+      basename() %>%
+      getExtension()
+
+    print(sprintf("test loadModel() with package: %s and file extension: %s", package, testExtension))
     # Act
 
     # create tmp file
-    tmpPath <- tempfile(fileext = paste0(".", "zipofapp"))
+    tmpPath <- tempfile(fileext = paste0(".", testExtension))
 
     # fill tmp file
     try(download.file(testPath[[package]], destfile = tmpPath))
@@ -50,7 +54,7 @@ test_that("Test loadModel()", {
       subFolder = NULL,
       rPackageName = package,
       onlySettings = FALSE,
-      fileExtension = "zipofapp"
+      fileExtension = testExtension
     )
 
     expect_true(all(
