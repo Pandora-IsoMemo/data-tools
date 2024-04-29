@@ -62,7 +62,7 @@ testthat::test_that("Test module remoteModels", {
   testFileNames <- list(
     "data-tools" = "2023-03-30_10_44_04_DataTools.zip",
     "resources" = "Black_Bear_Data.zip",
-    "bmsc-app" = "testModel_BMSCApp.zip",
+    "bmsc-app" = "2024-04-24_test-model.bmsc",
     "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip",
     "bpred" = "2020-04-15_18_59_33_bpred.zip",
     "plotr" = "online_test_model.zip"
@@ -112,7 +112,7 @@ testthat::test_that("Test module remoteModels", {
                           loadRemoteModel = 1)
 
         testthat::expect_true(grepl("tmp", pathToRemote()) || grepl("var", pathToRemote()))
-        testthat::expect_equal(getExtension(pathToRemote()), "zip")
+        testthat::expect_true(getExtension(pathToRemote()) %in% c("zip", "bmsc"))
         zip::unzip(pathToRemote(), exdir = test_path("unzippedTmp"))
         modelImport <- extractModelFromFile(pathToUnzipped = test_path("unzippedTmp"))
         testthat::expect_equal(names(modelImport), expImportNames[[repo]])
