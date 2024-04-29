@@ -6,14 +6,15 @@
 #'
 #' @param id id of module
 #' @param title title
+#'
+#' @export
 previewDataUI <- function(id, title = "Preview data") {
   ns <- NS(id)
 
   tagList(
-    tags$hr(),
     tags$html(
       HTML(
-        sprintf("<b>%s</b> &nbsp;&nbsp; (Long characters are cutted in the preview)",
+        sprintf("<b>%s</b> &nbsp;&nbsp; (Long characters are cutted in this preview)",
                 title)
       )
     ),
@@ -30,6 +31,8 @@ previewDataUI <- function(id, title = "Preview data") {
 #' Server function of the module
 #' @param id id of module
 #' @param dat (reactive) data.frame of preview data to be displayed
+#'
+#' @export
 previewDataServer <- function(id, dat) {
   moduleServer(id,
                function(input, output, session) {
@@ -43,7 +46,7 @@ previewDataServer <- function(id, dat) {
                      selection = "none",
                      rownames = FALSE,
                      options = list(
-                       dom = "t",
+                       dom = "tp",
                        searching = FALSE,
                        scrollX = TRUE,
                        scrollY = "12rem"

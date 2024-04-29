@@ -46,6 +46,7 @@ queryDataUI <- function(id) {
              ns("applyQuery"), "Apply"
            ))),
     textOutput(ns("nRowsQueriedData")),
+    tags$hr(),
     previewDataUI(ns("previewDat"), title = "Preview result of query"),
     downloadDataLinkUI(ns = ns,
                        text = "Download the file path information and the SQL query as .json for later upload."),

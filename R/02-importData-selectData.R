@@ -50,6 +50,7 @@ selectDataUI <- function(id,
       ),
     if (importType == "data")
       div(
+        tags$hr(),
         previewDataUI(ns("previewDat"), title = "Preview data"),
         downloadDataLinkUI(ns = ns,
                            text = "Download the file path information as .json for later upload."),

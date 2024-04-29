@@ -23,6 +23,7 @@ prepareDataUI <- function(id) {
     splitColumnsUI(ns("splitCols")),
     tags$br(),
     deleteColumnsUI(ns("deleteCols")),
+    tags$hr(),
     previewDataUI(ns("previewDat"), title = "Preview prepared data")
   )
 }

@@ -1,3 +1,8 @@
+# DataTools 24.04.3
+
+## Updates
+- export of module previewData for the app 'Data search and Spatiotemporal modeling' (MpiIsoApp)
+
 # DataTools 24.04.2
 
 ## Bug Fixes
