@@ -11,7 +11,7 @@ downloadFileToTmp(url, fileext = ".zip")
     for the \code{"libcurl"} method) naming the URL of a resource to be
     downloaded.}
 
-\item{fileext}{a non-empty character vector giving the file extension}
+\item{fileext}{a non-empty character vector giving the file extension.}
 }
 \value{
 (character) path to the temporary zip file

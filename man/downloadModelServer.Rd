@@ -11,6 +11,7 @@ downloadModelServer(
   model,
   rPackageName,
   subFolder = NULL,
+  fileName = reactive(""),
   fileExtension = "zip",
   helpHTML = "",
   modelNotes = reactive(""),
@@ -35,6 +36,8 @@ from the R package where \code{importDataServer} was called. This parameter is i
 \code{importType == "data"}.}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
+
+\item{fileName}{(reactive) custom file name}
 
 \item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
 "bpred", "bmsc"}

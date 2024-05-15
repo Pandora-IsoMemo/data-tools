@@ -181,8 +181,12 @@ remoteModelsServer <- function(id,
 #'
 #' @return (character) path to the temporary zip file
 downloadFileToTmp <- function(url, fileext = ".zip") {
-  tmpPath <- tempfile(fileext = fileext)
+  basefilename <- basename(url) %>%
+    file_path_sans_ext()
+  # use specified file extension
+  tmpPath <- file.path(tempdir(), paste0(basefilename, fileext))
 
+  # download file
   download.file(url, destfile = tmpPath)
 
   return(tmpPath)
@@ -197,14 +201,10 @@ getLocalModels <- function(pathToLocal) {
 
   if (length(choices) > 0) {
     names(choices) <- choices  %>%
-      removeExtension()
+      file_path_sans_ext()
   }
 
   choices
-}
-
-removeExtension <- function(path) {
-  sub('\\..*$', '', basename(path))
 }
 
 #' Check Local Model Dir
@@ -242,7 +242,7 @@ getRemoteModelsFromGithub <-
 
     if (length(choices) > 0) {
       names(choices) <- choices %>%
-        removeExtension()
+        file_path_sans_ext()
     }
 
     choices
