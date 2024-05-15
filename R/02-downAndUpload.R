@@ -149,6 +149,7 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
 #'  "bpred", "bmsc"
+#' @param fileName (reactive) custom file name
 #' @param helpHTML content of help function
 #' @param modelNotes (reactive) notes regarding the object to be saved and displayed when uploaded
 #' @param triggerUpdate (reactive) trigger the update of the "Notes" text input. Useful, when
@@ -169,6 +170,7 @@ downloadModelServer <-
            model,
            rPackageName,
            subFolder = NULL,
+           fileName = reactive(""),
            fileExtension = "zip",
            helpHTML = "",
            modelNotes = reactive(""),
@@ -196,19 +198,17 @@ downloadModelServer <-
                      updateTextAreaInput(session, "exportNotes", value = modelNotes())
                    })
 
-                   fileString <- ifelse(fileExtension == "zip",
-                                        paste0(c("model", rPackageName, subFolder), collapse = "_"),
-                                        paste0(c("model", subFolder), collapse = "_"))
+                   defaultFileName <- "model" %>%
+                     prefixSysTime() %>%
+                     suffixSubFolder(subFolder = subFolder,
+                                     fileExtension = fileExtension,
+                                     rPackageName = rPackageName)
 
                    output$download <- downloadHandler(
                      filename = function() {
-                       paste(round(Sys.time()) %>%
-                               gsub(pattern = ":", replacement = "-") %>%
-                               gsub(pattern = "\ ", replacement = "_"),
-                             sprintf("%s.%s",
-                                     fileString,
-                                     fileExtension),
-                             sep = "_")
+                       setFileName(fileName = fileName(),
+                                   defaultFileName = defaultFileName,
+                                   extension = fileExtension)
                      },
                      content = function(file) {
                        withProgress({
@@ -265,6 +265,38 @@ downloadModelServer <-
                  })
   }
 
+setFileName <- function(fileName, defaultFileName, extension) {
+  newName <- defaultFileName
+
+  # set custom name
+  if (length(fileName) > 0 && fileName != "") {
+    newName <- fileName
+  }
+
+  newName <- newName %>%
+    suffixExtension(extension)
+
+  return(newName)
+}
+
+prefixSysTime <- function(fileString) {
+  timestamp <- round(Sys.time()) %>%
+    gsub(pattern = ":", replacement = "-") %>%
+    gsub(pattern = "\ ", replacement = "_")
+
+  sprintf("%s_%s",timestamp, fileString)
+}
+
+suffixSubFolder <- function(fileString, fileExtension, rPackageName, subFolder = NULL) {
+  # use collapse to catch the case if is.null(subFolder)
+  ifelse(fileExtension == "zip",
+         paste0(c(fileString, rPackageName, subFolder), collapse = "_"),
+         paste0(c(fileString, subFolder), collapse = "_"))
+}
+
+suffixExtension <- function(fileString, extension) {
+  sprintf("%s.%s", fileString, extension)
+}
 
 getModelVersion <- function(rPackageName, subFolder) {
   versionNo <- try(packageVersion(rPackageName))
