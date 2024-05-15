@@ -16,6 +16,7 @@
 #' @importFrom stats setNames
 #' @importFrom templates tmpl
 #' @importFrom tidyr separate unite
+#' @importFrom tools file_path_sans_ext
 #' @importFrom urltools url_parse
 #' @importFrom utils capture.output download.file packageVersion
 #' @importFrom yaml  yaml.load_file
