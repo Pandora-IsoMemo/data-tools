@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.04.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.05.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,6 +52,7 @@
 <span>  <span class="va">model</span>,</span>
 <span>  <span class="va">rPackageName</span>,</span>
 <span>  subFolder <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  fileName <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="st">""</span><span class="op">)</span>,</span>
 <span>  fileExtension <span class="op">=</span> <span class="st">"zip"</span>,</span>
 <span>  helpHTML <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  modelNotes <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="st">""</span><span class="op">)</span>,</span>
@@ -89,6 +90,10 @@ from the R package where <code>importDataServer</code> was called. This paramete
 
 <dt>subFolder</dt>
 <dd><p>(character) (optional) subfolder containing loadable .zip files</p></dd>
+
+
+<dt>fileName</dt>
+<dd><p>(reactive) custom file name</p></dd>
 
 
 <dt>fileExtension</dt>
