@@ -22,12 +22,11 @@ testthat::test_that("Test downloadModelServer", {
                         onlyInputs = TRUE,
                         download = 1)
 
+      expectedFileName <- "model.datatools" %>% prefixSysTime()
+      testthat::expect_equal(basename(output$download), expectedFileName)
       testthat::expect_true(grepl("tmp", output$download) ||
                               grepl("var", output$download))
       testthat::expect_equal(getExtension(output$download), "datatools")
-
-      testthat::expect_equal(basename(output$download),
-                             "model.datatools" %>% prefixSysTime())
 
       # unzip
       zip::unzip(output$download, exdir = test_path("unzippedTmp"))
@@ -70,11 +69,10 @@ testthat::test_that("Test downloadModelServer with custom filename", {
                         onlyInputs = TRUE,
                         download = 1)
 
+      testthat::expect_equal(basename(output$download), "customModelName.datatools")
       testthat::expect_true(grepl("tmp", output$download) ||
                               grepl("var", output$download))
       testthat::expect_equal(getExtension(output$download), "datatools")
-
-      testthat::expect_equal(basename(output$download), "customModelName.datatools")
 
       # unzip
       zip::unzip(output$download, exdir = test_path("unzippedTmp"))
