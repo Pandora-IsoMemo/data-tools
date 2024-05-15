@@ -177,6 +177,39 @@ importDataServer <- function(id,
                    shinyjs::hide(ns("acceptQuery"), asis = TRUE)
                  })
 
+                 dataSource <- selectSourceServer(
+                   "fileSource",
+                   importType = importType,
+                   openPopupReset = reactive(input$openPopup > 0),
+                   internetCon = internetCon,
+                   githubRepo = getGithubMapping(options[["rPackageName"]]),
+                   folderOnGithub = getFolderOnGithub(
+                     mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
+                     subFolder = subFolder
+                   ),
+                   pathToLocal = getPathToLocal(
+                     mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
+                     subFolder = subFolder
+                   ),
+                   ckanFileTypes = ckanFileTypes
+                 )
+
+                 values <- selectDataServer(
+                   "dataSelector",
+                   importType = importType,
+                   ignoreWarnings = ignoreWarnings,
+                   dataSource = dataSource,
+                   # parameters required to load data
+                   mergeList = mergeList,
+                   customNames = customNames,
+                   # parameters required to load a model
+                   subFolder = subFolder,
+                   rPackageName = options[["rPackageName"]],
+                   onlySettings = onlySettings,
+                   fileExtension = fileExtension,
+                   expectedFileInZip = expectedFileInZip
+                 )
+
                  observeEvent(input$tabImport, {
                    logDebug("Updating input$tabImport")
                    if (input$tabImport == "Prepare") {
@@ -212,39 +245,6 @@ importDataServer <- function(id,
                  observeEvent(input$cancel, {
                    removeModal()
                  })
-
-                 dataSource <- selectSourceServer(
-                   "fileSource",
-                   importType = importType,
-                   openPopupReset = reactive(input$openPopup > 0),
-                   internetCon = internetCon,
-                   githubRepo = getGithubMapping(options[["rPackageName"]]),
-                   folderOnGithub = getFolderOnGithub(
-                     mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
-                     subFolder = subFolder
-                   ),
-                   pathToLocal = getPathToLocal(
-                     mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
-                     subFolder = subFolder
-                   ),
-                   ckanFileTypes = ckanFileTypes
-                 )
-
-                 values <- selectDataServer(
-                   "dataSelector",
-                   importType = importType,
-                   ignoreWarnings = ignoreWarnings,
-                   dataSource = dataSource,
-                   # parameters required to load data
-                   mergeList = mergeList,
-                   customNames = customNames,
-                   # parameters required to load a model
-                   subFolder = subFolder,
-                   rPackageName = options[["rPackageName"]],
-                   onlySettings = onlySettings,
-                   fileExtension = fileExtension,
-                   expectedFileInZip = expectedFileInZip
-                 )
 
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,

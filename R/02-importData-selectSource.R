@@ -353,6 +353,7 @@ selectSourceServer <- function(id,
                  observe({
                    req(input[["resourceLoad-ckanResource"]])
                    logDebug("load CKAN file")
+                   # dataSource of "CKAN" ----
                    dataSource <- dataSource %>%
                      getDataSource(input = input,
                                    type = "ckan",
@@ -365,6 +366,7 @@ selectSourceServer <- function(id,
 
                  observe({
                    logDebug("Updating input$file")
+                   # dataSource of "file" ----
                    dataSource <- dataSource %>%
                      getDataSource(input = input,
                                    type = "file",
@@ -377,6 +379,7 @@ selectSourceServer <- function(id,
 
                  observe({
                    logDebug("Updating input$url")
+                   # dataSource of "url" ----
                    req(input$source == "url", input$url)
                    req(trimws(input$url) != "")
 
@@ -402,6 +405,7 @@ selectSourceServer <- function(id,
 
                  observe({
                    req(!is.null(input$source))
+                   # dataSource of "remoteModel" ----
                    req(input$source == "remoteModel")
                    logDebug("Updating input$remoteModels")
 
