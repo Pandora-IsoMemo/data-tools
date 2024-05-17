@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.05.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.05.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -52,7 +52,8 @@
 <span>  <span class="va">model</span>,</span>
 <span>  <span class="va">rPackageName</span>,</span>
 <span>  subFolder <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  fileName <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="st">""</span><span class="op">)</span>,</span>
+<span>  customFileName <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="st">""</span><span class="op">)</span>,</span>
+<span>  defaultFileName <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  fileExtension <span class="op">=</span> <span class="st">"zip"</span>,</span>
 <span>  helpHTML <span class="op">=</span> <span class="st">""</span>,</span>
 <span>  modelNotes <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="st">""</span><span class="op">)</span>,</span>
@@ -74,7 +75,8 @@
 
 
 <dt>inputs</dt>
-<dd><p>(reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list</p></dd>
+<dd><p>(reactiveValues) reactiveValues list of user inputs, in most cases just the
+"inputs" list</p></dd>
 
 
 <dt>model</dt>
@@ -92,8 +94,15 @@ from the R package where <code>importDataServer</code> was called. This paramete
 <dd><p>(character) (optional) subfolder containing loadable .zip files</p></dd>
 
 
-<dt>fileName</dt>
-<dd><p>(reactive) custom file name</p></dd>
+<dt>customFileName</dt>
+<dd><p>(reactive) custom file name, if empty ("") the default file name is used.
+For example, this could be a reactive name that is updated after a model was uploaded into the
+app.</p></dd>
+
+
+<dt>defaultFileName</dt>
+<dd><p>(character) default file name, if empty ("") a default file name is
+created containing the current time</p></dd>
 
 
 <dt>fileExtension</dt>
