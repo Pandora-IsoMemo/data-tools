@@ -128,6 +128,7 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
       width = width
     ),
     checkboxInput(ns("onlyInputs"), "Store only data and user inputs", width = width),
+    textInput(ns("userFileName"), "File name (without extension)", value = NULL, width = width),
     downloadButton(ns("download"), label),
     conditionalPanel(
       ns = ns,
@@ -144,12 +145,17 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #'
 #' @param id namespace id
 #' @param dat (reactive) user data
-#' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list
+#' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the
+#'  "inputs" list
 #' @param model (reactive) model output object
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
+#' @param customFileName (reactive) custom file name, if empty ("") the default file name is used.
+#'  For example, this could be a reactive name that is updated after a model was uploaded into the
+#'  app.
+#' @param defaultFileName (character) default file name, if empty ("") a default file name is
+#'  created containing the current time
 #' @param fileExtension (character) (optional) app specific file extension, e.g. "resources",
 #'  "bpred", "bmsc"
-#' @param fileName (reactive) custom file name
 #' @param helpHTML content of help function
 #' @param modelNotes (reactive) notes regarding the object to be saved and displayed when uploaded
 #' @param triggerUpdate (reactive) trigger the update of the "Notes" text input. Useful, when
@@ -170,7 +176,8 @@ downloadModelServer <-
            model,
            rPackageName,
            subFolder = NULL,
-           fileName = reactive(""),
+           customFileName = reactive(""),
+           defaultFileName = "",
            fileExtension = "zip",
            helpHTML = "",
            modelNotes = reactive(""),
@@ -188,9 +195,7 @@ downloadModelServer <-
                      }
                    })
 
-                   output$showSettings <- reactive({
-                     onlySettings
-                   })
+                   output$showSettings <- reactive({ onlySettings })
                    outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
 
                    observe({
@@ -198,16 +203,33 @@ downloadModelServer <-
                      updateTextAreaInput(session, "exportNotes", value = modelNotes())
                    })
 
-                   defaultFileName <- "model" %>%
-                     prefixSysTime() %>%
-                     suffixSubFolder(subFolder = subFolder,
-                                     fileExtension = fileExtension,
-                                     rPackageName = rPackageName)
+                   observe({
+                     if (length(dat()) == 0) {
+                       shinyjs::disable("download")
+                     } else {
+                       shinyjs::enable("download")
+                     }
+                   })
+
+                   observe({
+                     req(dat())
+                     placeholder <- defaultFileName %>%
+                       updateDefaultFileName(subFolder = subFolder,
+                                             fileExtension = fileExtension,
+                                             rPackageName = rPackageName)
+                     updateTextInput(session,
+                                     "userFileName",
+                                     value = customFileName(),
+                                     placeholder = placeholder)
+                   }) %>% bindEvent(customFileName(), ignoreNULL = FALSE)
 
                    output$download <- downloadHandler(
                      filename = function() {
-                       setFileName(fileName = fileName(),
-                                   defaultFileName = defaultFileName,
+                       setFileName(fileName = input[["userFileName"]],
+                                   defaultFileName = defaultFileName %>%
+                                     updateDefaultFileName(subFolder = subFolder,
+                                                           fileExtension = fileExtension,
+                                                           rPackageName = rPackageName),
                                    extension = fileExtension)
                      },
                      content = function(file) {
@@ -264,6 +286,18 @@ downloadModelServer <-
 
                  })
   }
+
+updateDefaultFileName <- function(defaultFileName, subFolder, fileExtension, rPackageName) {
+  # if already specified return that file name
+  if (defaultFileName != "") return(defaultFileName)
+
+  # else create a default file name
+  defaultFileName <- "model" %>%
+    prefixSysTime() %>%
+    suffixSubFolder(subFolder = subFolder,
+                    fileExtension = fileExtension,
+                    rPackageName = rPackageName)
+}
 
 setFileName <- function(fileName, defaultFileName, extension) {
   newName <- defaultFileName

@@ -11,7 +11,8 @@ downloadModelServer(
   model,
   rPackageName,
   subFolder = NULL,
-  fileName = reactive(""),
+  customFileName = reactive(""),
+  defaultFileName = "",
   fileExtension = "zip",
   helpHTML = "",
   modelNotes = reactive(""),
@@ -26,7 +27,8 @@ downloadModelServer(
 
 \item{dat}{(reactive) user data}
 
-\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the "inputs" list}
+\item{inputs}{(reactiveValues) reactiveValues list of user inputs, in most cases just the
+"inputs" list}
 
 \item{model}{(reactive) model output object}
 
@@ -37,7 +39,12 @@ from the R package where \code{importDataServer} was called. This parameter is i
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 
-\item{fileName}{(reactive) custom file name}
+\item{customFileName}{(reactive) custom file name, if empty ("") the default file name is used.
+For example, this could be a reactive name that is updated after a model was uploaded into the
+app.}
+
+\item{defaultFileName}{(character) default file name, if empty ("") a default file name is
+created containing the current time}
 
 \item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
 "bpred", "bmsc"}
