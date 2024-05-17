@@ -203,16 +203,11 @@ downloadModelServer <-
                      updateTextAreaInput(session, "exportNotes", value = modelNotes())
                    })
 
-                   observe({
-                     if (length(dat()) == 0) {
-                       shinyjs::disable("download")
-                     } else {
-                       shinyjs::enable("download")
-                     }
-                   })
+                   # NOTE: we cannot enable/disable the download button with shinyjs, because e.g.
+                   # in Resources app data is provided via "inputs" and thus the download button
+                   # should be enabled although model() and data() are NULL
 
                    observe({
-                     req(dat())
                      placeholder <- defaultFileName %>%
                        updateDefaultFileName(subFolder = subFolder,
                                              fileExtension = fileExtension,
