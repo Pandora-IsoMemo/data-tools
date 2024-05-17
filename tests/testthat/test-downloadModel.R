@@ -58,7 +58,7 @@ testthat::test_that("Test downloadModelServer with custom filename", {
       rPackageName = "DataTools",
       subFolder = NULL,
       fileExtension = "datatools",
-      fileName = reactive("customModelName"),
+      customFileName = reactive("customModelName"),
       onlySettings = FALSE
     ),
     {
@@ -69,7 +69,13 @@ testthat::test_that("Test downloadModelServer with custom filename", {
                         onlyInputs = TRUE,
                         download = 1)
 
+      # returns the default value since input$userFileName is empty (the update is not triggered yet)
+      testthat::expect_equal(basename(output$download) %>% sub(pattern = ".*_", replacement = ""),
+                             "model.datatools")
+
+      session$setInputs(userFileName = "customModelName")
       testthat::expect_equal(basename(output$download), "customModelName.datatools")
+
       testthat::expect_true(grepl("tmp", output$download) ||
                               grepl("var", output$download))
       testthat::expect_equal(getExtension(output$download), "datatools")
