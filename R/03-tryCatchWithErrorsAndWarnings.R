@@ -80,8 +80,10 @@ tryCatchWithWarningsAndErrors <- function(expr,
 #   actionButton("buttonErr", "Test shinyjs error"),
 #   actionButton("buttonShinyalertWarn", "Test shinyalert warning"),
 #   actionButton("buttonShinyalertErr", "Test shinyalert error"),
+#   actionButton("buttonShinyalertErrinsideRender", "Test shinyalert error inside render"),
 #   tags$hr(),
-#   textOutput("testRes")
+#   textOutput("testRes"),
+#   textOutput("testResInRender")
 # )
 #
 # serverTestTryCatch <- function(input, output, session) {
@@ -129,6 +131,16 @@ tryCatchWithWarningsAndErrors <- function(expr,
 #
 #   output$testRes <- renderText({
 #     as.character(testRes())
+#   })
+#
+#   output$testResInRender <- renderText({
+#     req(input$buttonShinyalertErrinsideRender > 0)
+#     {
+#       stop("test error")
+#       5 + 4
+#     } %>%
+#       as.character() %>%
+#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
 #   })
 # }
 #
