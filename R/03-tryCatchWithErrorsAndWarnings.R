@@ -50,12 +50,12 @@ tryCatchWithWarningsAndErrors <- function(expr,
       alertStyle,
       "shinyjs" = shinyjs::alert(paste(
         tryCatchMessage[["title"]],
-        tryCatchMessage[["text"]],
+        tryCatchMessage[["text"]] %>% as.character(),
         sep = "\n "
       )),
       "shinyalert" = shinyalert::shinyalert(
         title = tryCatchMessage[["title"]],
-        text = tryCatchMessage[["text"]],
+        text = tryCatchMessage[["text"]] %>% as.character(),
         type = tryCatchMessage[["type"]]
       )
     )
@@ -83,7 +83,7 @@ tryCatchWithWarningsAndErrors <- function(expr,
 #   actionButton("buttonShinyalertErrinsideRender", "Test shinyalert error inside render"),
 #   tags$hr(),
 #   textOutput("testRes"),
-#   textOutput("testResInRender")
+#   plotOutput("testResInRender")
 # )
 #
 # serverTestTryCatch <- function(input, output, session) {
@@ -133,14 +133,20 @@ tryCatchWithWarningsAndErrors <- function(expr,
 #     as.character(testRes())
 #   })
 #
-#   output$testResInRender <- renderText({
+#   output$testResInRender <- renderPlot({
 #     req(input$buttonShinyalertErrinsideRender > 0)
-#     {
-#       stop("test error")
-#       5 + 4
-#     } %>%
-#       as.character() %>%
-#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
+#     p <- ggplot2::ggplot(mtcars, ggplot2::aes(x = factor(cyl), y = mpg)) +
+#       ggplot2::geom_boxplot() +
+#       ggplot2::labs(title = "Boxplot of MPG by Cylinder",
+#                     x = "Number of Cylinders",
+#                     y = "Miles per Gallon")
+#
+#     p <- p + ggplot2::xlim(c(3, 8))
+#
+#     print(p) %>%
+#       tryCatchWithWarningsAndErrors(errorTitle = "Plotting failed: ",
+#                                     warningTitle = "Warning in plotting: ",
+#                                     alertStyle = "shinyalert")
 #   })
 # }
 #
