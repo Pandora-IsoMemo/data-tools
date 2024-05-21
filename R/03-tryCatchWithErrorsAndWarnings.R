@@ -71,63 +71,65 @@ tryCatchWithWarningsAndErrors <- function(expr,
 }
 
 # TEST MODULE -------------------------------------------------------------
+# To test the module run devtools::load_all() first
+# Please comment this code before building the package
 
-uiTestTryCatch <- fluidPage(
-  shinyjs::useShinyjs(),
-  actionButton("buttonWarn", "Test shinyjs warning"),
-  actionButton("buttonErr", "Test shinyjs error"),
-  actionButton("buttonShinyalertWarn", "Test shinyalert warning"),
-  actionButton("buttonShinyalertErr", "Test shinyalert error"),
-  tags$hr(),
-  textOutput("testRes")
-)
-
-serverTestTryCatch <- function(input, output, session) {
-  testRes <- reactiveVal()
-
-  observe({
-    tmpRes <- {
-      warning("test warning")
-      5 + 4
-    } %>%
-      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
-    testRes(tmpRes)
-  }) %>%
-    bindEvent(input$buttonWarn)
-
-  observe({
-    tmpRes <- {
-      stop("test error")
-      5 + 4
-    } %>%
-      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
-    testRes(tmpRes)
-  }) %>%
-    bindEvent(input$buttonErr)
-
-  observe({
-    tmpRes <- {
-      warning("test warning")
-      5 + 4
-    } %>%
-      tryCatchWithWarningsAndErrors(warningTitle = "Warning", alertStyle = "shinyalert")
-    testRes(tmpRes)
-  }) %>%
-    bindEvent(input$buttonShinyalertWarn)
-
-  observe({
-    tmpRes <- {
-      stop("test error")
-      5 + 4
-    } %>%
-      tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
-    testRes(tmpRes)
-  }) %>%
-    bindEvent(input$buttonShinyalertErr)
-
-  output$testRes <- renderText({
-    as.character(testRes())
-  })
-}
-
-shinyApp(uiTestTryCatch, serverTestTryCatch)
+# uiTestTryCatch <- fluidPage(
+#   shinyjs::useShinyjs(),
+#   actionButton("buttonWarn", "Test shinyjs warning"),
+#   actionButton("buttonErr", "Test shinyjs error"),
+#   actionButton("buttonShinyalertWarn", "Test shinyalert warning"),
+#   actionButton("buttonShinyalertErr", "Test shinyalert error"),
+#   tags$hr(),
+#   textOutput("testRes")
+# )
+#
+# serverTestTryCatch <- function(input, output, session) {
+#   testRes <- reactiveVal()
+#
+#   observe({
+#     tmpRes <- {
+#       warning("test warning")
+#       5 + 4
+#     } %>%
+#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
+#     testRes(tmpRes)
+#   }) %>%
+#     bindEvent(input$buttonWarn)
+#
+#   observe({
+#     tmpRes <- {
+#       stop("test error")
+#       5 + 4
+#     } %>%
+#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed")
+#     testRes(tmpRes)
+#   }) %>%
+#     bindEvent(input$buttonErr)
+#
+#   observe({
+#     tmpRes <- {
+#       warning("test warning")
+#       5 + 4
+#     } %>%
+#       tryCatchWithWarningsAndErrors(warningTitle = "Warning", alertStyle = "shinyalert")
+#     testRes(tmpRes)
+#   }) %>%
+#     bindEvent(input$buttonShinyalertWarn)
+#
+#   observe({
+#     tmpRes <- {
+#       stop("test error")
+#       5 + 4
+#     } %>%
+#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
+#     testRes(tmpRes)
+#   }) %>%
+#     bindEvent(input$buttonShinyalertErr)
+#
+#   output$testRes <- renderText({
+#     as.character(testRes())
+#   })
+# }
+#
+# shinyApp(uiTestTryCatch, serverTestTryCatch)
