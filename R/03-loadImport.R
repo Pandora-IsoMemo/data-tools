@@ -23,7 +23,7 @@ loadImport <- function(importType, params, expectedFileInZip) {
          "data" = do.call(loadDataWrapper, params),
          "model" = do.call(loadModelWrapper, params),
          "zip" = do.call(loadZipWrapper, params)) %>%
-    tryCatchWithWarningsAndErrors(errorTitle = "Could not load file!")
+    shinyTryCatch(errorTitle = "Could not load file!")
 
   if (importType == "model") {
     # set entries of 'values' for 'model' (success, warnings, errors, ...)

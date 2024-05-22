@@ -1,3 +1,13 @@
+# DataTools 24.05.1
+
+## Updates
+- _tryCatchWithWarningsAndErrors()_:
+  - shifted function to the package `shinyTools` and renamed to `shinyTryCatch()`
+  - improved error handling for the function `shinyTools::shinyTryCatch()`, now all
+    errors and warnings of an expression are caught and forwarded to the UI of an app
+  - deprecated the function `tryCatchWithWarningsAndErrors()` in the package `DataTools`, added a
+    warning message to use the function `shinyTools::shinyTryCatch()` instead
+
 # DataTools 24.05.0
 
 ## Updates

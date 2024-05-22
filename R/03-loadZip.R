@@ -7,5 +7,5 @@
 loadZipWrapper <- function(filepath, fileExtension = "zip" ) {
   filepath %>%
     checkExtension(fileExtension = fileExtension) %>%
-    tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
+    shinyTryCatch(errorTitle = "Unzipping failed.")
 }

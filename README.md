@@ -44,7 +44,7 @@ DataTools::checkErrorNoNumericColumns(data)
 
 - function to catch and forward errors and warnings to the app's UI
   ```R
-  DataTools::tryCatchWithWarningsAndErrors(expr, messagePreError)
+  shinyTools::shinyTryCatch(expr, messagePreError)
   ```
 
 ---
