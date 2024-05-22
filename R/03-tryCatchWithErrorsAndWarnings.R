@@ -18,23 +18,29 @@ tryCatchWithWarningsAndErrors <- function(expr,
                                           warningTitle = "",
                                           alertStyle = "shinyjs",
                                           silent = FALSE) {
-  tryCatchMessage <- NULL
+  tryCatchMessage <- list()
 
   w.handler <- function(w) {
     # warning handler
-    tryCatchMessage[["text"]] <<- w
-    tryCatchMessage[["text"]] <<-
-      paste0(tryCatchMessage[["text"]], collapse = "\n")
-    tryCatchMessage[["title"]] <<- warningTitle
-    tryCatchMessage[["type"]] <<- "warning"
+    warningText <- w$message %>%
+      gsub(pattern = "\033\\[[0-9;]*m", replacement = "") %>% # removes ANSI codes (formatting of warnings)
+      paste0(collapse = "\n")
+    tryCatchMessage <<- c(tryCatchMessage, list(list(
+      text = warningText,
+      type = "warning"
+    )))
     invokeRestart("muffleWarning")
   }
 
   e.handler <- function(e) {
     # error handler
-    tryCatchMessage[["text"]] <<- e$message
-    tryCatchMessage[["title"]] <<- errorTitle
-    tryCatchMessage[["type"]] <<- "error"
+    errorText <- e$message %>%
+      gsub(pattern = "\033\\[[0-9;]*m", replacement = "") %>% # removes ANSI codes (formatting of errors)
+      paste0(collapse = "\n")
+    tryCatchMessage <<- c(tryCatchMessage, list(list(
+      text = errorText,
+      type = "error"
+    )))
     return(NULL)
   }
 
@@ -44,26 +50,42 @@ tryCatchWithWarningsAndErrors <- function(expr,
   error = e.handler),
   warning = w.handler)
 
-  if (!is.null(tryCatchMessage) && !silent) {
-    # give out error or warning
-    switch (
-      alertStyle,
-      "shinyjs" = shinyjs::alert(paste(
-        tryCatchMessage[["title"]],
-        tryCatchMessage[["text"]] %>% as.character(),
-        sep = "\n "
-      )),
-      "shinyalert" = shinyalert::shinyalert(
-        title = tryCatchMessage[["title"]],
-        text = tryCatchMessage[["text"]] %>% as.character(),
-        type = tryCatchMessage[["type"]]
-      )
-    )
+  if (length(tryCatchMessage) == 0) {
+    # no error or warning occurred
+    return(res)
   }
 
-  if (!is.null(tryCatchMessage) && silent) {
-    # give out error or warning
-    warning(paste0(tryCatchMessage[["title"]], tryCatchMessage[["text"]]), call. = FALSE)
+  # extract type
+  allTypes <- sapply(tryCatchMessage, `[[`, "type")
+  if (any(allTypes == "error")) {
+    messageType <- "error"
+  } else {
+    messageType <- "warning"
+  }
+
+  # extract title
+  messageTitle <- switch(messageType, "error" = errorTitle, "warning" = warningTitle)
+
+  # extract text
+  allTexts <- sapply(tryCatchMessage, `[[`, "text")
+  messageText <- paste0(" ", allTypes, ": ", allTexts) %>%
+    as.character() %>%
+    paste0(collapse = "\n")
+
+  if (!silent) {
+    # give out alert within shiny app
+    switch(
+      alertStyle,
+      "shinyjs" = shinyjs::alert(paste(messageTitle, messageText, sep = "\n ")),
+      "shinyalert" = shinyalert::shinyalert(
+        title = messageTitle,
+        text = messageText,
+        type = messageType
+      )
+    )
+  } else {
+    # give out the error or warning, but always as a warning to not interrupt the calculation/app
+    warning(paste0(messageTitle, "\n", messageText), call. = FALSE)
   }
 
   # output result of expr
@@ -121,10 +143,11 @@ tryCatchWithWarningsAndErrors <- function(expr,
 #
 #   observe({
 #     tmpRes <- {
+#       warning("test warning")
 #       stop("test error")
 #       5 + 4
 #     } %>%
-#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert")
+#       tryCatchWithWarningsAndErrors(errorTitle = "Modeling failed", alertStyle = "shinyalert", silent = TRUE)
 #     testRes(tmpRes)
 #   }) %>%
 #     bindEvent(input$buttonShinyalertErr)
@@ -143,7 +166,10 @@ tryCatchWithWarningsAndErrors <- function(expr,
 #
 #     p <- p + ggplot2::xlim(c(3, 8))
 #
-#     print(p) %>%
+#     {
+#       warning("Test warning")
+#       print(p)
+#       } %>%
 #       tryCatchWithWarningsAndErrors(errorTitle = "Plotting failed: ",
 #                                     warningTitle = "Warning in plotting: ",
 #                                     alertStyle = "shinyalert")

@@ -1,3 +1,10 @@
+# DataTools 24.05.1
+
+## Updates
+- _Error handling_:
+  - improved error handling for the function `DataTools::tryCatchWithWarningsAndErrors()`, now all
+    errors and warnings of an expression are caught and forwarded to the UI of an app (_issue_)
+
 # DataTools 24.05.0
 
 ## Updates
