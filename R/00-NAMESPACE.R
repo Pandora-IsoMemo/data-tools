@@ -4,6 +4,7 @@
 #' @importFrom htmltools save_html
 #' @importFrom httr GET content timeout
 #' @importFrom jsonlite read_json write_json
+#' @importFrom lifecycle deprecate_warn
 #' @importFrom openxlsx loadWorkbook
 #' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData
 #'  formatRepositoryList
@@ -12,6 +13,7 @@
 #' @importFrom shinyAce aceEditor updateAceEditor
 #' @importFrom shinyalert shinyalert
 #' @importFrom shinyjs alert disable disabled enable hide hidden info reset runjs show useShinyjs
+#' @importFrom shinyTools shinyTryCatch
 #' @importFrom shinyWidgets pickerInput updatePickerInput
 #' @importFrom stats setNames
 #' @importFrom templates tmpl

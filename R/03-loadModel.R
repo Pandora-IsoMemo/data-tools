@@ -17,7 +17,7 @@ loadModelWrapper <- function(filepath,
               rPackageName = rPackageName,
               onlySettings = onlySettings,
               fileExtension = fileExtension) %>%
-    tryCatchWithWarningsAndErrors(errorTitle = "Unzipping failed.")
+    shinyTryCatch(errorTitle = "Unzipping failed.")
 }
 
 #' Get Zip

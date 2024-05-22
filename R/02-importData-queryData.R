@@ -218,7 +218,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                    req(input$sqlCommand)
                    result$data <-
                      dbGetQuery(tmpDB, input$sqlCommand) %>%
-                     tryCatchWithWarningsAndErrors(errorTitle = "Query failed")
+                     shinyTryCatch(errorTitle = "Query failed")
 
                    # update mergeList if query succeeded
                    if (!is.null(result$data)) {
@@ -428,7 +428,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    # check key format
                    key <- inFile$datapath %>%
                      validateKey() %>%
-                     tryCatchWithWarningsAndErrors(errorTitle = "Invalid API key")
+                     shinyTryCatch(errorTitle = "Invalid API key")
 
                    req(key)
                    withProgress({
@@ -438,7 +438,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                      connSuccess <- NULL
                      connSuccess <- rgpt_test_completion() %>%
                        validateAccess() %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "Access to GPT failed")
+                       shinyTryCatch(errorTitle = "Access to GPT failed")
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
@@ -482,7 +482,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        output_type='text'
                      ) %>%
                        validateCompletion() %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "Prompt failed")
+                       shinyTryCatch(errorTitle = "Prompt failed")
                    },
                    value = 0.75,
                    message = 'sending request to OpenAI ...')

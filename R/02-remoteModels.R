@@ -157,7 +157,7 @@ remoteModelsServer <- function(id,
                      # FALL BACK IF NO INTERNET CONNECTION
                      pathToLocal <-
                        checkLocalModelDir(pathToLocal = pathToLocal) %>%
-                       tryCatchWithWarningsAndErrors(errorTitle = "No local files!")
+                       shinyTryCatch(errorTitle = "No local files!")
 
                      if (!is.null(pathToLocal)) {
                        tmpPath <-
