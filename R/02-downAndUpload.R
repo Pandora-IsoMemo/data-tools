@@ -308,6 +308,14 @@ setFileName <- function(fileName, defaultFileName, extension) {
   return(newName)
 }
 
+#' Prefix Systime
+#'
+#' Prefixes a file name with the current time
+#'
+#' @param fileString (character) file name
+#'
+#' @return (character) file name with prefix of current time
+#' @export
 prefixSysTime <- function(fileString) {
   timestamp <- round(Sys.time()) %>%
     gsub(pattern = ":", replacement = "-") %>%
