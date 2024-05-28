@@ -85,6 +85,9 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceUI.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/filterParams.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/filterUnprocessed.html</loc>
   </url>
   <url>
@@ -275,9 +278,6 @@
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/selectFileTypeUI.html</loc>
-  </url>
-  <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/selectImportParams.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/selectSourceServer.html</loc>
