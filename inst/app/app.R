@@ -18,6 +18,8 @@ ui <- fluidPage(shinyjs::useShinyjs(), # Set up shinyjs
                   )
                 ))
 
+options(shiny.maxRequestSize = 300*1024^2)
+
 server <- function(input, output, session) {
   toolsImportServer(id = "import_panel")
   toolsLoadServer(id = "load_panel")

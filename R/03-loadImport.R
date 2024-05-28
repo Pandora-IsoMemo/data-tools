@@ -1,22 +1,13 @@
 loadImport <- function(importType, params, expectedFileInZip) {
+  values <- params[["values"]] %>% # to pass on the reactive values object
+    resetValues()
+
   filename <- params[["dataSource"]][["filename"]]
-  values <- params[["values"]] # to pass on the "reactiveValues" object
-
-  # reset values
-  values$warnings <- list()
-  values$errors <- list()
-  values$fileName <- ""
-  values$fileImportSuccess <- NULL
-  values$dataImport <- NULL
-  values$preview <- NULL
-  values$data <- list()
-  # return reset values
-  params[["values"]] <- values
-
   if (is.null(filename)) return(values)
 
+  params[["values"]] <- values
   params <- params %>%
-    selectImportParams(importType = importType)
+    filterParams(importType = importType)
 
   # load (full) data, model or zip
   res <- switch(importType,
@@ -26,13 +17,13 @@ loadImport <- function(importType, params, expectedFileInZip) {
     shinyTryCatch(errorTitle = "Could not load file!")
 
   if (importType == "model") {
-    # set entries of 'values' for 'model' (success, warnings, errors, ...)
+    # set entries of 'values' (success, warnings, errors, ...) for 'model' import
     return(values %>%
              fillValuesFromModel(filename = filename, importedModel = res))
   }
 
   if (importType == "zip") {
-    # set entries of 'values' for 'zip' (success, warnings, errors, ...)
+    # set entries of 'values' (success, warnings, errors, ...) for 'zip' import
     return(values %>%
              fillValuesFromZip(filename = filename,
                                importZip = res,
@@ -43,13 +34,28 @@ loadImport <- function(importType, params, expectedFileInZip) {
   res
 }
 
+resetValues <- function(values, includeData = TRUE) {
+  # reset values
+  values$warnings <- list()
+  values$errors <- list()
+  values$fileName <- ""
+  values$fileImportSuccess <- NULL
+  values$dataImport <- NULL
+  values$preview <- NULL
+
+  if (includeData) values$data <- list()
+
+  gc()
+  return(values)
+}
+
 #' Select Import params
 #'
 #' @param params (list) named list of parameters required to import data or a model
 #' @inheritParams importDataServer
 #'
 #' @return (list) named list of parameters required for the particular importType
-selectImportParams <- function(params,
+filterParams <- function(params,
                                importType) {
   switch(importType,
          "data" = list(values = params$values,

@@ -424,6 +424,8 @@ importDataServer <- function(id,
                        )
                    }
 
+                   values <- values %>%
+                     resetValues()
                    values$data[[values$fileName]] <- res
                  })
 
@@ -434,6 +436,8 @@ importDataServer <- function(id,
                      removeOpenGptCon()
 
                      req(preparedData$data)
+                     values <- values %>%
+                       resetValues()
                      values$data[[values$fileName]] <-
                        preparedData$data %>%
                        formatForImport(
@@ -450,6 +454,8 @@ importDataServer <- function(id,
                      removeOpenGptCon()
                      customNames$withRownames <- FALSE
                      customNames$withColnames <- TRUE
+                     values <- values %>%
+                       resetValues()
                      values$data[[names(joinedData())[1]]] <-
                        joinedData()[[1]] %>%
                        formatForImport(
@@ -465,6 +471,8 @@ importDataServer <- function(id,
                      removeOpenGptCon()
                      customNames$withRownames <- FALSE
                      customNames$withColnames <- TRUE
+                     values <- values %>%
+                       resetValues()
                      values$data[[names(queriedData())[1]]] <-
                        queriedData()[[1]] %>%
                        formatForImport(

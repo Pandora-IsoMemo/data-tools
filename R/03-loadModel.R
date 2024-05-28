@@ -113,7 +113,7 @@ loadModel <-
 
       errorMsg <- paste0(sprintf("Wrong model loaded. %s This model is not valid for %s.",
                                  versionTxt, rPackageName),
-                         sprintf("Make sure to upload a model that was previously saved with %s.",
+                         sprintf(" Make sure to upload a model that was previously saved with %s.",
                                  rPackageName))
       stop(errorMsg)
       return(NULL)
