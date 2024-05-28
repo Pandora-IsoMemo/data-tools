@@ -260,19 +260,14 @@ selectDataServer <- function(id,
 #'
 #' Maps the R package name to the respective Github repository
 #'
-#' @param rPackage (character) name of the R package (as in the Description file)
-getGithubMapping <- function(rPackage = c("BMSCApp", "DataTools", "mpiBpred", "MpiIsoApp",
-                                          "OsteoBioR", "PlotR", "ReSources", "MapR")) {
+#' @param rPackage (character) name of the R package (as in the Description file), must be empty or
+#'  specified in the config file of the package DataTools
+getGithubMapping <- function(rPackage = "") {
   if (rPackage == "") return("")
 
-  rPackage <- match.arg(rPackage)
-  switch(rPackage,
-         "BMSCApp" = "bmsc-app",
-         "DataTools" = "data-tools",
-         "mpiBpred" = "bpred",
-         "MpiIsoApp" = "iso-app",
-         "OsteoBioR" = "osteo-bior",
-         "PlotR" = "PlotR",
-         "ReSources" = "resources",
-         "MapR" = "MapR")
+  if (!(rPackage %in% names(config()$githubMapping))) {
+    stop("No Github mapping found for package '", rPackage, "'. Please add it to the config file of the package DataTools.")
+  }
+
+  config()$githubMapping[[rPackage]]
 }

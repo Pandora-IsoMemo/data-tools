@@ -21,3 +21,18 @@ remoteModelsSpecs:
     folder: "predefinedModels"
   data:
     folder: "dataQueries"
+githubMapping:
+  # internal apps
+  BMSCApp: "bmsc-app"
+  DataToolsTest: "data-tools"
+  mpiBpred: "bpred"
+  MpiIsoApp: "iso-app"
+  BMSC-S: "BMSC-S" # updated name
+  Bpred: "Bpred"   # updated name
+  OsteoBioR: "OsteoBioR"
+  PlotR: "PlotR"
+  ReSources: "ReSources"
+  MapR: "MapR"
+  DSSM: "DSSM"     # updated name
+  # external apps
+  CausalR: "causalr"

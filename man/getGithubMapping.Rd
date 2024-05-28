@@ -4,13 +4,11 @@
 \alias{getGithubMapping}
 \title{Get Github Mapping}
 \usage{
-getGithubMapping(
-  rPackage = c("BMSCApp", "DataTools", "mpiBpred", "MpiIsoApp", "OsteoBioR", "PlotR",
-    "ReSources", "MapR")
-)
+getGithubMapping(rPackage = "")
 }
 \arguments{
-\item{rPackage}{(character) name of the R package (as in the Description file)}
+\item{rPackage}{(character) name of the R package (as in the Description file), must be empty or
+specified in the config file of the package DataTools}
 }
 \description{
 Maps the R package name to the respective Github repository
