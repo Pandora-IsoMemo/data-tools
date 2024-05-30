@@ -164,5 +164,6 @@ testthat::test_that("Test gptServer", {
 
                       testthat::expect_false(validConnection())
                       testthat::expect_null(session$returned())
-                    })
+                    }) %>%
+    suppressWarnings()
 })
