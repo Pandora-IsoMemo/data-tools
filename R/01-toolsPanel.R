@@ -206,7 +206,7 @@ toolsLoadServer <- function(id) {
                    model = reactive(NULL),
                    rPackageName = config()[["rPackageName"]],
                    githubRepo = config()[["githubRepo"]],
-                   mainFolder = config()[["mainFolder"]],
+                   mainFolder = config()[["remoteModelsSpecs"]][["model"]][["folder"]],
                    fileExtension = config()[["fileExtension"]],
                    modelNotes = reactive(input$modelNotes)
                  )
@@ -252,7 +252,7 @@ toolsLoadServer <- function(id) {
 
                  uploadedData <- uploadModelServer("uploadDat",
                                                    githubRepo = config()[["githubRepo"]],
-                                                   mainFolder = config()[["mainFolder"]],
+                                                   mainFolder = config()[["remoteModelsSpecs"]][["model"]][["folder"]],
                                                    fileExtension = config()[["fileExtension"]],
                                                    reloadChoices = reactive(TRUE))
 

@@ -10,7 +10,6 @@ ckanModelTypes:
   - "zip"
   - "datatools"
 githubRepo: "data-tools"        # for import of models
-mainFolder: "predefinedModels"  # for import of models
 fileExtension: "datatools"      # for download of models
 rPackageName: "DataTools"       # for download and import of models
 # settings to load remote (online) example zips or models or data links:
@@ -24,7 +23,7 @@ remoteModelsSpecs:
 githubMapping:
   # internal apps
   BMSCApp: "bmsc-app"
-  DataToolsTest: "data-tools"
+  DataTools: "data-tools"
   mpiBpred: "bpred"
   MpiIsoApp: "iso-app"
   BMSC-S: "BMSC-S" # updated name

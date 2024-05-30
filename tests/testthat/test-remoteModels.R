@@ -1,6 +1,6 @@
 testthat::test_that("Test getRemoteModelsFromGithub", {
   # test cases
-  mainFolder <- "predefinedModels"
+  mainFolder <- config()[["remoteModelsSpecs"]][["model"]][["folder"]]
   testRepos <- c("data-tools", "resources", "bmsc-app", "osteo-bior", "bpred", "plotr")
 
   # expected values
