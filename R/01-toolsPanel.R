@@ -46,7 +46,8 @@ toolsImportServer <- function(id) {
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
-                   defaultSource = config()[["defaultSource"]]
+                   defaultSource = config()[["defaultSource"]],
+                   options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
                  importedDataCKAN <- importDataServer(
@@ -56,7 +57,7 @@ toolsImportServer <- function(id) {
                    ckanFileTypes = config()[["ckanFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = "ckan",
-                   rPackageName = config()[["rPackageName"]]
+                   options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
                  importedBatchData <- importDataServer(
@@ -68,7 +69,7 @@ toolsImportServer <- function(id) {
                    defaultSource = config()[["defaultSource"]],
                    batch = TRUE,
                    outputAsMatrix = TRUE,
-                   rPackageName = config()[["rPackageName"]]
+                   options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
                  importedModel <- importDataServer(
@@ -80,7 +81,7 @@ toolsImportServer <- function(id) {
                    defaultSource = config()[["defaultSource"]],
                    importType = "model",
                    fileExtension = config()[["fileExtension"]],
-                   rPackageName = config()[["rPackageName"]]
+                   options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
                  dataOut <- reactiveVal(NULL)
@@ -254,7 +255,8 @@ toolsLoadServer <- function(id) {
                                                    githubRepo = config()[["githubRepo"]],
                                                    mainFolder = config()[["remoteModelsSpecs"]][["model"]][["folder"]],
                                                    fileExtension = config()[["fileExtension"]],
-                                                   reloadChoices = reactive(TRUE))
+                                                   reloadChoices = reactive(TRUE),
+                                                   rPackageName = config()[["rPackageName"]])
 
                  observe({
                    ## update data ----

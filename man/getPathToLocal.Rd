@@ -4,7 +4,7 @@
 \alias{getPathToLocal}
 \title{Get Path to Local}
 \usage{
-getPathToLocal(mainFolder, subFolder, rPackageName = NULL)
+getPathToLocal(mainFolder, subFolder, rPackageName = "")
 }
 \arguments{
 \item{mainFolder}{(character) folder containing all loadable .zip files. For most apps this

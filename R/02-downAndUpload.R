@@ -415,6 +415,13 @@ uploadModelServer <-
            onlySettings = FALSE,
            fileExtension = "zip",
            reset = reactive(FALSE)) {
+    # check if we do really have a package
+    if (rPackageName != "" &&
+        system.file("app", package = rPackageName) == "") {
+      message(paste0("'", rPackageName, "' is not a package. Ignoring 'rPackageName'."))
+      rPackageName <- ""
+    }
+
     moduleServer(id,
                  function(input, output, session) {
                    pathToModel <- reactiveVal(NULL)
@@ -431,7 +438,7 @@ uploadModelServer <-
                      "remoteModels",
                      githubRepo = githubRepo,
                      folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
-                     pathToLocal = getPathToLocal(mainFolder, subFolder),
+                     pathToLocal = getPathToLocal(mainFolder, subFolder, rPackageName = rPackageName),
                      resetSelected = reset,
                      reloadChoices = reloadChoices
                    )
@@ -476,15 +483,20 @@ getFolderOnGithub <- function(mainFolder, subFolder = NULL) {
 #' Get Path to Local
 #'
 #' @inheritParams uploadModelServer
-getPathToLocal <- function(mainFolder, subFolder, rPackageName = NULL) {
+getPathToLocal <- function(mainFolder, subFolder, rPackageName = "") {
   folders <- list(mainFolder, subFolder)
   res <- folders[!sapply(folders, is.null)] %>%
     do.call(what = file.path)
 
-  if (!is.null(rPackageName)) {
+  if (!is.null(rPackageName) && rPackageName != "") {
     system.file(file.path("app", res), package = rPackageName)
   } else {
-    file.path(".", res)
+    # previously:
+    # file.path(".", res)
+
+    # currently only needed for CausalR
+    # we set the path as follows:
+    file.path("..", "inst", "app", res)
   }
 }
 
