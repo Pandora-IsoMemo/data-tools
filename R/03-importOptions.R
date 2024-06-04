@@ -36,7 +36,7 @@ validateImportOptions <- function(options, rPackageName = "") {
 
   # check if we do really have a package
   if (options[["rPackageName"]] != "" &&
-      system.file("app", package = options[["rPackageName"]]) == "") {
+      system.file("", package = options[["rPackageName"]]) == "") {
     message(paste0("'", options[["rPackageName"]], "' is not a package. Ignoring parameter 'rPackageName'."))
     options[["rPackageName"]] <- ""
   }
