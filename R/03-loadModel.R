@@ -106,7 +106,9 @@ loadModel <-
     rPackageLoaded <- gsub("[^a-zA-Z]", "", modelImport$version)
 
     if (!is.null(rPackageName) && (rPackageName != "") &&
-        length(rPackageLoaded) > 0 && rPackageLoaded != "" && !grepl(rPackageName, modelImport$version)) {
+        length(rPackageLoaded) > 0 && rPackageLoaded != "" &&
+        !(grepl(rPackageName, modelImport$version)) &&
+        !(grepl(config()$packageMapping[[rPackageName]], modelImport$version))) {
       versionTxt <- ""
       if (!is.null(modelImport$version))
         versionTxt <- sprintf("Trying to upload a model from %s.", modelImport$version)

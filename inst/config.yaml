@@ -26,7 +26,7 @@ githubMapping:
   DataTools: "data-tools"
   mpiBpred: "bpred"
   MpiIsoApp: "iso-app"
-  BMSC-S: "BMSC-S" # updated name
+  BMSCS: "BMSCS" # updated name
   Bpred: "Bpred"   # updated name
   OsteoBioR: "OsteoBioR"
   PlotR: "PlotR"
@@ -35,3 +35,15 @@ githubMapping:
   DSSM: "DSSM"     # updated name
   # external apps
   CausalR: "causalr"
+packageMapping: # we do need this for checks in model imports
+  # mapping to former names of the packages
+  DSSM: "MpiIsoApp"
+  BMSCS: "BMSCApp"
+  Bpred: "mpiBpred"
+  # here names did not change
+  DataTools: "DataTools"
+  OsteoBioR: "OsteoBioR"
+  PlotR: "PlotR"
+  ReSources: "ReSources"
+  MapR: "MapR"
+  CausalR: "CausalR"
