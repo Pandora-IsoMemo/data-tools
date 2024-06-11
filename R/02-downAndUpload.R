@@ -489,13 +489,10 @@ getPathToLocal <- function(mainFolder, subFolder, rPackageName = "") {
     do.call(what = file.path)
 
   if (!is.null(rPackageName) && rPackageName != "") {
-    parentPath <- system.file("inst", "app", package = rPackageName)
-    if (parentPath == "") {
-      parentPath <- system.file(file.path("app"), package = rPackageName)
-    }
+    parentPath <- file.path(system.file(package = rPackageName), "inst", "app")
   } else { # use working directory when we have no package
     # currently only needed for CausalR
-    parentPath <- file.path(getwd(), "..", "inst","app")
+    parentPath <- file.path(getwd(), "inst", "app")
 
     if (length(dir(parentPath)) == 0) {
       # else directly try working directory

@@ -218,7 +218,7 @@ test_that("Test getFolderOnGithub() and getPathToLocal()", {
   expect_equal(getFolderOnGithub(mainFolder = "predefinedModels", subFolder = NULL),
                "/predefinedModels")
   expect_equal(getPathToLocal(mainFolder = "predefinedModels", subFolder = "AverageR"),
-               "../inst/app/predefinedModels/AverageR")
+               file.path(getwd(), "inst", "app", "predefinedModels","AverageR"))
   expect_equal(getPathToLocal(mainFolder = "predefinedModels", subFolder = NULL),
-               "../inst/app/predefinedModels")
+               file.path(getwd(), "inst", "app", "predefinedModels"))
 })
