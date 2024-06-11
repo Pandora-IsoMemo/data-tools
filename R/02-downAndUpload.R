@@ -489,35 +489,30 @@ getPathToLocal <- function(mainFolder, subFolder, rPackageName = "") {
     do.call(what = file.path)
 
   if (!is.null(rPackageName) && rPackageName != "") {
-    parentPath <- file.path(system.file(package = rPackageName), "inst", "app")   # for apps
-
-    if (length(dir(parentPath)) == 0) {
-      # else directly try working directory
-      parentPath <- file.path(system.file(package = rPackageName), "app") # for automatic tests
-
-      if (length(dir(parentPath)) == 0) {
-        # else directly try working directory
-        parentPath <- system.file(package = rPackageName)
-      }
-    }
+    workingDir <- system.file(package = rPackageName)
   } else { # use working directory when we have no package
-    # currently only needed for CausalR
-    parentPath <- file.path(getwd(), "inst", "app")   # for apps
-
-    if (length(dir(parentPath)) == 0) {
-      # else directly try working directory
-      parentPath <- parentPath <- file.path(getwd(), "app") # for automatic tests
-
-      if (length(dir(parentPath)) == 0) {
-        # else directly try working directory
-        parentPath <- getwd()
-      }
-    }
+    workingDir <- getwd()
   }
 
+  parentPath <- findLocalFiles(workingDir = workingDir)
   message(sprintf("Using '%s' for local files.", parentPath))
 
   return(file.path(parentPath, res))
+}
+
+findLocalFiles <- function(workingDir) {
+  path <- file.path(workingDir, "inst", "app") # path for apps
+
+  # check if path contains files
+  if (length(dir(path)) != 0) return(path)
+
+  path <- file.path(workingDir, "app")         # path for tests
+
+  # check if path contains files
+  if (length(dir(path)) != 0) return(path)
+
+  # else directly use working directory
+  return(workingDir)
 }
 
 dataLoadedAlert <-
