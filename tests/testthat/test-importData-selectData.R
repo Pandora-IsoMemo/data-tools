@@ -112,9 +112,7 @@ test_that("Test module selectSourceServer", {
                          internetCon = reactiveVal(FALSE),
                          githubRepo = "data-tools",
                          folderOnGithub = getFolderOnGithub("predefinedModels", subFolder = NULL),
-                         pathToLocal = getPathToLocal("predefinedModels",
-                                                      subFolder = NULL,
-                                                      rPackageName = "DataTools")),
+                         pathToLocal = getPathToLocal("predefinedModels", subFolder = NULL)),
              {
                # Arrange
                print("test select source from local model")
