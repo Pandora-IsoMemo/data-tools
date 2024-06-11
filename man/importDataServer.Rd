@@ -77,7 +77,7 @@ This parameter is ignored if importType == "data"}
 \item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
 File names that must be contained in the zip upload.}
 
-\item{options}{(list) Extra options for the import module.}
+\item{options}{(list) Extra options for the import module. See \code{\link{importOptions}}.}
 }
 \description{
 Backend for data import module

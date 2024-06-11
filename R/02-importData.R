@@ -11,24 +11,6 @@ importDataUI <- function(id, label = "Import Data") {
   actionButton(ns("openPopup"), label)
 }
 
-#' Import Options
-#'
-#' Extra options for the import module.
-#'
-#' @param rPackageName (character) name of the package (as in the Description file) in which this
-#'  module is called. If not NULL, than the uploaded file must be a downloaded file
-#'  from the R package where \code{importDataServer} was called. This parameter is ignored if
-#'  \code{importType == "data"}.
-#' @param customHelpText (list) A help text element that can be added to a UI definition. Output of
-#'  \code{shiny::helpText(...)}.
-#'
-#' @export
-importOptions <- function(rPackageName = "",
-                          customHelpText = NULL) {
-  list(rPackageName = rPackageName,
-       customHelpText = customHelpText)
-}
-
 #' Server function for data import
 #'
 #' Backend for data import module
@@ -65,7 +47,7 @@ importOptions <- function(rPackageName = "",
 #'  This parameter is ignored if importType == "data"
 #' @param rPackageName (character) DEPRECATED. Instead, please use
 #'  \code{options = importOptions(rPackageName = <your package>)}.
-#' @param options (list) Extra options for the import module.
+#' @param options (list) Extra options for the import module. See \code{\link{importOptions}}.
 #'
 #' @export
 importDataServer <- function(id,
@@ -95,10 +77,8 @@ importDataServer <- function(id,
 
   if (!is.null(mainFolder)) warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
 
-  # check new options param as long as we need param "rPackageName"
-  if (options[["rPackageName"]] == "" && rPackageName != "") {
-    options[["rPackageName"]] <- rPackageName
-  }
+  options <- options %>%
+    validateImportOptions(rPackageName = rPackageName)
 
   moduleServer(id,
                function(input, output, session) {
@@ -182,14 +162,15 @@ importDataServer <- function(id,
                    importType = importType,
                    openPopupReset = reactive(input$openPopup > 0),
                    internetCon = internetCon,
-                   githubRepo = getGithubMapping(options[["rPackageName"]]),
+                   githubRepo = options[["githubRepo"]],
                    folderOnGithub = getFolderOnGithub(
                      mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
                      subFolder = subFolder
                    ),
                    pathToLocal = getPathToLocal(
                      mainFolder = config()[["remoteModelsSpecs"]][[importType]][["folder"]],
-                     subFolder = subFolder
+                     subFolder = subFolder,
+                     rPackageName = options[["rPackageName"]]
                    ),
                    ckanFileTypes = ckanFileTypes
                  )

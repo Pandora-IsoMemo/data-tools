@@ -415,6 +415,13 @@ uploadModelServer <-
            onlySettings = FALSE,
            fileExtension = "zip",
            reset = reactive(FALSE)) {
+    # check if we do really have a package
+    if (rPackageName != "" &&
+        system.file("app", package = rPackageName) == "") {
+      message(paste0("'", rPackageName, "' is not a package. Ignoring 'rPackageName'."))
+      rPackageName <- ""
+    }
+
     moduleServer(id,
                  function(input, output, session) {
                    pathToModel <- reactiveVal(NULL)
@@ -431,7 +438,7 @@ uploadModelServer <-
                      "remoteModels",
                      githubRepo = githubRepo,
                      folderOnGithub = getFolderOnGithub(mainFolder, subFolder),
-                     pathToLocal = getPathToLocal(mainFolder, subFolder),
+                     pathToLocal = getPathToLocal(mainFolder, subFolder, rPackageName = rPackageName),
                      resetSelected = reset,
                      reloadChoices = reloadChoices
                    )
@@ -476,16 +483,36 @@ getFolderOnGithub <- function(mainFolder, subFolder = NULL) {
 #' Get Path to Local
 #'
 #' @inheritParams uploadModelServer
-getPathToLocal <- function(mainFolder, subFolder, rPackageName = NULL) {
+getPathToLocal <- function(mainFolder, subFolder, rPackageName = "") {
   folders <- list(mainFolder, subFolder)
   res <- folders[!sapply(folders, is.null)] %>%
     do.call(what = file.path)
 
-  if (!is.null(rPackageName)) {
-    system.file(file.path("app", res), package = rPackageName)
-  } else {
-    file.path(".", res)
+  if (!is.null(rPackageName) && rPackageName != "") {
+    workingDir <- system.file(package = rPackageName)
+  } else { # use working directory when we have no package
+    workingDir <- getwd()
   }
+
+  parentPath <- findLocalFiles(workingDir = workingDir)
+  message(sprintf("Using '%s' for local files.", parentPath))
+
+  return(file.path(parentPath, res))
+}
+
+findLocalFiles <- function(workingDir) {
+  path <- file.path(workingDir, "inst", "app") # path for apps
+
+  # check if path contains files
+  if (length(dir(path)) != 0) return(path)
+
+  path <- file.path(workingDir, "app")         # path for tests
+
+  # check if path contains files
+  if (length(dir(path)) != 0) return(path)
+
+  # else directly use working directory
+  return(workingDir)
 }
 
 dataLoadedAlert <-

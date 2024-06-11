@@ -1,3 +1,10 @@
+# DataTools 24.05.2
+
+## Updates
+- _Import Data_ module:
+  - updated paths to find example models locally to enable compatibility to external apps 
+    (e.g. CausalR) (#86)
+
 # DataTools 24.05.1
 
 ## Updates
