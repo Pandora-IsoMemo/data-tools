@@ -1,3 +1,10 @@
+# DataTools 24.06.0
+
+## New Features
+- _Download Model_: new optional parameter `pathToInnerZip` to add a zip file within the zip file 
+  that contains model, data and inputs objects. This is needed for _MapR_ where pictures are
+  stored in zip files and needed for plots instead of model outputs  (#89).
+
 # DataTools 24.05.2
 
 ## Updates
