@@ -4,17 +4,12 @@
 \alias{addHelpFile}
 \title{Add Help File}
 \usage{
-addHelpFile(filesToZip, helpHTML, tempDir)
+addHelpFile(tempDir, helpHTML)
 }
 \arguments{
-\item{filesToZip}{(character) files to be zipped}
+\item{tempDir}{(character) temporary directory to store the help file}
 
 \item{helpHTML}{content of help function}
-
-\item{tempDir}{(character) temporary directory to store the help file}
-}
-\value{
-(character) updated paths to files to zip
 }
 \description{
 Add Help File

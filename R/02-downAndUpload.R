@@ -124,17 +124,13 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
     textAreaInput(
       ns("exportNotes"),
       "Notes",
-      placeholder = "Model description ...",
+      placeholder = "Download description ...",
       width = width
     ),
     checkboxInput(ns("onlyInputs"), "Store only data and user inputs", width = width),
     textInput(ns("userFileName"), "File name (without extension)", value = NULL, width = width),
-    downloadButton(ns("download"), label),
-    conditionalPanel(
-      ns = ns,
-      condition = "output.showSettings",
-      helpText("Currently, download of model output is enabled.")
-    )
+    tags$br(),
+    downloadButton(ns("download"), label)
   )
 }
 
@@ -148,7 +144,8 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the
 #'  "inputs" list
 #' @param model (reactive) model output object
-#' @param pathToInnerZip (character) path to inner zip file
+#' @param pathToOtherZip (character) path to another zip file. The content will be added to the
+#'  zip file that contains the content to download. Needed in MapR. If NULL, no files are added.
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param customFileName (reactive) custom file name, if empty ("") the default file name is used.
 #'  For example, this could be a reactive name that is updated after a model was uploaded into the
@@ -175,7 +172,7 @@ downloadModelServer <-
            dat,
            inputs,
            model,
-           pathToInnerZip = NULL,
+           pathToOtherZip = NULL,
            rPackageName,
            subFolder = NULL,
            customFileName = reactive(""),
@@ -196,9 +193,6 @@ downloadModelServer <-
                        shinyjs::show("onlyInputs")
                      }
                    })
-
-                   output$showSettings <- reactive({ onlySettings })
-                   outputOptions(output, "showSettings", suspendWhenHidden = FALSE)
 
                    observe({
                      req(triggerUpdate())
@@ -231,24 +225,32 @@ downloadModelServer <-
                      },
                      content = function(file) {
                        withProgress({
-                         tempDir <- tempdir()
+                         # create subfolder "downloadFiles" in tempdir
+                         tempDir <- file.path(tempdir(), "downloadFiles")
+                         dir.create(tempDir, recursive = TRUE)
 
-                         # set files to zip
-                         filesToZip <- tempDir %>%
-                           addModelRDSFile(dat = dat(),
-                                           inputs = inputs,
-                                           model = model(),
-                                           rPackageName = rPackageName,
-                                           subFolder = subFolder,
-                                           onlySettings = onlySettings) %>%
-                           addNotesFile(notes = input$exportNotes, tempDir = tempDir) %>%
-                           addHelpFile(helpHTML = helpHTML, tempDir = tempDir) %>%
-                           addInternalZipFile(pathToInnerZip = pathToInnerZip)
+                         # add files to tempDir
+                         addModelRDSFile(tempDir = tempDir,
+                                         dat = dat(),
+                                         inputs = inputs,
+                                         model = model(),
+                                         rPackageName = rPackageName,
+                                         subFolder = subFolder,
+                                         onlySettings = onlySettings)
+                         addNotesFile(tempDir = tempDir, notes = input$exportNotes)
+                         addHelpFile(tempDir = tempDir, helpHTML = helpHTML)
+                         addFilesFromOtherZip(tempDir = tempDir, pathToOtherZip = pathToOtherZip)
+
+                         # get all files from tempDir
+                         filesToZip <- list.files(tempDir, full.names = TRUE)
 
                          # zip all files
                          zip::zipr(file,
                                    filesToZip,
                                    compression_level = compressionLevel)
+
+                         # clean up
+                         unlink(tempDir, recursive = TRUE)
                        },
                        value = 0.8,
                        message = "Downloading ...")
@@ -264,22 +266,20 @@ downloadModelServer <-
 #'
 #' @param tempDir (character) temporary directory to store the model file
 #' @inheritParams downloadModelServer
-#'
-#' @return (character) path to the model file
 addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder, onlySettings) {
-  modelfile <- file.path(tempDir, "model.rds")
-
   # prepare inputs
   inputExport <- reactiveValuesToList(inputs)
   # remove NULL values, they cause upload of inputs to fail without warnings
   inputExport <-
     inputExport[!sapply(inputExport, is.null)]
 
-  # prepare model
+  # prepare model or user inputs (settings)
   if (onlySettings) {
     modelExport <- NULL
+    modelfile <- file.path(tempDir, "inputs.rds")
   } else {
-    modelExport <- model()
+    modelExport <- model
+    modelfile <- file.path(tempDir, "model.rds")
   }
 
   versionExport <-
@@ -288,7 +288,7 @@ addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder
   # create model file
   saveRDS(
     list(
-      data = dat(),
+      data = dat,
       inputs = inputExport,
       model = modelExport,
       version = versionExport
@@ -296,57 +296,46 @@ addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder
     file = modelfile
   )
 
-  modelfile
+  return()
 }
 
 #' Add Notes File
 #'
-#' @param filesToZip (character) files to be zipped
-#' @param notes (character) notes to be added to the zip file
 #' @param tempDir (character) temporary directory to store the notes file
-#'
-#' @return (character) updated paths to files to zip
-addNotesFile <- function(filesToZip, notes, tempDir) {
-  notesfile <-
-    file.path(tempDir, "README.txt")
+#' @param notes (character) notes to be added to the zip file
+addNotesFile <- function(tempDir, notes) {
+  if (notes == "") return()
 
   # create notes file
-  writeLines(notes, notesfile)
+  writeLines(notes, file.path(tempDir, "README.txt"))
 
-  c(filesToZip, notesfile)
+  return()
 }
 
 #' Add Help File
 #'
-#' @param filesToZip (character) files to be zipped
 #' @param tempDir (character) temporary directory to store the help file
 #' @inheritParams downloadModelServer
-#'
-#' @return (character) updated paths to files to zip
-addHelpFile <- function(filesToZip, helpHTML, tempDir) {
-  if (!is.null(helpHTML)) {
-    helpfile <- file.path(tempDir, "help.html")
+addHelpFile <- function(tempDir, helpHTML) {
+  if (is.null(helpHTML) || helpHTML == "") return()
 
-    # create help file
-    save_html(helpHTML, helpfile)
-    filesToZip <- c(filesToZip, helpfile)
-  }
+  # create help file
+  save_html(helpHTML, file.path(tempDir, "help.html"))
 
-  return(filesToZip)
+  return()
 }
 
 #' Add Internal Zip File
 #'
-#' @param filesToZip (character) files to be zipped
+#' @param tempDir (character) temporary directory to store the help file
 #' @inheritParams downloadModelServer
-#'
-#' @return (character) updated paths to files to zip
-addInternalZipFile <- function(filesToZip, pathToInnerZip) {
-  if (!is.null(pathToInnerZip)) {
-    filesToZip <- c(filesToZip, pathToInnerZip)
-  }
+addFilesFromOtherZip <- function(tempDir, pathToOtherZip) {
+  if (is.null(pathToOtherZip)) return()
 
-  return(filesToZip)
+  # unzip inner zip file to temp directory
+  unzip(pathToOtherZip, exdir = tempDir)
+
+  return()
 }
 
 updateDefaultFileName <- function(defaultFileName, subFolder, fileExtension, rPackageName) {

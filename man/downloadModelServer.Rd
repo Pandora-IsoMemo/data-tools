@@ -9,7 +9,7 @@ downloadModelServer(
   dat,
   inputs,
   model,
-  pathToInnerZip = NULL,
+  pathToOtherZip = NULL,
   rPackageName,
   subFolder = NULL,
   customFileName = reactive(""),
@@ -33,7 +33,8 @@ downloadModelServer(
 
 \item{model}{(reactive) model output object}
 
-\item{pathToInnerZip}{(character) path to inner zip file}
+\item{pathToOtherZip}{(character) path to another zip file. The content will be added to the
+zip file that contains the content to download. Needed in MapR. If NULL, no files are added.}
 
 \item{rPackageName}{(character) name of the package (as in the Description file) in which this
 module is called. If not NULL, than the uploaded file must be a downloaded file

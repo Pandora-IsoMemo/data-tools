@@ -4,17 +4,12 @@
 \alias{addNotesFile}
 \title{Add Notes File}
 \usage{
-addNotesFile(filesToZip, notes, tempDir)
+addNotesFile(tempDir, notes)
 }
 \arguments{
-\item{filesToZip}{(character) files to be zipped}
+\item{tempDir}{(character) temporary directory to store the notes file}
 
 \item{notes}{(character) notes to be added to the zip file}
-
-\item{tempDir}{(character) temporary directory to store the notes file}
-}
-\value{
-(character) updated paths to files to zip
 }
 \description{
 Add Notes File

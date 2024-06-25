@@ -33,9 +33,6 @@ from the R package where \code{importDataServer} was called. This parameter is i
 
 \item{onlySettings}{(logical) if TRUE allow only download of user inputs and user data}
 }
-\value{
-(character) path to the model file
-}
 \description{
 Add Model RDS File
 }
