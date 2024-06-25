@@ -148,6 +148,7 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the
 #'  "inputs" list
 #' @param model (reactive) model output object
+#' @param pathToInnerZip (character) path to inner zip file
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param customFileName (reactive) custom file name, if empty ("") the default file name is used.
 #'  For example, this could be a reactive name that is updated after a model was uploaded into the
@@ -174,6 +175,7 @@ downloadModelServer <-
            dat,
            inputs,
            model,
+           pathToInnerZip = NULL,
            rPackageName,
            subFolder = NULL,
            customFileName = reactive(""),
@@ -229,45 +231,21 @@ downloadModelServer <-
                      },
                      content = function(file) {
                        withProgress({
-                         zipdir <- tempdir()
-                         modelfile <- file.path(zipdir, "model.rds")
-                         notesfile <-
-                           file.path(zipdir, "README.txt")
-                         helpfile <- file.path(zipdir, "help.html")
+                         tempDir <- tempdir()
 
-                         dataExport <- dat()
+                         # set files to zip
+                         filesToZip <- tempDir %>%
+                           addModelRDSFile(dat = dat(),
+                                           inputs = inputs,
+                                           model = model(),
+                                           rPackageName = rPackageName,
+                                           subFolder = subFolder,
+                                           onlySettings = onlySettings) %>%
+                           addNotesFile(notes = input$exportNotes, tempDir = tempDir) %>%
+                           addHelpFile(helpHTML = helpHTML, tempDir = tempDir) %>%
+                           addInternalZipFile(pathToInnerZip = pathToInnerZip)
 
-                         inputExport <- reactiveValuesToList(inputs)
-                         # remove NULL values, they cause upload of inputs to fail without warnings
-                         inputExport <-
-                           inputExport[!sapply(inputExport, is.null)]
-
-                         if (input$onlyInputs ||
-                             is.null(model()) || onlySettings) {
-                           modelExport <- NULL
-                         } else {
-                           modelExport <- model()
-                         }
-
-                         versionExport <-
-                           getModelVersion(rPackageName, subFolder)
-
-                         saveRDS(
-                           list(
-                             data = dataExport,
-                             inputs = inputExport,
-                             model = modelExport,
-                             version = versionExport
-                           ),
-                           file = modelfile,
-                           compress = compress
-                         )
-                         writeLines(input$exportNotes, notesfile)
-                         filesToZip <- c(modelfile, notesfile)
-                         if (!is.null(helpHTML)) {
-                           save_html(helpHTML, helpfile)
-                           filesToZip <- c(filesToZip, helpfile)
-                         }
+                         # zip all files
                          zip::zipr(file,
                                    filesToZip,
                                    compression_level = compressionLevel)
@@ -281,6 +259,95 @@ downloadModelServer <-
 
                  })
   }
+
+#' Add Model RDS File
+#'
+#' @param tempDir (character) temporary directory to store the model file
+#' @inheritParams downloadModelServer
+#'
+#' @return (character) path to the model file
+addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder, onlySettings) {
+  modelfile <- file.path(tempDir, "model.rds")
+
+  # prepare inputs
+  inputExport <- reactiveValuesToList(inputs)
+  # remove NULL values, they cause upload of inputs to fail without warnings
+  inputExport <-
+    inputExport[!sapply(inputExport, is.null)]
+
+  # prepare model
+  if (onlySettings) {
+    modelExport <- NULL
+  } else {
+    modelExport <- model()
+  }
+
+  versionExport <-
+    getModelVersion(rPackageName, subFolder)
+
+  # create model file
+  saveRDS(
+    list(
+      data = dat(),
+      inputs = inputExport,
+      model = modelExport,
+      version = versionExport
+    ),
+    file = modelfile
+  )
+
+  modelfile
+}
+
+#' Add Notes File
+#'
+#' @param filesToZip (character) files to be zipped
+#' @param notes (character) notes to be added to the zip file
+#' @param tempDir (character) temporary directory to store the notes file
+#'
+#' @return (character) updated paths to files to zip
+addNotesFile <- function(filesToZip, notes, tempDir) {
+  notesfile <-
+    file.path(tempDir, "README.txt")
+
+  # create notes file
+  writeLines(notes, notesfile)
+
+  c(filesToZip, notesfile)
+}
+
+#' Add Help File
+#'
+#' @param filesToZip (character) files to be zipped
+#' @param tempDir (character) temporary directory to store the help file
+#' @inheritParams downloadModelServer
+#'
+#' @return (character) updated paths to files to zip
+addHelpFile <- function(filesToZip, helpHTML, tempDir) {
+  if (!is.null(helpHTML)) {
+    helpfile <- file.path(tempDir, "help.html")
+
+    # create help file
+    save_html(helpHTML, helpfile)
+    filesToZip <- c(filesToZip, helpfile)
+  }
+
+  return(filesToZip)
+}
+
+#' Add Internal Zip File
+#'
+#' @param filesToZip (character) files to be zipped
+#' @inheritParams downloadModelServer
+#'
+#' @return (character) updated paths to files to zip
+addInternalZipFile <- function(filesToZip, pathToInnerZip) {
+  if (!is.null(pathToInnerZip)) {
+    filesToZip <- c(filesToZip, pathToInnerZip)
+  }
+
+  return(filesToZip)
+}
 
 updateDefaultFileName <- function(defaultFileName, subFolder, fileExtension, rPackageName) {
   # if already specified return that file name

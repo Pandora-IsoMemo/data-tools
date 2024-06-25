@@ -9,6 +9,7 @@ downloadModelServer(
   dat,
   inputs,
   model,
+  pathToInnerZip = NULL,
   rPackageName,
   subFolder = NULL,
   customFileName = reactive(""),
@@ -31,6 +32,8 @@ downloadModelServer(
 "inputs" list}
 
 \item{model}{(reactive) model output object}
+
+\item{pathToInnerZip}{(character) path to inner zip file}
 
 \item{rPackageName}{(character) name of the package (as in the Description file) in which this
 module is called. If not NULL, than the uploaded file must be a downloaded file

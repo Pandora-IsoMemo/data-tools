@@ -10,7 +10,10 @@ filterParams(params, importType)
 \item{params}{(list) named list of parameters required to import data or a model}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
-ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
+ImportType == "model" expects a zip file containing a model. The file will be unzipped,
+the model object extracted, and checked if it is valid for the app.
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
+and the path to the zip file will be returned.}
 }
 \value{
 (list) named list of parameters required for the particular importType

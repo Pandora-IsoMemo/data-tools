@@ -13,5 +13,6 @@ loadZipWrapper(filepath, fileExtension = "zip")
 "bpred", "bmsc"}
 }
 \description{
-Load Zip Wrapper
+Wrapper function to load a zip file. This function does not unzip the file, but checks if the
+file is a zip file and returns the path to the file.
 }
