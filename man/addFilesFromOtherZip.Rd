@@ -9,7 +9,7 @@ addFilesFromOtherZip(tempDir, pathToOtherZip)
 \arguments{
 \item{tempDir}{(character) temporary directory to store the help file}
 
-\item{pathToOtherZip}{(character) path to another zip file. The content will be added to the
+\item{pathToOtherZip}{(reactive) path to another zip file. The content will be added to the
 zip file that contains the content to download. Needed in MapR. If NULL, no files are added.}
 }
 \description{

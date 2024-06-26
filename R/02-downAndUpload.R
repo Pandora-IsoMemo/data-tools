@@ -144,7 +144,7 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
 #' @param inputs (reactiveValues) reactiveValues list of user inputs, in most cases just the
 #'  "inputs" list
 #' @param model (reactive) model output object
-#' @param pathToOtherZip (character) path to another zip file. The content will be added to the
+#' @param pathToOtherZip (reactive) path to another zip file. The content will be added to the
 #'  zip file that contains the content to download. Needed in MapR. If NULL, no files are added.
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files
 #' @param customFileName (reactive) custom file name, if empty ("") the default file name is used.
@@ -230,6 +230,9 @@ downloadModelServer <-
                          dir.create(tempDir, recursive = TRUE)
 
                          # add files to tempDir
+                         addFilesFromOtherZip(tempDir = tempDir, pathToOtherZip = pathToOtherZip())
+
+                         # adding next files might update existing files (which is desired behavior)
                          addModelRDSFile(tempDir = tempDir,
                                          dat = dat(),
                                          inputs = inputs,
@@ -239,7 +242,6 @@ downloadModelServer <-
                                          onlySettings = onlySettings)
                          addNotesFile(tempDir = tempDir, notes = input$exportNotes)
                          addHelpFile(tempDir = tempDir, helpHTML = helpHTML)
-                         addFilesFromOtherZip(tempDir = tempDir, pathToOtherZip = pathToOtherZip)
 
                          # get all files from tempDir
                          filesToZip <- list.files(tempDir, full.names = TRUE)
