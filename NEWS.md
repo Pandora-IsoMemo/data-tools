@@ -2,9 +2,12 @@
 
 ## New Features
 - _Download Model_: new optional parameter `pathToOtherZip` to add the content of a zip file to the
-  the zip file to be downloaded that contains also model, data and inputs objects.
+  the zip file to be downloaded (which contains also model, data and inputs objects).
   This is needed for _MapR_ where pictures are stored in zip files and needed for plots (instead of 
   model outputs)  (#89)
+
+## Updates
+- export of functions to extract notes and inputs from an uploaded file (#89)
 
 # DataTools 24.05.2
 
