@@ -21,7 +21,10 @@ selectSourceUI(
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
-ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
+ImportType == "model" expects a zip file containing a model. The file will be unzipped,
+the model object extracted, and checked if it is valid for the app.
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
+and the path to the zip file will be returned.}
 
 \item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
 ignored if \code{type = "file"} or \code{type = "remoteModel"}}

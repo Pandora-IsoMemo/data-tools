@@ -21,9 +21,14 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan")
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param importType (character) type of import, either "data" or "model" or "zip".
-#'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'.
-#' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if importType == "model"
-#' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if importType == "model"
+#'  ImportType == "model" expects a zip file containing a model. The file will be unzipped,
+#'  the model object extracted, and checked if it is valid for the app.
+#'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
+#'  and the path to the zip file will be returned.
+#' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if
+#'  importType == "model"
+#' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if
+#'  importType == "model"
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
 #'  of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.

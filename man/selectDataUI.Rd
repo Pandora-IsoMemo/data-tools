@@ -21,7 +21,10 @@ selectDataUI(
 e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip".
-ImportType == "zip" enables the optional parameter 'expectedFileInZip'.}
+ImportType == "model" expects a zip file containing a model. The file will be unzipped,
+the model object extracted, and checked if it is valid for the app.
+ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
+and the path to the zip file will be returned.}
 
 \item{customHelpText}{(list) A help text element that can be added to a UI definition. Output of
 \code{shiny::helpText(...)}.}

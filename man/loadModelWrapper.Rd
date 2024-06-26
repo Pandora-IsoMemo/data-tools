@@ -28,5 +28,11 @@ from the R package where \code{importDataServer} was called. This parameter is i
 "bpred", "bmsc"}
 }
 \description{
-Load Model Wrapper
+Wrapper function to load a model from a zip file. File extension may differ from app to app, but
+in essence all models are stored in a zip file. The zip file contains a model object, a data
+object, an inputs object and potentially help files.
+This function unzips the file, extracts the model object, and checks if the model is valid for
+the app.
+It returns a list with the model object, the data object, the inputs object and gives a message
+if the model was successfully loaded.
 }

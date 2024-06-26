@@ -2,6 +2,14 @@
 
 #' Load Model Wrapper
 #'
+#' Wrapper function to load a model from a zip file. File extension may differ from app to app, but
+#' in essence all models are stored in a zip file. The zip file contains a model object, a data
+#' object, an inputs object and potentially help files.
+#' This function unzips the file, extracts the model object, and checks if the model is valid for
+#' the app.
+#' It returns a list with the model object, the data object, the inputs object and gives a message
+#' if the model was successfully loaded.
+#'
 #' @param filepath (character) path to the model file
 #' @inheritParams uploadModelServer
 loadModelWrapper <- function(filepath,
@@ -61,12 +69,8 @@ loadModel <-
     ## unzip file ----
     res <- try({
       unzip(filepath, exdir = "unzippedTmp")
-      modelImport <- extractModelFromFile(pathToUnzipped = "unzippedTmp")
-      if (file.exists(file.path("unzippedTmp", "README.txt"))) {
-        modelNotes <- readLines(file.path("unzippedTmp", "README.txt"))
-      } else {
-        modelNotes <- ""
-      }
+      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp")
+      modelNotes <- extractNotes(pathToUnzipped = "unzippedTmp")
     }, silent = TRUE)
 
     # clean up
@@ -179,21 +183,43 @@ loadModel <-
     return(dat)
   }
 
-#' Extract Model From File
+#' Extract Notes
+#'
+#' Extracts the notes from the README.txt file.
+#'
+#' @param pathToUnzipped (character) path to the folder were the model (or inputs) was unzipped.
+#'
+#' @return (character) notes
+#' @export
+extractNotes <- function(pathToUnzipped) {
+  if (!file.exists(file.path(pathToUnzipped, "README.txt"))) return("")
+
+  readLines(file.path(pathToUnzipped, "README.txt"))
+}
+
+#' Extract Object From File
 #'
 #' Extracts the model object from either a "model.rds" file or from a "model.Rdata" file.
 #' Recent model objects are only stored as "model.rds".
 #'
 #' @param pathToUnzipped (character) path to the folder were the model was unzipped
-extractModelFromFile <- function(pathToUnzipped) {
+#' @param what (charcter) what should be extracted, one of "model" or "inputs"
+#'
+#' @return (list) model object
+#' @export
+extractObjectFromFile <- function(pathToUnzipped, what = c("model", "inputs")) {
+  what <- match.arg(what)
+
+  filename <- paste0(what, ".rds")
   modelImport <- NULL
+
   # load .rds file
-  if (file.exists(file.path(pathToUnzipped, "model.rds"))) {
-    modelImport <- readRDS(file.path(pathToUnzipped, "model.rds"))
+  if (file.exists(file.path(pathToUnzipped, filename))) {
+    modelImport <- readRDS(file.path(pathToUnzipped, filename))
     return(modelImport)
   }
 
-  # load .RData file
+  # load .RData file (deprecated version of model object)
   if (file.exists(file.path(pathToUnzipped, "model.Rdata"))) {
     localEnv <- new.env()
     load(file.path(pathToUnzipped, "model.Rdata"), envir = localEnv)
@@ -209,6 +235,15 @@ envToList <- function(envir) {
   mget(x = ls(envir = envir), envir = envir)
 }
 
+#' Extract Data From Model
+#'
+#' Dependent on the app, the data object is stored in different places. This function extracts the
+#' data object from the model object.
+#'
+#' @param modelImport (list) model object
+#' @param rPackageName (character) name of the app
+#'
+#' @return (list) data object
 extractDataFromModel <- function(modelImport, rPackageName) {
   # define helper
   detectData <- function(modelImport, placeholder) {
@@ -238,6 +273,15 @@ extractDataFromModel <- function(modelImport, rPackageName) {
          modelImport$data)
 }
 
+#' Extract Inputs From Model
+#'
+#' Dependent on the app, the inputs object is stored in different places. This function extracts the
+#' inputs object from the model object.
+#'
+#' @param modelImport (list) model object
+#' @param rPackageName (character) name of the app
+#'
+#' @return (list) inputs object
 extractInputsFromModel <- function(modelImport, rPackageName) {
   if (is.null(rPackageName) || rPackageName == "") return(modelImport$inputs)
 
@@ -270,6 +314,12 @@ extractBPredInput <- function(modelImport) {
   bpredInput
 }
 
+#' Extract Model From Model
+#'
+#' @param modelImport (list) model object
+#' @param rPackageName (character) name of the app
+#'
+#' @return (list) model object
 extractModelFromModel <- function(modelImport, rPackageName = NULL) {
   if (is.null(rPackageName) || rPackageName == "") return(modelImport$model)
 

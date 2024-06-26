@@ -30,7 +30,7 @@ testthat::test_that("Test downloadModelServer", {
 
       # unzip
       zip::unzip(output$download, exdir = test_path("unzippedTmp"))
-      modelImport <- extractModelFromFile(pathToUnzipped = test_path("unzippedTmp"))
+      modelImport <- extractObjectFromFile(pathToUnzipped = test_path("unzippedTmp"))
       readMe <- readLines(file.path(test_path("unzippedTmp"), "README.txt"))
       # clean up
       unlink(test_path("unzippedTmp"), recursive = TRUE)
@@ -82,7 +82,7 @@ testthat::test_that("Test downloadModelServer with custom filename", {
 
       # unzip
       zip::unzip(output$download, exdir = test_path("unzippedTmp"))
-      modelImport <- extractModelFromFile(pathToUnzipped = test_path("unzippedTmp"))
+      modelImport <- extractObjectFromFile(pathToUnzipped = test_path("unzippedTmp"))
       readMe <- readLines(file.path(test_path("unzippedTmp"), "README.txt"))
       # clean up
       unlink(test_path("unzippedTmp"), recursive = TRUE)
