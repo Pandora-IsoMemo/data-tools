@@ -9,7 +9,7 @@ downloadModelServer(
   dat,
   inputs,
   model,
-  pathToOtherZip = NULL,
+  pathToOtherZip = reactive(NULL),
   rPackageName,
   subFolder = NULL,
   customFileName = reactive(""),

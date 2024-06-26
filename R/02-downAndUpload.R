@@ -172,7 +172,7 @@ downloadModelServer <-
            dat,
            inputs,
            model,
-           pathToOtherZip = NULL,
+           pathToOtherZip = reactive(NULL),
            rPackageName,
            subFolder = NULL,
            customFileName = reactive(""),
@@ -332,7 +332,7 @@ addHelpFile <- function(tempDir, helpHTML) {
 #' @param tempDir (character) temporary directory to store the help file
 #' @inheritParams downloadModelServer
 addFilesFromOtherZip <- function(tempDir, pathToOtherZip) {
-  if (is.null(pathToOtherZip)) return()
+  if (is.null(pathToOtherZip) || pathToOtherZip == "") return()
 
   # unzip inner zip file to temp directory
   unzip(pathToOtherZip, exdir = tempDir)
