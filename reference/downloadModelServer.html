@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.05.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.06.0</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,6 +50,7 @@
 <span>  <span class="va">dat</span>,</span>
 <span>  <span class="va">inputs</span>,</span>
 <span>  <span class="va">model</span>,</span>
+<span>  pathToOtherZip <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="cn">NULL</span><span class="op">)</span>,</span>
 <span>  <span class="va">rPackageName</span>,</span>
 <span>  subFolder <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  customFileName <span class="op">=</span> <span class="fu">reactive</span><span class="op">(</span><span class="st">""</span><span class="op">)</span>,</span>
@@ -81,6 +82,11 @@
 
 <dt>model</dt>
 <dd><p>(reactive) model output object</p></dd>
+
+
+<dt>pathToOtherZip</dt>
+<dd><p>(reactive) path to another zip file. The content will be added to the
+zip file that contains the content to download. Needed in MapR. If NULL, no files are added.</p></dd>
 
 
 <dt>rPackageName</dt>

@@ -16,6 +16,18 @@
     <loc>https://pandora-isomemo.github.io/data-tools/news/index.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/addFilesFromOtherZip.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/addHelpFile.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/addModelRDSFile.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/addNotesFile.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/addSourceType.html</loc>
   </url>
   <url>
@@ -61,10 +73,22 @@
     <loc>https://pandora-isomemo.github.io/data-tools/reference/downloadModelUI.html</loc>
   </url>
   <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/extractDataFromModel.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/extractInputsFromModel.html</loc>
+  </url>
+  <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/extractMergeNotification.html</loc>
   </url>
   <url>
-    <loc>https://pandora-isomemo.github.io/data-tools/reference/extractModelFromFile.html</loc>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/extractModelFromModel.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/extractNotes.html</loc>
+  </url>
+  <url>
+    <loc>https://pandora-isomemo.github.io/data-tools/reference/extractObjectFromFile.html</loc>
   </url>
   <url>
     <loc>https://pandora-isomemo.github.io/data-tools/reference/extractTableIds.html</loc>
