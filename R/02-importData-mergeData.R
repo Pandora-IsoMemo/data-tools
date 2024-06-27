@@ -419,6 +419,7 @@ mergeSettingsServer <-
 
                    # create: mergeCommandAuto ----
                    observeEvent(list(input$columnsX, input$columnsY), {
+                     req(input$columnsX, input$columnsY)
                      logDebug("Merge: Updating mergeViaUIResult$command")
 
                      if (isEqualTables(tableXId(), tableYId())) {

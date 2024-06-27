@@ -116,18 +116,24 @@ remoteModelsServer <- function(id,
                    updateSelectInput(session = session,
                                      "remoteModelChoice",
                                      choices = choices)
-                 })
+                 }) %>%
+                   bindEvent(list(reloadChoices(), isInternet()), ignoreInit = TRUE)
 
                  observe({
-                   req(resetSelected())
+                   req(resetSelected(), input[["remoteModelChoice"]])
                    logDebug("Reset selected remoteModelChoice")
-                   updateSelectInput(
-                     session = session,
-                     "remoteModelChoice",
-                     selected = c("Please select a file ..." = "")
-                   )
 
-                   pathToRemote(NULL)
+                   if (input[["remoteModelChoice"]] != "" && # only if there is sth. to reset
+                       (length(resetSelected()) > 1 || # triggered if an element of a list was updated
+                        isTRUE(resetSelected()))) {    # triggered if equal one and TRUE
+                     updateSelectInput(
+                       session = session,
+                       "remoteModelChoice",
+                       selected = c("Please select a file ..." = "")
+                     )
+
+                     pathToRemote(NULL)
+                   }
                  }) %>%
                    bindEvent(resetSelected())
 
