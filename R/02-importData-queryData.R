@@ -80,14 +80,15 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  sqlCommandFromGpt <-
                    gptServer("gpt", autoCompleteList = inMemColumns, isActiveTab = isActiveTab)
 
-                 unprocessedData <- reactiveVal(NULL)
+                 unprocessedData <- reactiveVal(list())
 
                  observe({
+                   req(length(mergeList()) > 0)
                    logDebug("QueryData: observe mergeList()")
                    unprocessedData(mergeList() %>%
                                      filterUnprocessed())
                  }) %>%
-                   bindEvent(mergeList())
+                   bindEvent(mergeList()) # cannot set ignoreInit = TRUE because of tests
 
                  observe({
                    req(length(unprocessedData()) > 0)

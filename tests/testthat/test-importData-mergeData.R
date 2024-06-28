@@ -201,12 +201,15 @@ testthat::test_that("Test module mergeDataServer", {
 
                       testthat::expect_equal(tableIds(),
                                              c(table1 = "table1", table2 = "table2"))
-                      testthat::expect_equal(tableXData() %>% nrow(), 88)
-                      testthat::expect_equal(tableXData() %>% ncol(), 12)
-                      testthat::expect_equal(tableYData() %>% nrow(), 518)
-                      testthat::expect_equal(tableYData() %>% ncol(), 14)
+
+                      extractTableData(mergeList(), "table1")
+                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>% nrow(), 88)
+                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>% ncol(), 12)
+                      testthat::expect_equal(extractTableData(mergeList(), "table2") %>% nrow(), 518)
+                      testthat::expect_equal(extractTableData(mergeList(), "table2") %>% ncol(), 14)
                       testthat::expect_equal(
-                        extractCommon(colnames(tableXData()), colnames(tableYData()))[1:5],
+                        extractCommon(colnames(extractTableData(mergeList(), "table1")),
+                                      colnames(extractTableData(mergeList(), "table2")))[1:5],
                         c(
                           "Sample.date",
                           "Species",
@@ -224,9 +227,9 @@ testthat::test_that("Test module mergeDataServer", {
                       )
                       # cannot test directly on joinedResult$data since it depends on the output
                       # of a sub-module
-                      testthat::expect_equal(tableXData() %>%
+                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>%
                                                dplyr::left_join(
-                                                 tableYData(),
+                                                 extractTableData(mergeList(), "table2"),
                                                  by = c(
                                                    "Latitude" = "Latitude",
                                                    "Longitude" = "Longitude",
@@ -235,9 +238,9 @@ testthat::test_that("Test module mergeDataServer", {
                                                ) %>%
                                                nrow(),
                                              88)
-                      testthat::expect_equal(tableXData() %>%
+                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>%
                                                dplyr::left_join(
-                                                 tableYData(),
+                                                 extractTableData(mergeList(), "table2"),
                                                  by = c(
                                                    "Latitude" = "Latitude",
                                                    "Longitude" = "Longitude",

@@ -147,8 +147,8 @@ observeUploadDataLink <- function(id, input, output, session, dataSource, parent
     bindEvent(dataSource$file)
 
   observe({
-    logDebug("linkToData: observe import")
     req(length(dataLinkUpload$import) > 0)
+    logDebug("linkToData: observe import")
     req(parentParams$isInternet())
 
     # update user inputs ----

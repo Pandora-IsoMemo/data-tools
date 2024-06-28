@@ -84,9 +84,6 @@ mergeDataServer <- function(id, mergeList) {
                function(input, output, session) {
                  tableIds <- reactiveVal()
 
-                 tableXData <- reactiveVal()
-                 tableYData <- reactiveVal()
-
                  joinedResult <- reactiveValues(
                    data = NULL,
                    warnings = list(),
@@ -98,56 +95,35 @@ mergeDataServer <- function(id, mergeList) {
                  observeEvent(mergeList(), {
                    req(length(mergeList()) > 0)
                    logDebug("Merge: Updating tableChoices")
-                   tableIds(extractTableIds(names(mergeList())))
+
+                   tableIds(extractTableIds(mergeList()))
 
                    tableChoices <- extractMergeChoices(mergeList())
-
                    updateSelectInput(session,
                                      "tableX",
                                      choices = tableChoices,
                                      selected = tableChoices[1])
-
                    updateSelectInput(session,
                                      "tableY",
                                      choices = tableChoices,
                                      selected = tableChoices[2])
                  })
 
-                 observe({
-                   logDebug("Merge: Updating tableXData")
-                   # observe also mergeList() to trigger if updated
-                   if (is.null(input$tableX) || input$tableX == "") {
-                     tableXData(NULL)
-                   } else {
-                     tableXData(mergeList()[[input$tableX]]$data)
-                   }
-                 })
-
                  output$nRowsTableX <- renderText({
-                   validate(need(tableXData(), ""))
-                   paste(NROW(tableXData()), "rows")
-                 })
-
-                 observe({
-                   logDebug("Merge: Updating tableYData")
-                   # observe also mergeList() to trigger if updated
-                   if (is.null(input$tableY) || input$tableY == "") {
-                     tableYData(NULL)
-                   } else {
-                     tableYData(mergeList()[[input$tableY]]$data)
-                   }
+                   validate(need(input$tableX, ""))
+                   paste(NROW(extractTableData(mergeList(), input$tableX)), "rows")
                  })
 
                  output$nRowsTableY <- renderText({
-                   validate(need(tableYData(), ""))
-                   paste(NROW(tableYData()), "rows")
+                   validate(need(input$tableY, ""))
+                   paste(NROW(extractTableData(mergeList(), input$tableY)), "rows")
                  })
 
                  mergeViaUI <-
                    mergeSettingsServer(
                      "mergerViaUI",
-                     tableXData = tableXData,
-                     tableYData = tableYData,
+                     tableXData = reactive(extractTableData(mergeList(), input$tableX)),
+                     tableYData = reactive(extractTableData(mergeList(), input$tableY)),
                      tableXId = reactive(tableIds()[input$tableX]),
                      tableYId = reactive(tableIds()[input$tableY])
                    )
@@ -157,10 +133,11 @@ mergeDataServer <- function(id, mergeList) {
                    mergeViaUI$command
                  })
 
-                 observeEvent(mergeViaUI$warning, {
+                 observe({
                    logDebug("Merge: Updating warnings")
                    joinedResult$warnings <- mergeViaUI$warning
-                 })
+                 }) %>%
+                   bindEvent(mergeViaUI$warning, ignoreInit = TRUE)
 
                  # apply: mergeCommand ----
                  observeEvent(input$applyMerge, {
@@ -222,7 +199,8 @@ mergeDataServer <- function(id, mergeList) {
 
                      if (!is.null(joinedData)) {
                        # check result for warnings
-                       if (NROW(joinedData) > max(NROW(tableXData()), NROW(tableYData()))) {
+                       if (NROW(joinedData) > max(NROW(extractTableData(mergeList(), input$tableX)),
+                                                  NROW(extractTableData(mergeList(), input$tableY)))) {
                          largerThanInput <-
                            "Merged data has more rows than the input tables."
                          largerThanInputDetails <- paste(
@@ -298,229 +276,18 @@ mergeDataServer <- function(id, mergeList) {
                })
 }
 
-
-# Merge Settings Module ----
-
-#' Merge Settings UI
-#'
-#' UI of the merge settings module
-#'
-#' @param id id of module
-mergeSettingsUI <- function(id) {
-  ns <- NS(id)
-
-  tagList(
-    selectInput(
-      ns("columnsX"),
-      "Select x columns to join (Names of x are used for joined columns.)",
-      choices = c("Select table x ..." = ""),
-      multiple = TRUE,
-      width = "100%"
-    ),
-    selectInput(
-      ns("columnsY"),
-      "Select y columns to join",
-      choices = c("Select table y ..." = ""),
-      multiple = TRUE,
-      width = "100%"
-    ),
-    fluidRow(column(
-      6,
-      checkboxInput(
-        ns("addAllCommonColumns"),
-        "Join on all common columns",
-        value = FALSE
-      )
-    ),
-    column(
-      6,
-      #style = "margin-top: 12px;",
-      selectInput(
-        ns("mergeOperation"),
-        "Select join operation",
-        choices = c(
-          "inner_join: all rows in x and y" = "inner_join",
-          "left_join: all rows in x" = "left_join",
-          "right_join: all rows in y" = "right_join",
-          "full_join: all rows in x or y" = "full_join"
-        ),
-        selected = "left_join"
-      )
-    ))
-  )
-}
-
-#' Merge Settings Server
-#'
-#' Server function of the merge settings module
-#' @param id id of module
-#' @param tableXData (data.frame) data to be merged
-#' @param tableYData (data.frame) data to be merged
-#' @param tableXId (character) internal table name, see \link{extractTableIds}
-#' @param tableYId (character) internal table name, see \link{extractTableIds}
-mergeSettingsServer <-
-  function(id,
-           tableXData,
-           tableYData,
-           tableXId,
-           tableYId) {
-    moduleServer(id,
-                 function(input, output, session) {
-                   commonColumns <- reactiveVal()
-                   columnsToJoin <- reactiveValues(tableX = NULL,
-                                                   tableY = NULL)
-                   mergeViaUIResult <-
-                     reactiveValues(command = NULL,
-                                    warning = list())
-
-                   # update: column selection ----
-                   observeEvent(tableXData(), ignoreNULL = FALSE, ignoreInit = TRUE, {
-                     logDebug("Merge: Updating columnsX")
-                     updateSelectInput(
-                       session,
-                       "columnsX",
-                       choices = getColnameChoices(tableXData(), textIfEmpty = "Select table x ..."),
-                       selected = list()
-                       )
-
-                     commonColumns(NULL)
-                     req(tableXData(), tableYData())
-                     commonColumns(extractCommon(colnames(tableXData()), colnames(tableYData())))
-                   })
-
-                   observeEvent(tableYData(), ignoreNULL = FALSE, ignoreInit = TRUE, {
-                     logDebug("Merge: Updating columnsY")
-                     updateSelectInput(
-                       session,
-                       "columnsY",
-                       choices = getColnameChoices(tableYData(), textIfEmpty = "Select table y ..."),
-                       selected = list())
-
-                     commonColumns(NULL)
-                     req(tableXData(), tableYData())
-                     commonColumns(extractCommon(colnames(tableXData()), colnames(tableYData())))
-                   })
-
-                   observeEvent(list(input$addAllCommonColumns, commonColumns()), ignoreInit = TRUE, {
-                     req(!is.null(input$addAllCommonColumns))
-                     logDebug("Merge: Updating commonColumns for columnsX and columnsY")
-                     if (!input$addAllCommonColumns || is.null(commonColumns())) {
-                       updateSelectInput(session, "columnsX",
-                                         selected = list())
-                       updateSelectInput(session, "columnsY",
-                                         selected = list())
-                     } else {
-                       updateSelectInput(session, "columnsX",
-                                         selected = commonColumns())
-                       updateSelectInput(session, "columnsY",
-                                         selected = commonColumns())
-                     }
-                   })
-
-                   # create: mergeCommandAuto ----
-                   observeEvent(list(input$columnsX, input$columnsY), {
-                     req(input$columnsX, input$columnsY)
-                     logDebug("Merge: Updating mergeViaUIResult$command")
-
-                     if (isEqualTables(tableXId(), tableYId())) {
-                       shinyjs::alert("Please choose two different tables.")
-                       mergeViaUIResult$command <- ""
-                       return()
-                     }
-
-                     equalizedColNames <- equalizeLength(input$columnsX, input$columnsY)
-                     columnsToJoin$tableX <-
-                       equalizedColNames$xColNames
-                     columnsToJoin$tableY <-
-                       equalizedColNames$yColNames
-                     mergeViaUIResult$warning <-
-                       equalizedColNames$diffWarning
-
-                     colJoinString <-
-                       extractJoinString(columnsToJoin$tableX, columnsToJoin$tableY)
-
-                     if (colJoinString != "c(\"\"=\"\")") {
-                       # string not empty
-                       mergeViaUIResult$command <- tmpl(
-                         paste0(
-                           c(
-                             "{{ tableX }} %>%",
-                             "  {{ mergeOperation }}({{ tableY }},",
-                             "  by = {{ colJoinString }})"
-                           ),
-                           collapse = ""
-                         ),
-                         tableX = tableXId(),
-                         mergeOperation = input$mergeOperation,
-                         tableY = tableYId(),
-                         colJoinString = colJoinString
-                       ) %>% as.character()
-                     } else {
-                       mergeViaUIResult$command <- ""
-                     }
-                   })
-
-                   # return value for parent module: ----
-                   return(mergeViaUIResult)
-                 })
-  }
-
-
 # Merge Helper Functions ----
 
-## helpers: column selection ----
+extractTableData <- function(mergeList, tableName) {
+  if (is.null(tableName) || tableName == "")  return(NULL)
 
-extractCommon <- function(colnamesX, colnamesY) {
-  if (is.null(colnamesX) || is.null(colnamesY) ||
-      length(colnamesX) == 0 ||
-      length(colnamesY) == 0)
-    return(list())
-
-  intersect(colnamesX, colnamesY)
+  mergeList[[tableName]]$data
 }
 
-equalizeLength <- function(xColNames, yColNames) {
-  minLength <- min(length(xColNames), length(yColNames))
-
-  if (minLength == 0) {
-    return(NULL)
-  }
-
-  if (length(xColNames) != length(yColNames)) {
-    diffWarning <-
-      "Number of columns differ, minimum number is used for merging."
-  } else {
-    diffWarning <- list()
-  }
-
-  list(xColNames = xColNames[1:minLength],
-       yColNames = yColNames[1:minLength],
-       diffWarning = diffWarning)
-}
-
-
-extractJoinString <- function(xColumns, yColumns) {
-  xColumns <- paste0("\"", xColumns, "\"")
-  yColumns <- paste0("\"", yColumns, "\"")
-
-  res <- paste(xColumns, yColumns, sep = "=")
-  res <- paste(res, collapse = ", ")
-  paste0("c(", res, ")")
-}
-
-isEqualTables <- function(tableXId, tableYId) {
-  !is.null(tableXId) && !is.null(tableYId) &&
-    (!is.na(tableXId) && !is.na(tableYId) && tableXId == tableYId)
-}
-
-
-# Merge Data Helper Functions ----
-
-## helpers: table selection ----
 extractMergeChoices <- function(tableList) {
   tableChoices <- names(tableList)
   names(tableChoices) <-
-    paste0(extractTableIds(tableChoices), " -- ", tableChoices)
+    paste0(extractTableIds(tableList), " -- ", tableChoices)
 
   tableChoices
 }
@@ -528,18 +295,28 @@ extractMergeChoices <- function(tableList) {
 
 #' Extract Table IDs
 #'
-#' @param namesOfTables (character) names of loaded tables, often url's to the table file, something
-#'  like "https://pandoradata.earth/dataset/.../download/afriarch-isotopic-dataset.xlsx"
+#' Create IDs `1:n` to the names of loaded tables. Names are often url's of the table file,
+#' something like "https://pandoradata.earth/dataset/.../download/afriarch-isotopic-dataset.xlsx".
+#'
+#' @param mergeList (list) list of data to be merged
+#'
 #' @return (character) short internal table names
-extractTableIds <- function(namesOfTables) {
+extractTableIds <- function(mergeList) {
+  namesOfTables <- names(mergeList)
   ids <- paste0("table", 1:length(namesOfTables))
   names(ids) <- namesOfTables
 
   ids
 }
 
-## helpers: ----
-### class matching ----
+#' Match Column Classes
+#'
+#' @param df1 (data.frame) data frame 1
+#' @param df2 (data.frame) data frame 2
+#' @param xColNames (character) column names of data frame 1
+#' @param yColNames (character) column names of data frame 2
+#' @param df1Id (character) id of data frame 1
+#' @param isTest (logical) if TRUE, no warning is shown
 matchColClasses <-
   function(df1,
            df2,
@@ -564,33 +341,40 @@ matchColClasses <-
   }
 
 
-equalColClasses <-
-  function(colTypesX,
-           colTypesY,
-           df1Id = "table1",
-           isTest = FALSE) {
-    typeMismatch <- colTypesX != colTypesY
+equalColClasses <- function(colTypesX,
+                            colTypesY,
+                            df1Id = "table1",
+                            isTest = FALSE) {
+  typeMismatch <- colTypesX != colTypesY
 
-    if (any(typeMismatch)) {
-      if (!isTest) {
-        shinyjs::alert(
-          paste0(
-            "WARNING: \n Column types not matching for: \n",
-            extractJoinString(names(colTypesX)[typeMismatch],
-                              names(colTypesY)[typeMismatch]),
-            ". \n\n",
-            "Using the type of ",
-            df1Id,
-            " for these columns."
-          )
+  if (any(typeMismatch)) {
+    if (!isTest) {
+      shinyjs::alert(
+        paste0(
+          "WARNING: \n Column types not matching for: \n",
+          extractJoinString(names(colTypesX)[typeMismatch],
+                            names(colTypesY)[typeMismatch]),
+          ". \n\n",
+          "Using the type of ",
+          df1Id,
+          " for these columns."
         )
-      }
-      return(FALSE)
-    } else {
-      return(TRUE)
+      )
     }
+    return(FALSE)
+  } else {
+    return(TRUE)
   }
+}
 
+extractJoinString <- function(xColumns, yColumns) {
+  xColumns <- paste0("\"", xColumns, "\"")
+  yColumns <- paste0("\"", yColumns, "\"")
+
+  res <- paste(xColumns, yColumns, sep = "=")
+  res <- paste(res, collapse = ", ")
+  paste0("c(", res, ")")
+}
 
 #' Extract Merge Notification
 #'

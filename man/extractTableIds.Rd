@@ -4,15 +4,15 @@
 \alias{extractTableIds}
 \title{Extract Table IDs}
 \usage{
-extractTableIds(namesOfTables)
+extractTableIds(mergeList)
 }
 \arguments{
-\item{namesOfTables}{(character) names of loaded tables, often url's to the table file, something
-like "https://pandoradata.earth/dataset/.../download/afriarch-isotopic-dataset.xlsx"}
+\item{mergeList}{(list) list of data to be merged}
 }
 \value{
 (character) short internal table names
 }
 \description{
-Extract Table IDs
+Create IDs `1:n` to the names of loaded tables. Names are often url's of the table file,
+something like "https://pandoradata.earth/dataset/.../download/afriarch-isotopic-dataset.xlsx".
 }

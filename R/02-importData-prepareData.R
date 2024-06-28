@@ -64,7 +64,8 @@ prepareDataServer <- function(id, mergeList) {
                      mergeList()[[input$dataToPrep]]$data
                    preparedData$history <-
                      mergeList()[[input$dataToPrep]]$history
-                 })
+                 }) %>%
+                   bindEvent(list(input$dataToPrep, mergeList()), ignoreInit = TRUE)
 
                  renamedData <-
                    renameColumnsServer("renameCols", preparedData)

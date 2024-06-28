@@ -256,7 +256,7 @@ importDataServer <- function(id,
                    )
 
                  ## disable button accept ----
-                 observeEvent(values$dataImport, ignoreNULL = FALSE, {
+                 observeEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE, {
                    logDebug("Enable/Disable Accept button")
 
                    if (importType == "data") {
