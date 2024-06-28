@@ -1,3 +1,9 @@
+#' Load Import
+#'
+#' Wrapper to load "data", "model", "zip" or "list" file.
+#'
+#' @param params (list) named list of parameters required to import data or a model
+#' @inheritParams importDataServer
 loadImport <- function(importType, params, expectedFileInZip) {
   values <- params[["values"]] %>% # to pass on the reactive values object
     resetValues()
@@ -13,7 +19,8 @@ loadImport <- function(importType, params, expectedFileInZip) {
   res <- switch(importType,
          "data" = do.call(loadDataWrapper, params),
          "model" = do.call(loadModelWrapper, params),
-         "zip" = do.call(loadZipWrapper, params)) %>%
+         "zip" = do.call(loadZipWrapper, params),
+         "list" = do.call(loadListWrapper, params)) %>%
     shinyTryCatch(errorTitle = "Could not load file!")
 
   if (importType == "model") {
@@ -72,7 +79,10 @@ filterParams <- function(params,
                         onlySettings = params$onlySettings,
                         fileExtension = params$fileExtension),
          "zip" = list(filepath = params$dataSource$file,
-                      fileExtension = params$fileExtension)
+                      fileExtension = params$fileExtension),
+         "list" = list(values = params$values,
+                       filepath = params$dataSource$file,
+                       type = params$fileExtension)
   )
 }
 
@@ -149,21 +159,30 @@ fillValuesFromZip <- function(values, filename, importZip, expectedFileInZip) {
   values
 }
 
+#' Check Extension
+#'
+#' Check if the file extension of a file is valid.
+#'
+#' @param filepath (character) path to the file
+#' @param fileExtension (character) expected file extension
+#' @param defaultExtension (character) default file extension
 checkExtension <- function(filepath,
-                           fileExtension = "zip") {
+                           fileExtension = "zip",
+                           defaultExtension = "zip") {
   # check if valid app-specific extension or a zip file
-  if (getExtension(filepath) != fileExtension && getExtension(filepath) != "zip") {
-    stop(sprintf("Not a %s file!", expectedExtStrng(fileExtension)))
+  if (getExtension(filepath) != fileExtension && getExtension(filepath) != defaultExtension) {
+    stop(sprintf("File type not supported. Not a %s file!",
+                 expectedExtStrng(fileExtension, defaultExtension)))
     return(NULL)
   }
 
   filepath
 }
 
-expectedExtStrng <- function(fileExtension) {
-  if (fileExtension == "zip") {
-    return(".zip")
+expectedExtStrng <- function(fileExtension, defaultExtension = "zip") {
+  if (fileExtension == defaultExtension) {
+    return(defaultExtension)
   } else {
-    return(sprintf(".%s or .zip", fileExtension))
+    return(sprintf(".%s or .%s", fileExtension, defaultExtension))
   }
 }

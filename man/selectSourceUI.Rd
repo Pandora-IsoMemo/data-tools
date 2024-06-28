@@ -20,7 +20,7 @@ selectSourceUI(
 
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
 
-\item{importType}{(character) type of import, either "data" or "model" or "zip".
+\item{importType}{(character) type of import, either "data" or "model" or "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated

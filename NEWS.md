@@ -1,3 +1,8 @@
+# DataTools 24.06.1
+
+## New Features
+- _Import Data_: option to import a list from a json file (#91)
+
 # DataTools 24.06.0
 
 ## New Features
