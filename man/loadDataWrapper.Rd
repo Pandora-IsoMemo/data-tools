@@ -33,5 +33,5 @@ loadDataWrapper(
 \item{sheetId}{(numeric) sheet id}
 }
 \description{
-Load Data Wrapper
+Wrapper to load a data.frame from a `"xlsx", "xls", "odt", "csv", "txt"` file.
 }

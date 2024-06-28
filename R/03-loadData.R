@@ -2,6 +2,8 @@
 
 #' Load Data Wrapper
 #'
+#' Wrapper to load a data.frame from a `"xlsx", "xls", "odt", "csv", "txt"` file.
+#'
 #' @param values (list) list with import specifications
 #' @param filepath (character) url or path
 #' @param type (character) file type input

@@ -20,7 +20,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan")
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
-#' @param importType (character) type of import, either "data" or "model" or "zip".
+#' @param importType (character) type of import, either "data" or "model" or "zip" or "list".
 #'  ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 #'  the model object extracted, and checked if it is valid for the app.
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
@@ -60,7 +60,7 @@ importDataServer <- function(id,
                              defaultSource = c("ckan", "file", "url", "remoteModel"),
                              ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
                              ignoreWarnings = FALSE,
-                             importType = c("data", "model", "zip"),
+                             importType = c("data", "model", "zip", "list"),
                              # parameters for data upload
                              rowNames = reactiveVal(NULL),
                              colNames = reactiveVal(NULL),

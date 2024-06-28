@@ -1,6 +1,11 @@
 # DataTools 24.06.0
 
 ## New Features
+- _Import Data_: option to import a list from a json file (#91)
+
+# DataTools 24.06.0
+
+## New Features
 - _Download Model_: new optional parameter `pathToOtherZip` to add the content of a zip file to the
   the zip file to be downloaded (which contains also model, data and inputs objects).
   This is needed for _MapR_ where pictures are stored in zip files and needed for plots (instead of 
