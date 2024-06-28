@@ -82,7 +82,7 @@ filterParams <- function(params,
                       fileExtension = params$fileExtension),
          "list" = list(values = params$values,
                        filepath = params$dataSource$file,
-                       type = params$inputFileType[["fileType-type"]])
+                       type = params$fileExtension)
   )
 }
 

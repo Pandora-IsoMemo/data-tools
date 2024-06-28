@@ -492,7 +492,8 @@ importDataDialog <-
       title <- switch(importType,
                       "data" = "Data import",
                       "model" = "Model import",
-                      "zip" = "Zip import")
+                      "zip" = "Zip import",
+                      "list" = "Json import")
     }
 
     modalDialog(

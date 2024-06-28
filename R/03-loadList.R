@@ -28,7 +28,7 @@ loadListWrapper <- function(values,
     values$dataImport <- NULL
   } else {
     ## Import technically successful
-    values$dataImport <- res
+    values$dataImport <- as.list(res)
     values$fileImportSuccess <- sprintf("'%s' import successful", type)
   }
 
@@ -50,5 +50,5 @@ loadList <- function(path,
     checkExtension(fileExtension = type,
                    defaultExtension = "json")
 
-  fromJSON(file = path)
+  fromJSON(path)
 }

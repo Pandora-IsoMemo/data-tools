@@ -26,11 +26,15 @@ selectSourceUI <- function(id,
                           zip = c("Pandora Platform" = "ckan",
                                   "File" = "file",
                                   "URL" = "url",
-                                  "Online Zip" = "remoteModel")
+                                  "Online Zip" = "remoteModel"),
+                          list = c("Pandora Platform" = "ckan",
+                                   "File" = "file",
+                                   "URL" = "url",
+                                   "Online Data Query" = "remoteModel")
   )
 
   acceptExt <- NULL
-  if (importType %in% c("model", "zip") && !is.null(fileExtension) && fileExtension != "") {
+  if (importType %in% c("model", "zip", "list") && !is.null(fileExtension) && fileExtension != "") {
     acceptExt <- sprintf(".%s", fileExtension)
   }
 
@@ -44,7 +48,7 @@ selectSourceUI <- function(id,
                choices = sourceChoices,
                selected = defaultSource,
                inline = TRUE)),
-      if (importType == "data") {
+      if (importType %in% c("data", "list")) {
         column(6,
                align = "right",
                conditionalPanel(
