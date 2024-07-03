@@ -378,7 +378,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  sqlCommand <- reactiveVal(NULL)
 
                  observe({
-                   req(isActiveTab())
+                   req(isTRUE(isActiveTab()))
                    logDebug("gptServer: check internet connection")
 
                    internetCon(has_internet())
@@ -407,7 +407,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    bindEvent(isActiveTab())
 
                  observe({
-                   req(internetCon())
+                   req(isTRUE(internetCon()))
                    logDebug("gptServer: update gptPrompt")
                    updateAceEditor(
                      session = session,
@@ -421,7 +421,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                              ignoreInit = TRUE)
 
                  observe({
-                   req(internetCon())
+                   req(isTRUE(internetCon()))
                    logDebug("gptServer: update input$apiKey")
 
                    inFile <- input$apiKey
@@ -468,12 +468,12 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  outputOptions(output, "showGpt", suspendWhenHidden = FALSE)
 
                  observe({
-                   req(internetCon())
+                   req(isTRUE(internetCon()))
                    logDebug("gptServer: button input$applyPrompt")
                    # reset output
                    sqlCommand(NULL)
 
-                   req(validConnection())
+                   req(isTRUE(validConnection()))
                    withProgress({
                      res <- rgpt_single(
                        prompt_content = paste("Write an SQL query to", input$gptPrompt),
