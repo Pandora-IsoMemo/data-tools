@@ -120,7 +120,7 @@ remoteModelsServer <- function(id,
                    bindEvent(list(reloadChoices(), isInternet()), ignoreInit = TRUE)
 
                  observe({
-                   req(resetSelected(), input[["remoteModelChoice"]])
+                   req(isTRUE(resetSelected()), input[["remoteModelChoice"]])
                    logDebug("Reset selected remoteModelChoice")
 
                    if (input[["remoteModelChoice"]] != "" && # only if there is sth. to reset

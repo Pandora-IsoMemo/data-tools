@@ -202,7 +202,7 @@ selectSourceServer <- function(id,
                  })
 
                  observe({
-                   req(internetCon(), nrow(ckanPackages()) == 0)
+                   req(isTRUE(internetCon()), nrow(ckanPackages()) == 0)
                    logDebug("Updating Pandora package list")
                    ckanGroupList <- callAPI(action = "group_list", all_fields = "true")
                    ckanNetworks(ckanGroupList)
@@ -279,7 +279,7 @@ selectSourceServer <- function(id,
                    bindEvent(input[["resourceLoad-resetCKAN"]])
 
                  observe({
-                   req(internetCon())
+                   req(isTRUE(internetCon()))
                    logDebug("Apply Meta filter")
                    updateSelectizeInput(session,
                                         "resourceFilter-ckanRecord",
@@ -296,7 +296,7 @@ selectSourceServer <- function(id,
                    bindEvent(input[["repoFilter-applyMeta"]])
 
                  observe({
-                   req(internetCon())
+                   req(isTRUE(internetCon()))
                    logDebug("Apply Network filter")
                    updateSelectizeInput(session,
                                         "resourceFilter-ckanRecord",
@@ -331,7 +331,7 @@ selectSourceServer <- function(id,
                  loadCKANResourceServer("resourceLoad")
 
                  observe({
-                   req(internetCon())
+                   req(isTRUE(internetCon()))
                    logDebug("Updating ckanResources()")
 
                    choicesResource <- getCKANResourcesChoices(fileType = input[["resourceFilter-ckanResourceTypes"]],
