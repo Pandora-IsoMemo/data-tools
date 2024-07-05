@@ -195,7 +195,7 @@ downloadModelServer <-
                    })
 
                    observe({
-                     req(triggerUpdate())
+                     req(isTRUE(triggerUpdate()))
                      updateTextAreaInput(session, "exportNotes", value = modelNotes())
                    })
 
