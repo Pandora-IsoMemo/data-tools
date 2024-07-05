@@ -88,6 +88,9 @@ importDataServer <- function(id,
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 logDebug(sprintf("Initialize Import Module for %s",
+                                  substr(ns(""), 1, nchar(ns("")) - 1)))
+
                  mergeList <- reactiveVal(list())
                  customNames <- reactiveValues(
                    withRownames = FALSE,
