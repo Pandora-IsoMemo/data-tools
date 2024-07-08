@@ -1,7 +1,9 @@
-# DataTools 24.06.1
+# DataTools 24.07.0
 
 ## New Features
-- _Import Data_: option to import a list from a json file (#91)
+- _Import Data_: 
+  - option to import a list from a json file from url, Pandora or file (#91)
+  - option to import user inputs together with a json file in order to load a previous session (#91)
 
 # DataTools 24.06.0
 

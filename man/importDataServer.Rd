@@ -39,7 +39,7 @@ importDataServer(
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
-\item{importType}{(character) type of import, either "data" or "model" or "zip" or "list".
+\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated

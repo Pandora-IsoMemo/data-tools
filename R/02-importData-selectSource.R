@@ -47,7 +47,7 @@ selectSourceUI <- function(id,
                choices = sourceChoices,
                selected = defaultSource,
                inline = TRUE)),
-      if (importType %in% c("data")) {
+      if (importType == "data") {
         column(6,
                align = "right",
                conditionalPanel(
