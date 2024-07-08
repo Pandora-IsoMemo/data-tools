@@ -100,7 +100,7 @@ loadModel <-
       # expected names for "mpiBpred"
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
     )) {
-      stop("File format not valid or depricated. Model object not found.")
+      stop("Model object not found. Possibly the file format is not valid or depricated.")
       return(NULL)
     }
 
