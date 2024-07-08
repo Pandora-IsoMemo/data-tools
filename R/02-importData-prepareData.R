@@ -37,6 +37,9 @@ prepareDataUI <- function(id) {
 prepareDataServer <- function(id, mergeList) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
+
                  preparedData <- reactiveValues(data = NULL,
                                                 history = list())
 

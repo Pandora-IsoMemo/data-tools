@@ -64,6 +64,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
 
                  inMemoryDB <- reactiveVal(dbConnect(SQLite(), "file::memory:"))
                  tableIds <- reactiveVal(NULL)

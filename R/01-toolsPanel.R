@@ -12,7 +12,7 @@ toolsImportUI <- function(id) {
     sidebarPanel(
       width = 2,
       style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
-      importDataUI(ns("localData"), "Import Data (local)"),
+      importDataUI(ns("localJson"), "Import Data (json)"),
       tags$br(),
       tags$br(),
       importDataUI(ns("ckanData"), "Import CKAN Data"),
@@ -24,8 +24,11 @@ toolsImportUI <- function(id) {
       importDataUI(ns("model"), "Import Model")
     ),
     mainPanel(
+      tags$h2("Json Import"),
+      textOutput(ns("itemList")),
+      tags$h2("Data Import"),
       selectInput(ns("dataSel"), "Select which Import to display" ,
-                  choices = c("Data", "CKAN Data", "Batch Data", "Model")),
+                  choices = c("CKAN Data", "Batch Data", "Model Data")),
       DT::dataTableOutput(ns("importedDataTable"))
     )
   )
@@ -40,13 +43,15 @@ toolsImportUI <- function(id) {
 toolsImportServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
-                 importedData <- importDataServer(
-                   "localData",
+                 importedJson <- importDataServer(
+                   "localJson",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanFileTypes"]],
+                   ckanFileTypes = "json",
+                   importType = "list",
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
+                   fileExtension = "json",
                    options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
@@ -87,17 +92,12 @@ toolsImportServer <- function(id) {
                  dataOut <- reactiveVal(NULL)
 
                  observe({
-                   req(length(importedData()) > 0 ||
-                         length(importedDataCKAN()) > 0 ||
+                   req(length(importedDataCKAN()) > 0 ||
                          length(importedBatchData()) > 0 ||
                          length(importedModel()) > 0)
                    logDebug("Updating dataOut()")
                    dataOut(NULL)
 
-                   if (input$dataSel == "Data") {
-                     req(length(importedData()) > 0)
-                     dataOut(importedData()[[1]])
-                   }
                    if (input$dataSel == "CKAN Data") {
                      req(length(importedDataCKAN()) > 0)
                      dataOut(importedDataCKAN()[[1]])
@@ -116,6 +116,13 @@ toolsImportServer <- function(id) {
                    validate(need(dataOut(), paste("Please import", input$dataSel)))
                    req(dataOut())
                    dataOut()
+                 })
+
+                 # Render the list
+                 output$itemList <- renderText({
+                   validate(need(length(importedJson()) > 0, "Please import a json"))
+
+                   sprintf("The json contains following items: %s", paste(names(importedJson()[[1]]), collapse = ", "))
                  })
                })
 }

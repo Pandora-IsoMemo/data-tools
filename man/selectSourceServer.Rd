@@ -18,7 +18,7 @@ selectSourceServer(
 \arguments{
 \item{id}{id of module}
 
-\item{importType}{(character) type of import, either "data" or "model" or "zip".
+\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
@@ -35,7 +35,9 @@ correspond to 'pathToLocal' since online and offline files should be the same an
 
 \item{pathToLocal}{(character) relative path to the folder storing local files}
 
-\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan"). E.g. for
+`importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+ for `importType = "list"`: c("json")}
 }
 \description{
 Server function of the module

@@ -10,7 +10,7 @@ importDataServer(
   defaultSource = c("ckan", "file", "url", "remoteModel"),
   ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
   ignoreWarnings = FALSE,
-  importType = c("data", "model", "zip"),
+  importType = c("data", "model", "zip", "list"),
   rowNames = reactiveVal(NULL),
   colNames = reactiveVal(NULL),
   customWarningChecks = list(),
@@ -33,11 +33,13 @@ importDataServer(
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
-\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan"). E.g. for
+`importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+ for `importType = "list"`: c("json")}
 
 \item{ignoreWarnings}{TRUE to enable imports in case of warnings}
 
-\item{importType}{(character) type of import, either "data" or "model" or "zip".
+\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated

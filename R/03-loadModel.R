@@ -17,7 +17,6 @@ loadModelWrapper <- function(filepath,
                              rPackageName,
                              onlySettings,
                              fileExtension = "zip") {
-
   filepath %>%
     checkExtension(fileExtension = fileExtension) %>%
     getZip() %>%
@@ -69,7 +68,8 @@ loadModel <-
     ## unzip file ----
     res <- try({
       unzip(filepath, exdir = "unzippedTmp")
-      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp")
+      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp",
+                                           what = ifelse(onlySettings, "inputs", "model"))
       modelNotes <- extractNotes(pathToUnzipped = "unzippedTmp")
     }, silent = TRUE)
 
@@ -100,7 +100,7 @@ loadModel <-
       # expected names for "mpiBpred"
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
     )) {
-      stop("File format not valid or depricated. Model object not found.")
+      stop("Model object not found. Possibly the file format is not valid or depricated.")
       return(NULL)
     }
 

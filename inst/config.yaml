@@ -33,6 +33,7 @@ githubMapping:
   ReSources: "ReSources"
   MapR: "MapR"
   DSSM: "DSSM"     # updated name
+  TraceR: "TraceR"
   # external apps
   CausalR: "causalr"
 packageMapping: # we do need this for checks in model imports
@@ -46,4 +47,5 @@ packageMapping: # we do need this for checks in model imports
   PlotR: "PlotR"
   ReSources: "ReSources"
   MapR: "MapR"
+  TraceR: "TraceR"
   CausalR: "CausalR"

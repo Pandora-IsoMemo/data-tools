@@ -68,6 +68,8 @@ remoteModelsServer <- function(id,
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
+
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
 

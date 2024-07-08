@@ -26,11 +26,14 @@ selectSourceUI <- function(id,
                           zip = c("Pandora Platform" = "ckan",
                                   "File" = "file",
                                   "URL" = "url",
-                                  "Online Zip" = "remoteModel")
+                                  "Online Zip" = "remoteModel"),
+                          list = c("Pandora Platform" = "ckan",
+                                   "File" = "file",
+                                   "URL" = "url")
   )
 
   acceptExt <- NULL
-  if (importType %in% c("model", "zip") && !is.null(fileExtension) && fileExtension != "") {
+  if (importType %in% c("model", "zip", "list") && !is.null(fileExtension) && fileExtension != "") {
     acceptExt <- sprintf(".%s", fileExtension)
   }
 
@@ -128,6 +131,8 @@ selectSourceServer <- function(id,
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
+
                  ckanNetworks <- reactiveVal(data.frame())
                  ckanPackages <- reactiveVal(data.frame())
                  dataSource <- reactiveValues(file = NULL,

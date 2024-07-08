@@ -20,7 +20,7 @@ selectDataUI(
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
 
-\item{importType}{(character) type of import, either "data" or "model" or "zip".
+\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated

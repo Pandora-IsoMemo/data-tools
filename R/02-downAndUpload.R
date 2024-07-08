@@ -47,6 +47,7 @@ downUploadButtonServer <- function(id,
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
                  # open modal when button is clicked and pass data to modal
                  observe({
                    logDebug("Entering showModal")
@@ -186,6 +187,9 @@ downloadModelServer <-
            compressionLevel = 9) {
     moduleServer(id,
                  function(input, output, session) {
+                   ns <- session$ns
+                   logDebug(initServerLogTxt(ns("")))
+
                    observe({
                      if (onlySettings) {
                        shinyjs::hide("onlyInputs")
@@ -482,6 +486,9 @@ uploadModelServer <-
 
     moduleServer(id,
                  function(input, output, session) {
+                   ns <- session$ns
+                   logDebug(initServerLogTxt(ns("")))
+
                    pathToModel <- reactiveVal(NULL)
 
                    uploadedData <- reactiveValues(data = NULL,
