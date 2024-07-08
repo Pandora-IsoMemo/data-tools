@@ -48,7 +48,7 @@ toolsImportServer <- function(id) {
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ckanFileTypes = "json",
-                   importType = c("list"),
+                   importType = "list",
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    fileExtension = "json",

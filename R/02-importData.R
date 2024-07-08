@@ -18,7 +18,9 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param id namespace id
 #' @param title title of data import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
-#' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan")
+#' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan"). E.g. for
+#' `importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+#'  for `importType = "list"`: c("json")
 #' @param ignoreWarnings TRUE to enable imports in case of warnings
 #' @param importType (character) type of import, either "data" or "model" or "zip" or "list".
 #'  ImportType == "model" expects a zip file containing a model. The file will be unzipped,

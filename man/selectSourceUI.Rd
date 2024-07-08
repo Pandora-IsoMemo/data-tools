@@ -18,7 +18,9 @@ selectSourceUI(
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
-\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan"). E.g. for
+`importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+ for `importType = "list"`: c("json")}
 
 \item{importType}{(character) type of import, either "data" or "model" or "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,

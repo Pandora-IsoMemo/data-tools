@@ -9,7 +9,9 @@ filterCKANResourceUI(id, ckanFileTypes)
 \arguments{
 \item{id}{id of module}
 
-\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan")}
+\item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan"). E.g. for
+`importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+ for `importType = "list"`: c("json")}
 }
 \description{
 UI of the module
