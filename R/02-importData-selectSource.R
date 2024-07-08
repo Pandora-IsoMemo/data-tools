@@ -132,6 +132,8 @@ selectSourceServer <- function(id,
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
+
                  ckanNetworks <- reactiveVal(data.frame())
                  ckanPackages <- reactiveVal(data.frame())
                  dataSource <- reactiveValues(file = NULL,

@@ -65,6 +65,9 @@ mergeSettingsServer <-
            tableYId) {
     moduleServer(id,
                  function(input, output, session) {
+                   ns <- session$ns
+                   logDebug(initServerLogTxt(ns("")))
+
                    commonColumns <- reactiveVal()
                    columnsToJoin <- reactiveValues(tableX = NULL,
                                                    tableY = NULL)

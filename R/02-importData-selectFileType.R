@@ -51,6 +51,9 @@ selectFileTypeUI <- function(id) {
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
+
                  observe({
                    logDebug("Updating input$sheet")
                    if (is.null(input$type) || is.null(dataSource$file) ||

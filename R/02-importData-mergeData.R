@@ -82,6 +82,9 @@ mergeDataUI <- function(id) {
 mergeDataServer <- function(id, mergeList) {
   moduleServer(id,
                function(input, output, session) {
+                 ns <- session$ns
+                 logDebug(initServerLogTxt(ns("")))
+
                  tableIds <- reactiveVal()
 
                  joinedResult <- reactiveValues(
