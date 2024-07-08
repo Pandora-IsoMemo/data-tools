@@ -17,7 +17,6 @@ loadModelWrapper <- function(filepath,
                              rPackageName,
                              onlySettings,
                              fileExtension = "zip") {
-
   filepath %>%
     checkExtension(fileExtension = fileExtension) %>%
     getZip() %>%
@@ -69,7 +68,8 @@ loadModel <-
     ## unzip file ----
     res <- try({
       unzip(filepath, exdir = "unzippedTmp")
-      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp")
+      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp",
+                                           what = ifelse(onlySettings, "inputs", "model"))
       modelNotes <- extractNotes(pathToUnzipped = "unzippedTmp")
     }, silent = TRUE)
 
