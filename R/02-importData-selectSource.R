@@ -222,10 +222,12 @@ selectSourceServer <- function(id,
                    updateSelectizeInput(session,
                                         "resourceFilter-ckanRecord",
                                         choices = getCKANRecordChoices(packageList = ckanPackageList))
+                   fileTypes <- getCKANTypesChoices(packageList = ckanPackageList,
+                                                    ckanFileTypes = ckanFileTypes)
                    updatePickerInput(session,
                                      "resourceFilter-ckanResourceTypes",
-                                     choices = getCKANTypesChoices(packageList = ckanPackageList,
-                                                                   ckanFileTypes = ckanFileTypes))
+                                     choices = fileTypes,
+                                     selected = fileTypes)
                  }) %>%
                    bindEvent(internetCon())
 
@@ -291,12 +293,14 @@ selectSourceServer <- function(id,
                                         choices = getCKANRecordChoices(network = input[["repoFilter-ckanGroup"]],
                                                                        pattern = input[["repoFilter-ckanMeta"]],
                                                                        packageList = ckanPackages()))
+                   fileTypes <- getCKANTypesChoices(network = input[["repoFilter-ckanGroup"]],
+                                                    pattern = input[["repoFilter-ckanMeta"]],
+                                                    packageList = ckanPackages(),
+                                                    ckanFileTypes = ckanFileTypes)
                    updatePickerInput(session,
                                      "resourceFilter-ckanResourceTypes",
-                                     choices = getCKANTypesChoices(network = input[["repoFilter-ckanGroup"]],
-                                                                   pattern = input[["repoFilter-ckanMeta"]],
-                                                                   packageList = ckanPackages(),
-                                                                   ckanFileTypes = ckanFileTypes))
+                                     choices = fileTypes,
+                                     selected = fileTypes)
                  }) %>%
                    bindEvent(input[["repoFilter-applyMeta"]])
 
@@ -308,12 +312,14 @@ selectSourceServer <- function(id,
                                         choices = getCKANRecordChoices(network = input[["repoFilter-ckanGroup"]],
                                                                        pattern = input[["repoFilter-ckanMeta"]],
                                                                        packageList = ckanPackages()))
+                   fileTypes <- getCKANTypesChoices(network = input[["repoFilter-ckanGroup"]],
+                                                    pattern = input[["repoFilter-ckanMeta"]],
+                                                    packageList = ckanPackages(),
+                                                    ckanFileTypes = ckanFileTypes)
                    updatePickerInput(session,
                                      "resourceFilter-ckanResourceTypes",
-                                     choices = getCKANTypesChoices(network = input[["repoFilter-ckanGroup"]],
-                                                                   pattern = input[["repoFilter-ckanMeta"]],
-                                                                   packageList = ckanPackages(),
-                                                                   ckanFileTypes = ckanFileTypes))
+                                     choices = fileTypes,
+                                     selected = fileTypes)
                  }) %>%
                    bindEvent(input[["repoFilter-ckanGroup"]])
 
