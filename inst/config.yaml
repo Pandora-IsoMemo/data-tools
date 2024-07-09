@@ -1,3 +1,6 @@
+# General Settings ################
+#
+# Following settings can be defined app specific in the config.yaml file of the respective app
 defaultSource: "file"           # for import of data and models
 # file types that are allowed for import from Pandora ("ckan")
 ckanFileTypes:
@@ -12,6 +15,10 @@ ckanModelTypes:
 githubRepo: "data-tools"        # for import of models
 fileExtension: "datatools"      # for download of models
 rPackageName: "DataTools"       # for download and import of models
+#
+# Internal Settings ################
+#
+# Following settings are internal and specific only for the package DataTools
 # settings to load remote (online) example zips or models or data links:
 remoteModelsSpecs:
   zip:
