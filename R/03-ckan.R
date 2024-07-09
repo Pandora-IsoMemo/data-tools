@@ -9,22 +9,22 @@ getCKANResourcesChoices <-
            network = "",
            pattern = "",
            packageList = data.frame()) {
-    if (length(fileType) == 0 || any(fileType == ""))
-      fileType <- config()[["ckanFileTypes"]]
+    if (length(fileType) == 0) {
+      resources <- NULL
+    } else {
+      if (any(fileType == ""))
+        fileType <- config()[["ckanFileTypes"]]
 
-    resources <- getResources(fileType = fileType,
-                              repository = repository,
-                              network = network,
-                              pattern = pattern,
-                              packageList = packageList,
-                              order = TRUE)
-
-    if (is.null(resources) || nrow(resources) == 0) {
-      return(list(
-        choices = c("No resource available ..." = ""),
-        selected = c("No resource available ..." = "")
-      ))
+      resources <- getResources(fileType = fileType,
+                                repository = repository,
+                                network = network,
+                                pattern = pattern,
+                                packageList = packageList,
+                                order = TRUE)
     }
+
+    if (is.null(resources) || nrow(resources) == 0)
+      return(c("No resource available ..." = ""))
 
     choices <- resources[["name"]]
     names(choices) <- sprintf("%s (%s)", resources[["name"]], toupper(resources[["format"]]))

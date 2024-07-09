@@ -11,7 +11,7 @@ test_that("Test module importData", {
   testServer(importDataServer,
              {
                # Arrange
-               print("test import data from ckan")
+               print("test import data from ckan with rownames")
                # Act
                session$setInputs(
                  openPopup = TRUE,
@@ -20,54 +20,7 @@ test_that("Test module importData", {
                  `dataPreparer-fileSource-ckanResource` = "Isotopic measurements in Excel format",
                  `dataPreparer-fileType-type` = "xlsx",
                  `dataPreparer-fileType-sheet` = "1",
-                 `dataPreparer-withRownames` = FALSE,
-                 accept = TRUE
-               )
-
-               expect_true(all(names(values) %in%
-                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings")))
-
-               # cannot test parent module of a submodule without adding some
-               # undesired ignoreInit values in observers
-               #
-               # expect_type(session$returned()[[dataSource$filename]], "list")
-               # expect_equal(class(session$returned()[[dataSource$filename]]), "data.frame")
-               # expect_true(all(
-               #   c("ID", "Reference", "Kingdom", "X23") %in%
-               #     names(session$returned()[[dataSource$filename]])
-               # ))
-               # expect_true(nrow(session$returned()[[dataSource$filename]]) > 100)
-               # expect_equal(
-               #   colnames(session$returned()[[dataSource$filename]])[1:10],
-               #   c(
-               #     "ID",
-               #     "Site",
-               #     "Locality.Notes",
-               #     "Site.Country",
-               #     "Latitude",
-               #     "Longitude",
-               #     "Radius",
-               #     "Km.to.Coast",
-               #     "Kingdom",
-               #     "Class"
-               #   )
-               # )
-             })
-
-  testServer(importDataServer,
-             {
-               # Arrange
-               print("test import data from ckan with rownames")
-               # Act
-               session$setInputs(
-                 openPopup = TRUE,
-                 source = "ckan",
-                 ckanRecord = "AfriArch isotopic dataset",
-                 ckanResource = "Isotopic measurements in Excel format",
-                 type = "xlsx",
-                 sheet = "1",
-                 withRownames = TRUE,
+                 `dataPreparer-withRownames` = TRUE,
                  accept = TRUE
                )
 
