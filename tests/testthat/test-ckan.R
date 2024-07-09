@@ -9,20 +9,22 @@ test_that("Test getCKANRecordChoices()", {
     ) %in% getCKANRecordChoices())
   )
 
+  testIsomemoChoices <- getCKANRecordChoices(network = "IsoMemo")
+
   expect_false(
     any(c(
       `Vitis vinifera seeds in Eastern Mediterranean (up to the 7th c. CE)` =
         "vitis-vinifera-seeds-in-eastern-mediterranean-up-to-the-7th-c-ce",
       Zanadamu = "zanadamu",
       `AfriArch isotopic dataset` = "afriarch-isotopic-dataset"
-    ) %in% getCKANRecordChoices(network = "IsoMemo")
+    ) %in% testIsomemoChoices
     ))
 
   expect_true(
     all(c(`Select Pandora repository ...` = "", `14CARHU` = "14carhu",
       `14SEA Project:  A 14C database for Southeast Europe and Anatolia (10,000–3000 calBC)` =
         "14sea-project-a-14c-database-for-southeast-europe-and-anatolia-10-000-3000-calbc"
-    ) %in% getCKANRecordChoices(network = "IsoMemo")
+    ) %in% testIsomemoChoices
   ))
 })
 
