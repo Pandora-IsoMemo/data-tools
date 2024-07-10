@@ -43,13 +43,14 @@ selectSourceUI <- function(id,
       column(6,
              radioButtons(
                ns("source"),
-               label = NULL,
+               label = "Select source",
                choices = sourceChoices,
                selected = defaultSource,
                inline = TRUE)),
       if (importType == "data") {
         column(6,
                align = "right",
+               style = "margin-top: 1.7em;",
                conditionalPanel(
                  ns = ns,
                  condition = "input.source == 'file'",

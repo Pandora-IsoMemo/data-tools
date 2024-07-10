@@ -62,8 +62,7 @@ selectDataUI <- function(id,
       div(
         tags$hr(),
         previewDataUI(ns("previewDat"), title = "Preview data"),
-        downloadDataLinkUI(ns = ns,
-                           text = "Download the file path information as .json for later upload."),
+        tags$hr(),
         fluidRow(
           column(6,
                  tags$html(
@@ -80,7 +79,9 @@ selectDataUI <- function(id,
                  actionButton(ns("keepDataForQuery"), "Create Query from file"),
                  actionButton(ns("keepData"), "Prepare / Merge file(s)")
           )
-        )
+        ),
+        downloadDataLinkUI(ns = ns,
+                           text = "Download the file path information as .json for later upload.")
       ) else NULL
   )
 }

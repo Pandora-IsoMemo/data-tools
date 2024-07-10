@@ -23,7 +23,7 @@ selectFileTypeUI <- function(id,
       column(6,
              selectInput(
                ns("type"),
-               "File type",
+               "Select file type",
                choices = defaultFileTypes %>% formatTypeChoices(),
                selected = defaultSelected[1] %>% formatTypeChoices()
              )
