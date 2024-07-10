@@ -1,3 +1,14 @@
+# Note for future improvements: The importData module is a bit complex and could be simplified.
+# The module is used to import data, models, zips, and lists. We could split it into two modules:
+# - importData: for importing data (from .xlsx, .csv, ...) and lists (from .json)
+# - importZip: for importing models and zips (models are in essence also .zip files)
+# This would make the code more readable and easier to maintain.
+# 1. Extract the importZip module from the importData module.
+# 2. Apply the importZip module in all apps instead of the importData module if importType is
+#    "model" or "zip".
+# 3. Simplify the importData module by removing the parts that are only relevant for importing
+#    models or zips. Separate helper functions and scripts respectively.
+
 #' Data import module
 #'
 #' Displays a button which opens a import dialog when clicked
@@ -82,7 +93,8 @@ importDataServer <- function(id,
   defaultSource <- match.arg(defaultSource)
   importType <- match.arg(importType)
 
-  if (!is.null(mainFolder)) warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
+  if (!is.null(mainFolder))
+    warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
 
   options <- options %>%
     validateImportOptions(rPackageName = rPackageName)
@@ -116,20 +128,20 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
-                   if (input[["fileSource-source"]] == "remoteModel" ||
-                       (input[["fileSource-source"]] == "file" &&
-                        !is.null(input[["fileSource-dataOrLink"]]) &&
-                        input[["fileSource-dataOrLink"]] == "dataLink")) {
-                     NULL
-                   } else {
-                     selectDataUI(
-                       ns("dataSelector"),
-                       batch = batch,
-                       outputAsMatrix = outputAsMatrix,
-                       importType = importType,
-                       customHelpText = options[["customHelpText"]]
-                     )
-                   }
+                   selectDataUI(
+                     ns("dataSelector"),
+                     batch = batch,
+                     outputAsMatrix = outputAsMatrix,
+                     importType = importType,
+                     isLink = ((importType %in% c("data", "list") &&
+                                  input[["fileSource-source"]] == "remoteModel") ||
+                                 (input[["fileSource-source"]] == "file" &&
+                                    !is.null(input[["fileSource-dataOrLink"]]) &&
+                                    input[["fileSource-dataOrLink"]] == "dataLink")),
+                     customHelpText = options[["customHelpText"]],
+                     defaultFileTypes = ckanFileTypes,
+                     userFileTypes = input[["fileSource-resourceFilter-ckanResourceTypes"]]
+                   )
                  })
 
                  observeEvent(input$openPopup, {
@@ -503,7 +515,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = sprintf("%s (%s)", title, packageVersion("DataTools")),
-      style = if (importType == "data") 'height: 1100px' else 'height: 800px',
+      style = if (importType == "data") 'height: 1200px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
         column(4,

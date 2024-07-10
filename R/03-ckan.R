@@ -13,7 +13,7 @@ getCKANResourcesChoices <-
       resources <- NULL
     } else {
       if (any(fileType == ""))
-        fileType <- config()[["ckanFileTypes"]]
+        fileType <- config()[["dataFileTypes"]]
 
       resources <- getResources(fileType = fileType,
                                 repository = repository,
@@ -81,7 +81,7 @@ getCKANTypesChoices <- function(repository = "",
                                 network = "",
                                 pattern = "",
                                 packageList = data.frame(),
-                                ckanFileTypes = config()[["ckanFileTypes"]]) {
+                                ckanFileTypes = config()[["dataFileTypes"]]) {
   fileTypes <- getFileTypes(repository = repository,
                             network = network,
                             pattern = pattern,

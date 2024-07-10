@@ -8,7 +8,7 @@ remoteModelsUI(
   id,
   selectLabel = "Load online model",
   buttonLabel = "Load",
-  width = NULL
+  width = "100\%"
 )
 }
 \arguments{

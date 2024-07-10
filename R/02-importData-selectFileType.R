@@ -4,21 +4,28 @@
 #'
 #' UI of the module
 #'
-#' @param id id of module
-selectFileTypeUI <- function(id) {
+#' @inheritParams selectDataUI
+selectFileTypeUI <- function(id,
+                             defaultFileTypes = config()[["dataFileTypes"]],
+                             userFileTypes = c()) {
   ns <- NS(id)
+
+  # use default file types as choices (choices are displayed for source == "file" or "url" too)
+  # but choose selected from userFileTypes if available (coming from source == "Pandora Platform")
+  if (length(userFileTypes) == 0) {
+    defaultSelected <- defaultFileTypes
+  } else {
+    defaultSelected <- userFileTypes
+  }
 
   tagList(
     fluidRow(
       column(6,
              selectInput(
                ns("type"),
-               "File type",
-               choices = c("xls(x)" = "xlsx",
-                           "csv",
-                           "ods",
-                           "txt"),
-               selected = "xlsx"
+               "Select file type",
+               choices = defaultFileTypes %>% formatTypeChoices(),
+               selected = defaultSelected[1] %>% formatTypeChoices()
              )
              ),
       column(6,
@@ -29,7 +36,7 @@ selectFileTypeUI <- function(id) {
                textInput(ns("decSep"), "decimal separator:", value = ".")
              ),
              conditionalPanel(
-               condition = paste0("input.type == 'xlsx' || input.type == 'xlsx'"),
+               condition = paste0("input.type == 'xlsx'"),
                ns = ns,
                selectInput(
                  ns("sheet"),
@@ -96,4 +103,20 @@ getSheetSelection <- function(filepath) {
   names(sheets) <- sheetNames
 
   sheets
+}
+
+#' Format Type Choices
+#'
+#' @param typeChoices (character) vector of file types
+formatTypeChoices <- function(typeChoices) {
+  # add names to choices if not present
+  if (is.null(names(typeChoices))) {
+    names(typeChoices) <- typeChoices
+  }
+
+  # replace xls with xlsx and remove xls if present
+  names(typeChoices)[names(typeChoices) == "xlsx"] <- "xls(x)"
+  typeChoices <- typeChoices[typeChoices != "xls"]
+
+  typeChoices
 }

@@ -59,7 +59,7 @@ toolsImportServer <- function(id) {
                    "ckanData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanFileTypes"]],
+                   ckanFileTypes = config()[["dataFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = "ckan",
                    options = importOptions(rPackageName = config()[["rPackageName"]])
@@ -69,7 +69,7 @@ toolsImportServer <- function(id) {
                    "batchData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanFileTypes"]],
+                   ckanFileTypes = config()[["dataFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    batch = TRUE,
@@ -81,7 +81,7 @@ toolsImportServer <- function(id) {
                    "model",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["ckanModelTypes"]],
+                   ckanFileTypes = config()[["modelFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
                    importType = "model",
@@ -106,7 +106,7 @@ toolsImportServer <- function(id) {
                      req(length(importedBatchData()) > 0)
                      dataOut(importedBatchData()[[1]])
                    }
-                   if (input$dataSel == "Model") {
+                   if (input$dataSel == "Model Data") {
                      req(length(importedModel()) > 0)
                      dataOut(importedModel()[[1]][["data"]])
                    }
