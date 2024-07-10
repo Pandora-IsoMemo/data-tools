@@ -5,50 +5,60 @@
 #' UI of the module
 #'
 #' @param id id of module
+#' @param isLink (logical) if TRUE, the data source is a link
+#' @param defaultFileTypes (character) default file types
+#' @param userFileTypes (character) user file types specified in "Pandora Platform" settings
 #' @inheritParams importDataServer
 #' @inheritParams importOptions
 selectDataUI <- function(id,
+                         importType,
                          batch,
                          outputAsMatrix,
-                         importType,
-                         customHelpText = importOptions()[["customHelpText"]]) {
+                         isLink = FALSE,
+                         customHelpText = importOptions()[["customHelpText"]],
+                         defaultFileTypes = config()[["dataFileTypes"]],
+                         userFileTypes = c()) {
   ns <- NS(id)
 
   tagList(
     fluidRow(
       column(6,
-             if (importType == "data")
+             ## file type selection ----
+             if (!isLink)
+               selectFileTypeUI(ns("fileType"),
+                                defaultFileTypes = defaultFileTypes,
+                                userFileTypes = userFileTypes)
+             else NULL,
+             if (importType == "data" && !isLink) {
+               ## data: check logic for first/second column ----
                checkboxInput(
                  ns("withRownames"),
                  paste(if (batch)
                    "Second"
                    else
                      "First", "column contains rownames")
-               ) else NULL,
-             # check logic for second column
-             if (importType == "data" && outputAsMatrix) {
-               checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
-             } else if (importType == "data") {
-               helpText("The first row in your file needs to contain column names.")
-             } else NULL,
-             customHelpText,
-             if (importType == "data" && batch) {
-               helpText(
-                 "The first column in your file needs to contain the observation names from the target table."
                )
+               ## data: check logic for first row ----
+               if (outputAsMatrix) {
+                 checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
+               } else {
+                 helpText("The first row in your file needs to contain column names.")
+               }
              } else NULL,
-             # show warnings for data and model import!
+             ## custom help text ----
+             customHelpText
+      ),
+      column(6,
+             ## show warnings for data and model import! ----
              div(
                style = "height: 9em",
                div(class = "text-warning", uiOutput(ns("warning"))),
                div(class = "text-danger", uiOutput(ns("error"))),
                div(class = "text-success", uiOutput(ns("success")))
-             )),
-      column(6,
-             if (importType == "data")  selectFileTypeUI(ns("fileType")) else NULL
+             )
       )
       ),
-    if (importType == "data")
+    if (importType == "data" && !isLink)
       div(
         tags$hr(),
         previewDataUI(ns("previewDat"), title = "Preview data"),
@@ -115,7 +125,7 @@ selectDataServer <- function(id,
                  # logic to select sheet ----
                  selectFileTypeServer("fileType", dataSource)
 
-                 # specify file server ----
+                 # specify file server & load file ----
                  observeEvent(
                    list(
                      dataSource$file,

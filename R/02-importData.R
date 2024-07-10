@@ -116,20 +116,20 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
-                   if (input[["fileSource-source"]] == "remoteModel" ||
-                       (input[["fileSource-source"]] == "file" &&
-                        !is.null(input[["fileSource-dataOrLink"]]) &&
-                        input[["fileSource-dataOrLink"]] == "dataLink")) {
-                     NULL
-                   } else {
-                     selectDataUI(
-                       ns("dataSelector"),
-                       batch = batch,
-                       outputAsMatrix = outputAsMatrix,
-                       importType = importType,
-                       customHelpText = options[["customHelpText"]]
-                     )
-                   }
+                   selectDataUI(
+                     ns("dataSelector"),
+                     batch = batch,
+                     outputAsMatrix = outputAsMatrix,
+                     importType = importType,
+                     isLink = ((importType %in% c("data", "list") &&
+                                  input[["fileSource-source"]] == "remoteModel") ||
+                                 (input[["fileSource-source"]] == "file" &&
+                                    !is.null(input[["fileSource-dataOrLink"]]) &&
+                                    input[["fileSource-dataOrLink"]] == "dataLink")),
+                     customHelpText = options[["customHelpText"]],
+                     defaultFileTypes = ckanFileTypes,
+                     userFileTypes = input[["fileSource-resourceFilter-ckanResourceTypes"]]
+                   )
                  })
 
                  observeEvent(input$openPopup, {

@@ -4,10 +4,18 @@
 \alias{selectFileTypeUI}
 \title{Select File Type UI}
 \usage{
-selectFileTypeUI(id)
+selectFileTypeUI(
+  id,
+  defaultFileTypes = config()[["dataFileTypes"]],
+  userFileTypes = c()
+)
 }
 \arguments{
 \item{id}{id of module}
+
+\item{defaultFileTypes}{(character) default file types}
+
+\item{userFileTypes}{(character) user file types specified in "Pandora Platform" settings}
 }
 \description{
 UI of the module

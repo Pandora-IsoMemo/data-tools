@@ -11,15 +11,19 @@ remoteModelsUI <-
   function(id,
            selectLabel = "Load online model",
            buttonLabel = "Load",
-           width = NULL) {
+           width = "100%") {
     ns <- NS(id)
 
     tagList(
-      selectInput(
-        ns("remoteModelChoice"),
-        label = selectLabel,
-        choices = c("No online files found ..." = ""),
-        width = width
+      fluidRow(
+        column(10,
+               selectInput(ns("remoteModelChoice"),
+                           label = selectLabel,
+                           choices = c("No online files found ..." = ""),
+                           width = width)),
+        column(2,
+               style = "margin-top: 18px;",
+               actionButton(ns("loadRemoteModel"), buttonLabel))
       ),
       div(id = ns("noConn"),
           helpText(
@@ -27,8 +31,7 @@ remoteModelsUI <-
               "Note: Access to the Github API failed, showing files ",
               "from the app's package folder for saved files."
             )
-          )),
-      actionButton(ns("loadRemoteModel"), buttonLabel)
+          ))
     )
   }
 

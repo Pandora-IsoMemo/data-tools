@@ -6,19 +6,17 @@
 \usage{
 selectDataUI(
   id,
+  importType,
   batch,
   outputAsMatrix,
-  importType,
-  customHelpText = importOptions()[["customHelpText"]]
+  isLink = FALSE,
+  customHelpText = importOptions()[["customHelpText"]],
+  defaultFileTypes = config()[["dataFileTypes"]],
+  userFileTypes = c()
 )
 }
 \arguments{
 \item{id}{id of module}
-
-\item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
-
-\item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
-e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
 
 \item{importType}{(character) type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
@@ -26,8 +24,19 @@ the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
 and the path to the zip file will be returned.}
 
+\item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
+
+\item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
+e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
+
+\item{isLink}{(logical) if TRUE, the data source is a link}
+
 \item{customHelpText}{(list) A help text element that can be added to a UI definition. Output of
 \code{shiny::helpText(...)}.}
+
+\item{defaultFileTypes}{(character) default file types}
+
+\item{userFileTypes}{(character) user file types specified in "Pandora Platform" settings}
 }
 \description{
 UI of the module
