@@ -166,13 +166,13 @@ loadModel <-
     dat$inputs <- extractInputsFromModel(modelImport, rPackageName)
     ## check inputs ----
     dat <- dat %>%
-      updateMessage(element = "inputs", msgString = "model selection parameters")
+      updateMessage(element = "inputs", msgString = "parameters")
 
     if (!onlySettings || rPackageName %in% c("OsteoBioR")) {
       dat$model <- extractModelFromModel(modelImport)
       ## check model ----
       dat <- dat %>%
-        updateMessage(element = "model", msgString = "model results")
+        updateMessage(element = "model", msgString = "results")
     }
 
     if (!is.null(modelImport$version)) {
