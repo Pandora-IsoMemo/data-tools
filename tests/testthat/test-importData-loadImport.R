@@ -88,8 +88,8 @@ test_that("Test loadModel()", {
     ))
 
     expMessages <- list(data = "Input data loaded. ",
-                        inputs = "Model selection parameters loaded. ",
-                        model = c("No model results found. ", "Model results loaded. "))
+                        inputs = "Parameters loaded. ",
+                        model = c("No results found. ", "Results loaded. "))
 
     expect_true(all(sapply(
       seq_along(testModel$message),
@@ -100,7 +100,7 @@ test_that("Test loadModel()", {
       names(testModel$data) %in% expNamesData[[package]]
     ))
 
-    if (testModel$message[["model"]] == "No model results found. ") {
+    if (testModel$message[["model"]] == "No results found. ") {
       expect_null(testModel[["model"]])
     } else {
       expect_true(length(testModel[["model"]]) > 0)
