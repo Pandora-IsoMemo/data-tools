@@ -22,7 +22,7 @@ remoteModelsUI <-
                            choices = c("No online files found ..." = ""),
                            width = width)),
         column(2,
-               style = "margin-top: 18px;",
+               style = if (!is.null(selectLabel)) "margin-top: 1.4em;" else "margin-top: -0.5em;",
                actionButton(ns("loadRemoteModel"), buttonLabel))
       ),
       div(id = ns("noConn"),

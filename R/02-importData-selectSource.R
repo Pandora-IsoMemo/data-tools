@@ -18,15 +18,15 @@ selectSourceUI <- function(id,
                           data = c("Pandora Platform" = "ckan",
                                    "File" = "file",
                                    "URL" = "url",
-                                   "Online Data Query" = "remoteModel"),
+                                   "Github Repository" = "remoteModel"),
                           model = c("Pandora Platform" = "ckan",
                                     "File" = "file",
                                     "URL" = "url",
-                                    "Online Model" = "remoteModel"),
+                                    "Github Repository" = "remoteModel"),
                           zip = c("Pandora Platform" = "ckan",
                                   "File" = "file",
                                   "URL" = "url",
-                                  "Online Zip" = "remoteModel"),
+                                  "Github Repository" = "remoteModel"),
                           list = c("Pandora Platform" = "ckan",
                                    "File" = "file",
                                    "URL" = "url")
@@ -105,7 +105,7 @@ selectSourceUI <- function(id,
     conditionalPanel(
       condition = "input.source == 'remoteModel'",
       ns = ns,
-      remoteModelsUI(ns("remoteModels"), selectLabel = "Load online data query")
+      remoteModelsUI(ns("remoteModels"), selectLabel = if (importType == "data") "Load data query" else NULL)
     ),
     tags$hr()
   )
