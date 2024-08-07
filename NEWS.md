@@ -1,3 +1,13 @@
+# DataTools 24.08.0
+
+## Updates
+- maintenance update for the import module, preparations for the split of the import module into 
+  two modules to reduce the complexity of the import data module (which will increase the speed)
+  - _Import Data_: import data from local files, url, or using the pandora api
+  - _Import Model/Zip_: import model objects, zip from local files, url, or using the pandora api
+  - part 1: extraction of the import of model objects and zips from the importData module into a 
+    separate module 
+
 # DataTools 24.07.0
 
 ## New Features

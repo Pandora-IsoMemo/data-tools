@@ -29,7 +29,7 @@ importDataServer(
 \arguments{
 \item{id}{namespace id}
 
-\item{title}{title of data import module}
+\item{title}{title of import module}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
@@ -37,7 +37,7 @@ importDataServer(
 `importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
  for `importType = "list"`: c("json")}
 
-\item{ignoreWarnings}{TRUE to enable imports in case of warnings}
+\item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
 
 \item{importType}{(character) type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
