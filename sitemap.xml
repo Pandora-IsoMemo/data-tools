@@ -19,6 +19,7 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/cutStrings.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/deleteColumnsServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/deleteColumnsUI.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/dot-onLoad.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/downUploadButtonServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/downUploadButtonUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/downloadFileToTmp.html</loc></url>
@@ -64,7 +65,9 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importData.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importOptions.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/importServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/incIndexOfName.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/includeShinyToolsCSS.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/index.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/initServerLogTxt.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/joinColumnsServer.html</loc></url>
@@ -109,6 +112,7 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectFileTypeUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectSourceServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectSourceUI.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/setImportTitle.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/showInfoUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/splitColumnsServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/splitColumnsUI.html</loc></url>
