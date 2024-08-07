@@ -37,7 +37,7 @@ and the path to the zip file will be returned.}
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
 This parameter is ignored if importType == "data"}
 
-\item{ignoreWarnings}{TRUE to enable imports in case of warnings}
+\item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
 
 \item{rPackageName}{(character) DEPRECATED. Instead, please use
 \code{options = importOptions(rPackageName = <your package>)}.}

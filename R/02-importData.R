@@ -1,11 +1,11 @@
-# Note for future improvements: The importData module is a bit complex and could be simplified.
-# The module is used to import data, models, zips, and lists. We could split it into two modules:
+# Note: The importData module is too complex and will be simplified.
+# Currently, the module is used to import data, models, zips, and lists. We split it into two modules:
 # - importData: for importing data (from .xlsx, .csv, ...) and lists (from .json)
-# - importZip: for importing models and zips (models are in essence also .zip files)
-# This would make the code more readable and easier to maintain.
-# 1. Extract the importZip module from the importData module.
-# 2. Apply the importZip module in all apps instead of the importData module if importType is
-#    "model" or "zip".
+# - importModule: for importing models (models are in essence .zip files), zips and lists (from .json)
+# This will make the code more readable and easier to maintain.
+# 1. Extract importModule from the importData module. <- DONE
+# 2. Apply importModule in all apps instead of the importData module if importType is
+#    "model" or "zip" (or "list"?)
 # 3. Simplify the importData module by removing the parts that are only relevant for importing
 #    models or zips. Separate helper functions and scripts respectively.
 
@@ -27,12 +27,12 @@ importDataUI <- function(id, label = "Import Data") {
 #' Backend for data import module
 #'
 #' @param id namespace id
-#' @param title title of data import module
+#' @param title title of import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan"). E.g. for
 #' `importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
 #'  for `importType = "list"`: c("json")
-#' @param ignoreWarnings TRUE to enable imports in case of warnings
+#' @param ignoreWarnings (logical) TRUE to enable imports in case of warnings
 #' @param importType (character) type of import, either "data", "model", "zip" or "list".
 #'  ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 #'  the model object extracted, and checked if it is valid for the app.
@@ -503,18 +503,9 @@ importDataDialog <-
            fileExtension = "zip",
            isInternet = FALSE,
            options = importOptions()) {
-
-    if (title == "") {
-      title <- switch(importType,
-                      "data" = "Data import",
-                      "model" = "Model import",
-                      "zip" = "Zip import",
-                      "list" = "Json import")
-    }
-
     modalDialog(
       shinyjs::useShinyjs(),
-      title = sprintf("%s (%s)", title, packageVersion("DataTools")),
+      title = title %>% setImportTitle(importType = importType, version = packageVersion("DataTools")),
       style = if (importType == "data") 'height: 1200px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
