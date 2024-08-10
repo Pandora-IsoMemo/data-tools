@@ -1,3 +1,17 @@
+# Note: The selectData module is too complex and will be simplified.
+# Currently, the module is used for import of data, models, zips, and lists. We split it into two
+# modules:
+# - configureData: for importing data (from .xlsx, .csv, ...) and lists (from .json)
+# - configureFile: for importing models (models are in essence .zip files), zips and lists (from .json)
+# This will make the code more readable and easier to maintain.
+# 1. Extract configureFile from the selectData module. <- Done
+# 2. Apply configureFile instead of the selectData module if importType is "model" or "zip" (or "list"?) <- Done
+# 3. Simplify the selectData module by removing the parts that are only relevant for importing
+#    models or zips. Only after 'importType' cannot be "model" or "zip" anymore. Separate helper
+#    functions and scripts respectively.
+# 4. Rename selectData to configureData.
+
+
 # Select Data Module ----
 
 #' Select Data UI
@@ -10,7 +24,7 @@
 #' @param userFileTypes (character) user file types specified in "Pandora Platform" settings
 #' @inheritParams importDataServer
 #' @inheritParams importOptions
-selectDataUI <- function(id,
+configureDataUI <- function(id,
                          importType,
                          batch,
                          outputAsMatrix,
@@ -46,18 +60,9 @@ selectDataUI <- function(id,
                }
              } else NULL,
              ## custom help text ----
-             customHelpText
-      ),
-      column(6,
-             ## show warnings for data and model import! ----
-             div(
-               style = "height: 9em",
-               div(class = "text-warning", uiOutput(ns("warning"))),
-               div(class = "text-danger", uiOutput(ns("error"))),
-               div(class = "text-success", uiOutput(ns("success")))
-             )
-      )
-      ),
+             customHelpText),
+      column(6, importMessageUI(ns("importMessage")))
+    ),
     if (importType == "data" && !isLink)
       div(
         tags$hr(),
@@ -96,18 +101,18 @@ selectDataUI <- function(id,
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
 #' @inheritParams importDataServer
 #' @inheritParams uploadModelServer
-selectDataServer <- function(id,
-                             importType = "data",
-                             mergeList,
-                             customNames,
-                             dataSource,
-                             subFolder = NULL,
-                             ignoreWarnings = FALSE,
-                             rPackageName = "",
-                             onlySettings = FALSE,
-                             fileExtension = "zip",
-                             expectedFileInZip = c()
-                             ) {
+configureDataServer <- function(id,
+                                importType = "data",
+                                mergeList,
+                                customNames,
+                                dataSource,
+                                subFolder = NULL,
+                                ignoreWarnings = FALSE,
+                                rPackageName = "",
+                                onlySettings = FALSE,
+                                fileExtension = "zip",
+                                expectedFileInZip = c()
+) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -160,6 +165,8 @@ selectDataServer <- function(id,
                                     message = sprintf("Importing '%s' ...", dataSource[["filename"]]))
                    }) # end observe loadImport
 
+                 importMessageServer("importMessage", values)
+
                  observe({
                    logDebug("Enable/Disable keepData button")
                    if (importType == "data") {
@@ -178,19 +185,6 @@ selectDataServer <- function(id,
                    }
                  }) %>%
                    bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
-
-                 output$warning <-
-                   renderUI(tagList(lapply(
-                     unlist(values$warnings, use.names = FALSE), tags$p
-                   )))
-                 output$error <-
-                   renderUI(tagList(lapply(
-                     unlist(values$errors, use.names = FALSE), tags$p
-                   )))
-                 output$success <-
-                   renderUI(tagList(lapply(
-                     unlist(values$fileImportSuccess, use.names = FALSE), tags$p
-                   )))
 
                  if (importType == "data") {
                    previewDataServer("previewDat", dat = reactive(values$preview))
@@ -266,20 +260,4 @@ selectDataServer <- function(id,
 
                  values
                })
-}
-
-#' Get Github Mapping
-#'
-#' Maps the R package name to the respective Github repository
-#'
-#' @param rPackage (character) name of the R package (as in the Description file), must be empty or
-#'  specified in the config file of the package DataTools
-getGithubMapping <- function(rPackage = "") {
-  if (rPackage == "") return("")
-
-  if (!(rPackage %in% names(config()$githubMapping))) {
-    stop("No Github mapping found for package '", rPackage, "'. Please add it to the config file of the package DataTools.")
-  }
-
-  config()$githubMapping[[rPackage]]
 }

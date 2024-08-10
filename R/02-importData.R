@@ -128,7 +128,7 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
-                   selectDataUI(
+                   configureDataUI(
                      ns("dataSelector"),
                      batch = batch,
                      outputAsMatrix = outputAsMatrix,
@@ -140,7 +140,8 @@ importDataServer <- function(id,
                                     input[["fileSource-dataOrLink"]] == "dataLink")),
                      customHelpText = options[["customHelpText"]],
                      defaultFileTypes = ckanFileTypes,
-                     userFileTypes = input[["fileSource-resourceFilter-ckanResourceTypes"]]
+                     userFileTypes = if (input[["fileSource-source"]] == "ckan")
+                       input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
                    )
                  })
 
@@ -196,7 +197,7 @@ importDataServer <- function(id,
                    ckanFileTypes = ckanFileTypes
                  )
 
-                 values <- selectDataServer(
+                 values <- configureDataServer(
                    "dataSelector",
                    importType = importType,
                    ignoreWarnings = ignoreWarnings,

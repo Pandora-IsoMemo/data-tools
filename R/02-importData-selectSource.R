@@ -118,7 +118,7 @@ selectSourceUI <- function(id,
 #' @param id id of module
 #' @param openPopupReset (reactive) TRUE if popup is (re-)opened
 #' @param internetCon (reactive) TRUE if there is an internet connection
-#' @inheritParams selectDataServer
+#' @inheritParams configureFileServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
 selectSourceServer <- function(id,

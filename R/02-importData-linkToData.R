@@ -70,7 +70,7 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList, downl
 
 #' Filter Unprocessed
 #'
-#' @inheritParams selectDataServer
+#' @inheritParams configureDataServer
 filterUnprocessed <- function(mergeList) {
   if (length(mergeList) == 0) return(mergeList)
 
@@ -122,7 +122,7 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 #' @param session session from server function
 #' @param parentParams (list) parentParams
 #' @param mergeList (reactiveVal) list of data imports
-#' @inheritParams selectDataServer
+#' @inheritParams configureFileServer
 observeUploadDataLink <- function(id, input, output, session, dataSource, parentParams, mergeList) {
   dataLinkUpload <- reactiveValues(
     import = list(),

@@ -1,3 +1,12 @@
+# DataTools 24.08.1
+
+## Updates
+- maintenance update for the selectData module, preparations for the split of the module into 
+  two modules to reduce the complexity
+  - _Configure Data_: configure data from clv, xlsx imports
+  - _Configure File_: configure file from model, zip imports
+  - part 1: extraction of the configure file module from the selectData module into a separate module
+
 # DataTools 24.08.0
 
 ## Updates
