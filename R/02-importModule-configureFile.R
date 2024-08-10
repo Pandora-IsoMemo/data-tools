@@ -9,7 +9,7 @@
 # 3. Simplify the selectData module by removing the parts that are only relevant for importing
 #    models or zips. Only after 'importType' cannot be "model" or "zip" anymore. Separate helper
 #    functions and scripts respectively.
-# 4. Rename selectData to configureData.
+# 4. Rename selectData to configureData. >- Done
 
 
 # Configure File Module ----

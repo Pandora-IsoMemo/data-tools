@@ -9,12 +9,12 @@
 # 3. Simplify the selectData module by removing the parts that are only relevant for importing
 #    models or zips. Only after 'importType' cannot be "model" or "zip" anymore. Separate helper
 #    functions and scripts respectively.
-# 4. Rename selectData to configureData.
+# 4. Rename selectData to configureData. -> Done
 
 
-# Select Data Module ----
+# Configure Data Module ----
 
-#' Select Data UI
+#' Configure Data UI
 #'
 #' UI of the module
 #'
@@ -91,7 +91,7 @@ configureDataUI <- function(id,
   )
 }
 
-#' Select Data Server
+#' Configure Data Server
 #'
 #' Server function of the module
 #' @param id id of module
