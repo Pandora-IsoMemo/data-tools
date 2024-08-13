@@ -7,9 +7,9 @@
 filterParams(params, importType)
 }
 \arguments{
-\item{params}{(list) named list of parameters required to import data or a model}
+\item{params}{(list) named list of parameters required to import a model, zip, or list}
 
-\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
+\item{importType}{(character) type of import, either "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated

@@ -1,9 +1,9 @@
 #' Load Import
 #'
-#' Wrapper to load "data", "model", "zip" or "list" file.
+#' Wrapper to load "model", "zip" or "list" file.
 #'
 #' @param params (list) named list of parameters required to import data or a model
-#' @inheritParams importDataServer
+#' @inheritParams importServer
 loadImport <- function(importType, params, expectedFileInZip) {
   values <- params[["values"]] %>% # to pass on the reactive values object
     resetValues()
@@ -17,7 +17,6 @@ loadImport <- function(importType, params, expectedFileInZip) {
 
   # load (full) data, model or zip
   res <- switch(importType,
-         "data" = do.call(loadDataWrapper, params),
          "model" = do.call(loadModelWrapper, params),
          "zip" = do.call(loadZipWrapper, params),
          "list" = do.call(loadListWrapper, params)) %>%
@@ -37,7 +36,6 @@ loadImport <- function(importType, params, expectedFileInZip) {
                                expectedFileInZip = expectedFileInZip))
   }
 
-  # default (importType == "data"):
   res
 }
 
@@ -58,20 +56,12 @@ resetValues <- function(values, includeData = TRUE) {
 
 #' Select Import params
 #'
-#' @param params (list) named list of parameters required to import data or a model
-#' @inheritParams importDataServer
+#' @param params (list) named list of parameters required to import a model, zip, or list
+#' @inheritParams importServer
 #'
 #' @return (list) named list of parameters required for the particular importType
 filterParams <- function(params, importType) {
   switch(importType,
-         "data" = list(values = params$values,
-                       filepath = params$dataSource$file,
-                       type = params$inputFileType[["fileType-type"]],
-                       sep = params$inputFileType[["fileType-colSep"]],
-                       dec = params$inputFileType[["fileType-decSep"]],
-                       sheetId = as.numeric(params$inputFileType[["fileType-sheet"]]),
-                       withRownames = params$customNames$withRownames,
-                       withColnames = params$customNames$withColnames),
          "model" = list(filepath = params$dataSource$file,
                         subFolder = params$subFolder,
                         rPackageName = params$rPackageName,
