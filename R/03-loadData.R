@@ -20,6 +20,7 @@ loadDataWrapper <- function(values,
                             withRownames,
                             withColnames,
                             sheetId) {
+  values <- values %>% resetValues()
   if (is.null(filepath)) return(values)
 
   df <- tryCatch(
