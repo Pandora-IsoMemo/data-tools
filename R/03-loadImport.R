@@ -62,8 +62,7 @@ resetValues <- function(values, includeData = TRUE) {
 #' @inheritParams importDataServer
 #'
 #' @return (list) named list of parameters required for the particular importType
-filterParams <- function(params,
-                               importType) {
+filterParams <- function(params, importType) {
   switch(importType,
          "data" = list(values = params$values,
                        filepath = params$dataSource$file,

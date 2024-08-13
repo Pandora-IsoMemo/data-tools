@@ -25,7 +25,6 @@
 #' @inheritParams importDataServer
 #' @inheritParams importOptions
 configureDataUI <- function(id,
-                         importType,
                          batch,
                          outputAsMatrix,
                          isLink = FALSE,
@@ -43,7 +42,7 @@ configureDataUI <- function(id,
                                 defaultFileTypes = defaultFileTypes,
                                 userFileTypes = userFileTypes)
              else NULL,
-             if (importType == "data" && !isLink) {
+             if (!isLink) { # importType is now always "data" here
                ## data: check logic for first/second column ----
                checkboxInput(
                  ns("withRownames"),
@@ -63,7 +62,7 @@ configureDataUI <- function(id,
              customHelpText),
       column(6, importMessageUI(ns("importMessage")))
     ),
-    if (importType == "data" && !isLink)
+    if (!isLink) # importType is now always "data" here
       div(
         tags$hr(),
         previewDataUI(ns("previewDat"), title = "Preview data"),
@@ -100,18 +99,11 @@ configureDataUI <- function(id,
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
 #' @inheritParams importDataServer
-#' @inheritParams uploadModelServer
 configureDataServer <- function(id,
-                                importType = "data",
                                 mergeList,
                                 customNames,
                                 dataSource,
-                                subFolder = NULL,
-                                ignoreWarnings = FALSE,
-                                rPackageName = "",
-                                onlySettings = FALSE,
-                                fileExtension = "zip",
-                                expectedFileInZip = c()
+                                ignoreWarnings = FALSE
 ) {
   moduleServer(id,
                function(input, output, session) {
@@ -148,18 +140,16 @@ configureDataServer <- function(id,
                      req(dataSource$type != "dataLink")
                      logDebug("Updating values$dataImport")
 
-                     values <- loadImport(
-                       importType = importType,
-                       expectedFileInZip = expectedFileInZip,
-                       params = list(values = values,
-                                     dataSource = dataSource,
-                                     inputFileType = reactiveValuesToList(
-                                       input)[grepl("fileType", names(input))],
-                                     customNames = customNames,
-                                     subFolder = subFolder,
-                                     rPackageName = rPackageName,
-                                     onlySettings = onlySettings,
-                                     fileExtension = fileExtension)
+                     # importType is now always "data" here
+                     values <- loadDataWrapper(
+                       values = values,
+                       filepath = dataSource[["file"]],
+                       type = input[["fileType-type"]],
+                       sep = input[["fileType-colSep"]],
+                       dec = input[["fileType-decSep"]],
+                       sheetId = as.numeric(input[["fileType-sheet"]]),
+                       withRownames = customNames$withRownames,
+                       withColnames = customNames$withColnames
                      ) %>%
                        withProgress(value = 0.75,
                                     message = sprintf("Importing '%s' ...", dataSource[["filename"]]))
@@ -169,7 +159,6 @@ configureDataServer <- function(id,
 
                  observe({
                    logDebug("Enable/Disable keepData button")
-                   if (importType == "data") {
                      if (length(values$dataImport) == 0 ||
                          isNotValid(values$errors, values$warnings, ignoreWarnings) ||
                          dataSource$type == "dataLink") {
@@ -182,11 +171,9 @@ configureDataServer <- function(id,
                          "Data import successful"
                        values$preview <- values$dataImport
                      }
-                   }
                  }) %>%
                    bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
 
-                 if (importType == "data") {
                    previewDataServer("previewDat", dat = reactive(values$preview))
 
                    ## button keep data ----
@@ -256,7 +243,6 @@ configureDataServer <- function(id,
                      }
                    }) %>%
                      bindEvent(newDataForMergeList())
-                 }
 
                  values
                })

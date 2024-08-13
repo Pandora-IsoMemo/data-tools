@@ -20,6 +20,8 @@ loadDataWrapper <- function(values,
                             withRownames,
                             withColnames,
                             sheetId) {
+  if (is.null(filepath)) return(values)
+
   df <- tryCatch(
     Pandora::loadData(
       path = filepath,

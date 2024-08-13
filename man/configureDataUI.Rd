@@ -6,7 +6,6 @@
 \usage{
 configureDataUI(
   id,
-  importType,
   batch,
   outputAsMatrix,
   isLink = FALSE,
@@ -17,12 +16,6 @@ configureDataUI(
 }
 \arguments{
 \item{id}{id of module}
-
-\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
-ImportType == "model" expects a zip file containing a model. The file will be unzipped,
-the model object extracted, and checked if it is valid for the app.
-ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
-and the path to the zip file will be returned.}
 
 \item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
 

@@ -128,21 +128,29 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
-                   configureDataUI(
-                     ns("dataSelector"),
-                     batch = batch,
-                     outputAsMatrix = outputAsMatrix,
-                     importType = importType,
-                     isLink = ((importType %in% c("data", "list") &&
-                                  input[["fileSource-source"]] == "remoteModel") ||
-                                 (input[["fileSource-source"]] == "file" &&
-                                    !is.null(input[["fileSource-dataOrLink"]]) &&
-                                    input[["fileSource-dataOrLink"]] == "dataLink")),
-                     customHelpText = options[["customHelpText"]],
-                     defaultFileTypes = ckanFileTypes,
-                     userFileTypes = if (input[["fileSource-source"]] == "ckan")
-                       input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
-                   )
+                   if (importType == "data") {
+                     configureDataUI(
+                       ns("dataSelector"),
+                       batch = batch,
+                       outputAsMatrix = outputAsMatrix,
+                       isLink = ((input[["fileSource-source"]] == "remoteModel") || # remote (github) data
+                                   (input[["fileSource-source"]] == "file" && # local link
+                                      !is.null(input[["fileSource-dataOrLink"]]) &&
+                                      input[["fileSource-dataOrLink"]] == "dataLink")),
+                       customHelpText = options[["customHelpText"]],
+                       defaultFileTypes = ckanFileTypes,
+                       userFileTypes = if (input[["fileSource-source"]] == "ckan")
+                         input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                     )
+                   } else {
+                     configureFileUI(
+                       ns("dataSelector"),
+                       customHelpText = options[["customHelpText"]],
+                       defaultFileTypes = ckanFileTypes,
+                       userFileTypes = if (input[["fileSource-source"]] == "ckan")
+                         input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                     )
+                   }
                  })
 
                  observeEvent(input$openPopup, {
@@ -197,21 +205,26 @@ importDataServer <- function(id,
                    ckanFileTypes = ckanFileTypes
                  )
 
-                 values <- configureDataServer(
-                   "dataSelector",
-                   importType = importType,
-                   ignoreWarnings = ignoreWarnings,
-                   dataSource = dataSource,
-                   # parameters required to load data
-                   mergeList = mergeList,
-                   customNames = customNames,
-                   # parameters required to load a model
-                   subFolder = subFolder,
-                   rPackageName = options[["rPackageName"]],
-                   onlySettings = onlySettings,
-                   fileExtension = fileExtension,
-                   expectedFileInZip = expectedFileInZip
-                 )
+                 if (importType == "data") {
+                   values <- configureDataServer(
+                     "dataSelector",
+                     ignoreWarnings = ignoreWarnings,
+                     dataSource = dataSource,
+                     mergeList = mergeList,
+                     customNames = customNames
+                   )
+                 } else {
+                   values <- configureFileServer(
+                     "dataSelector",
+                     importType = importType,
+                     dataSource = dataSource,
+                     subFolder = subFolder,
+                     rPackageName = options[["rPackageName"]],
+                     onlySettings = onlySettings,
+                     fileExtension = fileExtension,
+                     expectedFileInZip = expectedFileInZip
+                   )
+                 }
 
                  observeEvent(input$tabImport, {
                    logDebug("Updating input$tabImport")

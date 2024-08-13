@@ -6,26 +6,14 @@
 \usage{
 configureDataServer(
   id,
-  importType = "data",
   mergeList,
   customNames,
   dataSource,
-  subFolder = NULL,
-  ignoreWarnings = FALSE,
-  rPackageName = "",
-  onlySettings = FALSE,
-  fileExtension = "zip",
-  expectedFileInZip = c()
+  ignoreWarnings = FALSE
 )
 }
 \arguments{
 \item{id}{id of module}
-
-\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
-ImportType == "model" expects a zip file containing a model. The file will be unzipped,
-the model object extracted, and checked if it is valid for the app.
-ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
-and the path to the zip file will be returned.}
 
 \item{mergeList}{(reactiveVal) list of data imports submitted for data processing via buttons
 'Create Query with data' or 'Prepare / Merge data'}
@@ -34,22 +22,7 @@ and the path to the zip file will be returned.}
 
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
-\item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
-This parameter is ignored if importType == "data"}
-
 \item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
-
-\item{rPackageName}{(character) DEPRECATED. Instead, please use
-\code{options = importOptions(rPackageName = <your package>)}.}
-
-\item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.
-This parameter is ignored if importType == "data"}
-
-\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
-
-\item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
-File names that must be contained in the zip upload.}
 }
 \description{
 Server function of the module
