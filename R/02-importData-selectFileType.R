@@ -4,7 +4,7 @@
 #'
 #' UI of the module
 #'
-#' @inheritParams selectDataUI
+#' @inheritParams configureDataUI
 selectFileTypeUI <- function(id,
                              defaultFileTypes = config()[["dataFileTypes"]],
                              userFileTypes = c()) {
@@ -54,7 +54,7 @@ selectFileTypeUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-#' @inheritParams selectDataServer
+#' @inheritParams configureFileServer
 selectFileTypeServer <- function(id, dataSource) {
   moduleServer(id,
                function(input, output, session) {

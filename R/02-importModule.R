@@ -66,16 +66,15 @@ importServer <- function(id,
 
     internetCon <- reactiveVal(FALSE)
 
-    output$selectDataDialog <- renderUI({
-      selectDataUI(
+    output$configureFileDialog <- renderUI({
+      configureFileUI(
         ns("dataSelector"),
-        batch = FALSE,
-        outputAsMatrix = FALSE,
-        importType = importType,
-        isLink = FALSE,
         customHelpText = options[["customHelpText"]],
         defaultFileTypes = ckanFileTypes,
-        userFileTypes = input[["fileSource-resourceFilter-ckanResourceTypes"]]
+        userFileTypes = if (input[["fileSource-source"]] == "ckan")
+          input[["fileSource-resourceFilter-ckanResourceTypes"]]
+        else
+          ckanFileTypes
       )
     })
 
@@ -84,15 +83,36 @@ importServer <- function(id,
 
       internetCon(has_internet())
       showModal(
-        importDialog(
-          ns = ns,
-          title = title,
-          ckanFileTypes = ckanFileTypes,
-          defaultSource = ifelse(internetCon(), defaultSource, "file"),
-          importType = importType,
-          fileExtension = fileExtension,
-          isInternet = internetCon(),
-          options = options
+        modalDialog(
+          shinyjs::useShinyjs(),
+          title = title %>% setImportTitle(
+            importType = importType,
+            version = packageVersion("DataTools")
+          ),
+          style = 'height: 800px',
+          size = "l",
+          footer = tagList(fluidRow(
+            column(4, align = "left", style = "margin-top: -1em;", tags$br()),
+            column(
+              8,
+              align = "right",
+              actionButton(ns("accept"), "Accept"),
+              actionButton(ns("cancel"), "Cancel")
+            )
+          )),
+          tagList(
+            tags$br(),
+            selectSourceUI(
+              ns("fileSource"),
+              defaultSource = ifelse(internetCon(), defaultSource, "file"),
+              ckanFileTypes = ckanFileTypes,
+              importType = importType,
+              isInternet = internetCon(),
+              fileExtension = fileExtension
+            ),
+            # rendered "configureFileUI" not only updated if "openPopup" is clicked as the modalDialog is
+            uiOutput(ns("configureFileDialog"))
+          )
         )
       )
 
@@ -115,20 +135,10 @@ importServer <- function(id,
       ckanFileTypes = ckanFileTypes
     )
 
-    values <- selectDataServer(
+    values <- configureFileServer(
       "dataSelector",
       importType = importType,
-      ignoreWarnings = ignoreWarnings,
       dataSource = dataSource,
-      # parameters required to load data
-      mergeList = reactiveVal(list()),
-      customNames = reactiveValues(
-        withRownames = FALSE,
-        rownames = NULL,
-        withColnames = FALSE,
-        colnames = NULL
-      ),
-      # parameters required to load a model or zip
       subFolder = subFolder,
       rPackageName = options[["rPackageName"]],
       onlySettings = onlySettings,
@@ -138,6 +148,7 @@ importServer <- function(id,
 
     ## button cancel ----
     observe({
+      logDebug("Cancel import")
       removeModal()
     }) %>%
       bindEvent(input$cancel)
@@ -166,11 +177,9 @@ importServer <- function(id,
       removeOpenGptCon()
 
       req(values$dataImport)
-
       res <- values$dataImport
 
-      values <- values %>%
-        resetValues()
+      values <- values %>% resetValues()
       values$data[[values$fileName]] <- res
     }) %>%
       bindEvent(input$accept)
@@ -180,46 +189,6 @@ importServer <- function(id,
     reactive(values$data)
   })
 }
-
-
-# import model dialog UI ----
-importDialog <-
-  function(ns,
-           title,
-           ckanFileTypes,
-           defaultSource = "ckan",
-           importType = "model",
-           fileExtension = "zip",
-           isInternet = FALSE,
-           options = importOptions()) {
-    modalDialog(
-      shinyjs::useShinyjs(),
-      title = title %>% setImportTitle(importType = importType, version = packageVersion("DataTools")),
-      style = 'height: 800px',
-      size = "l",
-      footer = tagList(fluidRow(
-        column(4, align = "left", style = "margin-top: -1em;", tags$br()),
-        column(
-          8,
-          align = "right",
-          actionButton(ns("accept"), "Accept"),
-          actionButton(ns("cancel"), "Cancel")
-        )
-      )),
-      tagList(
-        tags$br(),
-        selectSourceUI(
-          ns("fileSource"),
-          defaultSource = defaultSource,
-          ckanFileTypes = ckanFileTypes,
-          importType = importType,
-          isInternet = isInternet,
-          fileExtension = fileExtension
-        ),
-        uiOutput(ns("selectDataDialog"))
-      )
-    )
-  }
 
 #' Import title
 #'

@@ -1,6 +1,6 @@
 #' Get Data Source
 #'
-#' @inheritParams selectDataServer
+#' @inheritParams configureFileServer
 #' @param input (reactiveValues)
 #' @param type (character) source of import, one of "ckan", "file", "url", "remoteModel".
 #'  Possible sources for data are: "ckan", "file", "url".
@@ -36,7 +36,7 @@ getDataSource <- function(dataSource = reactiveValues(file = NULL,
 
 #' Get Source Type
 #'
-#' @inheritParams selectDataServer
+#' @inheritParams configureFileServer
 #' @param importType (character) what kind of import is expected: either "data", "model" or "zip"
 #' @param source (character) selected option to load data from: either "ckan", "file", "url" or "remoteModel"
 #' @param inputDataOrLink (character) either "fullData" or "dataLink" option

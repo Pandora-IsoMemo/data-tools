@@ -70,7 +70,7 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList, downl
 
 #' Filter Unprocessed
 #'
-#' @inheritParams selectDataServer
+#' @inheritParams configureDataServer
 filterUnprocessed <- function(mergeList) {
   if (length(mergeList) == 0) return(mergeList)
 
@@ -120,10 +120,11 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 #' @param input input object from server function
 #' @param output output object from server function
 #' @param session session from server function
-#' @param parentParams (list) parentParams
-#' @param mergeList (reactiveVal) list of data imports
-#' @inheritParams selectDataServer
-observeUploadDataLink <- function(id, input, output, session, dataSource, parentParams, mergeList) {
+#' @inheritParams configureDataServer
+#' @inheritParams selectSourceUI
+#' @inheritParams selectSourceServer
+observeUploadDataLink <- function(id, input, output, session, isInternet, dataSource, customNames,
+                                  mergeList) {
   dataLinkUpload <- reactiveValues(
     import = list(),
     load = 0
@@ -149,7 +150,7 @@ observeUploadDataLink <- function(id, input, output, session, dataSource, parent
   observe({
     req(length(dataLinkUpload$import) > 0)
     logDebug("linkToData: observe import")
-    req(parentParams$isInternet())
+    req(isInternet())
 
     # update user inputs ----
     logDebug("linkToData: update user inputs")
@@ -185,7 +186,7 @@ observeUploadDataLink <- function(id, input, output, session, dataSource, parent
 
       values <- loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
                                  loadedFileInputs = loadedFileInputs,
-                                 parentParams = parentParams)
+                                 customNames = customNames)
 
       req(values$dataImport)
       newData <- list(data = values$dataImport %>%
@@ -223,7 +224,7 @@ nmLastInputs <- function() "lastSelectDataInputs"
 #' @param values (reactiveValues)
 #' @param loadedSourceInputs (list) user inputs from the dataLink file specifying the source
 #' @param loadedFileInputs (list) user inputs from the dataLink file specifying the file
-#' @param parentParams (list) list of parameters from parent module
+#' @inheritParams configureDataServer
 loadFileFromLink <- function(values = reactiveValues(warnings = list(),
                                                      errors = list(),
                                                      fileName = NULL,
@@ -233,7 +234,7 @@ loadFileFromLink <- function(values = reactiveValues(warnings = list(),
                                                      data = list()),
                              loadedSourceInputs,
                              loadedFileInputs,
-                             parentParams) {
+                             customNames) {
   loadedSourceInputs <- loadedSourceInputs %>%
     removeNamespacePattern(pattern = c("dataSelector")) %>%
     removeNamespacePattern(pattern = c("fileSource"))
@@ -252,17 +253,15 @@ loadFileFromLink <- function(values = reactiveValues(warnings = list(),
                   inputDataOrLink = "fullData")
 
   # load data
-  values <- loadImport(
-    importType = "data",
-    expectedFileInZip = parentParams$expectedFileInZip,
-    params = list(values = values,
-                  dataSource = dataSource,
-                  inputFileType = loadedFileInputs,
-                  customNames = parentParams$customNames,
-                  subFolder = parentParams$subFolder,
-                  rPackageName = parentParams$rPackageName,
-                  onlySettings = parentParams$onlySettings,
-                  fileExtension = parentParams$fileExtension)
+  values <- loadDataWrapper(
+    values = values,
+    filepath = dataSource[["file"]],
+    type = loadedFileInputs[["fileType-type"]],
+    sep = loadedFileInputs[["fileType-colSep"]],
+    dec = loadedFileInputs[["fileType-decSep"]],
+    sheetId = as.numeric(loadedFileInputs[["fileType-sheet"]]),
+    withRownames = customNames$withRownames,
+    withColnames = customNames$withColnames
   ) %>%
     withProgress(value = 0.75,
                  message = sprintf("Importing '%s' from link ...", dataSource[["filename"]]))

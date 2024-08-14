@@ -9,8 +9,9 @@ observeUploadDataLink(
   input,
   output,
   session,
+  isInternet,
   dataSource,
-  parentParams,
+  customNames,
   mergeList
 )
 }
@@ -23,11 +24,15 @@ observeUploadDataLink(
 
 \item{session}{session from server function}
 
+\item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
+ignored if \code{type = "file"} or \code{type = "remoteModel"}}
+
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
-\item{parentParams}{(list) parentParams}
+\item{customNames}{settings for custom column and row names}
 
-\item{mergeList}{(reactiveVal) list of data imports}
+\item{mergeList}{(reactiveVal) list of data imports submitted for data processing via buttons
+'Create Query with data' or 'Prepare / Merge data'}
 }
 \description{
 Observe Upload of a link to import data

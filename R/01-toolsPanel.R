@@ -21,14 +21,17 @@ toolsImportUI <- function(id) {
       importDataUI(ns("batchData"), "Import Batch Data"),
       tags$br(),
       tags$br(),
-      importDataUI(ns("model"), "Import Model")
+      importDataUI(ns("model"), "Import Model"),
+      tags$br(),
+      tags$br(),
+      importUI(ns("newModel"), "Import Model (new)")
     ),
     mainPanel(
       tags$h2("Json Import"),
       textOutput(ns("itemList")),
       tags$h2("Data Import"),
       selectInput(ns("dataSel"), "Select which Import to display" ,
-                  choices = c("CKAN Data", "Batch Data", "Model Data")),
+                  choices = c("CKAN Data", "Batch Data", "Model Data", "Model Data (new)")),
       DT::dataTableOutput(ns("importedDataTable"))
     )
   )
@@ -89,12 +92,23 @@ toolsImportServer <- function(id) {
                    options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
+                 importedModelNew <- importServer(
+                   "newModel",
+                   ckanFileTypes = config()[["modelFileTypes"]],
+                   ignoreWarnings = TRUE,
+                   defaultSource = config()[["defaultSource"]],
+                   importType = "model",
+                   fileExtension = config()[["fileExtension"]],
+                   options = importOptions(rPackageName = config()[["rPackageName"]])
+                 )
+
                  dataOut <- reactiveVal(NULL)
 
                  observe({
                    req(length(importedDataCKAN()) > 0 ||
                          length(importedBatchData()) > 0 ||
-                         length(importedModel()) > 0)
+                         length(importedModel()) > 0 ||
+                         length(importedModelNew()) > 0)
                    logDebug("Updating dataOut()")
                    dataOut(NULL)
 
@@ -109,6 +123,10 @@ toolsImportServer <- function(id) {
                    if (input$dataSel == "Model Data") {
                      req(length(importedModel()) > 0)
                      dataOut(importedModel()[[1]][["data"]])
+                   }
+                   if (input$dataSel == "Model Data (new)") {
+                     req(length(importedModelNew()) > 0)
+                     dataOut(importedModelNew()[[1]][["data"]])
                    }
                  })
 

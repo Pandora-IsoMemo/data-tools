@@ -118,7 +118,7 @@ selectSourceUI <- function(id,
 #' @param id id of module
 #' @param openPopupReset (reactive) TRUE if popup is (re-)opened
 #' @param internetCon (reactive) TRUE if there is an internet connection
-#' @inheritParams selectDataServer
+#' @inheritParams configureFileServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
 selectSourceServer <- function(id,
@@ -155,7 +155,7 @@ selectSourceServer <- function(id,
                      updateTextInput(session, "url", placeholder = "No internet connection ...")
                      shinyjs::disable(ns("loadUrl"), asis = TRUE)
                    } else {
-                     shinyjs::enable(ns("dataOrLink"), asis = TRUE)
+                     if (importType == "data") shinyjs::enable(ns("dataOrLink"), asis = TRUE)
                      ckanGroupList <- callAPI(action = "group_list", all_fields = "true")
                      ckanNetworks(ckanGroupList)
                      ckanPackageList <- callAPI(action = "current_package_list_with_resources",

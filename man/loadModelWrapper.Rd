@@ -5,15 +5,22 @@
 \title{Load Model Wrapper}
 \usage{
 loadModelWrapper(
+  values,
   filepath,
+  filename,
   subFolder,
   rPackageName,
   onlySettings,
-  fileExtension = "zip"
+  fileExtension = "zip",
+  ...
 )
 }
 \arguments{
+\item{values}{(list) list with import specifications}
+
 \item{filepath}{(character) path to the model file}
+
+\item{filename}{(character) name of the model file}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 
@@ -26,6 +33,8 @@ from the R package where \code{importDataServer} was called. This parameter is i
 
 \item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
 "bpred", "bmsc"}
+
+\item{...}{parameters for other wrappers}
 }
 \description{
 Wrapper function to load a model from a zip file. File extension may differ from app to app, but

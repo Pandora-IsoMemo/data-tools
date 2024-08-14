@@ -4,15 +4,30 @@
 \alias{loadZipWrapper}
 \title{Load Zip Wrapper}
 \usage{
-loadZipWrapper(filepath, fileExtension = "zip")
+loadZipWrapper(
+  values,
+  filepath,
+  filename,
+  fileExtension = "zip",
+  expectedFileInZip,
+  ...
+)
 }
 \arguments{
-\item{filepath}{(character) path to the model file}
+\item{values}{(list) list with import specifications}
+
+\item{filepath}{(character) url or path}
+
+\item{filename}{(character) name of the model file}
 
 \item{fileExtension}{(character) (optional) app specific file extension, e.g. "resources",
 "bpred", "bmsc"}
+
+\item{expectedFileInZip}{(character) expected files in the zip file}
+
+\item{...}{parameters for other wrappers}
 }
 \description{
 Wrapper function to load a zip file. This function does not unzip the file, but checks if the
-file is a zip file and returns the path to the file.
+file is a valid zip file and returns the path to the unzipped file.
 }

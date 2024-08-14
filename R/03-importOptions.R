@@ -43,3 +43,19 @@ validateImportOptions <- function(options, rPackageName = "") {
 
   options
 }
+
+#' Get Github Mapping
+#'
+#' Maps the R package name to the respective Github repository
+#'
+#' @param rPackage (character) name of the R package (as in the Description file), must be empty or
+#'  specified in the config file of the package DataTools
+getGithubMapping <- function(rPackage = "") {
+  if (rPackage == "") return("")
+
+  if (!(rPackage %in% names(config()$githubMapping))) {
+    stop("No Github mapping found for package '", rPackage, "'. Please add it to the config file of the package DataTools.")
+  }
+
+  config()$githubMapping[[rPackage]]
+}
