@@ -273,16 +273,10 @@ importDataServer <- function(id,
 
                  valuesFromDataLink <-
                    observeUploadDataLink(id, input = input, output = output, session = session,
+                                         isInternet = internetCon,
                                          dataSource = dataSource,
-                                         parentParams = list(
-                                           isInternet = internetCon,
-                                           customNames = customNames,
-                                           subFolder = subFolder,
-                                           rPackageName = options[["rPackageName"]],
-                                           onlySettings = onlySettings,
-                                           fileExtension = fileExtension,
-                                           expectedFileInZip = expectedFileInZip),
-                                         mergeList
+                                         customNames = customNames,
+                                         mergeList = mergeList
                    )
 
                  ## disable button accept ----

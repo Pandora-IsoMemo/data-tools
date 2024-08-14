@@ -4,7 +4,7 @@
 \alias{loadImport}
 \title{Load Import}
 \usage{
-loadImport(importType, params, expectedFileInZip)
+loadImport(importType, params)
 }
 \arguments{
 \item{importType}{(character) type of import, either "model", "zip" or "list".
@@ -14,9 +14,6 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file
 and the path to the zip file will be returned.}
 
 \item{params}{(list) named list of parameters required to import data or a model}
-
-\item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
-File names that must be contained in the zip upload.}
 }
 \description{
 Wrapper to load "model", "zip" or "list" file.

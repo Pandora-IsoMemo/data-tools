@@ -10,14 +10,23 @@
 #' It returns a list with the model object, the data object, the inputs object and gives a message
 #' if the model was successfully loaded.
 #'
+#' @param values (list) list with import specifications
 #' @param filepath (character) path to the model file
+#' @param filename (character) name of the model file
+#' @param ... parameters for other wrappers
 #' @inheritParams uploadModelServer
-loadModelWrapper <- function(filepath,
+loadModelWrapper <- function(values,
+                             filepath,
+                             filename,
                              subFolder,
                              rPackageName,
                              onlySettings,
-                             fileExtension = "zip") {
-  filepath %>%
+                             fileExtension = "zip",
+                             ...) {
+  if (is.null(filename)) return(values)
+
+  # unzip model file
+  res <- filepath %>%
     checkExtension(fileExtension = fileExtension) %>%
     getZip() %>%
     loadModel(subFolder = subFolder,
@@ -25,6 +34,21 @@ loadModelWrapper <- function(filepath,
               onlySettings = onlySettings,
               fileExtension = fileExtension) %>%
     shinyTryCatch(errorTitle = "Unzipping failed.")
+
+  # forward messages
+  values$fileImportSuccess <- res$message[res$messageType == "success"]
+  values$warnings <- list(load = res$message[res$messageType == "warning"])
+  values$errors <- list(load = res$message[res$messageType == "error"])
+
+  if (!is.null(res)) {
+    # select import values
+    values$dataImport <- res[c("data", "inputs", "model", "notes")]
+  }
+
+  values$fileName <- filename
+
+  # return reactiveVal list
+  values
 }
 
 #' Get Zip

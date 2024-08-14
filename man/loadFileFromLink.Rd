@@ -9,7 +9,7 @@ loadFileFromLink(
     fileImportSuccess = NULL, dataImport = NULL, preview = NULL, data = list()),
   loadedSourceInputs,
   loadedFileInputs,
-  parentParams
+  customNames
 )
 }
 \arguments{
@@ -19,7 +19,7 @@ loadFileFromLink(
 
 \item{loadedFileInputs}{(list) user inputs from the dataLink file specifying the file}
 
-\item{parentParams}{(list) list of parameters from parent module}
+\item{customNames}{settings for custom column and row names}
 }
 \description{
 Load a file a link points to

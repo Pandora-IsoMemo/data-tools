@@ -4,14 +4,18 @@
 \alias{loadListWrapper}
 \title{Load List Wrapper}
 \usage{
-loadListWrapper(values, filepath, type = "json")
+loadListWrapper(values, filepath, filename, fileExtension = "json", ...)
 }
 \arguments{
 \item{values}{(list) list with import specifications}
 
 \item{filepath}{(character) url or path}
 
-\item{type}{(character) file type input}
+\item{filename}{(character) name of the model file}
+
+\item{fileExtension}{(character) file type input}
+
+\item{...}{parameters for other wrapper functions}
 }
 \description{
 Wrapper to load a list from a `"json"` file.

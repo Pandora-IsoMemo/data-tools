@@ -10,8 +10,8 @@ dataFileTypes:
   - "odt"
   - "txt"
 modelFileTypes:
-  - "zip"
   - "datatools"
+  - "zip"
 githubRepo: "data-tools"        # for import of models
 fileExtension: "datatools"      # for download of models
 rPackageName: "DataTools"       # for download and import of models

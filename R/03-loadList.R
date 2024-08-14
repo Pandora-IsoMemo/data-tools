@@ -6,13 +6,19 @@
 #'
 #' @param values (list) list with import specifications
 #' @param filepath (character) url or path
-#' @param type (character) file type input
+#' @param filename (character) name of the model file
+#' @param fileExtension (character) file type input
+#' @param ... parameters for other wrapper functions
 loadListWrapper <- function(values,
                             filepath,
-                            type = "json") {
+                            filename,
+                            fileExtension = "json",
+                            ...) {
+  if (is.null(filename)) return(values)
+
   res <- tryCatch(
     loadList(path = filepath,
-             type = type),
+             type = fileExtension),
     error = function(cond) {
       values$errors <-
         list(load = paste("Could not read in file:", cond$message))
@@ -29,7 +35,7 @@ loadListWrapper <- function(values,
   } else {
     ## Import technically successful
     values$dataImport <- as.list(res)
-    values$fileImportSuccess <- sprintf("'%s' import successful", type)
+    values$fileImportSuccess <- sprintf("'%s' import successful", fileExtension)
   }
 
   values$fileName <- filepath %>%

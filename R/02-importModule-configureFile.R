@@ -86,18 +86,19 @@ configureFileServer <- function(id,
       req(dataSource$type != "dataLink")
       logDebug("Updating values$dataImport")
 
+      values <- values %>% resetValues()
+
       values <- loadImport(
         importType = importType,
-        expectedFileInZip = expectedFileInZip,
         params = list(
           values = values,
-          dataSource = dataSource,
-          inputFileType = reactiveValuesToList(input)[grepl("fileType", names(input))],
-          customNames = customNames,
+          filepath = dataSource[["file"]],
+          filename = dataSource[["filename"]],
           subFolder = subFolder,
           rPackageName = rPackageName,
           onlySettings = onlySettings,
-          fileExtension = fileExtension
+          fileExtension = fileExtension,
+          expectedFileInZip = expectedFileInZip
         )
       ) %>%
         withProgress(value = 0.75,
