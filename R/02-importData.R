@@ -259,6 +259,7 @@ importDataServer <- function(id,
 
                  ## button cancel ----
                  observeEvent(input$cancel, {
+                   logDebug("Cancel import")
                    removeModal()
                  })
 

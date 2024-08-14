@@ -1,17 +1,3 @@
-# Note: The selectData module is too complex and will be simplified.
-# Currently, the module is used for import of data, models, zips, and lists. We split it into two
-# modules:
-# - configureData: for importing data (from .xlsx, .csv, ...) and lists (from .json)
-# - configureFile: for importing models (models are in essence .zip files), zips and lists (from .json)
-# This will make the code more readable and easier to maintain.
-# 1. Extract configureFile from the selectData module. <- Done
-# 2. Apply configureFile instead of the selectData module if importType is "model" or "zip" (or "list"?) <- Done
-# 3. Simplify the selectData module by removing the parts that are only relevant for importing
-#    models or zips. Only after 'importType' cannot be "model" or "zip" anymore. Separate helper
-#    functions and scripts respectively.
-# 4. Rename selectData to configureData. >- Done
-
-
 # Configure File Module ----
 
 #' Configure File UI

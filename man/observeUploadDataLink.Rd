@@ -24,6 +24,9 @@ observeUploadDataLink(
 
 \item{session}{session from server function}
 
+\item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
+ignored if \code{type = "file"} or \code{type = "remoteModel"}}
+
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{customNames}{settings for custom column and row names}

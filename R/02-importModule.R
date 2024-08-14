@@ -72,7 +72,9 @@ importServer <- function(id,
         customHelpText = options[["customHelpText"]],
         defaultFileTypes = ckanFileTypes,
         userFileTypes = if (input[["fileSource-source"]] == "ckan")
-          input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+          input[["fileSource-resourceFilter-ckanResourceTypes"]]
+        else
+          ckanFileTypes
       )
     })
 
@@ -80,31 +82,39 @@ importServer <- function(id,
       logDebug("Check internet and showModal import")
 
       internetCon(has_internet())
+      initSource <- ifelse(internetCon(), defaultSource, "file")
 
-      modalDialog(
-        shinyjs::useShinyjs(),
-        title = title %>% setImportTitle(importType = importType, version = packageVersion("DataTools")),
-        style = 'height: 800px',
-        size = "l",
-        footer = tagList(fluidRow(
-          column(4, align = "left", style = "margin-top: -1em;", tags$br()),
-          column(8,
-                 align = "right",
-                 actionButton(ns("accept"), "Accept"),
-                 actionButton(ns("cancel"), "Cancel"))
-        )),
-        tagList(
-          tags$br(),
-          selectSourceUI(
-            ns("fileSource"),
-            defaultSource = ifelse(internetCon(), defaultSource, "file"),
-            ckanFileTypes = ckanFileTypes,
+      showModal(
+        modalDialog(
+          shinyjs::useShinyjs(),
+          title = title %>% setImportTitle(
             importType = importType,
-            isInternet = internetCon(),
-            fileExtension = fileExtension
+            version = packageVersion("DataTools")
           ),
-          # rendered "configureFileUI" not only updated if "openPopup" is clicked as the modalDialog is
-          uiOutput(ns("configureFileDialog"))
+          style = 'height: 800px',
+          size = "l",
+          footer = tagList(fluidRow(
+            column(4, align = "left", style = "margin-top: -1em;", tags$br()),
+            column(
+              8,
+              align = "right",
+              actionButton(ns("accept"), "Accept"),
+              actionButton(ns("cancel"), "Cancel")
+            )
+          )),
+          tagList(
+            tags$br(),
+            selectSourceUI(
+              ns("fileSource"),
+              defaultSource = initSource,
+              ckanFileTypes = ckanFileTypes,
+              importType = importType,
+              isInternet = internetCon(),
+              fileExtension = fileExtension
+            ),
+            # rendered "configureFileUI" not only updated if "openPopup" is clicked as the modalDialog is
+            uiOutput(ns("configureFileDialog"))
+          )
         )
       )
 
@@ -140,6 +150,7 @@ importServer <- function(id,
 
     ## button cancel ----
     observe({
+      logDebug("Cancel import")
       removeModal()
     }) %>%
       bindEvent(input$cancel)

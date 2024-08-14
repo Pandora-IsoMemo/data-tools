@@ -121,6 +121,7 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 #' @param output output object from server function
 #' @param session session from server function
 #' @inheritParams configureDataServer
+#' @inheritParams selectSourceUI
 #' @inheritParams selectSourceServer
 observeUploadDataLink <- function(id, input, output, session, isInternet, dataSource, customNames,
                                   mergeList) {
