@@ -15,6 +15,10 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/checkLocalModelDir.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/checkNonNumericColumnsExceptFirst.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/checkWarningEmptyValues.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/configureDataServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/configureDataUI.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/configureFileServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/configureFileUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/cutAllLongStrings.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/cutStrings.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/deleteColumnsServer.html</loc></url>
@@ -33,11 +37,8 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extractObjectFromFile.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extractTableIds.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/fillIsoData.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/fillValuesFromModel.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/fillValuesFromZip.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceUI.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/filterParams.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/filterUnprocessed.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/formatColumnNames.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/formatTypeChoices.html</loc></url>
@@ -64,6 +65,8 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/has_internet.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importData.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importDataServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/importMessageServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/importMessageUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importOptions.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/incIndexOfName.html</loc></url>
@@ -106,8 +109,6 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/rgpt_authenticate.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/rgpt_single.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/rgpt_test_completion.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectDataServer.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectDataUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectFileTypeServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectFileTypeUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/selectSourceServer.html</loc></url>

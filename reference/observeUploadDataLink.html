@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.08.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.08.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,8 +43,9 @@
 <span>  <span class="va">input</span>,</span>
 <span>  <span class="va">output</span>,</span>
 <span>  <span class="va">session</span>,</span>
+<span>  <span class="va">isInternet</span>,</span>
 <span>  <span class="va">dataSource</span>,</span>
-<span>  <span class="va">parentParams</span>,</span>
+<span>  <span class="va">customNames</span>,</span>
 <span>  <span class="va">mergeList</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -69,16 +70,22 @@
 <dd><p>session from server function</p></dd>
 
 
+<dt id="arg-isinternet">isInternet<a class="anchor" aria-label="anchor" href="#arg-isinternet"></a></dt>
+<dd><p>(logical) set TRUE, if there is an internet connection. This parameter is
+ignored if <code>type = "file"</code> or <code>type = "remoteModel"</code></p></dd>
+
+
 <dt id="arg-datasource">dataSource<a class="anchor" aria-label="anchor" href="#arg-datasource"></a></dt>
 <dd><p>(reactiveValues) path, filename, type and input, output of <code><a href="selectSourceServer.html">selectSourceServer()</a></code></p></dd>
 
 
-<dt id="arg-parentparams">parentParams<a class="anchor" aria-label="anchor" href="#arg-parentparams"></a></dt>
-<dd><p>(list) parentParams</p></dd>
+<dt id="arg-customnames">customNames<a class="anchor" aria-label="anchor" href="#arg-customnames"></a></dt>
+<dd><p>settings for custom column and row names</p></dd>
 
 
 <dt id="arg-mergelist">mergeList<a class="anchor" aria-label="anchor" href="#arg-mergelist"></a></dt>
-<dd><p>(reactiveVal) list of data imports</p></dd>
+<dd><p>(reactiveVal) list of data imports submitted for data processing via buttons
+'Create Query with data' or 'Prepare / Merge data'</p></dd>
 
 </dl></div>
 
