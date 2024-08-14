@@ -82,8 +82,6 @@ importServer <- function(id,
       logDebug("Check internet and showModal import")
 
       internetCon(has_internet())
-      initSource <- ifelse(internetCon(), defaultSource, "file")
-
       showModal(
         modalDialog(
           shinyjs::useShinyjs(),
@@ -106,7 +104,7 @@ importServer <- function(id,
             tags$br(),
             selectSourceUI(
               ns("fileSource"),
-              defaultSource = initSource,
+              defaultSource = ifelse(internetCon(), defaultSource, "file"),
               ckanFileTypes = ckanFileTypes,
               importType = importType,
               isInternet = internetCon(),
