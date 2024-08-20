@@ -21,8 +21,6 @@ importOptions <- function(rPackageName = "",
 
 validateImportOptions <- function(options, rPackageName = "") {
   if (rPackageName != "") {
-    message("Parameter 'rPackageName' is deprecated. Please use the importOptions function instead to set the rPackageName, e.g. with: options = importOptions(rPackageName = <your package>).")
-
     # check new options param as long as we need param "rPackageName"
     if (options[["rPackageName"]] == "") {
       options[["rPackageName"]] <- rPackageName

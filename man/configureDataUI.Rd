@@ -17,10 +17,10 @@ configureDataUI(
 \arguments{
 \item{id}{id of module}
 
-\item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
+\item{batch}{(logical) use batch import.}
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
-e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
+e.g. for batch = TRUE in Resources.}
 
 \item{isLink}{(logical) if TRUE, the data source is a link}
 

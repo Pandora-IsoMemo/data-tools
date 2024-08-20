@@ -12,5 +12,6 @@ importDataUI(id, label = "Import Data")
 \item{label}{label of button}
 }
 \description{
-Displays a button which opens a import dialog when clicked
+Displays a button which opens an import dialog when clicked. Wrapper around
+\code{\link{importUI}} with default label "Import Data".
 }

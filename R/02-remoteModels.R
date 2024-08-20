@@ -61,13 +61,31 @@ remoteModelsServer <- function(id,
                                githubRepo,
                                pathToLocal = file.path(".", "predefinedModels"),
                                folderOnGithub = "/predefinedModels",
-                               fileExtension = "zip",
+                               fileExtension = "",
                                onlyLocalModels = reactive(FALSE),
                                resetSelected = reactive(FALSE),
                                reloadChoices = reactive(TRUE),
                                rPackageName = NULL,
                                rPackageVersion = NULL,
                                isInternet = reactive(TRUE)) {
+  if (fileExtension != "") {
+    deprecate_warn("24.03.0",
+                   "DataTools::remoteModelsServer(fileExtension)",
+                   details = c(x = "The argument will be ignored."))
+  }
+
+  if (!is.null(rPackageName)) {
+    deprecate_warn("24.03.0",
+                   "DataTools::remoteModelsServer(rPackageName)",
+                   details = c(x = "The argument will be ignored."))
+  }
+
+  if (!is.null(rPackageVersion)) {
+    deprecate_warn("24.03.0",
+                   "DataTools::remoteModelsServer(rPackageVersion)",
+                   details = c(x = "The argument will be ignored."))
+  }
+
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -75,11 +93,6 @@ remoteModelsServer <- function(id,
 
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
-
-                 if (!is.null(rPackageName))
-                   warning("Parameter 'rPackageName' is not in use anymore and will be removed soon.")
-                 if (!is.null(rPackageVersion))
-                   warning("Parameter 'rPackageVersion' is not in use anymore and will be removed soon.")
 
                  observe({
                    logDebug("Update remoteModelChoice")

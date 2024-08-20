@@ -11,15 +11,14 @@
 
 #' Data import module
 #'
-#' Displays a button which opens a import dialog when clicked
+#' Displays a button which opens an import dialog when clicked. Wrapper around
+#' \code{\link{importUI}} with default label "Import Data".
 #'
 #' @param id id of module
 #' @param label label of button
-#' @rdname importData
 #' @export
 importDataUI <- function(id, label = "Import Data") {
-  ns <- NS(id)
-  actionButton(ns("openPopup"), label)
+  importUI(id = id, label = label)
 }
 
 #' Server function for data import
@@ -33,26 +32,22 @@ importDataUI <- function(id, label = "Import Data") {
 #' `importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
 #'  for `importType = "list"`: c("json")
 #' @param ignoreWarnings (logical) TRUE to enable imports in case of warnings
-#' @param importType (character) type of import, either "data", "model", "zip" or "list".
+#' @param importType (character) DEPRECATED. type of import, either "data", "model", "zip" or "list".
 #'  ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 #'  the model object extracted, and checked if it is valid for the app.
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
 #'  and the path to the zip file will be returned.
-#' @param rowNames (reactive) use this for rownames of imported data. This parameter is ignored if
-#'  importType == "model"
-#' @param colNames (reactive) use this for colnames of imported data. This parameter is ignored if
-#'  importType == "model"
+#' @param rowNames (reactive) use this for rownames of imported data.
+#' @param colNames (reactive) use this for colnames of imported data.
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
 #'  of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
-#'   This parameter is ignored if importType == "model"
 #' @param customErrorChecks list of reactive(!) functions which will be executed after importing
 #' of data.
 #'   functions need to return TRUE if check is successful or a character with a warning otherwise.
-#'   This parameter is ignored if importType == "model"
-#' @param batch (logical) use batch import. This parameter is ignored if importType == "model"
+#' @param batch (logical) use batch import.
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
-#'  e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"
+#'  e.g. for batch = TRUE in Resources.
 #' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
 #'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
 #' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
@@ -60,7 +55,6 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
 #'  This parameter is ignored if importType == "data"
 #' @param mainFolder (character) DEPRECATED. folder containing all loadable .zip files.
-#'   This parameter is ignored if importType == "data"
 #' @param subFolder (character) (optional) subfolder containing loadable .zip files.
 #'  This parameter is ignored if importType == "data"
 #' @param rPackageName (character) DEPRECATED. Instead, please use
@@ -93,12 +87,38 @@ importDataServer <- function(id,
   defaultSource <- match.arg(defaultSource)
   importType <- match.arg(importType)
 
-  if (!is.null(mainFolder))
-    warning("Parameter 'mainFolder' is deprecated for 'importDataServer()' and will be ignored.")
+  # deprecate warnings ----
+  if (rPackageName != "") {
+    deprecate_warn(
+      "24.03.0",
+      "DataTools::importDataServer(rPackageName)",
+      with = "DataTools::importDataServer(options = 'importOptions(rPackageName)')",
+      details = sprintf("For example, importDataServer(options = importOptions(rPackageName = '%s')).", rPackageName)
+    )
+  }
+
+  if (!is.null(mainFolder)) {
+    deprecate_warn("24.03.0",
+                   "DataTools::importDataServer(mainFolder)",
+                   details = c(x = "The argument will be ignored."))
+  }
+
+  if (importType != "data") {
+    deprecate_warn(
+      "24.08.0",
+      "DataTools::importDataServer(importType)",
+      with = sprintf("DataTools::importServer(importType = '%s')", importType),
+      details = c(
+        "If importType != 'data', please use `importServer()` instead of `importDataServer()`.",
+        sprintf("For example, `importServer(importType = '%s')`.", importType)
+      )
+    )
+  }
 
   options <- options %>%
     validateImportOptions(rPackageName = rPackageName)
 
+  # module set up ----
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns

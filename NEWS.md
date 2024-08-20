@@ -1,3 +1,8 @@
+# DataTools 24.08.2
+
+## Updates
+- update 'deprecated' warnings for several deprecated arguments
+
 # DataTools 24.08.1
 
 ## Updates

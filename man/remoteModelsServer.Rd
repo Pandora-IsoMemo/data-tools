@@ -9,7 +9,7 @@ remoteModelsServer(
   githubRepo,
   pathToLocal = file.path(".", "predefinedModels"),
   folderOnGithub = "/predefinedModels",
-  fileExtension = "zip",
+  fileExtension = "",
   onlyLocalModels = reactive(FALSE),
   resetSelected = reactive(FALSE),
   reloadChoices = reactive(TRUE),

@@ -39,38 +39,33 @@ importDataServer(
 
 \item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
 
-\item{importType}{(character) type of import, either "data", "model", "zip" or "list".
+\item{importType}{(character) DEPRECATED. type of import, either "data", "model", "zip" or "list".
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
 and the path to the zip file will be returned.}
 
-\item{rowNames}{(reactive) use this for rownames of imported data. This parameter is ignored if
-importType == "model"}
+\item{rowNames}{(reactive) use this for rownames of imported data.}
 
-\item{colNames}{(reactive) use this for colnames of imported data. This parameter is ignored if
-importType == "model"}
+\item{colNames}{(reactive) use this for colnames of imported data.}
 
 \item{customWarningChecks}{list of reactive(!) functions which will be executed after importing
 of data.
- functions need to return TRUE if check is successful or a character with a warning otherwise.
- This parameter is ignored if importType == "model"}
+ functions need to return TRUE if check is successful or a character with a warning otherwise.}
 
 \item{customErrorChecks}{list of reactive(!) functions which will be executed after importing
 of data.
-  functions need to return TRUE if check is successful or a character with a warning otherwise.
-  This parameter is ignored if importType == "model"}
+  functions need to return TRUE if check is successful or a character with a warning otherwise.}
 
-\item{batch}{(logical) use batch import. This parameter is ignored if importType == "model"}
+\item{batch}{(logical) use batch import.}
 
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
-e.g. for batch = TRUE in Resources. This parameter is ignored if importType == "model"}
+e.g. for batch = TRUE in Resources.}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
 
-\item{mainFolder}{(character) DEPRECATED. folder containing all loadable .zip files.
-This parameter is ignored if importType == "data"}
+\item{mainFolder}{(character) DEPRECATED. folder containing all loadable .zip files.}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.
 This parameter is ignored if importType == "data"}
