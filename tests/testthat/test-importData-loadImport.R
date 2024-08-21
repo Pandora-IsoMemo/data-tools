@@ -7,7 +7,7 @@ test_that("Test loadModel()", {
     "ReSources" = "https://github.com/Pandora-IsoMemo/resources/raw/main/inst/app/predefinedModels/Brown_Bear_Data.zip",
     "BMSCApp" = "https://github.com/Pandora-IsoMemo/bmsc-app/raw/main/inst/app/predefinedModels/2024-04-24_test-model.bmsc",
     "OsteoBioR" = "https://github.com/Pandora-IsoMemo/osteo-bior/raw/main/inst/app/predefinedModels/2022-11-16_TEST-Inputs_OsteoBioR.zip",
-    "mpiBpred" = "https://github.com/Pandora-IsoMemo/bpred/raw/main/inst/app/predefinedModels/2020-04-15_18_59_33_bpred.zip",
+    "Bpred" = "https://github.com/Pandora-IsoMemo/bpred/raw/main/inst/app/predefinedModels/2024-04-16_16-42-39_test-model.bpred",
     "PlotR" = "https://github.com/Pandora-IsoMemo/plotr/raw/main/inst/app/predefinedModels/online_test_inputs.zip"
   )
 

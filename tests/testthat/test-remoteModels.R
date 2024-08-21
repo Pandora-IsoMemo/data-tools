@@ -9,7 +9,7 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
     "resources" = c("Black_Bear_Data.zip", "Brown_Bear_Data.zip", "Five_Sources_Data.zip", "Roman_Data.zip"),
     "bmsc-app" = c("2024-04-24_test-model.bmsc"),
     "osteo-bior" = c("2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip", "2022-11-16_TEST-Inputs_OsteoBioR.zip"),
-    "bpred" = c("2020-04-15_18_59_33_bpred.zip"),
+    "bpred" = c("2024-04-16_16-42-39_test-model.bpred"),
     "plotr" = c("online_test_inputs.zip", "online_test_model.zip")
   )
 
@@ -64,7 +64,7 @@ testthat::test_that("Test module remoteModels", {
     "resources" = "Black_Bear_Data.zip",
     "bmsc-app" = "2024-04-24_test-model.bmsc",
     "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip",
-    "bpred" = "2020-04-15_18_59_33_bpred.zip",
+    "bpred" = "2024-04-16_16-42-39_test-model.bpred",
     "plotr" = "online_test_model.zip"
   )
 

@@ -96,7 +96,7 @@ test_that("Test module selectSourceServer", {
                # Act
                session$setInputs(
                  source = "remoteModel",
-                 `remoteModels-remoteModelChoice` = "2020-04-15_18_59_33_bpred.zip",
+                 `remoteModels-remoteModelChoice` = "2024-04-16_16-42-39_test-model.bpred",
                  `remoteModels-loadRemoteModel` = 1
                )
 
