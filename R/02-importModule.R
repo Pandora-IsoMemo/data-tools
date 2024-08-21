@@ -13,7 +13,6 @@
 #'
 #' Displays a button which opens a import dialog when clicked
 #'
-#' @param id id of module
 #' @param label label of button
 #' @rdname importServer
 #'

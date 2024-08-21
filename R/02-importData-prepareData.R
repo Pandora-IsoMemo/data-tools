@@ -4,7 +4,7 @@
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname prepareDataServer
 prepareDataUI <- function(id) {
   ns <- NS(id)
 
@@ -132,7 +132,7 @@ prepareDataServer <- function(id, mergeList) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname renameColumnsServer
 renameColumnsUI <- function(id) {
   ns <- NS(id)
 
@@ -200,7 +200,7 @@ renameColumnsServer <- function(id, preparedData) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname deleteColumnsServer
 deleteColumnsUI <- function(id) {
   ns <- NS(id)
 
@@ -280,7 +280,7 @@ deleteColumnsServer <- function(id, preparedData) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname joinColumnsServer
 joinColumnsUI <- function(id) {
   ns <- NS(id)
 
@@ -372,7 +372,7 @@ joinColumnsServer <- function(id, preparedData) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname splitColumnsServer
 splitColumnsUI <- function(id) {
   ns <- NS(id)
 

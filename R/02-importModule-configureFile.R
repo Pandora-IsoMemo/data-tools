@@ -4,10 +4,10 @@
 #'
 #' UI of the module
 #'
-#' @param id id of module
 #' @param defaultFileTypes (character) default file types
 #' @param userFileTypes (character) user file types specified in "Pandora Platform" settings
 #' @inheritParams importOptions
+#' @rdname configureFileServer
 configureFileUI <- function(id,
                             customHelpText = importOptions()[["customHelpText"]],
                             defaultFileTypes = config()[["dataFileTypes"]],

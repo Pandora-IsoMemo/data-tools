@@ -4,8 +4,8 @@
 #'
 #' UI of the module
 #'
-#' @param id id of module
 #' @param title title
+#' @rdname previewDataServer
 #'
 #' @export
 previewDataUI <- function(id, title = "Preview data") {

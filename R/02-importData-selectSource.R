@@ -2,10 +2,9 @@
 #'
 #' UI of the module
 #'
-#' @param id id of module
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
-#' @inheritParams importDataServer
+#' @rdname selectSourceServer
 selectSourceUI <- function(id,
                            defaultSource,
                            ckanFileTypes,
@@ -506,8 +505,8 @@ filterCKANRepoUI <- function(id) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
 #' @inheritParams importDataServer
+#' @rdname filterCKANResourceServer
 filterCKANResourceUI <- function(id, ckanFileTypes) {
   ns <- NS(id)
 
@@ -578,7 +577,7 @@ filterCKANResourceServer <- function(id) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname loadCKANResourceServer
 loadCKANResourceUI <- function(id) {
   ns <- NS(id)
 

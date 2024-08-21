@@ -12,7 +12,7 @@ toolsImportUI <- function(id) {
     sidebarPanel(
       width = 2,
       style = "position:fixed; width:15%; max-width:350px; overflow-y:auto; height:88%",
-      importDataUI(ns("localJson"), "Import Data (json)"),
+      importUI(ns("localJson"), "Import Data (json)"),
       tags$br(),
       tags$br(),
       importDataUI(ns("ckanData"), "Import CKAN Data"),
@@ -21,7 +21,7 @@ toolsImportUI <- function(id) {
       importDataUI(ns("batchData"), "Import Batch Data"),
       tags$br(),
       tags$br(),
-      importDataUI(ns("model"), "Import Model"),
+      importUI(ns("model"), "Import Model"),
       tags$br(),
       tags$br(),
       importUI(ns("newModel"), "Import Model (new)")
@@ -46,10 +46,8 @@ toolsImportUI <- function(id) {
 toolsImportServer <- function(id) {
   moduleServer(id,
                function(input, output, session) {
-                 importedJson <- importDataServer(
+                 importedJson <- importServer(
                    "localJson",
-                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
-                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
                    ckanFileTypes = "json",
                    importType = "list",
                    ignoreWarnings = TRUE,

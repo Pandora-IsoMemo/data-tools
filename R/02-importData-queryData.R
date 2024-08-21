@@ -4,7 +4,7 @@
 #'
 #' UI of the query data module
 #'
-#' @param id id of module
+#' @rdname queryDataServer
 queryDataUI <- function(id) {
   ns <- NS(id)
 
@@ -266,7 +266,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 #'
 #' UI of the gpt module
 #'
-#' @param id id of module
+#' @rdname gptServer
 gptUI <- function(id) {
   ns <- NS(id)
 
