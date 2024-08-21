@@ -505,8 +505,8 @@ filterCKANRepoUI <- function(id) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
 #' @inheritParams importDataServer
+#' @rdname filterCKANResourceServer
 filterCKANResourceUI <- function(id, ckanFileTypes) {
   ns <- NS(id)
 
@@ -577,7 +577,7 @@ filterCKANResourceServer <- function(id) {
 #'
 #' UI of the module
 #'
-#' @param id id of module
+#' @rdname loadCKANResourceServer
 loadCKANResourceUI <- function(id) {
   ns <- NS(id)
 

@@ -4,12 +4,12 @@
 #'
 #' UI of the module
 #'
-#' @param id id of module
 #' @param isLink (logical) if TRUE, the data source is a link
 #' @param defaultFileTypes (character) default file types
 #' @param userFileTypes (character) user file types specified in "Pandora Platform" settings
 #' @inheritParams importDataServer
 #' @inheritParams importOptions
+#' @rdname configureDataServer
 configureDataUI <- function(id,
                          batch,
                          outputAsMatrix,

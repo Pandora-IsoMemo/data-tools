@@ -4,7 +4,7 @@
 #'
 #' UI of the merge settings module
 #'
-#' @param id id of module
+#' @rdname mergeSettingsServer
 mergeSettingsUI <- function(id) {
   ns <- NS(id)
 
