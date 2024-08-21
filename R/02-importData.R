@@ -14,8 +14,9 @@
 #' Displays a button which opens an import dialog when clicked. Wrapper around
 #' \code{\link{importUI}} with default label "Import Data".
 #'
-#' @param id id of module
 #' @param label label of button
+#' @rdname importDataServer
+#'
 #' @export
 importDataUI <- function(id, label = "Import Data") {
   importUI(id = id, label = label)
@@ -25,7 +26,7 @@ importDataUI <- function(id, label = "Import Data") {
 #'
 #' Backend for data import module
 #'
-#' @param id namespace id
+#' @param id id of module
 #' @param title title of import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan"). E.g. for

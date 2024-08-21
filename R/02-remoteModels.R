@@ -2,10 +2,11 @@
 #'
 #' Displays a select input to choose a remote model and a button to load it
 #'
-#' @param id id of module
 #' @param selectLabel label of select input
 #' @param buttonLabel button label
 #' @param width width of inputs in percent
+#' @rdname remoteModelsServer
+#'
 #' @export
 remoteModelsUI <-
   function(id,
@@ -39,7 +40,7 @@ remoteModelsUI <-
 #'
 #' Backend for the module
 #'
-#' @param id namespace id
+#' @param id id of module
 #' @param githubRepo (character) name of used github repository, e.g. "bpred"
 #' @param pathToLocal (character) relative path to the folder storing local files
 #' @param folderOnGithub (character) folder on github where remote files are stored. This should
