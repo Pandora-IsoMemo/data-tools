@@ -36,13 +36,18 @@ loadModelWrapper <- function(values,
     shinyTryCatch(errorTitle = "Unzipping failed.")
 
   # forward messages
+  values$version <-
+    ifelse(is.null(res$uploadedVersion),
+           "",
+           sprintf("Importing from: '%s'", res$uploadedVersion))
   values$fileImportSuccess <- res$message[res$messageType == "success"]
   values$warnings <- list(load = res$message[res$messageType == "warning"])
   values$errors <- list(load = res$message[res$messageType == "error"])
 
   if (!is.null(res)) {
     # select import values
-    values$dataImport <- res[c("data", "inputs", "model", "notes")]
+    objectsToReturn <- names(res)[names(res) %in% c("data", "inputs", "model", "notes", "uploadedVersion")]
+    values$dataImport <- res[objectsToReturn]
   }
 
   values$fileName <- filename
