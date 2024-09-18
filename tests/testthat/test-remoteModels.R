@@ -24,7 +24,6 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
     print(sprintf("test getRemoteModelsFromGithub() with repo: %s", repo))
     # Act
     testthat::expect_true(length(testApiContent) > 0)
-    testthat::expect_true(length(testRemoteModels) > 0)
     testthat::expect_true(length(testApiContent) == length(testRemoteModels))
     testthat::expect_true(all(expModelNames[[repo]] %in% testRemoteModels))
   }
@@ -46,7 +45,6 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
     print(sprintf("test getRemoteModelsFromGithub() with repo: %s and model: %s", repo, subFol))
     # Act
     testthat::expect_true(length(testApiContent) > 0)
-    testthat::expect_true(length(testRemoteModels) > 0)
     testthat::expect_true(length(testApiContent) == length(testRemoteModels))
     testthat::expect_true(expRemoteModels %in% testRemoteModels)
   }
@@ -97,7 +95,7 @@ testthat::test_that("Test module remoteModels", {
   )
 
   for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
-    if(Sys.info()["sysname"] != "Linux" && repo == "bmsc-app") {
+    if (Sys.info()["sysname"] != "Linux" && repo == "bmsc-app") {
       # skip test for non-linux systems since unzip is failing
       next
     }
