@@ -72,7 +72,7 @@ testthat::test_that("Test module remoteModels", {
     "resources" = c("values", "model", "version"),
     "bmsc-app" = c("data", "inputs", "model", "version"),
     "osteo-bior" = c("model", "version"),
-    "bpred" = c("dataObj", "formulasObj", "inputObj", "model"),
+    "bpred" = c("data", "inputs", "model", "version"),
     "plotr" = c("model")
   )
   expImportData <- list(
@@ -89,8 +89,9 @@ testthat::test_that("Test module remoteModels", {
     "bmsc-app" = c("models", "fits", "dependent", "variableData"),
     "osteo-bior" = c("Current_1", "Current_2", "Current_11"),
     "bpred" = c("Y_Samples_Individual", "Y_Samples_Combined", "Y_Samples_Category",
-                "relationship", "regfunctions", "indVars", "indVarsUnc", "category",
-                "data", "n_samples", "includeRegUnc", "distribution"),
+                "Y_Samples_Category_Mean", "relationship", "regfunctions", "indVars",
+                "indVarsUnc", "category", "data", "n_samples", "includeRegUnc",
+                "distribution"),
     "plotr" = c("testPlot")
   )
 
@@ -115,7 +116,7 @@ testthat::test_that("Test module remoteModels", {
                           loadRemoteModel = 1)
 
         testthat::expect_true(grepl("tmp", pathToRemote()) || grepl("var", pathToRemote()))
-        testthat::expect_true(getExtension(pathToRemote()) %in% c("zip", "bmsc"))
+        testthat::expect_true(getExtension(pathToRemote()) %in% c("zip", "bmsc", "bpred"))
         zip::unzip(pathToRemote(), exdir = test_path("unzippedTmp"))
         modelImport <- extractObjectFromFile(pathToUnzipped = test_path("unzippedTmp"))
         testthat::expect_equal(names(modelImport), expImportNames[[repo]])

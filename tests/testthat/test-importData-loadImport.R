@@ -1,6 +1,6 @@
 test_that("Test loadModel()", {
   # Arrange
-  testPackages <- c("DataTools", "ReSources", "BMSCApp", "OsteoBioR", "mpiBpred", "PlotR")
+  testPackages <- c("DataTools", "ReSources", "BMSCApp", "OsteoBioR", "Bpred", "PlotR")
 
   testPath <- list(
     "DataTools" = "https://github.com/Pandora-IsoMemo/data-tools/raw/main/inst/app/predefinedModels/2023-03-30_10_44_04_DataTools.zip",
@@ -35,7 +35,7 @@ test_that("Test loadModel()", {
   )
 
   for (package in testPackages[sample(seq_along(testPackages), 1)]) {
-    if(Sys.info()["sysname"] != "Linux" && package == "BMSCApp") {
+    if (Sys.info()["sysname"] != "Linux" && package == "BMSCApp") {
       # skip test for non-linux systems since unzip is failing
       next
     }
