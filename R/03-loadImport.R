@@ -19,6 +19,7 @@ resetValues <- function(values, includeData = TRUE) {
   values$errors <- list()
   values$fileName <- ""
   values$fileImportSuccess <- NULL
+  values$version <- NULL
   values$dataImport <- NULL
   values$preview <- NULL
 

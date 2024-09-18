@@ -1,3 +1,11 @@
+# DataTools 24.09.0
+
+## Updates
+- when importing models:
+  - additionally to the display of warning and error messages, a new message
+  displays the version number under which a model was saved
+  - the version is now also part of the returned import object
+
 # DataTools 24.08.2
 
 ## Updates

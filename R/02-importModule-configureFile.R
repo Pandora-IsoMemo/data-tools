@@ -108,6 +108,7 @@ importMessageUI <- function(id) {
 
   div(
     style = "height: 9em",
+    div(class = "text-primary", uiOutput(ns("version"))),
     div(class = "text-warning", uiOutput(ns("warning"))),
     div(class = "text-danger", uiOutput(ns("error"))),
     div(class = "text-success", uiOutput(ns("success")))
@@ -123,6 +124,9 @@ importMessageUI <- function(id) {
 importMessageServer <- function(id, values) {
   moduleServer(id, function(input, output, session) {
     observe({
+      output$version <- renderUI(tagList(lapply(
+            unlist(values$version, use.names = FALSE), tags$p
+          )))
       output$warning <-
         renderUI(tagList(lapply(
           unlist(values$warnings, use.names = FALSE), tags$p
