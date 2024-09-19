@@ -34,9 +34,9 @@ test_that("Test loadModel()", {
     "PlotR" = NULL
   )
 
-  for (package in testPackages[sample(seq_along(testPackages), 1)]) {
-    if (Sys.info()["sysname"] != "Linux" && package == "BMSCApp") {
-      # skip test for non-linux systems since unzip is failing
+  for (package in testPackages) { #[sample(seq_along(testPackages), 1)]) {
+    if (Sys.info()["sysname"] != "Linux" && package %in% c("BMSCApp", "Bpred")) {
+      # skip test for non-linux systems since unzip is failing for files with extension other than .zip
       next
     }
 
