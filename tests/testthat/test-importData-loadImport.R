@@ -30,7 +30,7 @@ test_that("Test loadModel()", {
         "priors", "userEstimate"),
     "BMSCApp" = c("x1", "x2", "x3", "y", "yUncertainty", "x4"),
     "OsteoBioR" = NULL,
-    "mpiBpred" = c("results", "dat", "refSample", "measures", "values", "freq",  "exportData"),
+    "Bpred" = c("results", "dat", "refSample", "measures", "values", "freq",  "exportData"),
     "PlotR" = NULL
   )
 

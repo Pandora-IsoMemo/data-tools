@@ -126,7 +126,7 @@ loadModel <-
     if (!exists("modelImport") || length(modelImport) == 0 || !(
       # expected names for most apps:
       all(names(modelImport) %in% c("data", "inputs", "values", "model", "version")) ||
-      # expected names for "mpiBpred"
+      # expected names for "mpiBpred" (old version)
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
     )) {
       stop("Model object not found. Possibly the file format is not valid or depricated.")
@@ -296,7 +296,7 @@ extractDataFromModel <- function(modelImport, rPackageName) {
   switch(rPackageName,
          "ReSources" = placeholder,
          "OsteoBioR" = detectData(modelImport, placeholder),
-         "mpiBpred" = c(modelImport[["dataObj"]], modelImport[["data"]]), # one of modelImport[["dataObj"]] (old version) or modelImport[["data"]] (version > 23.09.0) will be NULL
+         "mpiBpred" = c(modelImport[["dataObj"]], modelImport[["data"]]), # # (old versions), one of modelImport[["dataObj"]] (old version) or modelImport[["data"]] (version > 23.09.0) will be NULL
          "PlotR" = detectData(modelImport, placeholder),
          "BMSCApp" = modelImport$data,
          modelImport$data)
@@ -324,7 +324,7 @@ extractInputsFromModel <- function(modelImport, rPackageName) {
   switch(rPackageName,
          "ReSources" = c(modelImport$values, modelImport$inputs), # either modelImport$values (old version) or modelImport$inputs (version > 23.09.0) is NULL
          "OsteoBioR" = placeholder,
-         "mpiBpred" = extractBPredInput(modelImport),
+         "mpiBpred" = extractBPredInput(modelImport), # (old versions)
          "PlotR" = placeholder,
          "BMSCApp" = modelImport$inputs,
          "DataTools" = modelImport$inputs,

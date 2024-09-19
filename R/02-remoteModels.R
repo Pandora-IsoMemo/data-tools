@@ -52,9 +52,9 @@ remoteModelsUI <-
 #' @param resetSelected (reactive) if TRUE resets the selected remote file
 #' @param reloadChoices (reactive) trigger access to  github and reload choices of remote files
 #' @param rPackageName (character) DEPRECATED (not in use and will be removed in future): name of
-#'  the package (as in the description file) in which this module is applied, e.g. "mpiBpred"
+#'  the package (as in the description file) in which this module is applied, e.g. "Bpred"
 #' @param rPackageVersion (character) DEPRECATED (not in use and will be removed in future): current
-#'  version of the package where this module is applied, e.g. utils::packageVersion("mpiBpred")
+#'  version of the package where this module is applied, e.g. utils::packageVersion("Bpred")
 #' @param isInternet (reactive) TRUE if there is an internet connection
 #' @return (character) the path to the selected remote (github) or local file
 #' @export

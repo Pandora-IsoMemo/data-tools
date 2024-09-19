@@ -31,7 +31,7 @@ githubMapping:
   # internal apps
   BMSCApp: "bmsc-app"
   DataTools: "data-tools"
-  mpiBpred: "bpred"
+  mpiBpred: "Bpred"
   MpiIsoApp: "iso-app"
   BMSCS: "BMSCS" # updated name
   Bpred: "Bpred"   # updated name
