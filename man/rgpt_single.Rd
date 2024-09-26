@@ -8,7 +8,7 @@ rgpt_single(
   prompt_role = "user",
   prompt_content,
   seed = NULL,
-  model = "gpt-4-0125-preview",
+  model = "gpt-3.5-turbo-16k",
   output_type = "complete",
   max_tokens = 100,
   temperature = 1,
@@ -17,7 +17,10 @@ rgpt_single(
   stop = NULL,
   presence_penalty = 0,
   frequency_penalty = 0,
-  logprobs = FALSE
+  logprobs = FALSE,
+  available_models = c("gpt-3.5-turbo-0125", "gpt-3.5-turbo", "gpt-3.5-turbo-1106",
+    "gpt-3.5-turbo-16k", "gpt-3.5-turbo-0613", "gpt-3.5-turbo-16k-0613", "gpt-4",
+    "gpt-4-0613", "gpt-4-0125-preview")
 )
 }
 \arguments{
@@ -98,6 +101,8 @@ repeat the same line verbatim._). See also:
 : _whether to return log probabilities of the output tokens or not. If true,
 returns the log probabilities of each output token returned in the content of
 message._ Will be returned in the output list at slot 3.}
+
+\item{available_models}{character vector that contains the available models}
 }
 \value{
 A list with three data tables (if `output_type` is the default

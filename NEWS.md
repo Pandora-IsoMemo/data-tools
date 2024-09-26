@@ -1,3 +1,8 @@
+# DataTools 24.09.1
+
+## Updates
+- _Query with SQL_: option to select available gpt models for the creation of SQL queries (#78)
+
 # DataTools 24.09.0
 
 ## Updates

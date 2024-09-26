@@ -305,7 +305,15 @@ gptUI <- function(id) {
                     accept = "text/plain")
         ),
         column(
-          3,
+          4,
+          selectInput(
+            ns("gptModel"),
+            "Model",
+            choices = c("No models available ..." = "")
+          ) %>% hidden()
+        ),
+        column(
+          2,
           style = "margin-top: 1em;",
           numericInput(
             ns("temperature"),
@@ -316,7 +324,7 @@ gptUI <- function(id) {
           ) %>% hidden()
         ),
         column(
-          3,
+          2,
           style = "margin-top: 1em;",
           numericInput(
             ns("maxTokens"),
@@ -400,6 +408,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        value = FALSE
                      )
                      disable("useGPT")
+                     hide("gptModel")
                      hide("temperature")
                      hide("maxTokens")
                      #hide("n")
@@ -421,6 +430,12 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    bindEvent(autoCompleteList(),
                              ignoreNULL = FALSE,
                              ignoreInit = TRUE)
+
+                 rgptModelsChoices <- reactive({
+                   req(isTRUE(internetCon()))
+                   logDebug("gptServer: update gptModel")
+                   rgpt_models_for_sql()
+                 })
 
                  observe({
                    req(isTRUE(internetCon()))
@@ -445,14 +460,21 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
+                       show("gptModel")
                        show("temperature")
                        show("maxTokens")
                        #show("n")
+                       updateSelectInput(
+                         session,
+                         "gptModel",
+                         choices = rgptModelsChoices()
+                       )
                        validConnection(TRUE)
                      } else {
                        if (exists("api_key", envir = pkg.env)) {
                          pkg.env$api_key <- NULL
                        }
+                       hide("gptModel")
                        hide("temperature")
                        hide("maxTokens")
                        hide("n")
@@ -479,9 +501,11 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    withProgress({
                      res <- rgpt_single(
                        prompt_content = paste("Write an SQL query to", input$gptPrompt),
+                       model = input$gptModel,
                        temperature = input$temperature,
                        max_tokens = input$maxTokens,
                        #n = input$n,
+                       available_models = rgptModelsChoices(),
                        output_type='text'
                      ) %>%
                        validateCompletion() %>%
@@ -523,7 +547,7 @@ validateKey <- function(filepath) {
 
 validateAccess <- function(gptOut) {
   if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
-    stop("No output available for test prompt. Probably the key is not valid.")
+    stop("No output available for test prompt.")
   }
 
   gptOut
@@ -545,12 +569,14 @@ removeOpenGptCon <- function() {
 }
 
 # TEST MODULE -------------------------------------------------------------
+# To test the module run devtools::load_all() first
+# Please comment this code before building the package
 
-uiGPT <- fluidPage(shinyjs::useShinyjs(),
-                   gptUI(id = "gpt"))
-
-serverGPT <- function(input, output, session) {
-  gptServer("gpt", autoCompleteList = reactive(c("testA", "testB")))
-}
-
-shinyApp(uiGPT, serverGPT)
+# uiGPT <- fluidPage(shinyjs::useShinyjs(),
+#                    gptUI(id = "gpt"))
+#
+# serverGPT <- function(input, output, session) {
+#   gptServer("gpt", autoCompleteList = reactive(c("testA", "testB")), isActiveTab = reactive(TRUE))
+# }
+#
+# shinyApp(uiGPT, serverGPT)
