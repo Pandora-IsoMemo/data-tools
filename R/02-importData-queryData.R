@@ -311,7 +311,7 @@ gptUI <- function(id) {
           selectInput(
             ns("gptModel"),
             "Model",
-            choices = c("No models available, please check your API key ..." = ""),
+            choices = c("Please check your API key ..." = ""),
             width = "100%"
           )
         ),
@@ -469,6 +469,11 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        if (exists("api_key", envir = pkg.env)) {
                          pkg.env$api_key <- NULL
                        }
+                       updateSelectInput(
+                         session,
+                         "gptModel",
+                         choices = c("Invalid API key ...." = "")
+                       )
                        validConnection(FALSE)
                        shinyjs::disable(ns("applyPrompt"), asis = TRUE)
                      }
