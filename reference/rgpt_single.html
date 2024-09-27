@@ -15,7 +15,7 @@ for your API call.
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.09.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.09.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -54,7 +54,7 @@ for your API call.
 <span>  prompt_role <span class="op">=</span> <span class="st">"user"</span>,</span>
 <span>  <span class="va">prompt_content</span>,</span>
 <span>  seed <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  model <span class="op">=</span> <span class="st">"gpt-4-0125-preview"</span>,</span>
+<span>  model <span class="op">=</span> <span class="st">"gpt-3.5-turbo-16k"</span>,</span>
 <span>  output_type <span class="op">=</span> <span class="st">"complete"</span>,</span>
 <span>  max_tokens <span class="op">=</span> <span class="fl">100</span>,</span>
 <span>  temperature <span class="op">=</span> <span class="fl">1</span>,</span>
@@ -63,7 +63,10 @@ for your API call.
 <span>  stop <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  presence_penalty <span class="op">=</span> <span class="fl">0</span>,</span>
 <span>  frequency_penalty <span class="op">=</span> <span class="fl">0</span>,</span>
-<span>  logprobs <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  logprobs <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  available_models <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"gpt-3.5-turbo-0125"</span>, <span class="st">"gpt-3.5-turbo"</span>, <span class="st">"gpt-3.5-turbo-1106"</span>,</span>
+<span>    <span class="st">"gpt-3.5-turbo-16k"</span>, <span class="st">"gpt-3.5-turbo-0613"</span>, <span class="st">"gpt-3.5-turbo-16k-0613"</span>, <span class="st">"gpt-4"</span>,</span>
+<span>    <span class="st">"gpt-4-0613"</span>, <span class="st">"gpt-4-0125-preview"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -173,6 +176,10 @@ repeat the same line verbatim._). See also:
 : _whether to return log probabilities of the output tokens or not. If true,
 returns the log probabilities of each output token returned in the content of
 message._ Will be returned in the output list at slot 3.</p></dd>
+
+
+<dt id="arg-available-models">available_models<a class="anchor" aria-label="anchor" href="#arg-available-models"></a></dt>
+<dd><p>character vector that contains the available models</p></dd>
 
 </dl></div>
     <div class="section level2">
