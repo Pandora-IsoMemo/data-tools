@@ -80,7 +80,7 @@ testthat::test_that("Test module remoteModels", {
     "resources" = NULL,
     "bmsc-app" = c("x1", "x2", "x3", "y", "yUncertainty", "x4"),
     "osteo-bior" = NULL,
-    "brped" = NULL,
+    "bpred" = NULL,
     "plotr" = NULL
   )
   expImportModel <- list(
@@ -96,8 +96,8 @@ testthat::test_that("Test module remoteModels", {
   )
 
   for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
-    if (Sys.info()["sysname"] != "Linux" && repo == "bmsc-app") {
-      # skip test for non-linux systems since unzip is failing
+    if (Sys.info()["sysname"] != "Linux" && repo %in% c("bmsc-app", "bpred")) {
+      # skip test for non-linux systems since unzip is failing for files with extension other than .zip
       next
     }
 
