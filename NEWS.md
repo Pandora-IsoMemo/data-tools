@@ -1,7 +1,10 @@
 # DataTools 24.09.1
 
 ## Updates
-- _Query with SQL_: option to select available gpt models for the creation of SQL queries (#78)
+- _Query with SQL_: 
+  - automatically load available gpt models directly from openai and filter those applicable to
+    query creation  (#78)
+  - option to select the gpt model for the creation of SQL queries (#78)
 
 # DataTools 24.09.0
 
