@@ -37,6 +37,33 @@ check_apikey_form = function(){
   }
 }
 
+#' Make a request to the GPT API to extract the list of models
+#'
+#' @description
+#' `rgpt_models()` sends a request to the Open AI GPT API to extract the list of
+#' models that are available for chat completions. This function is useful to
+#' check which models are available for your completions.
+#' @param excludePattern A character vector that contains a regular expression that will be used to
+#'  exclude models from the list. By default, the function excludes models that are not designed to
+#'  obtain SQL queries.
+#' @return A character vector with the model IDs
+rgpt_models_for_sql = function(excludePattern = "babbage|curie|dall-e|davinci|text-embedding|tts|whisper"){
+  # Get the list of models
+  model_list_response <- httr::GET(
+    url = pkg.env$url.models,
+    httr::add_headers(Authorization = paste("Bearer", pkg.env$api_key))
+  )
+
+  # Parse the model list response
+  model_list <- httr::content(model_list_response)
+
+  # Extract the list of model IDs
+  available_models <- sapply(model_list$data, function(model) model$id)
+
+  # exclude models
+  available_models[!grepl(excludePattern, available_models)]
+}
+
 #' Makes a single chat completion request to the GPT API for all chat models
 #'
 #' @description
@@ -138,6 +165,7 @@ check_apikey_form = function(){
 #' : _whether to return log probabilities of the output tokens or not. If true,
 #' returns the log probabilities of each output token returned in the content of
 #' message._ Will be returned in the output list at slot 3.
+#' @param available_models character vector that contains the available models
 #'
 #' @return A list with three data tables (if `output_type` is the default
 #' "complete"): [[1]] contains the data table with the columns `n` (= the mo. of
@@ -162,7 +190,7 @@ check_apikey_form = function(){
 rgpt_single = function(prompt_role = 'user'
                           , prompt_content
                           , seed = NULL
-                          , model = 'gpt-4-0125-preview'
+                          , model = 'gpt-3.5-turbo-16k'
                           , output_type = 'complete'
                           , max_tokens = 100
                           , temperature = 1.0
@@ -172,19 +200,18 @@ rgpt_single = function(prompt_role = 'user'
                           , presence_penalty = 0
                           , frequency_penalty = 0
                           , logprobs = FALSE
+                          , available_models = c('gpt-3.5-turbo-0125'
+                                                 , 'gpt-3.5-turbo'
+                                                 , 'gpt-3.5-turbo-1106'
+                                                 , 'gpt-3.5-turbo-16k'
+                                                 , 'gpt-3.5-turbo-0613'
+                                                 , 'gpt-3.5-turbo-16k-0613'
+                                                 , 'gpt-4'
+                                                 , 'gpt-4-0613'
+                                                 , 'gpt-4-0125-preview')
 ){
 
-  models = c('gpt-3.5-turbo-0125'
-             , 'gpt-3.5-turbo'
-             , 'gpt-3.5-turbo-1106'
-             , 'gpt-3.5-turbo-16k'
-             , 'gpt-3.5-turbo-0613'
-             , 'gpt-3.5-turbo-16k-0613'
-             , 'gpt-4'
-             , 'gpt-4-0613'
-             , 'gpt-4-0125-preview')
-
-  if(!model %in% models){
+  if(!model %in% available_models){
     message(paste0('The `model` is not supported or contains a typo.'))
   }
 
