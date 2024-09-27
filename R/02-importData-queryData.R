@@ -302,15 +302,18 @@ gptUI <- function(id) {
           style = "margin-top: 1em;",
           fileInput(ns("apiKey"),
                     "API key file for GPT",
-                    accept = "text/plain")
+                    accept = "text/plain",
+                    width = "100%")
         ),
         column(
           4,
+          style = "margin-top: 1em;",
           selectInput(
             ns("gptModel"),
             "Model",
-            choices = c("No models available ..." = "")
-          ) %>% hidden()
+            choices = c("No models available, please check your API key ..." = ""),
+            width = "100%"
+          )
         ),
         column(
           2,
@@ -321,7 +324,7 @@ gptUI <- function(id) {
             value = 0.1,
             min = 0,
             max = 2,
-          ) %>% hidden()
+          )
         ),
         column(
           2,
@@ -332,41 +335,37 @@ gptUI <- function(id) {
             value = 100,
             min = 0,
             max = 4000,
-          ) %>% hidden()
+          )
         )#,
         # column(2,
         #        style = "margin-top: 1em;",
         #        numericInput(
         #          ns("n"), "N", value = 1, min = 0
-        #        ) %>% hidden())
+        #        ))
       ),
-      conditionalPanel(
-        condition = "output.showGpt",
-        ns = ns,
-        div(style = "margin-bottom: 0.5em;",
-            tags$html(
-              HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
-            )),
-        fluidRow(column(
-          10,
-          aceEditor(
-            ns("gptPrompt"),
-            value = NULL,
-            mode = "text",
-            theme = "cobalt",
-            fontSize = 16,
-            autoScrollEditorIntoView = TRUE,
-            minLines = 3,
-            maxLines = 5,
-            autoComplete = "live",
-            placeholder = "... your natural language instructions"
-          )
-        ),
-        column(2,
-               actionButton(
-                 ns("applyPrompt"), "Apply"
-               )))
-      )
+      div(style = "margin-bottom: 0.5em;",
+          tags$html(
+            HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
+          )),
+      fluidRow(column(
+        10,
+        aceEditor(
+          ns("gptPrompt"),
+          value = NULL,
+          mode = "text",
+          theme = "cobalt",
+          fontSize = 16,
+          autoScrollEditorIntoView = TRUE,
+          minLines = 3,
+          maxLines = 5,
+          autoComplete = "live",
+          placeholder = "... your natural language instructions"
+        )
+      ),
+      column(2,
+             actionButton(
+               ns("applyPrompt"), "Apply", disabled = TRUE
+             )))
     )
   )
 }
@@ -387,6 +386,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  gptOut <- reactiveVal(NULL)
                  sqlCommand <- reactiveVal(NULL)
 
+                 # CHECK internet connection ----
                  observe({
                    req(isTRUE(isActiveTab()))
                    logDebug("gptServer: check internet connection")
@@ -398,7 +398,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        "useGPT",
                        label = "Use AI PEITHO data operations"
                        )
-                     enable("useGPT")
+                     shinyjs::enable(ns("useGPT"), asis = TRUE)
                    } else {
                      warning("gptServer: No internet connection!")
                      updateCheckboxInput(
@@ -407,16 +407,13 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        label = "Use AI PEITHO data operations (Requires internet connection!)",
                        value = FALSE
                      )
-                     disable("useGPT")
-                     hide("gptModel")
-                     hide("temperature")
-                     hide("maxTokens")
-                     #hide("n")
+                     shinyjs::disable(ns("useGPT"), asis = TRUE)
                      validConnection(FALSE)
                    }
                  }) %>%
                    bindEvent(isActiveTab())
 
+                 # UPDATE auto-complete ----
                  observe({
                    req(isTRUE(internetCon()))
                    logDebug("gptServer: update gptPrompt")
@@ -431,6 +428,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                              ignoreNULL = FALSE,
                              ignoreInit = TRUE)
 
+                 # CHECK key ----
                  rgptModelsChoices <- reactive({
                    req(isTRUE(internetCon()))
                    logDebug("gptServer: update gptModel")
@@ -460,25 +458,19 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
 
                      if (!is.null(connSuccess) &&
                          !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
-                       show("gptModel")
-                       show("temperature")
-                       show("maxTokens")
-                       #show("n")
                        updateSelectInput(
                          session,
                          "gptModel",
                          choices = rgptModelsChoices()
                        )
                        validConnection(TRUE)
+                       shinyjs::enable(ns("applyPrompt"), asis = TRUE)
                      } else {
                        if (exists("api_key", envir = pkg.env)) {
                          pkg.env$api_key <- NULL
                        }
-                       hide("gptModel")
-                       hide("temperature")
-                       hide("maxTokens")
-                       hide("n")
                        validConnection(FALSE)
+                       shinyjs::disable(ns("applyPrompt"), asis = TRUE)
                      }
                    },
                    value = 0.75,
@@ -486,11 +478,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  }) %>%
                    bindEvent(input$apiKey)
 
-                 output$showGpt <- reactive({
-                   validConnection()
-                 })
-                 outputOptions(output, "showGpt", suspendWhenHidden = FALSE)
-
+                 # APPLY prompt ----
                  observe({
                    req(isTRUE(internetCon()))
                    logDebug("gptServer: button input$applyPrompt")
