@@ -52,8 +52,13 @@ getGithubMapping <- function(rPackage = "") {
   if (rPackage == "") return("")
 
   if (!(rPackage %in% names(config()$githubMapping))) {
-    stop("No Github mapping found for package '", rPackage, "'. Please add it to the config file of the package DataTools.")
-  }
+    message(sprintf(
+      "No Github mapping found for package '%s'. Setting github repository to: '%s'. Add '%s' to the config file of the package 'DataTools' if needed.",
+      rPackage, rPackage, rPackage
+    ))
 
-  config()$githubMapping[[rPackage]]
+    rPackage
+  } else {
+    config()$githubMapping[[rPackage]]
+  }
 }
