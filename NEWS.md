@@ -1,3 +1,14 @@
+# DataTools 24.10.0
+
+## New Features
+- new wrapper module `dataUI` and `dataServer` around the `importData` module that allows for loading example data
+
+## Bug Fixes
+- fix an issue where the Pandora API being unreachable caused the import module to stop responding (#101)
+  - now the connection is checked only once when the pop-up is opened
+  - the time out for the connection check is set to 10 instead of 60 seconds
+  - a warning message is displayed if the connection fails
+
 # DataTools 24.09.1
 
 ## Updates

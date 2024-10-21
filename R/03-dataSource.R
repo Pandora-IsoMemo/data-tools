@@ -34,12 +34,12 @@ getDataSource <- function(dataSource = reactiveValues(file = NULL,
   return(dataSource)
 }
 
-#' Get Source Type
-#'
-#' @inheritParams configureFileServer
-#' @param importType (character) what kind of import is expected: either "data", "model" or "zip"
-#' @param source (character) selected option to load data from: either "ckan", "file", "url" or "remoteModel"
-#' @param inputDataOrLink (character) either "fullData" or "dataLink" option
+# Get Source Type
+#
+# @inheritParams configureFileServer
+# @param importType (character) what kind of import is expected: either "data", "model" or "zip"
+# @param source (character) selected option to load data from: either "ckan", "file", "url" or "remoteModel"
+# @param inputDataOrLink (character) either "fullData" or "dataLink" option
 addSourceType <- function(dataSource, importType, source, inputDataOrLink) {
   # default result:
   dataSource$type <- importType
@@ -54,9 +54,9 @@ addSourceType <- function(dataSource, importType, source, inputDataOrLink) {
   return(dataSource)
 }
 
-#' Get Source CKAN
-#'
-#' @inheritParams getDataSource
+# Get Source CKAN
+#
+# @inheritParams getDataSource
 getSourceCKAN <- function(dataSource, input, isInternet) {
   if (!isInternet) return(dataSource)
 
@@ -82,9 +82,9 @@ getSourceCKAN <- function(dataSource, input, isInternet) {
   return(dataSource)
 }
 
-#' Get Source File
-#'
-#' @inheritParams getDataSource
+# Get Source File
+#
+# @inheritParams getDataSource
 getSourceFile <- function(dataSource, input) {
   inFile <- input$file
 
@@ -99,9 +99,9 @@ getSourceFile <- function(dataSource, input) {
   return(dataSource)
 }
 
-#' Get Source Url
-#'
-#' @inheritParams getDataSource
+# Get Source Url
+#
+# @inheritParams getDataSource
 getSourceUrl <- function(dataSource, input, isInternet) {
   if (!isInternet) return(dataSource)
 
@@ -119,9 +119,9 @@ getSourceUrl <- function(dataSource, input, isInternet) {
   return(dataSource)
 }
 
-#' Get Source model
-#'
-#' @inheritParams getDataSource
+# Get Source model
+#
+# @inheritParams getDataSource
 getSourceModel <- function(dataSource, input, pathToFile = NULL) {
   if (is.null(pathToFile)) return(dataSource)
 

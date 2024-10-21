@@ -5,7 +5,7 @@
 \alias{importServer}
 \title{Import module}
 \usage{
-importUI(id, label = "Import Model")
+importUI(id, label = "Import Model", title = NULL, titleTag = "h4")
 
 importServer(
   id,
@@ -26,7 +26,10 @@ importServer(
 
 \item{label}{label of button}
 
-\item{title}{title of import module}
+\item{title}{(character) module title}
+
+\item{titleTag}{(character) HTML tag to put around the title, e.g. "h4" for \code{h4} from
+\code{htmltools}}
 
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 

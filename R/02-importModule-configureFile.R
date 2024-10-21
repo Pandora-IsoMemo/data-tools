@@ -98,11 +98,11 @@ configureFileServer <- function(id,
   })
 }
 
-#' Import Message UI
-#'
-#' UI for messages
-#'
-#' @param id id of module
+# Import Message UI
+#
+# UI for messages
+#
+# @param id id of module
 importMessageUI <- function(id) {
   ns <- NS(id)
 
@@ -115,12 +115,12 @@ importMessageUI <- function(id) {
   )
 }
 
-#' Import Message Server
-#'
-#' Server function of the module
-#'
-#' @param id id of module
-#' @param values (reactiveValues) values of the import module
+# Import Message Server
+#
+# Server function of the module
+#
+# @param id id of module
+# @param values (reactiveValues) values of the import module
 importMessageServer <- function(id, values) {
   moduleServer(id, function(input, output, session) {
     observe({

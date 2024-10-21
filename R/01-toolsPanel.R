@@ -1,8 +1,6 @@
 #' UI function of toolsImport module
 #'
-#' @param id module id
-#'
-#' @importFrom stats setNames
+#' @rdname toolsImportServer
 #'
 #' @export
 toolsImportUI <- function(id) {
@@ -39,6 +37,8 @@ toolsImportUI <- function(id) {
 
 
 #' Server function of toolsImport module
+#'
+#' Module for DataTool's example app
 #'
 #' @param id module id
 #'

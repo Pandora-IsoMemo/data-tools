@@ -264,15 +264,15 @@ envToList <- function(envir) {
   mget(x = ls(envir = envir), envir = envir)
 }
 
-#' Extract Data From Model
-#'
-#' Dependent on the app, the data object is stored in different places. This function extracts the
-#' data object from the model object.
-#'
-#' @param modelImport (list) model object
-#' @param rPackageName (character) name of the app
-#'
-#' @return (list) data object
+# Extract Data From Model
+#
+# Dependent on the app, the data object is stored in different places. This function extracts the
+# data object from the model object.
+#
+# @param modelImport (list) model object
+# @param rPackageName (character) name of the app
+#
+# @return (list) data object
 extractDataFromModel <- function(modelImport, rPackageName) {
   # define helper
   detectData <- function(modelImport, placeholder) {
@@ -302,15 +302,15 @@ extractDataFromModel <- function(modelImport, rPackageName) {
          modelImport$data)
 }
 
-#' Extract Inputs From Model
-#'
-#' Dependent on the app, the inputs object is stored in different places. This function extracts the
-#' inputs object from the model object.
-#'
-#' @param modelImport (list) model object
-#' @param rPackageName (character) name of the app
-#'
-#' @return (list) inputs object
+# Extract Inputs From Model
+#
+# Dependent on the app, the inputs object is stored in different places. This function extracts the
+# inputs object from the model object.
+#
+# @param modelImport (list) model object
+# @param rPackageName (character) name of the app
+#
+# @return (list) inputs object
 extractInputsFromModel <- function(modelImport, rPackageName) {
   if (is.null(rPackageName) || rPackageName == "") return(modelImport$inputs)
 
@@ -343,12 +343,12 @@ extractBPredInput <- function(modelImport) {
   bpredInput
 }
 
-#' Extract Model From Model
-#'
-#' @param modelImport (list) model object
-#' @param rPackageName (character) name of the app
-#'
-#' @return (list) model object
+# Extract Model From Model
+#
+# @param modelImport (list) model object
+# @param rPackageName (character) name of the app
+#
+# @return (list) model object
 extractModelFromModel <- function(modelImport, rPackageName = NULL) {
   if (is.null(rPackageName) || rPackageName == "") return(modelImport$model)
 
@@ -356,11 +356,11 @@ extractModelFromModel <- function(modelImport, rPackageName = NULL) {
   return(modelImport$model)
 }
 
-#' Update Message
-#'
-#' @param dat (list) list containing data, results and warning messages of import
-#' @param element (character) list object, one of "data", "inputs", "model"
-#' @param msgString (character) description of element used in messages
+# Update Message
+#
+# @param dat (list) list containing data, results and warning messages of import
+# @param element (character) list object, one of "data", "inputs", "model"
+# @param msgString (character) description of element used in messages
 updateMessage <- function(dat, element = c("data", "inputs", "model"), msgString) {
   element <- match.arg(element)
 

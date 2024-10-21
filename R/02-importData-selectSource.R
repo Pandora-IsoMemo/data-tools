@@ -133,8 +133,56 @@ selectSourceServer <- function(id,
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
-                 ckanNetworks <- reactiveVal(data.frame())
-                 ckanPackages <- reactiveVal(data.frame())
+                 ckanNetworks <- reactive({
+                   req(isTRUE(openPopupReset())) # trigger update always when the popup opens
+
+                   logDebug("%s: Calling ckan API with 'group_list' and updating 'ckanNetworks()'...", id)
+                   res <- local({
+                     old_timeout <- getOption("timeout")  # Save the current timeout
+                     options(timeout = 10)  # Set timeout to 10 seconds
+
+                     on.exit(options(timeout = old_timeout))  # Restore old timeout when function ends
+                     callAPI(action = "group_list", all_fields = "true") %>%
+                       withProgress(message = "Connecting to Pandora...") %>%
+                       shinyTryCatch(errorTitle = "Pandora connection error", alertStyle = "shinyalert")
+                   })
+
+                   if (length(res) > 0) {
+                     return(res)
+                   } else {
+                     return(NULL)
+                   }
+                 })
+
+                 ckanPackages <- reactive({
+                   req(isTRUE(openPopupReset())) # trigger update always when the popup opens
+
+                   if (length(ckanNetworks()) == 0) {
+                     logDebug("%s: Skipping calling ckan API and updating 'ckanPackages()' because of connection issues...", id)
+                     # assume no connection
+                     return(NULL)
+                   }
+
+                   logDebug("%s: Calling ckan API with 'current_package_list_with_resources' and updating 'ckanPackages()'...", id)
+                   res <- local({
+                     old_timeout <- getOption("timeout")  # Save the current timeout
+                     options(timeout = 10)  # Set timeout to 10 seconds
+
+                     on.exit(options(timeout = old_timeout))  # Restore old timeout when function ends
+                     callAPI(action = "current_package_list_with_resources",
+                             limit = 1000) %>%
+                       withProgress(message = "Loading Pandora packages...") %>%
+                       shinyTryCatch(errorTitle = "Pandora connection error", alertStyle = "shinyalert")
+                   })
+
+                   if (length(res) > 0) {
+                     return(res)
+                   } else {
+                     return(NULL)
+                   }
+                 })
+
+
                  dataSource <- reactiveValues(file = NULL,
                                               filename = NULL,
                                               type = NULL,
@@ -155,29 +203,22 @@ selectSourceServer <- function(id,
                      shinyjs::disable(ns("loadUrl"), asis = TRUE)
                    } else {
                      if (importType == "data") shinyjs::enable(ns("dataOrLink"), asis = TRUE)
-                     ckanGroupList <- callAPI(action = "group_list", all_fields = "true")
-                     ckanNetworks(ckanGroupList)
-                     ckanPackageList <- callAPI(action = "current_package_list_with_resources",
-                                                limit = 1000) %>%
-                       withProgress(message = "Loading...")
-
-                     ckanPackages(ckanPackageList)
-                     # trigger update of ckanGroup, ckanRecord, ckanResourceTypes
-                     updatePickerInput(session,
-                                       "repoFilter-ckanGroup",
-                                       choices = getCKANGroupChoices(groupList = ckanGroupList),
-                                       selected = character(0))
-                     choicesRepo <- getCKANRecordChoices(packageList = ckanPackageList)
-                     updateSelectizeInput(session,
-                                          "resourceFilter-ckanRecord",
-                                          choices = choicesRepo,
-                                          selected = choicesRepo[1])
-                     choicesTypes <- getCKANTypesChoices(packageList = ckanPackageList,
-                                                         ckanFileTypes = ckanFileTypes)
-                     updatePickerInput(session,
-                                       "resourceFilter-ckanResourceTypes",
-                                       choices = choicesTypes,
-                                       selected = choicesTypes)
+                     # update/reset ckanGroup, ckanRecord, ckanResourceTypes
+                       updatePickerInput(session,
+                                         "repoFilter-ckanGroup",
+                                         choices = getCKANGroupChoices(groupList = ckanNetworks()),
+                                         selected = character(0))
+                       choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
+                       updateSelectizeInput(session,
+                                            "resourceFilter-ckanRecord",
+                                            choices = choicesRepo,
+                                            selected = choicesRepo[1])
+                       choicesTypes <- getCKANTypesChoices(packageList = ckanPackages(),
+                                                           ckanFileTypes = ckanFileTypes)
+                       updatePickerInput(session,
+                                         "resourceFilter-ckanResourceTypes",
+                                         choices = choicesTypes,
+                                         selected = choicesTypes)
                    }
                  }) %>%
                    bindEvent(openPopupReset())
@@ -209,20 +250,13 @@ selectSourceServer <- function(id,
                  observe({
                    req(isTRUE(internetCon()), nrow(ckanPackages()) == 0)
                    logDebug("Updating Pandora package list")
-                   ckanGroupList <- callAPI(action = "group_list", all_fields = "true")
-                   ckanNetworks(ckanGroupList)
-                   ckanPackageList <- callAPI(action = "current_package_list_with_resources",
-                                              limit = 1000) %>%
-                     withProgress(message = "Loading...")
-                   ckanPackages(ckanPackageList)
-
                    updatePickerInput(session,
                                      "repoFilter-ckanGroup",
-                                     choices = getCKANGroupChoices(groupList = ckanGroupList))
+                                     choices = getCKANGroupChoices(groupList = ckanNetworks()))
                    updateSelectizeInput(session,
                                         "resourceFilter-ckanRecord",
-                                        choices = getCKANRecordChoices(packageList = ckanPackageList))
-                   fileTypes <- getCKANTypesChoices(packageList = ckanPackageList,
+                                        choices = getCKANRecordChoices(packageList = ckanPackages()))
+                   fileTypes <- getCKANTypesChoices(packageList = ckanPackages(),
                                                     ckanFileTypes = ckanFileTypes)
                    updatePickerInput(session,
                                      "resourceFilter-ckanResourceTypes",

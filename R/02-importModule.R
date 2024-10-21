@@ -15,11 +15,16 @@
 #'
 #' @param label label of button
 #' @rdname importServer
+#' @inheritParams setModuleTitle
 #'
 #' @export
-importUI <- function(id, label = "Import Model") {
+importUI <- function(id, label = "Import Model", title = NULL, titleTag = "h4") {
   ns <- NS(id)
-  actionButton(ns("openPopup"), label)
+  tagList(
+    setModuleTitle(title = title, titleTag = titleTag),
+    actionButton(ns("openPopup"), label),
+    tags$br(), tags$br(),
+  )
 }
 
 #' Server function for import
@@ -78,7 +83,7 @@ importServer <- function(id,
     })
 
     observe({
-      logDebug("Check internet and showModal import")
+      logDebug("%s: Check internet and showModal import", id)
 
       internetCon(has_internet())
       showModal(
@@ -147,14 +152,14 @@ importServer <- function(id,
 
     ## button cancel ----
     observe({
-      logDebug("Cancel import")
+      logDebug("%s: Cancel import", id)
       removeModal()
     }) %>%
       bindEvent(input$cancel)
 
     ## disable button accept ----
     observe({
-      logDebug("Enable/Disable Accept button")
+      logDebug("%s: Enable/Disable Accept button", id)
 
       # disable button if import was reset or custom checks fail
       if (length(values$dataImport) == 0 ||
@@ -171,7 +176,7 @@ importServer <- function(id,
 
     ## ACCEPT buttons ----
     observe({
-      logDebug("Updating input$accept")
+      logDebug("%s: Entering observe 'input$accept'", id)
       removeModal()
       removeOpenGptCon()
 
@@ -189,11 +194,11 @@ importServer <- function(id,
   })
 }
 
-#' Import title
-#'
-#' @param title (character) title of the import dialog
-#' @param importType (character) type of import, either "data", "model", "zip" or "list".
-#' @param version (character) version of the package
+# Import title
+#
+# @param title (character) title of the import dialog
+# @param importType (character) type of import, either "data", "model", "zip" or "list".
+# @param version (character) version of the package
 setImportTitle <- function(title = "", importType, version) {
   if (title == "") {
     title <- switch(

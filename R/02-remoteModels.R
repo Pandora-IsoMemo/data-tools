@@ -217,9 +217,9 @@ downloadFileToTmp <- function(url, fileext = ".zip") {
   return(tmpPath)
 }
 
-#' Get Local Models
-#'
-#' @inheritParams remoteModelsServer
+# Get Local Models
+#
+# @inheritParams remoteModelsServer
 getLocalModels <- function(pathToLocal) {
   choices <- pathToLocal %>%
     dir()
@@ -232,9 +232,9 @@ getLocalModels <- function(pathToLocal) {
   choices
 }
 
-#' Check Local Model Dir
-#'
-#' @inheritParams remoteModelsServer
+# Check Local Model Dir
+#
+# @inheritParams remoteModelsServer
 checkLocalModelDir <-
   function(pathToLocal) {
     if (is.null(pathToLocal) ||
@@ -246,11 +246,11 @@ checkLocalModelDir <-
     pathToLocal
   }
 
-#' Get Remote Models From Github
-#'
-#' Get remote models from github directory
-#' @inheritParams remoteModelsServer
-#' @param apiOut output of `getGithubContent()` if it was already loaded
+# Get Remote Models From Github
+#
+# Get remote models from github directory
+# @inheritParams remoteModelsServer
+# @param apiOut output of `getGithubContent()` if it was already loaded
 getRemoteModelsFromGithub <-
   function(githubRepo, folderOnGithub = "/predefinedModels", apiOut = NULL) {
     if (is.null(apiOut)) {
@@ -273,10 +273,10 @@ getRemoteModelsFromGithub <-
     choices
   }
 
-#' Get Github Content
-#'
-#' Get content of api call to github folder
-#' @inheritParams remoteModelsServer
+# Get Github Content
+#
+# Get content of api call to github folder
+# @inheritParams remoteModelsServer
 getGithubContent <-
   function(githubRepo, folderOnGithub = "/predefinedModels") {
     isInternet <- has_internet()

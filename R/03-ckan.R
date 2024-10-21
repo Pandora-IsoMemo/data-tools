@@ -9,7 +9,7 @@ getCKANResourcesChoices <-
            network = "",
            pattern = "",
            packageList = data.frame()) {
-    if (length(fileType) == 0) {
+    if (length(fileType) == 0 || is.null(packageList)) {
       resources <- NULL
     } else {
       if (any(fileType == ""))
@@ -38,15 +38,17 @@ getCKANResourcesChoices <-
 #'
 #' @inheritParams Pandora::getRepositories
 getCKANRecordChoices <- function(network = "", pattern = "", packageList = data.frame()) {
-  repos <- getRepositories(network = network,
-                           pattern = pattern,
-                           packageList = packageList,
-                           order = TRUE)
+  if (is.null(packageList)) {
+    repos <- NULL
+  } else {
+    repos <- getRepositories(network = network,
+                             pattern = pattern,
+                             packageList = packageList,
+                             order = TRUE)
+  }
+
   if (length(repos) == 0 || nrow(repos) == 0) {
-    return(list(
-      choices = c("No repository available ..." = ""),
-      selected = c("No repository available ..." = "")
-    ))
+    return(c("No repository available ..." = ""))
   }
 
   choices <- repos[["Name"]]
@@ -61,15 +63,16 @@ getCKANRecordChoices <- function(network = "", pattern = "", packageList = data.
 #'
 #' @inheritParams Pandora::getNetworks
 getCKANGroupChoices <- function(groupList = data.frame()) {
-  # do not use parameter "pattern", the endpoint from getNetworks does NOT contain all the meta
-  # information. So we cannot use the string from input$ckanMeta here
-  networks <- getNetworks(pattern = "", order = TRUE, groupList = groupList)
+  if (is.null(groupList)) {
+    networks <- NULL
+  } else {
+    # do not use parameter "pattern", the endpoint from getNetworks does NOT contain all the meta
+    # information. So we cannot use the string from input$ckanMeta here
+    networks <- getNetworks(pattern = "", order = TRUE, groupList = groupList)
+  }
 
   if (is.null(networks) || nrow(networks) == 0) {
-    return(list(
-      choices = c("No network available..." = ""),
-      selected = c("No network available ..." = "")
-    ))
+    return(c("No network available ..." = ""))
   }
 
   choices <- networks[["name"]]
@@ -82,18 +85,19 @@ getCKANTypesChoices <- function(repository = "",
                                 pattern = "",
                                 packageList = data.frame(),
                                 ckanFileTypes = config()[["dataFileTypes"]]) {
-  fileTypes <- getFileTypes(repository = repository,
-                            network = network,
-                            pattern = pattern,
-                            packageList = packageList,
-                            order = TRUE) %>%
-    filterTypes(ckanFileTypes = ckanFileTypes)
+  if (is.null(packageList)) {
+    fileTypes <- NULL
+  } else {
+    fileTypes <- getFileTypes(repository = repository,
+                              network = network,
+                              pattern = pattern,
+                              packageList = packageList,
+                              order = TRUE) %>%
+      filterTypes(ckanFileTypes = ckanFileTypes)
+  }
 
   if (is.null(fileTypes) || nrow(fileTypes) == 0) {
-    return(list(
-      choices = c("No files available..." = ""),
-      selected = c("No files available ..." = "")
-    ))
+    return(c("No files available ..." = ""))
   }
 
   choices <- unique(fileTypes[["format"]]) %>%
