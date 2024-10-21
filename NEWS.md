@@ -1,4 +1,4 @@
-# DataTools 24.09.1
+# DataTools 24.10.0
 
 ## New Features
 - new wrapper module `dataUI` and `dataServer` around the `importData` module that allows for loading example data
