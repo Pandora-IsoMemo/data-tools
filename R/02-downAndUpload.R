@@ -107,21 +107,19 @@ downUploadButtonServer <- function(id,
 }
 
 
-#' Download model module
+#' UI function of download model module
 #'
-#' UI function to download a zip file with notes and a list of models
-#'
-#' @param id id of module
-#' @param title title of module
 #' @param label button label
 #' @param width width of inputs in percent
+#' @inheritParams setModuleTitle
+#' @rdname downloadModelServer
 #'
 #' @export
-downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) {
+downloadModelUI <- function(id, title = NULL, titleTag = "h4", label = "Download", width = NULL) {
   ns <- NS(id)
 
   tagList(
-    tags$h4(title),
+    setModuleTitle(title = title, titleTag = titleTag),
     textAreaInput(
       ns("exportNotes"),
       "Notes",
@@ -131,14 +129,15 @@ downloadModelUI <- function(id, title = NULL, label = "Download", width = NULL) 
     checkboxInput(ns("onlyInputs"), "Store only data and user inputs", width = width),
     textInput(ns("userFileName"), "File name (without extension)", value = NULL, width = width),
     tags$br(),
-    downloadButton(ns("download"), label)
+    downloadButton(ns("download"), label),
+    tags$br(), tags$br()
   )
 }
 
 
-#' Server function download model
+#' Server function of download model module
 #'
-#' Backend for download model module
+#' Download model module to download a zip file with notes and a (list of) model(s)
 #'
 #' @param id namespace id
 #' @param dat (reactive) user data
@@ -200,6 +199,7 @@ downloadModelServer <-
 
                    observe({
                      req(isTRUE(triggerUpdate()))
+                     logDebug("%s: Entering observe 'modelNotes()'", id)
                      updateTextAreaInput(session, "exportNotes", value = modelNotes())
                    })
 
@@ -208,6 +208,8 @@ downloadModelServer <-
                    # should be enabled although model() and data() are NULL
 
                    observe({
+                     logDebug("%s: Entering observe 'customFileName()'", id)
+
                      placeholder <- defaultFileName %>%
                        updateDefaultFileName(subFolder = subFolder,
                                              fileExtension = fileExtension,
@@ -229,6 +231,8 @@ downloadModelServer <-
                      },
                      content = function(file) {
                        withProgress({
+                         logDebug("%s: Entering 'download'", id)
+
                          # create subfolder "downloadFiles" in tempdir
                          tempDir <- file.path(tempdir(), "downloadFiles")
                          dir.create(tempDir, recursive = TRUE)
@@ -268,10 +272,10 @@ downloadModelServer <-
                  })
   }
 
-#' Add Model RDS File
-#'
-#' @param tempDir (character) temporary directory to store the model file
-#' @inheritParams downloadModelServer
+# Add Model RDS File
+#
+# @param tempDir (character) temporary directory to store the model file
+# @inheritParams downloadModelServer
 addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder, onlySettings) {
   # prepare inputs
   inputExport <- reactiveValuesToList(inputs)
@@ -305,10 +309,10 @@ addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder
   return()
 }
 
-#' Add Notes File
-#'
-#' @param tempDir (character) temporary directory to store the notes file
-#' @param notes (character) notes to be added to the zip file
+# Add Notes File
+#
+# @param tempDir (character) temporary directory to store the notes file
+# @param notes (character) notes to be added to the zip file
 addNotesFile <- function(tempDir, notes) {
   if (notes == "") return()
 
@@ -318,10 +322,10 @@ addNotesFile <- function(tempDir, notes) {
   return()
 }
 
-#' Add Help File
-#'
-#' @param tempDir (character) temporary directory to store the help file
-#' @inheritParams downloadModelServer
+# Add Help File
+#
+# @param tempDir (character) temporary directory to store the help file
+# @inheritParams downloadModelServer
 addHelpFile <- function(tempDir, helpHTML) {
   if (is.null(helpHTML) || helpHTML == "") return()
 
@@ -331,10 +335,10 @@ addHelpFile <- function(tempDir, helpHTML) {
   return()
 }
 
-#' Add Internal Zip File
-#'
-#' @param tempDir (character) temporary directory to store the help file
-#' @inheritParams downloadModelServer
+# Add Internal Zip File
+#
+# @param tempDir (character) temporary directory to store the help file
+# @inheritParams downloadModelServer
 addFilesFromOtherZip <- function(tempDir, pathToOtherZip) {
   if (is.null(pathToOtherZip) || pathToOtherZip == "") return()
 
@@ -538,16 +542,16 @@ uploadModelServer <-
                  })
   }
 
-#' Get Folder on Github
-#'
-#' @inheritParams uploadModelServer
+# Get Folder on Github
+#
+# @inheritParams uploadModelServer
 getFolderOnGithub <- function(mainFolder, subFolder = NULL) {
   paste0("/", paste(c(mainFolder, subFolder), collapse = "/"))
 }
 
-#' Get Path to Local
-#'
-#' @inheritParams uploadModelServer
+# Get Path to Local
+#
+# @inheritParams uploadModelServer
 getPathToLocal <- function(mainFolder, subFolder, rPackageName = "") {
   folders <- list(mainFolder, subFolder)
   res <- folders[!sapply(folders, is.null)] %>%
