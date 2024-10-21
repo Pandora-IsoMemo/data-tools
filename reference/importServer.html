@@ -9,7 +9,7 @@ Backend for import module"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.09.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,7 +41,7 @@ Backend for import module"></head><body>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">importUI</span><span class="op">(</span><span class="va">id</span>, label <span class="op">=</span> <span class="st">"Import Model"</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">importUI</span><span class="op">(</span><span class="va">id</span>, label <span class="op">=</span> <span class="st">"Import Model"</span>, title <span class="op">=</span> <span class="cn">NULL</span>, titleTag <span class="op">=</span> <span class="st">"h4"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">importServer</span><span class="op">(</span></span>
 <span>  <span class="va">id</span>,</span>
@@ -71,7 +71,12 @@ Backend for import module"></head><body>
 
 
 <dt id="arg-title">title<a class="anchor" aria-label="anchor" href="#arg-title"></a></dt>
-<dd><p>title of import module</p></dd>
+<dd><p>(character) module title</p></dd>
+
+
+<dt id="arg-titletag">titleTag<a class="anchor" aria-label="anchor" href="#arg-titletag"></a></dt>
+<dd><p>(character) HTML tag to put around the title, e.g. "h4" for <code>h4</code> from
+<code>htmltools</code></p></dd>
 
 
 <dt id="arg-defaultsource">defaultSource<a class="anchor" aria-label="anchor" href="#arg-defaultsource"></a></dt>

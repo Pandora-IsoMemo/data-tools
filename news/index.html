@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.09.1.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.10.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,21 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="24.10.0" id="datatools-24100">DataTools 24.10.0<a class="anchor" aria-label="anchor" href="#datatools-24100"></a></h2>
+<div class="section level3">
+<h3 id="new-features-24-10-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-24-10-0"></a></h3>
+<ul><li>new wrapper module <code>dataUI</code> and <code>dataServer</code> around the <code>importData</code> module that allows for loading example data</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-24-10-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-24-10-0"></a></h3>
+<ul><li>fix an issue where the Pandora API being unreachable caused the import module to stop responding (#101)
+<ul><li>now the connection is checked only once when the pop-up is opened</li>
+<li>the time out for the connection check is set to 10 instead of 60 seconds</li>
+<li>a warning message is displayed if the connection fails</li>
+</ul></li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="24.09.1" id="datatools-24091">DataTools 24.09.1<a class="anchor" aria-label="anchor" href="#datatools-24091"></a></h2>
 <div class="section level3">
