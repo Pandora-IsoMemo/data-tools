@@ -327,7 +327,7 @@ addNotesFile <- function(tempDir, notes) {
 # @param tempDir (character) temporary directory to store the help file
 # @inheritParams downloadModelServer
 addHelpFile <- function(tempDir, helpHTML) {
-  if (is.null(helpHTML) || helpHTML == "") return()
+  if (is.null(helpHTML) || any(helpHTML == "")) return()
 
   # create help file
   save_html(helpHTML, file.path(tempDir, "help.html"))
