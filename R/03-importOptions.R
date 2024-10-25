@@ -53,8 +53,8 @@ getGithubMapping <- function(rPackage = "") {
 
   if (!(rPackage %in% names(config()$githubMapping))) {
     message(sprintf(
-      "No Github mapping found for package '%s'. Setting github repository to: '%s'. Add '%s' to the config file of the package 'DataTools' if needed.",
-      rPackage, rPackage, rPackage
+      "Note: Applying default mapping for package '%s' to the Github repository: 'https://github.com/Pandora-IsoMemo/%s'. If needed, add a specific mapping to the config file of the package 'DataTools'.",
+      rPackage, rPackage
     ))
 
     rPackage
