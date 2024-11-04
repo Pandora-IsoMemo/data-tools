@@ -7,14 +7,14 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
   expModelNames <- list(
     "data-tools" = c("2023-03-30_10_44_04_DataTools.zip"),
     "resources" = c("Black_Bear_Data.zip", "Brown_Bear_Data.zip", "Five_Sources_Data.zip", "Roman_Data.zip"),
-    "bmsc-app" = c("2024-04-24_test-model.bmsc"),
+    "bmsc-app" = c("2024-10-25_example-model.bmsc"),
     "osteo-bior" = c("2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip", "2022-11-16_TEST-Inputs_OsteoBioR.zip"),
     "bpred" = c("2024-04-16_16-42-39_test-model.bpred"),
     "plotr" = c("online_test_inputs.zip", "online_test_model.zip")
   )
 
 
-  for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
+  for (repo in ifelse(interactive(), testRepos, testRepos[sample(seq_along(testRepos), 1)])) {
     # Arrange
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder = mainFolder,
@@ -31,7 +31,7 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
   repo <- "iso-app"
   subFolder <- c("AssignR", "AverageR", "KernelR", "KernelTimeR", "OperatoR", "SpreadR", "TimeR")
 
-  for (subFol in subFolder[sample(seq_along(subFolder), 1)]) {
+  for (subFol in ifelse(interactive(), subFolder, subFolder[sample(seq_along(subFolder), 1)])) {
     # Arrange
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder, subFol))
@@ -60,7 +60,7 @@ testthat::test_that("Test module remoteModels", {
   testFileNames <- list(
     "data-tools" = "2023-03-30_10_44_04_DataTools.zip",
     "resources" = "Black_Bear_Data.zip",
-    "bmsc-app" = "2024-04-24_test-model.bmsc",
+    "bmsc-app" = "2024-10-25_example-model.bmsc",
     "osteo-bior" = "2022-05-23_TEST-InputsAndOutput_OsteoBioR.zip",
     "bpred" = "2024-04-16_16-42-39_test-model.bpred",
     "plotr" = "online_test_model.zip"
@@ -95,7 +95,7 @@ testthat::test_that("Test module remoteModels", {
     "plotr" = c("testPlot")
   )
 
-  for (repo in testRepos[sample(seq_along(testRepos), 1)]) {
+  for (repo in ifelse(interactive(), testRepos, testRepos[sample(seq_along(testRepos), 1)])) {
     if (Sys.info()["sysname"] != "Linux" && repo %in% c("bmsc-app", "bpred")) {
       # skip test for non-linux systems since unzip is failing for files with extension other than .zip
       next
@@ -145,7 +145,7 @@ testthat::test_that("Test module remoteModels", {
                    "outlier", "outlierDR")
   )
 
-  for (subFol in subFolder[sample(seq_along(subFolder), 1)]) {
+  for (subFol in ifelse(interactive(), subFolder, subFolder[sample(seq_along(subFolder), 1)])) {
     testServer(
       remoteModelsServer,
       args = list(

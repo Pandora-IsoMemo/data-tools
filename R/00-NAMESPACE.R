@@ -20,7 +20,7 @@
 #' @importFrom tidyr separate unite
 #' @importFrom tools file_path_sans_ext
 #' @importFrom urltools url_parse
-#' @importFrom utils capture.output download.file packageVersion
+#' @importFrom utils capture.output download.file packageVersion read.csv
 #' @importFrom yaml  yaml.load_file
 #' @importFrom zip unzip zipr
 NULL

@@ -1,11 +1,11 @@
 test_that("Test loadModel()", {
   # Arrange
-  testPackages <- c("DataTools", "ReSources", "BMSCApp", "OsteoBioR", "Bpred", "PlotR")
+  testPackages <- c("DataTools", "ReSources", "BMSCS", "OsteoBioR", "Bpred", "PlotR")
 
   testPath <- list(
     "DataTools" = "https://github.com/Pandora-IsoMemo/data-tools/raw/main/inst/app/predefinedModels/2023-03-30_10_44_04_DataTools.zip",
     "ReSources" = "https://github.com/Pandora-IsoMemo/resources/raw/main/inst/app/predefinedModels/Brown_Bear_Data.zip",
-    "BMSCApp" = "https://github.com/Pandora-IsoMemo/bmsc-app/raw/main/inst/app/predefinedModels/2024-04-24_test-model.bmsc",
+    "BMSCS" = "https://github.com/Pandora-IsoMemo/bmsc-app/raw/main/inst/app/predefinedModels/2024-10-25_example-model.bmsc",
     "OsteoBioR" = "https://github.com/Pandora-IsoMemo/osteo-bior/raw/main/inst/app/predefinedModels/2022-11-16_TEST-Inputs_OsteoBioR.zip",
     "Bpred" = "https://github.com/Pandora-IsoMemo/bpred/raw/main/inst/app/predefinedModels/2024-04-16_16-42-39_test-model.bpred",
     "PlotR" = "https://github.com/Pandora-IsoMemo/plotr/raw/main/inst/app/predefinedModels/online_test_inputs.zip"
@@ -28,14 +28,14 @@ test_that("Test loadModel()", {
         "includeSourceOffset", "sourceOffset", "sourceOffsetUncert",
         "targetValuesShowCoordinates", "exportCoordinates", "userEstimateGroups",
         "priors", "userEstimate"),
-    "BMSCApp" = c("x1", "x2", "x3", "y", "yUncertainty", "x4"),
+    "BMSCS" = c("x1", "x2", "x3", "y", "yUncertainty", "x4"),
     "OsteoBioR" = NULL,
     "Bpred" = c("results", "dat", "refSample", "measures", "values", "freq",  "exportData"),
     "PlotR" = NULL
   )
 
-  for (package in testPackages) { #[sample(seq_along(testPackages), 1)]) {
-    if (Sys.info()["sysname"] != "Linux" && package %in% c("BMSCApp", "Bpred")) {
+  for (package in ifelse(interactive(), testPackages, testPackages[sample(seq_along(testPackages), 1)])) {
+    if (Sys.info()["sysname"] != "Linux" && package %in% c("BMSCS", "Bpred")) {
       # skip test for non-linux systems since unzip is failing for files with extension other than .zip
       next
     }
