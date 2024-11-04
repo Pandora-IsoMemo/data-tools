@@ -55,9 +55,8 @@ downloadModelServer(
 zip file that contains the content to download. Needed in MapR. If NULL, no files are added.}
 
 \item{rPackageName}{(character) name of the package (as in the Description file) in which this
-module is called. If not NULL, than the uploaded file must be a downloaded file
-from the R package where \code{importDataServer} was called. This parameter is ignored if
-\code{importType == "data"}.}
+module is called. This value is needed to determine the Github repository of the package for
+loading example models or zip or data links.}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 

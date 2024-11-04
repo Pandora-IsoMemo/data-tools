@@ -27,9 +27,8 @@ is folder "predefinedModels". In most apps it can be found under "inst/app/".}
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files}
 
 \item{rPackageName}{(character) name of the package (as in the Description file) in which this
-module is called. If not NULL, than the uploaded file must be a downloaded file
-from the R package where \code{importDataServer} was called. This parameter is ignored if
-\code{importType == "data"}.}
+module is called. This value is needed to determine the Github repository of the package for
+loading example models or zip or data links.}
 
 \item{reloadChoices}{(reactive) trigger access to  github and reload choices of remote files}
 
