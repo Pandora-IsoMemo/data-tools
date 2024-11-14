@@ -43,7 +43,8 @@ for `importType = "list"`: c("json")}
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
-and the path to the zip file will be returned.}
+and the path to the zip file will be returned.
+ImportType == "list" expects a json file containing a list. The file will be read and checked.}
 
 \item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
 "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}

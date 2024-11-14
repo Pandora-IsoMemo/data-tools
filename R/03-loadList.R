@@ -17,8 +17,9 @@ loadListWrapper <- function(values,
   if (is.null(filename)) return(values)
 
   res <- tryCatch(
-    loadList(path = filepath,
-             type = fileExtension),
+    filepath %>%
+      checkExtension(fileExtension = c(fileExtension, "json", "bin")) %>%
+      loadList(),
     error = function(cond) {
       values$errors <-
         list(load = paste("Could not read in file:", cond$message))
@@ -34,8 +35,8 @@ loadListWrapper <- function(values,
     values$dataImport <- NULL
   } else {
     ## Import technically successful
-    values$dataImport <- as.list(res)
-    values$fileImportSuccess <- sprintf("'%s' import successful", fileExtension)
+    values$dataImport <- res
+    values$fileImportSuccess <- sprintf("'%s' import successful", getExtension(basename(filepath)))
   }
 
   values$fileName <- filepath %>%
@@ -46,15 +47,19 @@ loadListWrapper <- function(values,
 
 #' Load List
 #'
-#' Load a list from a file. Currently only supports `"json"` files.
+#' Load a list from a file. Currently supports `"json"` and `"bin"` files.
 #'
 #' @param path (character) path to the file
-#' @param type (character) file type input
-loadList <- function(path,
-                     type = "json") {
-  path <- path %>%
-    checkExtension(fileExtension = type,
-                   defaultExtension = "json")
+#'
+#' @return (list) list of data for `"json"` or raw data for `"bin"` files
+loadList <- function(path) {
+  if (getExtension(path) == "json") return(as.list(fromJSON(path)))
 
-  fromJSON(path)
+  if (getExtension(path) == "bin") {
+    n <- file.info(path)$size
+    zz <- file(path, "rb")
+    res <- readBin(zz, what = "raw", n = n)
+    close(zz)
+    return(res)
+  }
 }

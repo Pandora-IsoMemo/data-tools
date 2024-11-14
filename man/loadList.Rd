@@ -4,13 +4,14 @@
 \alias{loadList}
 \title{Load List}
 \usage{
-loadList(path, type = "json")
+loadList(path)
 }
 \arguments{
 \item{path}{(character) path to the file}
-
-\item{type}{(character) file type input}
+}
+\value{
+(list) list of data for `"json"` or raw data for `"bin"` files
 }
 \description{
-Load a list from a file. Currently only supports `"json"` files.
+Load a list from a file. Currently supports `"json"` and `"bin"` files.
 }

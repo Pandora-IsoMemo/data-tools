@@ -39,6 +39,7 @@ importUI <- function(id, label = "Import Model", title = NULL, titleTag = "h4") 
 #'  the model object extracted, and checked if it is valid for the app.
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
 #'  and the path to the zip file will be returned.
+#'  ImportType == "list" expects a json file containing a list. The file will be read and checked.
 #' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
 #'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
 #' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
@@ -112,7 +113,7 @@ importServer <- function(id,
               ckanFileTypes = ckanFileTypes,
               importType = importType,
               isInternet = internetCon(),
-              fileExtension = fileExtension
+              fileInputAccept = getFileInputAccept(importType, fileExtension)
             ),
             # rendered "configureFileUI" not only updated if "openPopup" is clicked as the modalDialog is
             uiOutput(ns("configureFileDialog"))
