@@ -29,30 +29,24 @@ resetValues <- function(values, includeData = TRUE) {
   return(values)
 }
 
-#' Check Extension
-#'
-#' Check if the file extension of a file is valid.
-#'
-#' @param filepath (character) path to the file
-#' @param fileExtension (character) expected file extension
-#' @param defaultExtension (character) default file extension
-checkExtension <- function(filepath,
-                           fileExtension = "zip",
-                           defaultExtension = "zip") {
-  # check if valid app-specific extension or a zip file
-  if (getExtension(filepath) != fileExtension && getExtension(filepath) != defaultExtension) {
-    stop(sprintf("File type not supported. Not a %s file!",
-                 expectedExtStrng(fileExtension, defaultExtension)))
+# Check Extension
+#
+# Check if the file extension of a file is valid.
+#
+# @param filepath (character) path to the file
+# @param fileExtension (character) vector of expected file extension
+checkExtension <- function(filepath, fileExtension = c("zip")) {
+  if (!(getExtension(filepath) %in% fileExtension)) {
+    stop(sprintf(
+      "File type not supported. Not a %s file!",
+      expectedExtStrng(fileExtension)
+    ))
     return(NULL)
   }
 
   filepath
 }
 
-expectedExtStrng <- function(fileExtension, defaultExtension = "zip") {
-  if (fileExtension == defaultExtension) {
-    return(defaultExtension)
-  } else {
-    return(sprintf(".%s or .%s", fileExtension, defaultExtension))
-  }
+expectedExtStrng <- function(fileExtension) {
+  paste(unique(c(fileExtension)), collapse = " or ")
 }

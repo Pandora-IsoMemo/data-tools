@@ -13,7 +13,9 @@ modelFileTypes:
   - "datatools"
   - "zip"
 githubRepo: "data-tools"        # for import of models
-fileExtension: "datatools"      # for download of models
+fileExtension:
+  - "datatools"      # for download of models
+  - "zip"
 rPackageName: "DataTools"       # for download and import of models
 #
 # Internal Settings ################

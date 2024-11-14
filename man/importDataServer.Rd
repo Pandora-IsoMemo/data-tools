@@ -48,7 +48,8 @@ importDataServer(
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
-and the path to the zip file will be returned.}
+and the path to the zip file will be returned.
+ImportType == "list" expects a json file containing a list. The file will be read and checked.}
 
 \item{rowNames}{(reactive) use this for rownames of imported data.}
 

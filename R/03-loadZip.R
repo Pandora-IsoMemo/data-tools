@@ -20,7 +20,7 @@ loadZipWrapper <- function(values,
 
   # check if file is a zip file
   res <- filepath %>%
-    checkExtension(fileExtension = fileExtension) %>%
+    checkExtension(fileExtension = c(fileExtension, "zip")) %>%
     shinyTryCatch(errorTitle = "Cannot unzip file.")
 
   # try to unzip the file

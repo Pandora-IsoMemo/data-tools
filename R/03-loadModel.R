@@ -27,7 +27,7 @@ loadModelWrapper <- function(values,
 
   # unzip model file
   res <- filepath %>%
-    checkExtension(fileExtension = fileExtension) %>%
+    checkExtension(fileExtension = c(fileExtension, "zip")) %>%
     getZip() %>%
     loadModel(subFolder = subFolder,
               rPackageName = rPackageName,

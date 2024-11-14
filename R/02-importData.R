@@ -38,6 +38,7 @@ importDataUI <- function(id, label = "Import Data") {
 #'  the model object extracted, and checked if it is valid for the app.
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
 #'  and the path to the zip file will be returned.
+#'  ImportType == "list" expects a json file containing a list. The file will be read and checked.
 #' @param rowNames (reactive) use this for rownames of imported data.
 #' @param colNames (reactive) use this for colnames of imported data.
 #' @param customWarningChecks list of reactive(!) functions which will be executed after importing
@@ -569,7 +570,7 @@ importDataDialog <-
                            ckanFileTypes = ckanFileTypes,
                            importType = importType,
                            isInternet = isInternet,
-                           fileExtension = fileExtension),
+                           fileInputAccept = getFileInputAccept(importType, fileExtension)),
             uiOutput(ns("selectDataDialog"))
           )
         ),

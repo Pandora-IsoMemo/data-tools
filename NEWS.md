@@ -1,3 +1,8 @@
+# DataTools 24.11.0
+
+## New Features
+- _importModule_: enable import of `.bin` files for `importType = "list"` (requirement for `InquiryR` app)
+
 # DataTools 24.10.0
 
 ## New Features
