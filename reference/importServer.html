@@ -9,7 +9,7 @@ Backend for import module"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.10.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -98,7 +98,8 @@ for `importType = "list"`: c("json")</p></dd>
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
-and the path to the zip file will be returned.</p></dd>
+and the path to the zip file will be returned.
+ImportType == "list" expects a json file containing a list. The file will be read and checked.</p></dd>
 
 
 <dt id="arg-fileextension">fileExtension<a class="anchor" aria-label="anchor" href="#arg-fileextension"></a></dt>

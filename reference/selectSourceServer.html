@@ -9,7 +9,7 @@ Server function of the module"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.10.0.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">24.11.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -47,7 +47,7 @@ Server function of the module"></head><body>
 <span>  <span class="va">ckanFileTypes</span>,</span>
 <span>  <span class="va">importType</span>,</span>
 <span>  <span class="va">isInternet</span>,</span>
-<span>  fileExtension <span class="op">=</span> <span class="st">"zip"</span></span>
+<span>  fileInputAccept <span class="op">=</span> <span class="st">"zip"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">selectSourceServer</span><span class="op">(</span></span>
@@ -85,7 +85,8 @@ Server function of the module"></head><body>
 ImportType == "model" expects a zip file containing a model. The file will be unzipped,
 the model object extracted, and checked if it is valid for the app.
 ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
-and the path to the zip file will be returned.</p></dd>
+and the path to the zip file will be returned.
+ImportType == "list" expects a json file containing a list. The file will be read and checked.</p></dd>
 
 
 <dt id="arg-isinternet">isInternet<a class="anchor" aria-label="anchor" href="#arg-isinternet"></a></dt>
@@ -93,9 +94,9 @@ and the path to the zip file will be returned.</p></dd>
 ignored if <code>type = "file"</code> or <code>type = "remoteModel"</code></p></dd>
 
 
-<dt id="arg-fileextension">fileExtension<a class="anchor" aria-label="anchor" href="#arg-fileextension"></a></dt>
-<dd><p>(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.</p></dd>
+<dt id="arg-fileinputaccept">fileInputAccept<a class="anchor" aria-label="anchor" href="#arg-fileinputaccept"></a></dt>
+<dd><p>(character) (optional) accept attribute for fileInput. E.g. ".zip" or
+output from <code>getFileInputAccept(importType, fileExtension)</code></p></dd>
 
 
 <dt id="arg-openpopupreset">openPopupReset<a class="anchor" aria-label="anchor" href="#arg-openpopupreset"></a></dt>
