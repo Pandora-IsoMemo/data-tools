@@ -104,7 +104,8 @@ remoteModelsServer <- function(id,
                    if (reloadChoices() && githubRepo != "" && isInternet()) {
                      choices <-
                        getRemoteModelsFromGithub(githubRepo = githubRepo,
-                                                 folderOnGithub = folderOnGithub)
+                                                 folderOnGithub = folderOnGithub,
+                                                 isInternet = isInternet())
                    } else {
                      choices <- c()
                    }
@@ -252,10 +253,12 @@ checkLocalModelDir <-
 # @inheritParams remoteModelsServer
 # @param apiOut output of `getGithubContent()` if it was already loaded
 getRemoteModelsFromGithub <-
-  function(githubRepo, folderOnGithub = "/predefinedModels", apiOut = NULL) {
+  function(githubRepo, folderOnGithub = "/predefinedModels", apiOut = NULL, isInternet = FALSE) {
     if (is.null(apiOut)) {
       # if default value
-      apiOut <- getGithubContent(githubRepo = githubRepo, folderOnGithub = folderOnGithub)
+      apiOut <- getGithubContent(githubRepo = githubRepo,
+                                 folderOnGithub = folderOnGithub,
+                                 isInternet = isInternet)
     }
 
     # if nothing could be loaded
@@ -278,9 +281,7 @@ getRemoteModelsFromGithub <-
 # Get content of api call to github folder
 # @inheritParams remoteModelsServer
 getGithubContent <-
-  function(githubRepo, folderOnGithub = "/predefinedModels") {
-    isInternet <- has_internet()
-
+  function(githubRepo, folderOnGithub = "/predefinedModels", isInternet = FALSE) {
     if (isInternet) {
       tryGET(path = sprintf("api.github.com/repos/Pandora-IsoMemo/%s/contents/inst/app%s",
                             githubRepo,

@@ -130,6 +130,7 @@ configureDataServer <- function(id,
                      values <- loadDataWrapper(
                        values = values,
                        filepath = dataSource[["file"]],
+                       filename = dataSource[["filename"]],
                        type = input[["fileType-type"]],
                        sep = input[["fileType-colSep"]],
                        dec = input[["fileType-decSep"]],

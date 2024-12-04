@@ -6,6 +6,7 @@
 #'
 #' @param values (list) list with import specifications
 #' @param filepath (character) url or path
+#' @param filename (character) file name
 #' @param type (character) file type input
 #' @param sep (character) column separator input
 #' @param dec (character) decimal separator input
@@ -14,6 +15,7 @@
 #' @param sheetId (numeric) sheet id
 loadDataWrapper <- function(values,
                             filepath,
+                            filename,
                             type,
                             sep,
                             dec,
@@ -63,8 +65,7 @@ loadDataWrapper <- function(values,
 
   }
 
-  values$fileName <- filepath %>%
-    basename()
+  values$fileName <- filename
 
   values
 }

@@ -256,6 +256,7 @@ loadFileFromLink <- function(values = reactiveValues(warnings = list(),
   values <- loadDataWrapper(
     values = values,
     filepath = dataSource[["file"]],
+    filename = dataSource[["filename"]],
     type = loadedFileInputs[["fileType-type"]],
     sep = loadedFileInputs[["fileType-colSep"]],
     dec = loadedFileInputs[["fileType-decSep"]],
