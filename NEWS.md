@@ -1,3 +1,9 @@
+# DataTools 24.12.0
+
+## Bug fixes
+- fix issue with missing filename for file imports (#104)
+- prevent duplicated check of internet connection
+
 # DataTools 24.11.0
 
 ## New Features

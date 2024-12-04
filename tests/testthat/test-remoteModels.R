@@ -18,8 +18,11 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
     # Arrange
     testApiContent <- getGithubContent(githubRepo = repo,
                                        folderOnGithub = getFolderOnGithub(mainFolder = mainFolder,
-                                                                          subFolder = NULL))
-    testRemoteModels <- getRemoteModelsFromGithub(githubRepo = repo, apiOut = testApiContent)
+                                                                          subFolder = NULL),
+                                       isInternet = TRUE)
+    testRemoteModels <- getRemoteModelsFromGithub(githubRepo = repo,
+                                                  apiOut = testApiContent,
+                                                  isInternet = TRUE)
 
     print(sprintf("test getRemoteModelsFromGithub() with repo: %s", repo))
     # Act
@@ -34,8 +37,11 @@ testthat::test_that("Test getRemoteModelsFromGithub", {
   for (subFol in ifelse(interactive(), subFolder, subFolder[sample(seq_along(subFolder), 1)])) {
     # Arrange
     testApiContent <- getGithubContent(githubRepo = repo,
-                                       folderOnGithub = getFolderOnGithub(mainFolder, subFol))
-    testRemoteModels <- getRemoteModelsFromGithub(githubRepo = repo, apiOut = testApiContent)
+                                       folderOnGithub = getFolderOnGithub(mainFolder, subFol),
+                                       isInternet = TRUE)
+    testRemoteModels <- getRemoteModelsFromGithub(githubRepo = repo,
+                                                  apiOut = testApiContent,
+                                                  isInternet = TRUE)
     expRemoteModels <- sprintf("testModel_MpiIsoApp_%s.zip", subFol)
     if (subFol == "OperatoR") {
       # "testMap" not "testModel"

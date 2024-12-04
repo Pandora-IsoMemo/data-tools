@@ -184,14 +184,21 @@ importServer <- function(id,
       req(values$dataImport)
       res <- values$dataImport
 
-      values <- values %>% resetValues()
       values$data[[values$fileName]] <- res
     }) %>%
       bindEvent(input$accept)
 
     # return value for parent module: ----
     # currently only the data is returned, not the path(s) to the source(s)
-    reactive(values$data)
+    returnData <- reactiveVal()
+    observe({
+      returnData(values$data)
+
+      values <- values %>%
+        resetValues()
+    })
+
+    return(returnData)
   })
 }
 

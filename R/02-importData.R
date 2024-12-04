@@ -398,6 +398,22 @@ importDataServer <- function(id,
                    joinedData <-
                      mergeDataServer("dataMerger", mergeList = mergeList)
 
+                   # Following might not work since always when mergeList changes mergeDataServer
+                   # is called again which might overwrite existing joinedData
+                   # This needs more careful testing!
+                   # joinedData <- reactiveVal()
+                   # observe({
+                   #   req(length(mergeList()) > 0)
+                   #   logDebug("%s: setup  'dataMerger'", id)
+                   #   mergedData <-
+                   #     mergeDataServer("dataMerger", mergeList = mergeList)
+                   #
+                   #   observe({
+                   #     joinedData(mergedData())
+                   #   }) %>%
+                   #     bindEvent(mergedData())
+                   # })
+
                    ## disable button merge data ----
                    observe({
                      logDebug("Updating button acceptMerged")
@@ -457,8 +473,6 @@ importDataServer <- function(id,
                        )
                    }
 
-                   values <- values %>%
-                     resetValues()
                    values$data[[values$fileName]] <- res
                  })
 
@@ -469,8 +483,6 @@ importDataServer <- function(id,
                      removeOpenGptCon()
 
                      req(preparedData$data)
-                     values <- values %>%
-                       resetValues()
                      values$data[[values$fileName]] <-
                        preparedData$data %>%
                        formatForImport(
@@ -487,8 +499,7 @@ importDataServer <- function(id,
                      removeOpenGptCon()
                      customNames$withRownames <- FALSE
                      customNames$withColnames <- TRUE
-                     values <- values %>%
-                       resetValues()
+
                      values$data[[names(joinedData())[1]]] <-
                        joinedData()[[1]] %>%
                        formatForImport(
@@ -504,8 +515,7 @@ importDataServer <- function(id,
                      removeOpenGptCon()
                      customNames$withRownames <- FALSE
                      customNames$withColnames <- TRUE
-                     values <- values %>%
-                       resetValues()
+
                      values$data[[names(queriedData())[1]]] <-
                        queriedData()[[1]] %>%
                        formatForImport(
@@ -518,7 +528,15 @@ importDataServer <- function(id,
 
                  # return value for parent module: ----
                  # currently only the data is returned, not the path(s) to the source(s)
-                 reactive(values$data)
+                 returnData <- reactiveVal()
+                 observe({
+                   returnData(values$data)
+
+                   values <- values %>%
+                     resetValues()
+                 })
+
+                 return(returnData)
                })
 }
 
