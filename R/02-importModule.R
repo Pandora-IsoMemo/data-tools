@@ -192,10 +192,14 @@ importServer <- function(id,
     # currently only the data is returned, not the path(s) to the source(s)
     returnData <- reactiveVal()
     observe({
-      returnData(values$data)
+      if (length(values$data) > 0) {
+        returnData(values$data)
 
-      values <- values %>%
-        resetValues()
+        values <- values %>%
+          resetValues()
+      } else {
+        returnData(list())
+      }
     })
 
     return(returnData)
