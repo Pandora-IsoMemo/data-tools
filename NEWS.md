@@ -1,3 +1,9 @@
+# DataTools 25.01.0
+
+## Updates
+- combine buttons 'Create Query from file' and 'Prepare / Merge file(s)' and the logic behind into a
+  single button 'Process data'
+
 # DataTools 24.12.0
 
 ## Bug fixes
