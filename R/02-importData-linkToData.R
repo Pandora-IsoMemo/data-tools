@@ -68,14 +68,23 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList, downl
   )
 }
 
-#' Filter Unprocessed
-#'
-#' @inheritParams configureDataServer
+# Filter Unprocessed
+#
+# @inheritParams configureDataServer
 filterUnprocessed <- function(mergeList) {
   if (length(mergeList) == 0) return(mergeList)
-
   mergeList[sapply(mergeList, function(x) {
-    !is.null(attr(x, "unprocessed")) && attr(x, "unprocessed")
+    !is.null(attr(x, "unprocessed")) && isTRUE(attr(x, "unprocessed"))
+  })]
+}
+
+# Filter Processed
+#
+# @inheritParams configureDataServer
+filterProcessed <- function(mergeList) {
+  if (length(mergeList) == 0) return(mergeList)
+  mergeList[sapply(mergeList, function(x) {
+    !is.null(attr(x, "unprocessed")) && isFALSE(attr(x, "unprocessed"))
   })]
 }
 

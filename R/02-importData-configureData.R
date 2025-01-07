@@ -61,13 +61,12 @@ configureDataUI <- function(id,
                    )
                  ),
                  helpText(width = "100%",
-                          "Use the loaded file for data processing in the tabs: 'Query with SQL' or 'Prepare' / 'Merge'.")
+                          "Process loaded data before import in the tabs: 'Query with SQL', 'Prepare' or 'Merge'.")
           ),
           column(6,
                  align = "right",
                  style = "margin-top: 1.5em",
-                 actionButton(ns("keepDataForQuery"), "Create Query from file"),
-                 actionButton(ns("keepData"), "Prepare / Merge file(s)")
+                 actionButton(ns("keepDataForQuery"), "Process data")
           )
         ),
         downloadDataLinkUI(ns = ns,
@@ -149,10 +148,8 @@ configureDataServer <- function(id,
                      if (length(values$dataImport) == 0 ||
                          isNotValid(values$errors, values$warnings, ignoreWarnings) ||
                          dataSource$type == "dataLink") {
-                       shinyjs::disable(ns("keepData"), asis = TRUE)
                        shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
                      } else {
-                       shinyjs::enable(ns("keepData"), asis = TRUE)
                        shinyjs::enable(ns("keepDataForQuery"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
@@ -165,24 +162,6 @@ configureDataServer <- function(id,
 
                    ## button keep data ----
                    newDataForMergeList <- reactiveVal(NULL)
-
-                   observe({
-                     logDebug("Updating input$keepData")
-
-                     newData <- list(data = values$dataImport %>%
-                                       formatColumnNames(silent = TRUE),
-                                     input = list(
-                                       source = dataSource$input,
-                                       file = getFileInputs(input)
-                                     ))
-                     attr(newData, "unprocessed") <- FALSE # disables download of data links
-
-                     newDataForMergeList(newData)
-
-                     # disable "keepData" to prevent loading data twice
-                     shinyjs::disable(ns("keepData"), asis = TRUE)
-                   }) %>%
-                     bindEvent(input$keepData)
 
                    observe({
                      logDebug("Updating input$keepDataForQuery")
