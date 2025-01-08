@@ -16,7 +16,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableX"),
           "Select table x",
-          choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
+          choices = emptyMergeListChoices(),
           width = "100%"
         )
       ),
@@ -28,7 +28,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableY"),
           "Select table y",
-          choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
+          choices = emptyMergeListChoices(),
           width = "100%"
         )
       ),
@@ -101,15 +101,19 @@ mergeDataServer <- function(id, mergeList) {
 
                    tableIds(extractTableIds(mergeList()))
 
-                   tableChoices <- extractMergeChoices(mergeList())
-                   updateSelectInput(session,
-                                     "tableX",
-                                     choices = tableChoices,
-                                     selected = tableChoices[1])
-                   updateSelectInput(session,
-                                     "tableY",
-                                     choices = tableChoices,
-                                     selected = tableChoices[2])
+                   tableChoices <- extractMergeListChoices(mergeList(), addIDs = TRUE)
+                   updateSelectInput(
+                     session,
+                     "tableX",
+                     choices = tableChoices,
+                     selected =  extractLastSelected(input$tableX, choices = tableChoices)
+                   )
+                   updateSelectInput(
+                     session,
+                     "tableY",
+                     choices = tableChoices,
+                     selected = extractLastSelected(input$tableY, choices = tableChoices, idDefault = 2)
+                   )
                  })
 
                  output$nRowsTableX <- renderText({
@@ -252,11 +256,14 @@ mergeDataServer <- function(id, mergeList) {
                    value = 0.75,
                    message = 'merging data ...')
 
+                   newData <- list(data = joinedResult$data,
+                                   history = list())
+                   attr(newData, "unprocessed") <- FALSE # disables download of data links
+
                    # UPDATE MERGELIST ----
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$fileNameJoined,
-                                                   newData = list(data = joinedResult$data,
-                                                                  history = list()))
+                                                   newData = newData)
                    mergeList(newMergeList$mergeList)
 
                    # keep filename
@@ -287,14 +294,71 @@ extractTableData <- function(mergeList, tableName) {
   mergeList[[tableName]]$data
 }
 
-extractMergeChoices <- function(tableList) {
-  tableChoices <- names(tableList)
-  names(tableChoices) <-
-    paste0(extractTableIds(tableList), " -- ", tableChoices)
+extractLastSelected <- function(thisInput, choices, idDefault = 1) {
+  if (!is.null(thisInput) && thisInput != "") {
+    lastSelected <- thisInput
+  } else {
+    lastSelected <- unlist(choices)[idDefault]
+  }
 
-  tableChoices
+  lastSelected
 }
 
+extractMergeListChoices <- function(mergeList, addIDs = FALSE) {
+  getNames <- function(dataList) {
+    if (length(dataList) == 0)
+      return(NULL)
+
+    res <- names(dataList)
+    names(res) <- res
+
+    res
+  }
+
+  # split into processed and unprocessed data
+  unprocessedData <- mergeList %>%
+    filterUnprocessed()
+  processedData <- mergeList %>%
+    filterProcessed()
+  choicesUnprocessed <- getNames(unprocessedData)
+  choicesProcessed <- getNames(processedData)
+
+  # add ids
+  if (addIDs) {
+    pasteIDs <- function(fileList, tableIds) {
+      if (length(fileList) == 0 ||
+          all(sapply(fileList, function(x)
+            x == ""))) {
+        return(fileList) # return if fileList is empty
+      }
+
+      newNames <- paste0(tableIds[fileList], " -- ", fileList)
+      names(fileList) <- newNames
+
+      fileList
+    }
+
+    tableIds <- extractTableIds(mergeList)
+
+    choicesUnprocessed <- choicesUnprocessed %>% pasteIDs(tableIds)
+    choicesProcessed <- choicesProcessed %>% pasteIDs(tableIds)
+  }
+
+  choices <- list(`unprocessed files` = choicesUnprocessed,
+                  `processed files` = choicesProcessed)
+
+  # remove empty entries
+  choices <- choices[!sapply(choices, is.null)]
+
+  if (length(choices) == 0)
+    return(emptyMergeListChoices())
+
+  choices
+}
+
+emptyMergeListChoices <- function() {
+  c("Please load new data under 'Select' and press 'Process data' ..." = "")
+}
 
 #' Extract Table IDs
 #'

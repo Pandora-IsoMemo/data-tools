@@ -92,11 +92,12 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  }) %>%
                    bindEvent(mergeList()) # cannot set ignoreInit = TRUE because of tests
 
-                 observe({
+                 tableIds <- reactive({
                    req(length(unprocessedData()) > 0)
                    logDebug("QueryData: update inMemoryDB and input$sqlCommand")
+
                    tmpDB <- inMemoryDB()
-                   # reset db (remove tables if the become "processed data")
+                   # reset db (remove tables if they become "processed data")
                    for (i in dbListTables(tmpDB)) {
                      dbRemoveTable(tmpDB, i)
                    }
@@ -105,7 +106,13 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      dbWriteTable(tmpDB, paste0("t", i), unprocessedData()[[i]]$data, overwrite = TRUE)
                    }
                    inMemoryDB(tmpDB)
-                   tableIds(dbListTables(tmpDB))
+
+                   dbListTables(tmpDB)
+                 })
+
+                 observe({
+                   req(length(unprocessedData()) > 0)
+                   logDebug("QueryData: update inMemoryDB and input$sqlCommand")
 
                    inMemCols <-
                      lapply(unprocessedData(), function(table) {
@@ -146,10 +153,9 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                    bindEvent(unprocessedData())
 
                  output$inMemoryTables <- renderDataTable({
-                   validate(need(
-                     !is.null(tableIds()),
-                     "Tables: Please load data under 'Select' and press 'Create Query from file' ..."
-                   ))
+                   validate(need(length(unprocessedData()) > 0, paste(
+                     "Tables:", names(emptyMergeListChoices())
+                   )))
 
                    req(tableIds())
                    DT::datatable(
@@ -171,10 +177,9 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  })
 
                  output$inMemoryColumns <- renderDataTable({
-                   validate(need(
-                     !is.null(tableIds()),
-                     "Columns: Please load data under 'Select' and press 'Create Query from file' ..."
-                   ))
+                   validate(need(length(unprocessedData()) > 0, paste(
+                     "Columns:", names(emptyMergeListChoices())
+                   )))
 
                    req(tableIds())
                    inMemColsPasted <-

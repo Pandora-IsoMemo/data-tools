@@ -13,7 +13,7 @@ prepareDataUI <- function(id) {
     selectInput(
       ns("dataToPrep"),
       "Select a File",
-      choices = c("Please load data under 'Select' and press 'Prepare / Merge file(s)' ..." = ""),
+      choices = emptyMergeListChoices(),
       width = "75%"
     ),
     renameColumnsUI(ns("renameCols")),
@@ -44,20 +44,20 @@ prepareDataServer <- function(id, mergeList) {
                                                 history = list())
 
                  observeEvent(mergeList(), ignoreInit = TRUE, {
-                   logDebug("Entering input select from mergeList")
                    req(length(mergeList()) > 0)
                    logDebug("Updating input select from mergeList")
-                   fileList <- names(mergeList())
-                   updateSelectInput(session,
-                                     "dataToPrep",
-                                     choices = fileList,
-                                     selected = fileList[length(fileList)])
+
+                   choices <- extractMergeListChoices(mergeList())
+                   updateSelectInput(
+                     session,
+                     "dataToPrep",
+                     choices = choices,
+                     selected = extractLastSelected(input$dataToPrep, choices = choices)
+                   )
                  })
 
                  observe({
                    logDebug("Entering preparedData")
-                   # update here changes of input$dataToPrep & changes of mergeList -> takes
-                   # always most recently updated data
                    req(length(mergeList()) > 0)
                    preparedData$data <- NULL
 
@@ -76,6 +76,7 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(renamedData$data, {
                    logDebug("Updating renamedData")
                    req(renamedData$data)
+                   attr(renamedData, "unprocessed") <- FALSE # disables download of data links
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$dataToPrep,
                                                    newData = renamedData)
@@ -88,7 +89,7 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(reducedData$data, {
                    logDebug("Updating reducedData")
                    req(reducedData$data)
-
+                   attr(reducedData, "unprocessed") <- FALSE # disables download of data links
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$dataToPrep,
                                                    newData = reducedData)
@@ -101,6 +102,7 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(joinedData$data, {
                    logDebug("Updating joinedData")
                    req(joinedData$data)
+                   attr(joinedData, "unprocessed") <- FALSE # disables download of data links
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$dataToPrep,
                                                    newData = joinedData)
@@ -113,6 +115,7 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(splittedData$data, {
                    logDebug("Updating splittedData")
                    req(splittedData$data)
+                   attr(splittedData, "unprocessed") <- FALSE # disables download of data links
                    newMergeList <- updateMergeList(mergeList = mergeList(),
                                                    fileName = input$dataToPrep,
                                                    newData = splittedData)
