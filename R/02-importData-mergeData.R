@@ -102,14 +102,18 @@ mergeDataServer <- function(id, mergeList) {
                    tableIds(extractTableIds(mergeList()))
 
                    tableChoices <- extractMergeListChoices(mergeList(), addIDs = TRUE)
-                   updateSelectInput(session,
-                                     "tableX",
-                                     choices = tableChoices,
-                                     selected = unlist(tableChoices)[1])
-                   updateSelectInput(session,
-                                     "tableY",
-                                     choices = tableChoices,
-                                     selected = unlist(tableChoices)[2])
+                   updateSelectInput(
+                     session,
+                     "tableX",
+                     choices = tableChoices,
+                     selected =  extractLastSelected(input$tableX, choices = tableChoices)
+                   )
+                   updateSelectInput(
+                     session,
+                     "tableY",
+                     choices = tableChoices,
+                     selected = extractLastSelected(input$tableY, choices = tableChoices, idDefault = 2)
+                   )
                  })
 
                  output$nRowsTableX <- renderText({
@@ -288,6 +292,16 @@ extractTableData <- function(mergeList, tableName) {
   if (is.null(tableName) || tableName == "")  return(NULL)
 
   mergeList[[tableName]]$data
+}
+
+extractLastSelected <- function(thisInput, choices, idDefault = 1) {
+  if (!is.null(thisInput) && thisInput != "") {
+    lastSelected <- thisInput
+  } else {
+    lastSelected <- unlist(choices)[idDefault]
+  }
+
+  lastSelected
 }
 
 extractMergeListChoices <- function(mergeList, addIDs = FALSE) {

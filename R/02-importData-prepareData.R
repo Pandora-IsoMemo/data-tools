@@ -46,17 +46,18 @@ prepareDataServer <- function(id, mergeList) {
                  observeEvent(mergeList(), ignoreInit = TRUE, {
                    req(length(mergeList()) > 0)
                    logDebug("Updating input select from mergeList")
+
                    choices <- extractMergeListChoices(mergeList())
-                   updateSelectInput(session,
-                                     "dataToPrep",
-                                     choices = choices,
-                                     selected = unlist(choices)[length(unlist(choices))])
+                   updateSelectInput(
+                     session,
+                     "dataToPrep",
+                     choices = choices,
+                     selected = extractLastSelected(input$dataToPrep, choices = choices)
+                   )
                  })
 
                  observe({
                    logDebug("Entering preparedData")
-                   # update here changes of input$dataToPrep & changes of mergeList -> takes
-                   # always most recently updated data
                    req(length(mergeList()) > 0)
                    preparedData$data <- NULL
 
