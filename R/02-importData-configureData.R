@@ -54,19 +54,19 @@ configureDataUI <- function(id,
         previewDataUI(ns("previewDat"), title = "Preview data"),
         tags$hr(),
         fluidRow(
-          column(6,
+          column(8,
                  tags$html(
                    HTML(
                      "<b>Data processing</b> &nbsp;&nbsp; (Optional)"
                    )
                  ),
                  helpText(width = "100%",
-                          "Process loaded data before import in the tabs: 'Query with SQL', 'Prepare' or 'Merge'.")
+                          "Prepare the loaded data for import via the 'Query with SQL', 'Prepare' or 'Merge' tabs.")
           ),
-          column(6,
+          column(4,
                  align = "right",
                  style = "margin-top: 1.5em",
-                 actionButton(ns("keepDataForQuery"), "Process data")
+                 actionButton(ns("keepDataForQuery"), "Process data", width = "100%")
           )
         ),
         downloadDataLinkUI(ns = ns,
@@ -144,12 +144,11 @@ configureDataServer <- function(id,
                  importMessageServer("importMessage", values)
 
                  observe({
-                   logDebug("Enable/Disable keepData button")
-                     if (length(values$dataImport) == 0 ||
-                         isNotValid(values$errors, values$warnings, ignoreWarnings) ||
-                         dataSource$type == "dataLink") {
+                     if (length(values$dataImport) == 0 || dataSource$type == "dataLink") {
+                       logDebug("%s: Disable keepData button", id)
                        shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
                      } else {
+                       logDebug("%s: Enable keepData button", id)
                        shinyjs::enable(ns("keepDataForQuery"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
