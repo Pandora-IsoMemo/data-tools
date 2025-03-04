@@ -48,17 +48,10 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://Pandora-IsoMemo.github.io/drat/
 
-      # - uses: r-lib/actions/setup-r-dependencies@v2
-      #   with:
-      #     extra-packages: any::rcmdcheck
-      #     needs: check
-
-      # use install.packages() because of an error with pak on mac-latest
-      - name: Install dependencies with install.packages()
-        run: |
-          Rscript -e 'install.packages(c("remotes", "rcmdcheck"), repos="https://cran.rstudio.com")'
-          Rscript -e 'remotes::install_deps(dependencies = TRUE)'
-
+      - uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          extra-packages: any::rcmdcheck
+          needs: check
 
       - uses: r-lib/actions/check-r-package@v2
         with:
