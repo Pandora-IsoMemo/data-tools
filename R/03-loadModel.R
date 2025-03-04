@@ -1,20 +1,20 @@
 # Functions to IMPORT MODEL objects ----
 
-#' Load Model Wrapper
-#'
-#' Wrapper function to load a model from a zip file. File extension may differ from app to app, but
-#' in essence all models are stored in a zip file. The zip file contains a model object, a data
-#' object, an inputs object and potentially help files.
-#' This function unzips the file, extracts the model object, and checks if the model is valid for
-#' the app.
-#' It returns a list with the model object, the data object, the inputs object and gives a message
-#' if the model was successfully loaded.
-#'
-#' @param values (list) list with import specifications
-#' @param filepath (character) path to the model file
-#' @param filename (character) name of the model file
-#' @param ... parameters for other wrappers
-#' @inheritParams uploadModelServer
+# Load Model Wrapper
+#
+# Wrapper function to load a model from a zip file. File extension may differ from app to app, but
+# in essence all models are stored in a zip file. The zip file contains a model object, a data
+# object, an inputs object and potentially help files.
+# This function unzips the file, extracts the model object, and checks if the model is valid for
+# the app.
+# It returns a list with the model object, the data object, the inputs object and gives a message
+# if the model was successfully loaded.
+#
+# @param values (list) list with import specifications
+# @param filepath (character) path to the model file
+# @param filename (character) name of the model file
+# @param ... parameters for other wrappers
+# @inheritParams uploadModelServer
 loadModelWrapper <- function(values,
                              filepath,
                              filename,
@@ -58,7 +58,7 @@ loadModelWrapper <- function(values,
 
 #' Get Zip
 #'
-#' @inheritParams loadModelWrapper
+#' @param filepath (character) path to the model file
 #'
 #' @return (character) path to the model file
 getZip <- function(filepath) {
@@ -80,10 +80,10 @@ getZip <- function(filepath) {
   }
 }
 
-#' Load Model
-#'
-#' @param filepath (character) path to the model file
-#' @inheritParams uploadModelServer
+# Load Model
+#
+# @param filepath (character) path to the model file
+# @inheritParams uploadModelServer
 loadModel <-
   function(filepath,
            subFolder,
