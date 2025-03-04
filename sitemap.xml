@@ -30,7 +30,6 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getCKANRecordChoices.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getCKANResourcesChoices.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getDataSource.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/getFileInputs.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getGithubMapping.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getSheetSelection.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getZip.html</loc></url>
@@ -46,7 +45,6 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/joinColumnsServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadCKANResourceServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadDataWrapper.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadFileFromLink.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadImport.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadList.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadListWrapper.html</loc></url>
@@ -56,8 +54,6 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/matchColClasses.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/mergeDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/mergeSettingsServer.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/observeDownloadDataLink.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/observeUploadDataLink.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/pipe.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/pkg.env.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/prefixSysTime.html</loc></url>
