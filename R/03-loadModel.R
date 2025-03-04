@@ -97,8 +97,7 @@ loadModel <-
     ## unzip file ----
     res <- try({
       unzip(filepath, exdir = "unzippedTmp")
-      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp",
-                                           what = ifelse(onlySettings, "inputs", "model"))
+      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp")
       modelNotes <- extractNotes(pathToUnzipped = "unzippedTmp")
     }, silent = TRUE)
 
@@ -128,8 +127,9 @@ loadModel <-
       all(names(modelImport) %in% c("data", "inputs", "values", "model", "version")) ||
       # expected names for "mpiBpred" (old version)
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
-    )) {
-      stop("Model object not found. Possibly the file format is not valid or depricated.")
+    )
+    ) {
+      stop("Model object not found. The file format may be invalid or deprecated.")
       return(NULL)
     }
 
@@ -228,23 +228,31 @@ extractNotes <- function(pathToUnzipped) {
 
 #' Extract Object From File
 #'
+#' Extract the inputs and data objects from from either a "inputs.rds" file or from a "model.Rdata" file.
 #' Extracts the model object from either a "model.rds" file or from a "model.Rdata" file.
 #' Recent model objects are only stored as "model.rds".
 #'
 #' @param pathToUnzipped (character) path to the folder were the model was unzipped
-#' @param what (charcter) what should be extracted, one of "model" or "inputs"
+#' @param what (character) DEPRECATED. Argument will be ignored! what should be extracted, one of "model" or "inputs"
 #'
 #' @return (list) model object
 #' @export
-extractObjectFromFile <- function(pathToUnzipped, what = c("model", "inputs")) {
-  what <- match.arg(what)
+extractObjectFromFile <- function(pathToUnzipped, what = NULL) {
+  if (!is.null(what)) {
+    deprecate_warn("25.03.0", "DataTools::extractObjectFromFile(what)")
+  }
 
-  filename <- paste0(what, ".rds")
   modelImport <- NULL
 
-  # load .rds file
-  if (file.exists(file.path(pathToUnzipped, filename))) {
-    modelImport <- readRDS(file.path(pathToUnzipped, filename))
+  # load model.rds file
+  if (file.exists(file.path(pathToUnzipped, "model.rds"))) {
+    modelImport <- readRDS(file.path(pathToUnzipped, "model.rds"))
+    return(modelImport)
+  }
+
+  # load inputs.rds file
+  if (file.exists(file.path(pathToUnzipped, "inputs.rds"))) {
+    modelImport <- readRDS(file.path(pathToUnzipped, "inputs.rds"))
     return(modelImport)
   }
 

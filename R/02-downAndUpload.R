@@ -247,7 +247,7 @@ downloadModelServer <-
                                          model = model(),
                                          rPackageName = rPackageName,
                                          subFolder = subFolder,
-                                         onlySettings = onlySettings)
+                                         onlySettings = onlySettings || (!is.null(input$onlyInputs) && input$onlyInputs))
                          addNotesFile(tempDir = tempDir, notes = input$exportNotes)
                          addHelpFile(tempDir = tempDir, helpHTML = helpHTML)
 
@@ -286,10 +286,10 @@ addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder
   # prepare model or user inputs (settings)
   if (onlySettings) {
     modelExport <- NULL
-    modelfile <- file.path(tempDir, "inputs.rds")
+    modelfilename <- "inputs.rds"
   } else {
     modelExport <- model
-    modelfile <- file.path(tempDir, "model.rds")
+    modelfilename <- "model.rds"
   }
 
   versionExport <-
@@ -303,7 +303,7 @@ addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder
       model = modelExport,
       version = versionExport
     ),
-    file = modelfile
+    file = file.path(tempDir, modelfilename)
   )
 
   return()
