@@ -65,6 +65,7 @@ prepareDataServer <- function(id, mergeList) {
                    logDebug("Updating preparedData")
                    preparedData$data <-
                      mergeList()[[input$dataToPrep]]$data
+                   preparedData$fileName <- input$dataToPrep
                    preparedData$history <-
                      mergeList()[[input$dataToPrep]]$history
                  }) %>%

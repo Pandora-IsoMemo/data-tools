@@ -1,3 +1,12 @@
+# DataTools 25.03.0
+
+## Updates
+- remove the tab specific 'accept buttons' in the import module, use the tab id instead to identify 
+  the data to be accepted
+
+## Bug Fixes
+- fix issue that prevented to (optionally) process data before import if data was not valid
+
 # DataTools 25.01.0
 
 ## Updates

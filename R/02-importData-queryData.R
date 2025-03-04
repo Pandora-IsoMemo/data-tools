@@ -85,16 +85,19 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  unprocessedData <- reactiveVal(list())
 
                  observe({
-                   req(length(mergeList()) > 0)
-                   logDebug("QueryData: observe mergeList()")
-                   unprocessedData(mergeList() %>%
-                                     filterUnprocessed())
+                   logDebug("%s: observe mergeList()", id)
+                   if (length(mergeList()) > 0) {
+                     unprocessedData(mergeList() %>%
+                                       filterUnprocessed())
+                   } else {
+                     unprocessedData(list())
+                   }
                  }) %>%
-                   bindEvent(mergeList()) # cannot set ignoreInit = TRUE because of tests
+                   bindEvent(mergeList(), ignoreNULL = FALSE) # cannot set ignoreInit = TRUE because of tests
 
                  tableIds <- reactive({
                    req(length(unprocessedData()) > 0)
-                   logDebug("QueryData: update inMemoryDB and input$sqlCommand")
+                   logDebug("%s: update inMemoryDB and input$sqlCommand", id)
 
                    tmpDB <- inMemoryDB()
                    # reset db (remove tables if they become "processed data")
@@ -111,8 +114,18 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  })
 
                  observe({
+                   if (length(unprocessedData()) == 0) {
+                     logDebug("%s: Disable applyQuery button", id)
+                     shinyjs::disable(ns("applyQuery"), asis = TRUE)
+                     result$data <- NULL
+                     result$import <- NULL
+                   } else {
+                     logDebug("%s: Enable applyQuery button", id)
+                     shinyjs::enable(ns("applyQuery"), asis = TRUE)
+                   }
+
                    req(length(unprocessedData()) > 0)
-                   logDebug("QueryData: update inMemoryDB and input$sqlCommand")
+                   logDebug("%s: update inMemoryDB and input$sqlCommand", id)
 
                    inMemCols <-
                      lapply(unprocessedData(), function(table) {
@@ -207,7 +220,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  })
 
                  observe({
-                   logDebug("QueryData: observe sqlCommandFromGpt()")
+                   logDebug("%s: observe sqlCommandFromGpt()", id)
                    updateAceEditor(session = session,
                                    "sqlCommand",
                                    value = sqlCommandFromGpt())
@@ -218,7 +231,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  observe({
                    req(length(unprocessedData()) > 0, input$applyQuery > 0)
-                   logDebug("QueryData: observe input$applyQuery")
+                   logDebug("%s: observe input$applyQuery", id)
                    result$data <- NULL
                    result$import <- NULL
                    tmpDB <- inMemoryDB()

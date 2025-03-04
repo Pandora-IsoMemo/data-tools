@@ -16,6 +16,9 @@ toolsImportUI <- function(id) {
       importDataUI(ns("ckanData"), "Import CKAN Data"),
       tags$br(),
       tags$br(),
+      importDataUI(ns("numData"), "Import Numeric Data"),
+      tags$br(),
+      tags$br(),
       importDataUI(ns("batchData"), "Import Batch Data"),
       tags$br(),
       tags$br(),
@@ -29,7 +32,7 @@ toolsImportUI <- function(id) {
       textOutput(ns("itemList")),
       tags$h2("Data Import"),
       selectInput(ns("dataSel"), "Select which Import to display" ,
-                  choices = c("CKAN Data", "Batch Data", "Model Data", "Model Data (new)")),
+                  choices = c("CKAN Data", "Numeric Data", "Batch Data", "Model Data", "Model Data (new)")),
       DT::dataTableOutput(ns("importedDataTable"))
     )
   )
@@ -60,6 +63,17 @@ toolsImportServer <- function(id) {
                    "ckanData",
                    customWarningChecks = list(reactive(checkWarningEmptyValues)),
                    customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
+                   # customErrorChecks = list(reactive(DataTools::checkAnyNonNumericColumns)),
+                   ckanFileTypes = config()[["dataFileTypes"]],
+                   ignoreWarnings = TRUE,
+                   defaultSource = "ckan",
+                   options = importOptions(rPackageName = config()[["rPackageName"]])
+                 )
+
+                 importedDataOnlyNumeric <- importDataServer(
+                   "numData",
+                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
+                   customErrorChecks = list(reactive(checkAnyNonNumericColumns)),
                    ckanFileTypes = config()[["dataFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = "ckan",
@@ -104,6 +118,7 @@ toolsImportServer <- function(id) {
 
                  observe({
                    req(length(importedDataCKAN()) > 0 ||
+                         length(importedDataOnlyNumeric()) > 0 ||
                          length(importedBatchData()) > 0 ||
                          length(importedModel()) > 0 ||
                          length(importedModelNew()) > 0)
@@ -113,6 +128,10 @@ toolsImportServer <- function(id) {
                    if (input$dataSel == "CKAN Data") {
                      req(length(importedDataCKAN()) > 0)
                      dataOut(importedDataCKAN()[[1]])
+                   }
+                   if (input$dataSel == "Numeric Data") {
+                     req(length(importedDataOnlyNumeric()) > 0)
+                     dataOut(importedDataOnlyNumeric()[[1]])
                    }
                    if (input$dataSel == "Batch Data") {
                      req(length(importedBatchData()) > 0)

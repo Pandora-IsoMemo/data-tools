@@ -4,7 +4,7 @@ downloadDataLinkUI <-
       column(8,
              tags$html(
                HTML(
-                 "<b>Data query</b> &nbsp;&nbsp;"
+                 "<b>Data query</b> &nbsp;&nbsp; (Optional)"
                )
              ),
              helpText(width = "100%", text)
@@ -12,19 +12,19 @@ downloadDataLinkUI <-
       column(4,
              align = "right",
              style = "margin-top: 0.5em",
-             downloadButton(ns(downloadBtnID), "Download Query as .json")
+             downloadButton(ns(downloadBtnID), "Download Query as .json", style = "width: 100%;")
       )
     )
   }
 
-#' Download a link to import data
-#'
-#' @param id module id
-#' @param input input object from server function
-#' @param output output object from server function
-#' @param session session from server function
-#' @param mergeList (reactiveVal) list of data imports
-#' @param downloadBtnID (character) ID of the downloadButton
+# Download a link to import data
+#
+# @param id module id
+# @param input input object from server function
+# @param output output object from server function
+# @param session session from server function
+# @param mergeList (reactiveVal) list of data imports
+# @param downloadBtnID (character) ID of the downloadButton
 observeDownloadDataLink <- function(id, input, output, session, mergeList, downloadBtnID = "downloadDataLink") {
   dataLinkDownload <- reactive({
     logDebug("linkToData: create download")
@@ -88,12 +88,12 @@ filterProcessed <- function(mergeList) {
   })]
 }
 
-#' Get File Inputs
-#'
-#' Filter all inputs for file inputs or for source inputs
-#'
-#' @param input (reactiveValue) input
-#' @param type (character) type of inputs
+# Get File Inputs
+#
+# Filter all inputs for file inputs or for source inputs
+#
+# @param input (reactiveValue) input
+# @param type (character) type of inputs
 getFileInputs <- function(input, type = c("file", "source", "query")) {
   type <- match.arg(type)
 
@@ -123,15 +123,15 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
   allInputs[names(allInputs)[grepl(pattern, names(allInputs))]]
 }
 
-#' Observe Upload of a link to import data
-#'
-#' @param id module id
-#' @param input input object from server function
-#' @param output output object from server function
-#' @param session session from server function
-#' @inheritParams configureDataServer
-#' @inheritParams selectSourceUI
-#' @inheritParams selectSourceServer
+# Observe Upload of a link to import data
+#
+# @param id module id
+# @param input input object from server function
+# @param output output object from server function
+# @param session session from server function
+# @inheritParams configureDataServer
+# @inheritParams selectSourceUI
+# @inheritParams selectSourceServer
 observeUploadDataLink <- function(id, input, output, session, isInternet, dataSource, customNames,
                                   mergeList) {
   dataLinkUpload <- reactiveValues(
@@ -226,14 +226,14 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
 
 nmLastInputs <- function() "lastSelectDataInputs"
 
-#' Load File From Link
-#'
-#' Load a file a link points to
-#'
-#' @param values (reactiveValues)
-#' @param loadedSourceInputs (list) user inputs from the dataLink file specifying the source
-#' @param loadedFileInputs (list) user inputs from the dataLink file specifying the file
-#' @inheritParams configureDataServer
+# Load File From Link
+#
+# Load a file a link points to
+#
+# @param values (reactiveValues)
+# @param loadedSourceInputs (list) user inputs from the dataLink file specifying the source
+# @param loadedFileInputs (list) user inputs from the dataLink file specifying the file
+# @inheritParams configureDataServer
 loadFileFromLink <- function(values = reactiveValues(warnings = list(),
                                                      errors = list(),
                                                      fileName = NULL,
