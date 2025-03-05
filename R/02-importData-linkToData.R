@@ -169,7 +169,7 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
         length(lastUserInputValues[["input"]]) > 0) {
       for (nm in names(lastUserInputValues[["input"]])) {
         updateUserInputs(id, input = input, output = output, session = session,
-                         userInputs = lastUserInputValues[["input"]][[nm]])
+                         userInputs = lastUserInputValues[["input"]][[nm]], inDataTools = TRUE)
       }
 
       # implicit update of input$sqlCommand is not working
@@ -294,14 +294,37 @@ removeNamespacePattern <- function(inputs, pattern) {
 
 #' Update User Inputs
 #'
+#' Update values from 'input' with all values from userInputs. Entries that are NULL are removed.
+#' Only updates entries that are present in 'input'. Copy of \code{shinyTools::updateUserInputs()}
+#' to avoid dependency to another helper package.
+#' Export from 'DataTools' will be removed in future versions.
+#'
 #' @param id module id
 #' @param input input object from server function
 #' @param output output object from server function
 #' @param session session from server function
 #' @param userInputs (list) list of inputs to be updated
+#' @param inDataTools (logical) internal
 #'
 #' @export
-updateUserInputs <- function(id, input, output, session, userInputs) {
+updateUserInputs <- function(id, input, output, session, userInputs, inDataTools = FALSE) {
+  if (!inDataTools) {
+    deprecate_warn(
+      "25.03.1.1",
+      "DataTools::updateUserInputs()",
+      with = "shinyTools::updateUserInputs()"
+    )
+  }
+
+  # check if userInputs is a list
+  if (!is.list(userInputs)) {
+    warning("Update of user inputs failed. 'userInputs' must be a list!")
+    return()
+  }
+
+  # remove NULL values, they cause upload of inputs to fail without warnings
+  userInputs <- userInputs[!sapply(userInputs, is.null)]
+
   ## get and filter input names
   inputIDs <- names(userInputs)
   inputIDs <- inputIDs[inputIDs %in% names(input)]

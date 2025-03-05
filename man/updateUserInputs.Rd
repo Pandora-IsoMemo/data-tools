@@ -4,7 +4,7 @@
 \alias{updateUserInputs}
 \title{Update User Inputs}
 \usage{
-updateUserInputs(id, input, output, session, userInputs)
+updateUserInputs(id, input, output, session, userInputs, inDataTools = FALSE)
 }
 \arguments{
 \item{id}{module id}
@@ -16,7 +16,12 @@ updateUserInputs(id, input, output, session, userInputs)
 \item{session}{session from server function}
 
 \item{userInputs}{(list) list of inputs to be updated}
+
+\item{inDataTools}{(logical) internal}
 }
 \description{
-Update User Inputs
+Update values from 'input' with all values from userInputs. Entries that are NULL are removed.
+Only updates entries that are present in 'input'. Copy of \code{shinyTools::updateUserInputs()}
+to avoid dependency to another helper package.
+Export from 'DataTools' will be removed in future versions.
 }
