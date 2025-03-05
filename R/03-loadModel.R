@@ -1,20 +1,20 @@
 # Functions to IMPORT MODEL objects ----
 
-#' Load Model Wrapper
-#'
-#' Wrapper function to load a model from a zip file. File extension may differ from app to app, but
-#' in essence all models are stored in a zip file. The zip file contains a model object, a data
-#' object, an inputs object and potentially help files.
-#' This function unzips the file, extracts the model object, and checks if the model is valid for
-#' the app.
-#' It returns a list with the model object, the data object, the inputs object and gives a message
-#' if the model was successfully loaded.
-#'
-#' @param values (list) list with import specifications
-#' @param filepath (character) path to the model file
-#' @param filename (character) name of the model file
-#' @param ... parameters for other wrappers
-#' @inheritParams uploadModelServer
+# Load Model Wrapper
+#
+# Wrapper function to load a model from a zip file. File extension may differ from app to app, but
+# in essence all models are stored in a zip file. The zip file contains a model object, a data
+# object, an inputs object and potentially help files.
+# This function unzips the file, extracts the model object, and checks if the model is valid for
+# the app.
+# It returns a list with the model object, the data object, the inputs object and gives a message
+# if the model was successfully loaded.
+#
+# @param values (list) list with import specifications
+# @param filepath (character) path to the model file
+# @param filename (character) name of the model file
+# @param ... parameters for other wrappers
+# @inheritParams uploadModelServer
 loadModelWrapper <- function(values,
                              filepath,
                              filename,
@@ -58,7 +58,7 @@ loadModelWrapper <- function(values,
 
 #' Get Zip
 #'
-#' @inheritParams loadModelWrapper
+#' @param filepath (character) path to the model file
 #'
 #' @return (character) path to the model file
 getZip <- function(filepath) {
@@ -80,10 +80,10 @@ getZip <- function(filepath) {
   }
 }
 
-#' Load Model
-#'
-#' @param filepath (character) path to the model file
-#' @inheritParams uploadModelServer
+# Load Model
+#
+# @param filepath (character) path to the model file
+# @inheritParams uploadModelServer
 loadModel <-
   function(filepath,
            subFolder,
@@ -97,8 +97,7 @@ loadModel <-
     ## unzip file ----
     res <- try({
       unzip(filepath, exdir = "unzippedTmp")
-      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp",
-                                           what = ifelse(onlySettings, "inputs", "model"))
+      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp")
       modelNotes <- extractNotes(pathToUnzipped = "unzippedTmp")
     }, silent = TRUE)
 
@@ -128,8 +127,9 @@ loadModel <-
       all(names(modelImport) %in% c("data", "inputs", "values", "model", "version")) ||
       # expected names for "mpiBpred" (old version)
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
-    )) {
-      stop("Model object not found. Possibly the file format is not valid or depricated.")
+    )
+    ) {
+      stop("Model object not found. The file format may be invalid or deprecated.")
       return(NULL)
     }
 
@@ -228,23 +228,31 @@ extractNotes <- function(pathToUnzipped) {
 
 #' Extract Object From File
 #'
+#' Extract the inputs and data objects from from either a "inputs.rds" file or from a "model.Rdata" file.
 #' Extracts the model object from either a "model.rds" file or from a "model.Rdata" file.
 #' Recent model objects are only stored as "model.rds".
 #'
 #' @param pathToUnzipped (character) path to the folder were the model was unzipped
-#' @param what (charcter) what should be extracted, one of "model" or "inputs"
+#' @param what (character) DEPRECATED. Argument will be ignored! what should be extracted, one of "model" or "inputs"
 #'
 #' @return (list) model object
 #' @export
-extractObjectFromFile <- function(pathToUnzipped, what = c("model", "inputs")) {
-  what <- match.arg(what)
+extractObjectFromFile <- function(pathToUnzipped, what = NULL) {
+  if (!is.null(what)) {
+    deprecate_warn("25.03.0", "DataTools::extractObjectFromFile(what)")
+  }
 
-  filename <- paste0(what, ".rds")
   modelImport <- NULL
 
-  # load .rds file
-  if (file.exists(file.path(pathToUnzipped, filename))) {
-    modelImport <- readRDS(file.path(pathToUnzipped, filename))
+  # load model.rds file
+  if (file.exists(file.path(pathToUnzipped, "model.rds"))) {
+    modelImport <- readRDS(file.path(pathToUnzipped, "model.rds"))
+    return(modelImport)
+  }
+
+  # load inputs.rds file
+  if (file.exists(file.path(pathToUnzipped, "inputs.rds"))) {
+    modelImport <- readRDS(file.path(pathToUnzipped, "inputs.rds"))
     return(modelImport)
   }
 

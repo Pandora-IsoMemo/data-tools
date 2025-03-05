@@ -1,3 +1,8 @@
+# DataTools 25.03.1
+
+## Bug Fixes
+- fixed an issue where the 'Only data and user inputs' checkbox was not functioning correctly during model download (#108)
+
 # DataTools 25.03.0
 
 ## Updates
