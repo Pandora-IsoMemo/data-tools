@@ -159,8 +159,7 @@ mergeDataServer <- function(id, mergeList) {
                      ## create data.frames to merge ----
                      for (i in c(input$tableX, input$tableY)) {
                        assign(tableIds()[i],
-                              mergeList()[[i]] %>% extractProcessedData()
-                              )
+                              mergeList()[[i]] %>% extractProcessedData())
                      }
 
                      ## match column types ----
