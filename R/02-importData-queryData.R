@@ -85,6 +85,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  unprocessedData <- reactiveVal(list())
 
                  observe({
+                   req(isTRUE(isActiveTab()))
                    logDebug("%s: observe mergeList()", id)
                    if (length(mergeList()) > 0) {
                      unprocessedData(mergeList() %>%
@@ -114,6 +115,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  })
 
                  observe({
+                   req(isTRUE(isActiveTab()))
                    if (length(unprocessedData()) == 0) {
                      logDebug("%s: Disable applyQuery button", id)
                      shinyjs::disable(ns("applyQuery"), asis = TRUE)

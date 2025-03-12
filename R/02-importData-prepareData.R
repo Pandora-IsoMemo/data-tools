@@ -71,9 +71,8 @@ prepareDataServer <- function(id, mergeList) {
                    bindEvent(list(input$dataToPrep, mergeList()), ignoreInit = TRUE)
 
                  observe({
+                   req(length(preparedData$history) > 0)
                    logDebug("%s: Observe preparedData$history", id)
-
-                   req(length(mergeList()) > 0)
                    newData <- mergeList()[[input$dataToPrep]]
                    newData$history <- preparedData$history
                    attr(newData$data, "unprocessed") <- FALSE # disables download of data links
