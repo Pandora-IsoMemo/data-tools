@@ -1,7 +1,7 @@
 # DataTools 25.03.2
 
 ## Updates
-- _importModule_: updated UI to display tables and column names in the 'Query' tab
+- _importModule_: cleaner UI to display tables and column names in the 'Query' tab
 
 ## Bug Fixes
 - _importModule_: fixed an issue with the update of data processing in the 'Prepare' tab
