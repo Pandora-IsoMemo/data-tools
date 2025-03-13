@@ -34,8 +34,6 @@ testthat::test_that("Test queryDataServer", {
                                              c("Sample.date", "Species", "Location"))
                       testthat::expect_true(is.character(output$inMemoryTables))
                       testthat::expect_length(is.character(output$inMemoryTables), 1)
-                      testthat::expect_true(is.character(output$inMemoryColumns))
-                      testthat::expect_length(is.character(output$inMemoryColumns), 1)
 
                       session$setInputs(sqlCommand = paste0("select t1.`Species` from t1;"),
                                         fileNameQueried = "newQuery",

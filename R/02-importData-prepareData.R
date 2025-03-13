@@ -73,7 +73,7 @@ prepareDataServer <- function(id, mergeList) {
       logDebug("%s: Observe preparedData$history", id)
       newData <- mergeList()[[input$dataToPrep]]
       newData$history <- preparedData$history
-      attr(newData$data, "unprocessed") <- FALSE # disables download of data links
+      attr(newData, "unprocessed") <- FALSE # disables download of data links
 
       newMergeList <- updateMergeList(
         mergeList = mergeList(),
@@ -375,8 +375,8 @@ splitColumnsServer <- function(id, preparedData) {
 # helper functions ----
 
 extractProcessedData <- function(dat) {
-  if (!is.null(attr(dat$data, "unprocessed")) &&
-      isTRUE(attr(dat$data, "unprocessed")) ||
+  if (!is.null(attr(dat, "unprocessed")) &&
+      isTRUE(attr(dat, "unprocessed")) ||
       length(dat$history) == 0) {
     return(dat$data)
   } else {
