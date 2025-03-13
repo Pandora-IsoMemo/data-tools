@@ -159,7 +159,7 @@ mergeDataServer <- function(id, mergeList) {
                      ## create data.frames to merge ----
                      for (i in c(input$tableX, input$tableY)) {
                        assign(tableIds()[i],
-                              mergeList()[[i]]$data)
+                              mergeList()[[i]] %>% extractProcessedData())
                      }
 
                      ## match column types ----
@@ -291,7 +291,7 @@ mergeDataServer <- function(id, mergeList) {
 extractTableData <- function(mergeList, tableName) {
   if (is.null(tableName) || tableName == "")  return(NULL)
 
-  mergeList[[tableName]]$data
+  mergeList[[tableName]] %>% extractProcessedData()
 }
 
 extractLastSelected <- function(thisInput, choices, idDefault = 1) {
@@ -376,14 +376,14 @@ extractTableIds <- function(mergeList) {
   ids
 }
 
-#' Match Column Classes
-#'
-#' @param df1 (data.frame) data frame 1
-#' @param df2 (data.frame) data frame 2
-#' @param xColNames (character) column names of data frame 1
-#' @param yColNames (character) column names of data frame 2
-#' @param df1Id (character) id of data frame 1
-#' @param isTest (logical) if TRUE, no warning is shown
+# Match Column Classes
+#
+# @param df1 (data.frame) data frame 1
+# @param df2 (data.frame) data frame 2
+# @param xColNames (character) column names of data frame 1
+# @param yColNames (character) column names of data frame 2
+# @param df1Id (character) id of data frame 1
+# @param isTest (logical) if TRUE, no warning is shown
 matchColClasses <-
   function(df1,
            df2,
@@ -443,10 +443,10 @@ extractJoinString <- function(xColumns, yColumns) {
   paste0("c(", res, ")")
 }
 
-#' Extract Merge Notification
-#'
-#' @param warningsList (list) merge warnings
-#' @param errorsList (list) merge errors
+# Extract Merge Notification
+#
+# @param warningsList (list) merge warnings
+# @param errorsList (list) merge errors
 extractMergeNotification <- function(warningsList, errorsList) {
   if (length(warningsList) == 0 &&
       length(errorsList) == 0)

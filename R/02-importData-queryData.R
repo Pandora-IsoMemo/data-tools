@@ -15,8 +15,6 @@ queryDataUI <- function(id) {
              "Only files with unprocessed data that were loaded directly from a source ('Pandora Platform', 'File' or 'URL') can be used."),
     dataTableOutput(ns("inMemoryTables")),
     tags$br(),
-    dataTableOutput(ns("inMemoryColumns")),
-    tags$br(),
     gptUI(ns("gpt")),
     div(style = "margin-top: 1em; margin-bottom: 0.5em;",
         tags$html(
@@ -85,6 +83,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  unprocessedData <- reactiveVal(list())
 
                  observe({
+                   req(isTRUE(isActiveTab()))
                    logDebug("%s: observe mergeList()", id)
                    if (length(mergeList()) > 0) {
                      unprocessedData(mergeList() %>%
@@ -93,7 +92,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      unprocessedData(list())
                    }
                  }) %>%
-                   bindEvent(mergeList(), ignoreNULL = FALSE) # cannot set ignoreInit = TRUE because of tests
+                   bindEvent(list(mergeList(), isActiveTab())) # cannot set ignoreInit = TRUE because of tests
 
                  tableIds <- reactive({
                    req(length(unprocessedData()) > 0)
@@ -114,6 +113,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                  })
 
                  observe({
+                   req(isTRUE(isActiveTab()))
                    if (length(unprocessedData()) == 0) {
                      logDebug("%s: Disable applyQuery button", id)
                      shinyjs::disable(ns("applyQuery"), asis = TRUE)
@@ -171,30 +171,6 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                    )))
 
                    req(tableIds())
-                   DT::datatable(
-                     data.frame(`ID` = tableIds(),
-                                `Table` = names(unprocessedData())),
-                     filter = "none",
-                     selection = "none",
-                     rownames = FALSE,
-                     colnames = c("ID", "Tables (with unprocessed data)"),
-                     options = list(
-                       dom = "t",
-                       ordering = FALSE,
-                       paging = FALSE,
-                       searching = FALSE,
-                       scrollX = TRUE,
-                       scrollY = "75px"
-                     )
-                   )
-                 })
-
-                 output$inMemoryColumns <- renderDataTable({
-                   validate(need(length(unprocessedData()) > 0, paste(
-                     "Columns:", names(emptyMergeListChoices())
-                   )))
-
-                   req(tableIds())
                    inMemColsPasted <-
                      sapply(inMemColumns(), function(colnamesOfTable) {
                        colnamesOfTable %>%
@@ -203,11 +179,12 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                    DT::datatable(
                      data.frame(`ID` = tableIds(),
+                                `Table` = names(unprocessedData()),
                                 `Columns` = inMemColsPasted),
                      filter = "none",
                      selection = "none",
                      rownames = FALSE,
-                     colnames = c("ID", "Columns"),
+                     colnames = c("ID", "Tables (with unprocessed data)", "Columns"),
                      options = list(
                        dom = "t",
                        ordering = FALSE,

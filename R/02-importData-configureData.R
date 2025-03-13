@@ -61,7 +61,7 @@ configureDataUI <- function(id,
                    )
                  ),
                  helpText(width = "100%",
-                          "Prepare the loaded data for import via the 'Query with SQL', 'Prepare' or 'Merge' tabs.")
+                          "Process the loaded data for import via the 'Query with SQL', 'Prepare' or 'Merge' tabs.")
           ),
           column(4,
                  align = "right",
