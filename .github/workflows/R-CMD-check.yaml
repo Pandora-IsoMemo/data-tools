@@ -48,6 +48,9 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://Pandora-IsoMemo.github.io/drat/
 
+      - name: Debug R Library Path
+        run: Rscript -e 'print(.libPaths())'
+
       - name: Cache R packages (macOS)
         if: runner.os == 'macOS'
         uses: actions/cache@v4
