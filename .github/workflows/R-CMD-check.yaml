@@ -51,36 +51,32 @@ jobs:
       - name: Debug R Library Path
         run: Rscript -e 'print(.libPaths())'
 
-      - name: Set Persistent R Library Path (macOS)
+      - name: Force R to Use Persistent Library Path (macOS)
         if: runner.os == 'macOS'
         run: |
           mkdir -p ~/R/library
-          echo "R_LIBS_USER=~/R/library" >> $GITHUB_ENV
+          echo 'export R_LIBS_USER=~/R/library' >> $GITHUB_ENV
+          echo '.libPaths("~/R/library")' > ~/.Rprofile
+          echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"))' >> ~/.Rprofile
 
       - name: Cache R packages (macOS)
         if: runner.os == 'macOS'
         uses: actions/cache@v4
         with:
           path: ~/R/library
-          key: macOS-R-${{ matrix.config.r }}-${{ github.run_number }}
+          key: macOS-R-${{ matrix.config.r }}-${{ hashFiles('DESCRIPTION') }}
           restore-keys: |
             macOS-R-${{ matrix.config.r }}-
-
-      - name: Update installed packages (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          Rscript -e 'update.packages(ask = FALSE, checkBuilt = TRUE)'
-
-      #- name: Set CRAN mirror for macOS
-      #  if: runner.os == 'macOS'
-      #  run: |
-      #    echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"))' >> ~/.Rprofile
-      #    echo 'options(timeout = 600)' >> ~/.Rprofile
 
       - name: Debug Installed Packages (macOS)
         if: runner.os == 'macOS'
         run: |
           ls -lh ~/R/library || echo "No packages found in ~/R/library"
+
+      - name: Update installed packages (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          Rscript -e 'update.packages(ask = FALSE, checkBuilt = TRUE)'
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
