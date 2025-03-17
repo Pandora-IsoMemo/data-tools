@@ -48,6 +48,15 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://Pandora-IsoMemo.github.io/drat/
 
+      - name: Cache R packages (macOS)
+        if: runner.os == 'macOS'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/R
+          key: macOS-R-${{ matrix.config.r }}-${{ github.run_id }}
+          restore-keys: |
+            macOS-R-${{ matrix.config.r }}-
+
       - name: Set CRAN mirror for macOS
         if: runner.os == 'macOS'
         run: |
