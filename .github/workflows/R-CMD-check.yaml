@@ -48,6 +48,12 @@ jobs:
           use-public-rspm: true
           extra-repositories: https://Pandora-IsoMemo.github.io/drat/
 
+      - name: Set CRAN mirror for macOS
+        if: runner.os == 'macOS'
+        run: |
+          echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"))' >> ~/.Rprofile
+          echo 'options(timeout = 600)' >> ~/.Rprofile
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
