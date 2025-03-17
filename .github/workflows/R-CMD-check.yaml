@@ -68,6 +68,12 @@ jobs:
           restore-keys: |
             macOS-R-${{ matrix.config.r }}-
 
+      - name: Preinstall Key Dependencies (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          Rscript -e 'install.packages(c("pak", "remotes", "rcmdcheck"), lib="~/R/library", repos="https://cran.rstudio.com/")'
+          ls -lh ~/R/library || echo "No packages found in ~/R/library"
+
       - name: Debug Installed Packages (macOS)
         if: runner.os == 'macOS'
         run: |
