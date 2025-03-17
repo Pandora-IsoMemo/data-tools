@@ -51,20 +51,31 @@ jobs:
       - name: Debug R Library Path
         run: Rscript -e 'print(.libPaths())'
 
+      - name: Set Persistent R Library Path (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p ~/R/library
+          echo "R_LIBS_USER=~/R/library" >> $GITHUB_ENV
+
       - name: Cache R packages (macOS)
         if: runner.os == 'macOS'
         uses: actions/cache@v4
         with:
-          path: /Users/runner/work/_temp/Library
-          key: macOS-R-${{ matrix.config.r }}-${{ hashFiles('DESCRIPTION') }}
+          path: ~/R/library
+          key: macOS-R-${{ matrix.config.r }}-${{ github.run_number }}
           restore-keys: |
             macOS-R-${{ matrix.config.r }}-
 
-      - name: Set CRAN mirror for macOS
+      - name: Update installed packages (macOS)
         if: runner.os == 'macOS'
         run: |
-          echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"))' >> ~/.Rprofile
-          echo 'options(timeout = 600)' >> ~/.Rprofile
+          Rscript -e 'update.packages(ask = FALSE, checkBuilt = TRUE)'
+
+      #- name: Set CRAN mirror for macOS
+      #  if: runner.os == 'macOS'
+      #  run: |
+      #    echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"))' >> ~/.Rprofile
+      #    echo 'options(timeout = 600)' >> ~/.Rprofile
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
