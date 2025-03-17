@@ -77,6 +77,11 @@ jobs:
       #    echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"))' >> ~/.Rprofile
       #    echo 'options(timeout = 600)' >> ~/.Rprofile
 
+      - name: Debug Installed Packages (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          ls -lh ~/R/library || echo "No packages found in ~/R/library"
+
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
           extra-packages: any::rcmdcheck
