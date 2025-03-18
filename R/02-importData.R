@@ -376,7 +376,7 @@ importDataServer <- function(id,
                    req(values$dataImport)
 
                    if (importType != "data") {
-                     values$data <- values$dataImport
+                     values$data[[values$fileName]] <- values$dataImport
                    } else {
                      values$data <- extractTableFromTab(
                        unprocessed_data = setNames(object = list(values$dataImport), nm = values$fileName),
