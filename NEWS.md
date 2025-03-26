@@ -1,3 +1,9 @@
+# DataTools 25.03.3
+
+## Updates
+- reduce package size by including test files into the `.Rbuildignore`
+- _importModule_: update help text if remote files are not available
+
 # DataTools 25.03.2
 
 ## Updates

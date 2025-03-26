@@ -26,13 +26,7 @@ remoteModelsUI <-
                style = if (!is.null(selectLabel)) "margin-top: 1.4em;" else "margin-top: -0.5em;",
                actionButton(ns("loadRemoteModel"), buttonLabel))
       ),
-      div(id = ns("noConn"),
-          helpText(
-            paste0(
-              "Note: Access to the Github API failed, showing files ",
-              "from the app's package folder for saved files."
-            )
-          ))
+      uiOutput(ns("remoteHelp"))
     )
   }
 
@@ -94,10 +88,10 @@ remoteModelsServer <- function(id,
 
                  pathToRemote <- reactiveVal(NULL)
                  useLocalModels <- reactiveVal(FALSE)
+                 remoteChoices <- reactiveVal(c())
 
                  observe({
                    logDebug("Update remoteModelChoice")
-                   shinyjs::hide(ns("noConn"), asis = TRUE)
                    useLocalModels(FALSE)
 
                    # try getting online models
@@ -113,7 +107,6 @@ remoteModelsServer <- function(id,
                    if (inherits(choices, "try-error") ||
                        length(choices) == 0 || onlyLocalModels()) {
                      useLocalModels(TRUE)
-                     shinyjs::show(ns("noConn"), asis = TRUE)
                      # try getting local models
                      pathToLocal <-
                        try(checkLocalModelDir(pathToLocal = pathToLocal),
@@ -133,11 +126,26 @@ remoteModelsServer <- function(id,
                      choices <- c(c("Please select a file ..." = ""), choices)
                    }
 
+                   remoteChoices(choices)
                    updateSelectInput(session = session,
                                      "remoteModelChoice",
                                      choices = choices)
                  }) %>%
                    bindEvent(list(reloadChoices(), isInternet()), ignoreInit = TRUE)
+
+                 output$remoteHelp <- renderUI({
+                   if (!isInternet() || length(remoteChoices()) == 0) {
+                     helpText(
+                       paste(
+                         "Note: Access to the Github API failed.",
+                         "Please download remote files from:",
+                         sprintf("https://github.com/Pandora-IsoMemo/%s/tree/main/inst/app%s",
+                                 githubRepo,
+                                 folderOnGithub)
+                       )
+                     )
+                   } else NULL
+                 })
 
                  observe({
                    req(isTRUE(resetSelected()), input[["remoteModelChoice"]])

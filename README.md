@@ -1,11 +1,14 @@
 # DataTools Package
 
-### Contains :
+### Contains:
 
 - functions and modules that can be applied across the Isomemo Apps, and
 - an app to test the modules.
 
-### Release notes :
+### Documenation
+- https://pandora-isomemo.github.io/data-tools/
+
+### Release notes:
 - see `NEWS.md`
 
 
@@ -13,7 +16,7 @@
 
 Access to uploads from file, url, and the Pandora Platform. Optionally, merge data before the import via UI or SQL.
 
-UI function :
+UI function:
 
 ```R
 DataTools::importDataUI(id, label = "Import Data")

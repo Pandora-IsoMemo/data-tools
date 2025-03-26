@@ -11,3 +11,6 @@
 ^docs$
 ^pkgdown$
 ^\.github$
+^inst/app/predefinedModels/
+^inst/app/exampleZip/
+^inst/app/dataQueries/
