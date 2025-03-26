@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 25.03.2.1
+Version: 25.03.3
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
