@@ -135,15 +135,17 @@ remoteModelsServer <- function(id,
 
                  output$remoteHelp <- renderUI({
                    if (!isInternet() || length(remoteChoices()) == 0) {
-                     helpText(
-                       paste(
-                         "Note: Access to the Github API failed.",
-                         "Please download remote files from:",
-                         sprintf("https://github.com/Pandora-IsoMemo/%s/tree/main/inst/app%s",
-                                 githubRepo,
-                                 folderOnGithub)
+                     url <- sprintf("https://github.com/Pandora-IsoMemo/%s/tree/main/inst/app%s",
+                                    githubRepo,
+                                    folderOnGithub)
+                     helpText(HTML(
+                       paste0(
+                         "Note: Access to the Github API failed. ",
+                         "Please download remote files from the <a href='",
+                         url,
+                         "' target='_blank'>Github repository</a>."
                        )
-                     )
+                     ))
                    } else NULL
                  })
 
