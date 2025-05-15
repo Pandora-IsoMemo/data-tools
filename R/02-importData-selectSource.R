@@ -133,6 +133,7 @@ selectSourceServer <- function(id,
                  ckanNetworks <- reactive({
                    req(isTRUE(openPopupReset())) # trigger update always when the popup opens
 
+                   if (isTRUE(internetCon())) {
                    logDebug("%s: Calling ckan API with 'group_list' and updating 'ckanNetworks()'...", id)
                    res <- local({
                      old_timeout <- getOption("timeout")  # Save the current timeout
@@ -143,6 +144,9 @@ selectSourceServer <- function(id,
                        withProgress(message = "Connecting to Pandora...") %>%
                        shinyTryCatch(errorTitle = "Pandora connection error", alertStyle = "shinyalert")
                    })
+                   } else {
+                     res <- NULL
+                   }
 
                    if (length(res) > 0) {
                      return(res)
@@ -192,30 +196,30 @@ selectSourceServer <- function(id,
                    reset("file")
                    updateTextInput(session, "repoFilter-ckanMeta", value = "")
 
-                   if (!internetCon()) {
+                   if (isTRUE(internetCon())) {
+                     if (importType == "data") shinyjs::enable(ns("dataOrLink"), asis = TRUE)
+                     # update/reset ckanGroup, ckanRecord, ckanResourceTypes
+                     updatePickerInput(session,
+                                       "repoFilter-ckanGroup",
+                                       choices = getCKANGroupChoices(groupList = ckanNetworks()),
+                                       selected = character(0))
+                     choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
+                     updateSelectizeInput(session,
+                                          "resourceFilter-ckanRecord",
+                                          choices = choicesRepo,
+                                          selected = choicesRepo[1])
+                     choicesTypes <- getCKANTypesChoices(packageList = ckanPackages(),
+                                                         ckanFileTypes = ckanFileTypes)
+                     updatePickerInput(session,
+                                       "resourceFilter-ckanResourceTypes",
+                                       choices = choicesTypes,
+                                       selected = choicesTypes)
+                   } else {
                      warning("selectSourceServer: No internet connection!")
                      #shinyjs::disable(ns("dataOrLink"), asis = TRUE)
                      updateRadioButtons(session, "source", selected = "file")
                      updateTextInput(session, "url", placeholder = "No internet connection ...")
                      shinyjs::disable(ns("loadUrl"), asis = TRUE)
-                   } else {
-                     if (importType == "data") shinyjs::enable(ns("dataOrLink"), asis = TRUE)
-                     # update/reset ckanGroup, ckanRecord, ckanResourceTypes
-                       updatePickerInput(session,
-                                         "repoFilter-ckanGroup",
-                                         choices = getCKANGroupChoices(groupList = ckanNetworks()),
-                                         selected = character(0))
-                       choicesRepo <- getCKANRecordChoices(packageList = ckanPackages())
-                       updateSelectizeInput(session,
-                                            "resourceFilter-ckanRecord",
-                                            choices = choicesRepo,
-                                            selected = choicesRepo[1])
-                       choicesTypes <- getCKANTypesChoices(packageList = ckanPackages(),
-                                                           ckanFileTypes = ckanFileTypes)
-                       updatePickerInput(session,
-                                         "resourceFilter-ckanResourceTypes",
-                                         choices = choicesTypes,
-                                         selected = choicesTypes)
                    }
                  }) %>%
                    bindEvent(openPopupReset())

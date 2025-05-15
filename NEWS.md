@@ -1,3 +1,8 @@
+# DataTools 25.05.0
+
+## Updates
+- _importModule_: remove warning when no internet connection is available
+
 # DataTools 25.03.4
 
 ## Updates
