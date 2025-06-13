@@ -277,13 +277,11 @@ gptUI <- function(id) {
       condition = "input.useGPT && !input.confirmUsingGPT",
       tags$html(
         HTML(
-          "AI PEITHO relies on the large language model GPT. To employ GPT operations you are
-          required to upload your access key saved in a text file.
-      GPT operations rely on the <a href='https://github.com/ben-aaron188/rgpt3' target='_blank'>rgpt3</a>
-      package that handles encryption. </br>
-      <a href='https://github.com/Pandora-IsoMemo' target='_blank'>Pandora & IsoMemo</a> are
-      not responsible for handling key security. Do not share your key.
-      GPT operations consume OpenAI credit from the account associated with the key."
+          "AI PEITHO relies on large language models from OpenAI or DeepSeek. To employ llm operations you are
+          required to upload your access key saved in a text file.</br>
+          <a href='https://github.com/Pandora-IsoMemo' target='_blank'>Pandora & IsoMemo</a> are
+          not responsible for handling key security. Do not share your key.
+          GPT operations consume OpenAI credit from the account associated with the key."
         )
       ),
       checkboxInput(ns("confirmUsingGPT"), "Confirm using GPT operations")
@@ -291,76 +289,11 @@ gptUI <- function(id) {
     conditionalPanel(
       ns = ns,
       condition = "input.useGPT && input.confirmUsingGPT",
-      fluidRow(
-        column(
-          4,
-          style = "margin-top: 1em;",
-          fileInput(ns("apiKey"),
-                    "API key file for GPT",
-                    accept = "text/plain",
-                    width = "100%")
-        ),
-        column(
-          4,
-          style = "margin-top: 1em;",
-          selectInput(
-            ns("gptModel"),
-            "Model",
-            choices = c("Please check your API key ..." = ""),
-            width = "100%"
-          )
-        ),
-        column(
-          2,
-          style = "margin-top: 1em;",
-          numericInput(
-            ns("temperature"),
-            "Temperature",
-            value = 0.1,
-            min = 0,
-            max = 2,
-          )
-        ),
-        column(
-          2,
-          style = "margin-top: 1em;",
-          numericInput(
-            ns("maxTokens"),
-            "Max_tokens",
-            value = 100,
-            min = 0,
-            max = 4000,
-          )
-        )#,
-        # column(2,
-        #        style = "margin-top: 1em;",
-        #        numericInput(
-        #          ns("n"), "N", value = 1, min = 0
-        #        ))
-      ),
-      div(style = "margin-bottom: 0.5em;",
-          tags$html(
-            HTML("<b>Prompt input:</b> &nbsp;&nbsp; \"Write an SQL query to ...")
-          )),
-      fluidRow(column(
-        10,
-        aceEditor(
-          ns("gptPrompt"),
-          value = NULL,
-          mode = "text",
-          theme = "cobalt",
-          fontSize = 16,
-          autoScrollEditorIntoView = TRUE,
-          minLines = 3,
-          maxLines = 5,
-          autoComplete = "live",
-          placeholder = "... your natural language instructions"
-        )
-      ),
-      column(2,
-             actionButton(
-               ns("applyPrompt"), "Apply", disabled = TRUE
-             )))
+      llmModule::llm_generate_prompt_ui(
+        ns("llm_prompt"),
+        prompt_beginning = "Write an SQL query to",
+        prompt_placeholder = "... your natural language instructions",
+        theme = "cobalt")
     )
   )
 }
@@ -408,152 +341,26 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  }) %>%
                    bindEvent(isActiveTab())
 
-                 # UPDATE auto-complete ----
-                 observe({
-                   req(isTRUE(internetCon()))
-                   logDebug("gptServer: update gptPrompt")
-                   updateAceEditor(
-                     session = session,
-                     "gptPrompt",
-                     autoCompleters = c("snippet", "text", "static", "keyword"),
-                     autoCompleteList = unlist(autoCompleteList(), use.names = FALSE)
-                   )
-                 }) %>%
-                   bindEvent(autoCompleteList(),
-                             ignoreNULL = FALSE,
-                             ignoreInit = TRUE)
-
-                 # CHECK key ----
-                 rgptModelsChoices <- reactive({
-                   req(isTRUE(internetCon()))
-                   logDebug("gptServer: update gptModel")
-                   rgpt_models_for_sql()
-                 })
+                 llm_response <- llmModule::llm_generate_prompt_server(
+                   "llm_prompt",
+                   autoCompleteList,
+                   no_internet = !internetCon(),
+                   exclude_pattern = "babbage|curie|dall-e|davinci|text-embedding|tts|whisper")
 
                  observe({
-                   req(isTRUE(internetCon()))
-                   logDebug("gptServer: update input$apiKey")
-
-                   inFile <- input$apiKey
-
-                   # check key format
-                   key <- inFile$datapath %>%
-                     validateKey() %>%
-                     shinyTryCatch(errorTitle = "Invalid API key")
-
-                   req(key)
-                   withProgress({
-                     invisible(capture.output(rgpt_authenticate(key)))
-
-                     # check connection
-                     connSuccess <- NULL
-                     connSuccess <- rgpt_test_completion() %>%
-                       validateAccess() %>%
-                       shinyTryCatch(errorTitle = "Access to GPT failed")
-
-                     if (!is.null(connSuccess) &&
-                         !is.null(connSuccess[["core_output"]][["gpt_content"]])) {
-                       updateSelectInput(
-                         session,
-                         "gptModel",
-                         choices = rgptModelsChoices()
-                       )
-                       validConnection(TRUE)
-                       shinyjs::enable(ns("applyPrompt"), asis = TRUE)
-                     } else {
-                       if (exists("api_key", envir = pkg.env)) {
-                         pkg.env$api_key <- NULL
-                       }
-                       updateSelectInput(
-                         session,
-                         "gptModel",
-                         choices = c("Invalid API key ...." = "")
-                       )
-                       validConnection(FALSE)
-                       shinyjs::disable(ns("applyPrompt"), asis = TRUE)
-                     }
-                   },
-                   value = 0.75,
-                   message = 'checking connection ...')
-                 }) %>%
-                   bindEvent(input$apiKey)
-
-                 # APPLY prompt ----
-                 observe({
-                   req(isTRUE(internetCon()))
-                   logDebug("gptServer: button input$applyPrompt")
+                   logDebug("%s: gptServer: observe llm_response()", id)
                    # reset output
                    sqlCommand(NULL)
 
-                   req(isTRUE(validConnection()))
-                   withProgress({
-                     res <- rgpt_single(
-                       prompt_content = paste("Write an SQL query to", input$gptPrompt),
-                       model = input$gptModel,
-                       temperature = input$temperature,
-                       max_tokens = input$maxTokens,
-                       #n = input$n,
-                       available_models = rgptModelsChoices(),
-                       output_type='text'
-                     ) %>%
-                       validateCompletion() %>%
-                       shinyTryCatch(errorTitle = "Prompt failed")
-                   },
-                   value = 0.75,
-                   message = 'sending request to OpenAI ...')
-
-                   # gptOut is only needed for tests
-                   gptOut(res)
-
-                   req(res[["core_output"]][["gpt_content"]])
-                   # remove preceding lines
-                   command <- res[["core_output"]][["gpt_content"]] %>%
+                   req(inherits(llm_response(), "LlmResponse"))
+                   response_table <- llm_response() |> llmModule::as_table(output_type = "text")
+                   command <- response_table$core_output$content |>
                      gsub(pattern = "^\n+", replacement = "")
                    sqlCommand(command)
-                 }) %>%
-                   bindEvent(input$applyPrompt)
+                 }) %>% bindEvent(llm_response())
 
                  sqlCommand
                })
-}
-
-validateKey <- function(filepath) {
-  keyFile <- filepath %>% readLines()
-
-  if (!(length(keyFile) == 1)) {
-    stop(
-      paste0(
-        "Wrong format. The file should only contain one line with the key.\n",
-        "Please, check\n https://github.com/ben-aaron188/rgpt3#api-call-error\n",
-        "for details."
-      )
-    )
-  }
-
-  filepath
-}
-
-validateAccess <- function(gptOut) {
-  if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
-    stop("No output available for test prompt.")
-  }
-
-  gptOut
-}
-
-validateCompletion <- function(gptOut) {
-  if (is.null(gptOut[["core_output"]][["gpt_content"]])) {
-    warning("No output available.")
-  }
-
-  gptOut
-}
-
-removeOpenGptCon <- function() {
-  if (exists("api_key", envir = pkg.env)) {
-    # remove gpt connection if exists
-    invisible(capture.output(rgpt_endsession()))
-  }
 }
 
 # TEST MODULE -------------------------------------------------------------
