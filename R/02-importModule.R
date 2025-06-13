@@ -179,7 +179,6 @@ importServer <- function(id,
     observe({
       logDebug("%s: Entering observe 'input$accept'", id)
       removeModal()
-      removeOpenGptCon()
 
       req(values$dataImport)
       res <- values$dataImport

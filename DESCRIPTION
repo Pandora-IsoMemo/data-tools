@@ -1,7 +1,7 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 25.05.0
+Version: 25.06.0
 Authors@R: c(
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
             )
@@ -19,6 +19,7 @@ Imports:
   futile.logger,
   jsonlite,
   lifecycle,
+  llmModule,
   magrittr,
   openxlsx,
   readxl,
