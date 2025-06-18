@@ -28,15 +28,13 @@ configureDataUI <- function(id,
                                 defaultFileTypes = defaultFileTypes,
                                 userFileTypes = userFileTypes)
              else NULL,
-             if (!isLink) { # importType is now always "data" here
+             if (!isLink)
                ## data: check logic for first/second column ----
                checkboxInput(
                  ns("withRownames"),
-                 paste(if (batch)
-                   "Second"
-                   else
-                     "First", "column contains rownames")
-               )
+                 paste(ifelse(batch, "Second", "First"), "column contains rownames")
+               ) else NULL,
+             if (!isLink) {
                ## data: check logic for first row ----
                if (outputAsMatrix) {
                  checkboxInput(ns("withColnames"), "The first row contains column names.", value = TRUE)
