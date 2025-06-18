@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">25.05.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">25.06.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,23 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="25.06.0" id="datatools-25060">DataTools 25.06.0<a class="anchor" aria-label="anchor" href="#datatools-25060"></a></h2>
+<div class="section level3">
+<h3 id="updates-25-06-0">Updates<a class="anchor" aria-label="anchor" href="#updates-25-06-0"></a></h3>
+<ul><li>
+<em>importModule - “Query with SQL” tab</em>:
+<ul><li>integrated the <code>llm_generate_prompt</code> module from our new <code>llmModule</code> package</li>
+<li>when using <strong>AI PEITHO data operations</strong> to create AI-assisted SQL queries, users can now choose between the <em>OpenAI</em> and <em>DeepSeek</em> providers</li>
+<li>removed all dependencies on the <a href="https://github.com/ben-aaron188/rgpt3" class="external-link">rgpt3</a> package which was previously used for <em>OpenAI</em> API calls.</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-25-06-0">Bug Fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-25-06-0"></a></h3>
+<ul><li>fixed issue in the UI when using <code>batch = TRUE</code> with <code>importDataServer</code>
+</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="25.05.0" id="datatools-25050">DataTools 25.05.0<a class="anchor" aria-label="anchor" href="#datatools-25050"></a></h2>
 <div class="section level3">
@@ -647,7 +664,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.2.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
 </div>
 
     </footer></div>
