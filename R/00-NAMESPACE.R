@@ -5,6 +5,7 @@
 #' @importFrom httr GET content timeout
 #' @importFrom jsonlite fromJSON read_json write_json
 #' @importFrom lifecycle deprecate_warn
+#' @importFrom llmModule llm_generate_prompt_ui llm_generate_prompt_server
 #' @importFrom openxlsx loadWorkbook
 #' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData
 #'  formatRepositoryList

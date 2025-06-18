@@ -1,3 +1,16 @@
+# DataTools 25.06.0
+
+## Updates
+- _importModule - "Query with SQL" tab_:
+  - integrated the `llm_generate_prompt` module from our new `llmModule` package
+  - when using **AI PEITHO data operations** to create AI-assisted SQL queries, users can now choose
+    between the _OpenAI_ and _DeepSeek_ providers
+  - removed all dependencies on the [rgpt3](https://github.com/ben-aaron188/rgpt3) package which was
+    previously used for _OpenAI_ API calls.
+    
+## Bug Fixes
+- fixed issue in the UI when using `batch = TRUE` with `importDataServer`
+
 # DataTools 25.05.0
 
 ## Updates

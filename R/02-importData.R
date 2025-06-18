@@ -371,7 +371,6 @@ importDataServer <- function(id,
                  observeEvent(input$accept, {
                    logDebug("%s: Pressed input$accept", id)
                    removeModal()
-                   removeOpenGptCon()
 
                    req(values$dataImport)
 
@@ -551,7 +550,7 @@ formatForImport <-
     df <- namedList[[1]] %>%
       formatColumnNames(silent = silent)
 
-    if (outputAsMatrix) {
+    if (!is.null(df) && outputAsMatrix) {
       df <- as.matrix(df)
       attr(df, "includeSd") <- isTRUE(includeSd)
       attr(df, "includeRownames") <- isTRUE(dfNames$withRownames)
