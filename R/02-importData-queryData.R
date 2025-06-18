@@ -310,9 +310,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                function(input, output, session) {
                  ns <- session$ns
                  internetCon <- reactiveVal(FALSE)
-                 validConnection <- reactiveVal(FALSE)
-                 gptOut <- reactiveVal(NULL)
-                 sqlCommand <- reactiveVal(NULL)
+                 llmSqlCommand <- reactiveVal(NULL)
 
                  # CHECK internet connection ----
                  observe({
@@ -336,7 +334,6 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                        value = FALSE
                      )
                      shinyjs::disable(ns("useGPT"), asis = TRUE)
-                     validConnection(FALSE)
                    }
                  }) %>%
                    bindEvent(isActiveTab())
@@ -350,16 +347,16 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  observe({
                    logDebug("%s: gptServer: observe llm_response()", id)
                    # reset output
-                   sqlCommand(NULL)
+                   llmSqlCommand(NULL)
 
                    req(inherits(llm_response(), "LlmResponse"))
                    response_table <- llm_response() |> llmModule::as_table(output_type = "text")
                    command <- response_table$core_output$content |>
                      gsub(pattern = "^\n+", replacement = "")
-                   sqlCommand(command)
+                   llmSqlCommand(command)
                  }) %>% bindEvent(llm_response())
 
-                 sqlCommand
+                 llmSqlCommand
                })
 }
 
