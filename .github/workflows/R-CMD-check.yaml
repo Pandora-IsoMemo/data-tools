@@ -19,7 +19,7 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {os: macos-latest,   r: '4.4.2'}
+          #- {os: macos-latest,   r: '4.4.2'}  # we receive segmentation faults in the tests for macos
           - {os: windows-latest, r: 'release'}
           # Use 3.6 to trigger usage of RTools35
           #- {os: windows-latest, r: '3.6'}

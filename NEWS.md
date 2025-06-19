@@ -1,3 +1,8 @@
+# DataTools 25.06.1
+
+## Bug Fixes
+- fixed issue in previous `llmModule`version
+
 # DataTools 25.06.0
 
 ## Updates
