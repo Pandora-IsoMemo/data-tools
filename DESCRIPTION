@@ -19,7 +19,7 @@ Imports:
   futile.logger,
   jsonlite,
   lifecycle,
-  llmModule (>= 25.06.3),
+  llmModule (>= 25.06.4),
   magrittr,
   openxlsx,
   readxl,
