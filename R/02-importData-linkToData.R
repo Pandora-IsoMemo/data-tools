@@ -23,17 +23,17 @@ downloadDataLinkUI <-
 # @param input input object from server function
 # @param output output object from server function
 # @param session session from server function
-# @param mergeList (reactiveVal) list of data imports
+# @param dataProcessList (reactiveVal) list of data imports
 # @param downloadBtnID (character) ID of the downloadButton
-observeDownloadDataLink <- function(id, input, output, session, mergeList, downloadBtnID = "downloadDataLink") {
+observeDownloadDataLink <- function(id, input, output, session, dataProcessList, downloadBtnID = "downloadDataLink") {
   dataLinkDownload <- reactive({
     logDebug("linkToData: create download")
 
     # export only data links from original (unprocessed) data submitted via button "Create Query with data"
-    mergeListExport <- mergeList() %>% filterUnprocessed()
+    dataProcessListExport <- dataProcessList() %>% filterUnprocessed()
 
     # remove data from list objects (only the source will be exported)
-    mergeListExport <- lapply(mergeListExport, function(x) {
+    dataProcessListExport <- lapply(dataProcessListExport, function(x) {
       x[["data"]] <- NULL
       x
     })
@@ -48,7 +48,7 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList, downl
                                     )
                                   )),
                nm = nmLastInputs()),
-      mergeListExport
+      dataProcessListExport
     )
   })
 
@@ -71,9 +71,9 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList, downl
 # Filter Unprocessed
 #
 # @inheritParams configureDataServer
-filterUnprocessed <- function(mergeList) {
-  if (length(mergeList) == 0) return(mergeList)
-  mergeList[sapply(mergeList, function(x) {
+filterUnprocessed <- function(dataProcessList) {
+  if (length(dataProcessList) == 0) return(dataProcessList)
+  dataProcessList[sapply(dataProcessList, function(x) {
     !is.null(attr(x, "unprocessed")) && isTRUE(attr(x, "unprocessed"))
   })]
 }
@@ -81,9 +81,9 @@ filterUnprocessed <- function(mergeList) {
 # Filter Processed
 #
 # @inheritParams configureDataServer
-filterProcessed <- function(mergeList) {
-  if (length(mergeList) == 0) return(mergeList)
-  mergeList[sapply(mergeList, function(x) {
+filterProcessed <- function(dataProcessList) {
+  if (length(dataProcessList) == 0) return(dataProcessList)
+  dataProcessList[sapply(dataProcessList, function(x) {
     !is.null(attr(x, "unprocessed")) && isFALSE(attr(x, "unprocessed"))
   })]
 }
@@ -133,7 +133,7 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 # @inheritParams selectSourceUI
 # @inheritParams selectSourceServer
 observeUploadDataLink <- function(id, input, output, session, isInternet, dataSource, customNames,
-                                  mergeList) {
+                                  dataProcessList) {
   dataLinkUpload <- reactiveValues(
     import = list(),
     load = 0
@@ -185,7 +185,7 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
       }
     }
 
-    # update mergeList() ----
+    # update dataProcessList() ----
     logDebug("linkToData: load data")
     linkNames <- dataLinkUpload$import %>%
       names()
@@ -209,14 +209,14 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
       # send queryString for input$sqlCommand via attr:
       if (sqlCommandInput != "") attr(newData, "sqlCommandInput") <- sqlCommandInput
 
-      newMergeList <-
-        updateMergeList(
-          mergeList = mergeList(),
+      newDataProcessList <-
+        updateDataProcessList(
+          dataProcessList = dataProcessList(),
           fileName = values$fileName,
           newData = newData,
           notifications = c()
         )
-      mergeList(newMergeList$mergeList)
+      dataProcessList(newDataProcessList$dataProcessList)
     }
   }) %>%
     bindEvent(dataLinkUpload$import)

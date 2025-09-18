@@ -16,7 +16,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableX"),
           "Select table x",
-          choices = emptyMergeListChoices(),
+          choices = emptyDataProcessListChoices(),
           width = "100%"
         )
       ),
@@ -28,7 +28,7 @@ mergeDataUI <- function(id) {
         selectInput(
           ns("tableY"),
           "Select table y",
-          choices = emptyMergeListChoices(),
+          choices = emptyDataProcessListChoices(),
           width = "100%"
         )
       ),
@@ -78,8 +78,8 @@ mergeDataUI <- function(id) {
 #'
 #' Server function of the merge data module
 #' @param id id of module
-#' @param mergeList (list) list of data to be merged
-mergeDataServer <- function(id, mergeList) {
+#' @param dataProcessList (list) list of data to be merged
+mergeDataServer <- function(id, dataProcessList) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -95,13 +95,13 @@ mergeDataServer <- function(id, mergeList) {
                  )
 
                  # update: table selection ----
-                 observeEvent(mergeList(), {
-                   req(length(mergeList()) > 0)
+                 observeEvent(dataProcessList(), {
+                   req(length(dataProcessList()) > 0)
                    logDebug("Merge: Updating tableChoices")
 
-                   tableIds(extractTableIds(mergeList()))
+                   tableIds(extractTableIds(dataProcessList()))
 
-                   tableChoices <- extractMergeListChoices(mergeList(), addIDs = TRUE)
+                   tableChoices <- extractDataProcessListChoices(dataProcessList(), addIDs = TRUE)
                    updateSelectInput(
                      session,
                      "tableX",
@@ -118,19 +118,19 @@ mergeDataServer <- function(id, mergeList) {
 
                  output$nRowsTableX <- renderText({
                    validate(need(input$tableX, ""))
-                   paste(NROW(extractTableData(mergeList(), input$tableX)), "rows")
+                   paste(NROW(extractTableData(dataProcessList(), input$tableX)), "rows")
                  })
 
                  output$nRowsTableY <- renderText({
                    validate(need(input$tableY, ""))
-                   paste(NROW(extractTableData(mergeList(), input$tableY)), "rows")
+                   paste(NROW(extractTableData(dataProcessList(), input$tableY)), "rows")
                  })
 
                  mergeViaUI <-
                    mergeSettingsServer(
                      "mergerViaUI",
-                     tableXData = reactive(extractTableData(mergeList(), input$tableX)),
-                     tableYData = reactive(extractTableData(mergeList(), input$tableY)),
+                     tableXData = reactive(extractTableData(dataProcessList(), input$tableX)),
+                     tableYData = reactive(extractTableData(dataProcessList(), input$tableY)),
                      tableXId = reactive(tableIds()[input$tableX]),
                      tableYId = reactive(tableIds()[input$tableY])
                    )
@@ -159,7 +159,7 @@ mergeDataServer <- function(id, mergeList) {
                      ## create data.frames to merge ----
                      for (i in c(input$tableX, input$tableY)) {
                        assign(tableIds()[i],
-                              mergeList()[[i]] %>% extractProcessedData())
+                              dataProcessList()[[i]] %>% extractProcessedData())
                      }
 
                      ## match column types ----
@@ -206,8 +206,8 @@ mergeDataServer <- function(id, mergeList) {
 
                      if (!is.null(joinedData)) {
                        # check result for warnings
-                       if (NROW(joinedData) > max(NROW(extractTableData(mergeList(), input$tableX)),
-                                                  NROW(extractTableData(mergeList(), input$tableY)))) {
+                       if (NROW(joinedData) > max(NROW(extractTableData(dataProcessList(), input$tableX)),
+                                                  NROW(extractTableData(dataProcessList(), input$tableY)))) {
                          largerThanInput <-
                            "Merged data has more rows than the input tables."
                          largerThanInputDetails <- paste(
@@ -260,11 +260,11 @@ mergeDataServer <- function(id, mergeList) {
                                    history = list())
                    attr(newData, "unprocessed") <- FALSE # disables download of data links
 
-                   # UPDATE MERGELIST ----
-                   newMergeList <- updateMergeList(mergeList = mergeList(),
+                   # UPDATE DATAPROCESSLIST ----
+                   newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),
                                                    fileName = input$fileNameJoined,
                                                    newData = newData)
-                   mergeList(newMergeList$mergeList)
+                   dataProcessList(newDataProcessList$dataProcessList)
 
                    # keep filename
                    joinedResult$import <- setNames(list(joinedResult$data), input$fileNameJoined)
@@ -288,10 +288,10 @@ mergeDataServer <- function(id, mergeList) {
 
 # Merge Helper Functions ----
 
-extractTableData <- function(mergeList, tableName) {
+extractTableData <- function(dataProcessList, tableName) {
   if (is.null(tableName) || tableName == "")  return(NULL)
 
-  mergeList[[tableName]] %>% extractProcessedData()
+  dataProcessList[[tableName]] %>% extractProcessedData()
 }
 
 extractLastSelected <- function(thisInput, choices, idDefault = 1) {
@@ -304,7 +304,7 @@ extractLastSelected <- function(thisInput, choices, idDefault = 1) {
   lastSelected
 }
 
-extractMergeListChoices <- function(mergeList, addIDs = FALSE) {
+extractDataProcessListChoices <- function(dataProcessList, addIDs = FALSE) {
   getNames <- function(dataList) {
     if (length(dataList) == 0)
       return(NULL)
@@ -316,9 +316,9 @@ extractMergeListChoices <- function(mergeList, addIDs = FALSE) {
   }
 
   # split into processed and unprocessed data
-  unprocessedData <- mergeList %>%
+  unprocessedData <- dataProcessList %>%
     filterUnprocessed()
-  processedData <- mergeList %>%
+  processedData <- dataProcessList %>%
     filterProcessed()
   choicesUnprocessed <- getNames(unprocessedData)
   choicesProcessed <- getNames(processedData)
@@ -338,7 +338,7 @@ extractMergeListChoices <- function(mergeList, addIDs = FALSE) {
       fileList
     }
 
-    tableIds <- extractTableIds(mergeList)
+    tableIds <- extractTableIds(dataProcessList)
 
     choicesUnprocessed <- choicesUnprocessed %>% pasteIDs(tableIds)
     choicesProcessed <- choicesProcessed %>% pasteIDs(tableIds)
@@ -351,12 +351,12 @@ extractMergeListChoices <- function(mergeList, addIDs = FALSE) {
   choices <- choices[!sapply(choices, is.null)]
 
   if (length(choices) == 0)
-    return(emptyMergeListChoices())
+    return(emptyDataProcessListChoices())
 
   choices
 }
 
-emptyMergeListChoices <- function() {
+emptyDataProcessListChoices <- function() {
   c("Please load new data under 'Select' and press 'Process data' ..." = "")
 }
 
@@ -365,11 +365,11 @@ emptyMergeListChoices <- function() {
 #' Create IDs `1:n` to the names of loaded tables. Names are often url's of the table file,
 #' something like "https://pandoradata.earth/dataset/.../download/afriarch-isotopic-dataset.xlsx".
 #'
-#' @param mergeList (list) list of data to be merged
+#' @param dataProcessList (list) list of data to be merged
 #'
 #' @return (character) short internal table names
-extractTableIds <- function(mergeList) {
-  namesOfTables <- names(mergeList)
+extractTableIds <- function(dataProcessList) {
+  namesOfTables <- names(dataProcessList)
   ids <- paste0("table", 1:length(namesOfTables))
   names(ids) <- namesOfTables
 

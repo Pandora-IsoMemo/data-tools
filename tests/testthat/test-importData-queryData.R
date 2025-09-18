@@ -2,19 +2,19 @@ testthat::test_that("Test queryDataServer", {
   testFile1 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
   testFile2 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
 
-  testMergeList <- list(
+  testDataProcessList <- list(
     `table1` = list(data = testFile1,
                     history = list()),
     `table2` = list(data = testFile2,
                     history = list())
   )
-  testMergeList <- lapply(testMergeList, function(x) {
+  testDataProcessList <- lapply(testDataProcessList, function(x) {
     attr(x, "unprocessed") <- TRUE # enables download of data links
     x
   })
 
   shiny::testServer(queryDataServer,
-                    args = list(mergeList = reactiveVal(testMergeList),
+                    args = list(dataProcessList = reactiveVal(testDataProcessList),
                                 isActiveTab = reactive(TRUE)),
                     {
                       # Arrange
@@ -60,8 +60,8 @@ testthat::test_that("Test queryDataServer", {
 
   testdb <- dbConnect(SQLite(), "file::memory:")
 
-  testTable1 <- testMergeList[[1]]$data
-  testTable2 <- testMergeList[[2]]$data
+  testTable1 <- testDataProcessList[[1]]$data
+  testTable2 <- testDataProcessList[[2]]$data
 
   dbWriteTable(testdb, "table1", testTable1)
   dbWriteTable(testdb, "table2", testTable2)

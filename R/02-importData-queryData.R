@@ -57,9 +57,9 @@ queryDataUI <- function(id) {
 #'
 #' Server function of the qery data module
 #' @param id id of module
-#' @param mergeList (list) list of data to be merged
+#' @param dataProcessList (list) list of data to be merged
 #' @param isActiveTab (reactive) TRUE if tab of query module is the active
-queryDataServer <- function(id, mergeList, isActiveTab) {
+queryDataServer <- function(id, dataProcessList, isActiveTab) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -84,15 +84,15 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  observe({
                    req(isTRUE(isActiveTab()))
-                   logDebug("%s: observe mergeList()", id)
-                   if (length(mergeList()) > 0) {
-                     unprocessedData(mergeList() %>%
+                   logDebug("%s: observe dataProcessList()", id)
+                   if (length(dataProcessList()) > 0) {
+                     unprocessedData(dataProcessList() %>%
                                        filterUnprocessed())
                    } else {
                      unprocessedData(list())
                    }
                  }) %>%
-                   bindEvent(list(mergeList(), isActiveTab())) # cannot set ignoreInit = TRUE because of tests
+                   bindEvent(list(dataProcessList(), isActiveTab())) # cannot set ignoreInit = TRUE because of tests
 
                  tableIds <- reactive({
                    req(length(unprocessedData()) > 0)
@@ -167,7 +167,7 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  output$inMemoryTables <- renderDataTable({
                    validate(need(length(unprocessedData()) > 0, paste(
-                     "Tables:", names(emptyMergeListChoices())
+                     "Tables:", names(emptyDataProcessListChoices())
                    )))
 
                    req(tableIds())
@@ -218,21 +218,21 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      dbGetQuery(tmpDB, input$sqlCommand) %>%
                      shinyTryCatch(errorTitle = "Query failed")
 
-                   # update mergeList if query succeeded
+                   # update dataProcessList if query succeeded
                    if (!is.null(result$data)) {
                      ### format column names for import ----
                      result$data <- result$data %>%
                        formatColumnNames(silent = TRUE)
 
-                     # UPDATE MERGELIST ----
+                     # UPDATE DATAPROCESSLIST ----
                      newData <- list(data = result$data,
                                      history = list())
                      attr(newData, "unprocessed") <- FALSE # disables download of data links
 
-                     newMergeList <- updateMergeList(mergeList = mergeList(),
+                     newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),
                                                      fileName = input$fileNameQueried,
                                                      newData = newData)
-                     mergeList(newMergeList$mergeList)
+                     dataProcessList(newDataProcessList$dataProcessList)
 
                      # keep filename
                      result$import <- setNames(list(result$data), input$fileNameQueried)
