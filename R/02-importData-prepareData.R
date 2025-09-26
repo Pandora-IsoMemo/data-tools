@@ -80,7 +80,7 @@ prepareDataServer <- function(id, dataProcessList) {
         fileName = input$dataToPrep,
         newData = newData
       )
-      dataProcessList(newDataProcessList$dataProcessList)
+      dataProcessList(newDataProcessList)
 
       preparedData$data <- newData %>% extractProcessedData()
     }) %>%
@@ -411,7 +411,8 @@ updateDataProcessList <- function(dataProcessList,
     dataProcessList <- c(dataProcessList, setNames(list(newData), fileName))
   }
 
-  list(dataProcessList = dataProcessList, notifications = notifications)
+  attr(dataProcessList, "notifications") <- notifications
+  dataProcessList
 }
 
 getColnameChoices <- function(dat, textIfEmpty = "Select a file ...") {

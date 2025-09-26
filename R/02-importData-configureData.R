@@ -194,8 +194,8 @@ configureDataServer <- function(id,
                          newData = newDataForDataProcessList(),
                          notifications = notifications
                        )
-                     dataProcessList(newDataProcessList$dataProcessList)
-                     notifications <- newDataProcessList$notifications
+                     dataProcessList(newDataProcessList)
+                     notifications <- attr(newDataProcessList, "notifications")
 
                      showNotification(HTML(sprintf("File for data processing: <br>%s",
                                                    values$fileName)),

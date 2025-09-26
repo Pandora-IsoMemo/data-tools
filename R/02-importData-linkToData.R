@@ -216,7 +216,7 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
           newData = newData,
           notifications = c()
         )
-      dataProcessList(newDataProcessList$dataProcessList)
+      dataProcessList(newDataProcessList)
     }
   }) %>%
     bindEvent(dataLinkUpload$import)

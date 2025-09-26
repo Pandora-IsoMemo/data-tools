@@ -264,7 +264,7 @@ mergeDataServer <- function(id, dataProcessList) {
                    newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),
                                                    fileName = input$fileNameJoined,
                                                    newData = newData)
-                   dataProcessList(newDataProcessList$dataProcessList)
+                   dataProcessList(newDataProcessList)
 
                    # keep filename
                    joinedResult$import <- setNames(list(joinedResult$data), input$fileNameJoined)

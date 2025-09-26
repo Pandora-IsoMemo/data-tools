@@ -232,7 +232,7 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                      newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),
                                                      fileName = input$fileNameQueried,
                                                      newData = newData)
-                     dataProcessList(newDataProcessList$dataProcessList)
+                     dataProcessList(newDataProcessList)
 
                      # keep filename
                      result$import <- setNames(list(result$data), input$fileNameQueried)
