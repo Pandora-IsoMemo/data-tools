@@ -253,7 +253,7 @@ mergeDataServer <- function(id, dataProcessList) {
 
                    newData <- new_DataProcessItem(
                      data = joinedResult$data,
-                     # input = input, # do we need this???
+                     input = list(),
                      filename = input$fileNameJoined,
                      unprocessed = FALSE, # disables download of data links
                      history = list()

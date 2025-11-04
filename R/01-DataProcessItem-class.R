@@ -20,28 +20,45 @@ new_DataProcessItem <- function(
 ) {
   # Validate required fields
   if (missing(data) || is.null(data)) stop("'data' must be provided and not NULL.")
-  if (missing(input) || is.null(input)) stop("'input' must be provided and not NULL.")
   if (missing(unprocessed) || !is.logical(unprocessed)) stop("'unprocessed' must be provided and be logical (TRUE/FALSE).")
+  if (unprocessed && (missing(input) || is.null(input))) stop("'input' must be provided and not NULL for unprocessed data.")
   if (missing(filename) || is.null(filename) || filename == "") stop("'filename' must be provided and not empty.")
 
-  file <- getFileInputs(input, type = "file")
-  source <- getFileInputs(input, type = "source")
-  query <- getFileInputs(input, type = "query")
+  if (missing(history) || is.null(history)) {
+    history <- list()
+  }
+
+  if (unprocessed) {
+    file <- getFileInputs(input, type = "file")
+    source <- getFileInputs(input, type = "source")
+    query <- getFileInputs(input, type = "query")
+
+    input_list <- list(
+      file = file,
+      source = source,
+      query = query
+    )    # deprecated field for backward compatibility
+  } else {
+    input_list <- list()
+    file <- list()
+    source <- list()
+    query <- list()
+
+    if (!missing(input) && !is.null(input) && length(input) > 0) {
+      warning("'input' is ignored for processed data (unprocessed = FALSE).")
+    }
+  }
 
   new_item <- list(
-      data = data,
-      file_inputs = file,
-      source_inputs = source,
-      query_inputs = query,
-      unprocessed = unprocessed, # enables download of data links,
-      filename = filename,
-      history = history,
-      input = list(
-        file = getFileInputs(input),
-        source = getFileInputs(input, type = "source"),
-        query = getFileInputs(input, type = "query")
-      )    # deprecated field for backward compatibility
-    )
+    data = data,
+    file_inputs = file,
+    source_inputs = source,
+    query_inputs = query,
+    unprocessed = unprocessed, # enables download of data links,
+    filename = filename,
+    history = history,
+    input = input_list
+  )
 
   # deprecated attributes for backward compatibility
   attr(new_item, "unprocessed") <- TRUE

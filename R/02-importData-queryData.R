@@ -227,7 +227,7 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                      # UPDATE DATAPROCESSLIST ----
                      newData <- new_DataProcessItem(
                        data = result$data,
-                       # input = input, # do we need this???
+                       input = list(),
                        filename = input$fileNameQueried,
                        unprocessed = FALSE,
                        history = list()

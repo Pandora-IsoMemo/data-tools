@@ -31,7 +31,7 @@ test_that("invalid DataProcessItem creation: missing input", {
 
 # Test invalid creation (unprocessed not logical)
 test_that("invalid DataProcessItem creation: unprocessed not logical", {
-	expect_error(new_DataProcessItem(data, input, "yes", filename), "'unprocessed' must be provided and be logical")
+	expect_error(new_DataProcessItem(data, input, filename, "yes"), "'unprocessed' must be provided and be logical")
 })
 
 # Test invalid creation (missing filename)
