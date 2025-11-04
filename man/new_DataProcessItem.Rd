@@ -5,16 +5,27 @@
 \title{Constructor for DataProcessItem
 Creates a new DataProcessItem object.}
 \usage{
-new_DataProcessItem(data, input, unprocessed, filename)
+new_DataProcessItem(
+  data,
+  input,
+  filename,
+  unprocessed,
+  sql_command = "",
+  history = list()
+)
 }
 \arguments{
 \item{data}{The main data (e.g., data frame).}
 
 \item{input}{A list containing file, source, and query inputs.}
 
+\item{filename}{The name of the file associated with this data item.}
+
 \item{unprocessed}{Logical indicating if the data is unprocessed.}
 
-\item{filename}{The name of the file associated with this data item.}
+\item{sql_command}{Optional SQL command string for database queries.}
+
+\item{history}{Optional list of history entries.}
 }
 \value{
 A new DataProcessItem object.

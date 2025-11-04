@@ -163,13 +163,12 @@ configureDataServer <- function(id,
                    observe({
                      logDebug("Updating input$keepDataForQuery")
 
-                     newData <- list(data = values$dataImport %>%
-                                       formatColumnNames(silent = TRUE),
-                                     input = list(
-                                       source = dataSource$input,
-                                       file = getFileInputs(input)
-                                     ))
-                     attr(newData, "unprocessed") <- TRUE # enables download of data links
+                     newData <- new_DataProcessItem(
+                       data = values$dataImport %>% formatColumnNames(silent = TRUE),
+                       input = input,
+                       filename = values$fileName,
+                       unprocessed = TRUE # enables download of data links
+                     )
 
                      newDataForDataProcessList(newData)
 

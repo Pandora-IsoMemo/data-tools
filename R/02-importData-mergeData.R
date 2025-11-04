@@ -188,21 +188,16 @@ mergeDataServer <- function(id, dataProcessList) {
                      joinedData <-
                        tryCatch({
                          eval(parse(text = mergeViaUI$command))
-                         #stop("test error")
-                         #warning("test warning")
                        },
                        error = function(cond) {
                          joinedResult$errors <- "Could not merge data."
                          shinyjs::alert(paste("Could not merge data:", cond$message))
-                         # Choose a return value in case of error
                          return(NULL)
                        },
                        warning = function(cond) {
                          joinedResult$warningsPopup <- cond$message
-                         # Choose a return value in case of warning
                          return(NULL)
-                       },
-                       finally = NULL)
+                       })
 
                      if (!is.null(joinedData)) {
                        # check result for warnings
@@ -256,9 +251,13 @@ mergeDataServer <- function(id, dataProcessList) {
                    value = 0.75,
                    message = 'merging data ...')
 
-                   newData <- list(data = joinedResult$data,
-                                   history = list())
-                   attr(newData, "unprocessed") <- FALSE # disables download of data links
+                   newData <- new_DataProcessItem(
+                     data = joinedResult$data,
+                     # input = input, # do we need this???
+                     filename = input$fileNameJoined,
+                     unprocessed = FALSE, # disables download of data links
+                     history = list()
+                   )
 
                    # UPDATE DATAPROCESSLIST ----
                    newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),

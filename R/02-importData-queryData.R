@@ -225,9 +225,13 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                        formatColumnNames(silent = TRUE)
 
                      # UPDATE DATAPROCESSLIST ----
-                     newData <- list(data = result$data,
-                                     history = list())
-                     attr(newData, "unprocessed") <- FALSE # disables download of data links
+                     newData <- new_DataProcessItem(
+                       data = result$data,
+                       # input = input, # do we need this???
+                       filename = input$fileNameQueried,
+                       unprocessed = FALSE,
+                       history = list()
+                     )
 
                      newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),
                                                      fileName = input$fileNameQueried,

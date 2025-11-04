@@ -4,14 +4,20 @@
 #' Creates a new DataProcessItem object.
 #' @param data The main data (e.g., data frame).
 #' @param input A list containing file, source, and query inputs.
-#' @param unprocessed Logical indicating if the data is unprocessed.
 #' @param filename The name of the file associated with this data item.
+#' @param unprocessed Logical indicating if the data is unprocessed.
+#' @param sql_command Optional SQL command string for database queries.
+#' @param history Optional list of history entries.
 #' @return A new DataProcessItem object.
 #' @export
-new_DataProcessItem <- function(data,
-                                 input,
-                                 unprocessed,
-                                 filename) {
+new_DataProcessItem <- function(
+  data,
+  input,
+  filename,
+  unprocessed,
+  sql_command = "",
+  history = list()
+) {
   # Validate required fields
   if (missing(data) || is.null(data)) stop("'data' must be provided and not NULL.")
   if (missing(input) || is.null(input)) stop("'input' must be provided and not NULL.")
@@ -22,15 +28,27 @@ new_DataProcessItem <- function(data,
   source <- getFileInputs(input, type = "source")
   query <- getFileInputs(input, type = "query")
 
-  structure(
-    list(
+  new_item <- list(
       data = data,
       file_inputs = file,
       source_inputs = source,
       query_inputs = query,
-      unprocessed = unprocessed,
-      filename = filename
-    ),
+      unprocessed = unprocessed, # enables download of data links,
+      filename = filename,
+      history = history,
+      input = list(
+        file = getFileInputs(input),
+        source = getFileInputs(input, type = "source"),
+        query = getFileInputs(input, type = "query")
+      )    # deprecated field for backward compatibility
+    )
+
+  # deprecated attributes for backward compatibility
+  attr(new_item, "unprocessed") <- TRUE
+  if (sql_command != "") attr(new_item, "sqlCommandInput") <- sql_command
+
+  structure(
+    new_item,
     class = "DataProcessItem"
   )
 }
@@ -45,7 +63,15 @@ new_DataProcessItem <- function(data,
 #' @param history New history to set (optional).
 #' @return The updated DataProcessItem object.
 #' @export
-update.DataProcessItem <- function(item, data = NULL, input = NULL, unprocessed = NULL, filename = NULL, history = NULL, ...) {
+update.DataProcessItem <- function(
+  item,
+  data = NULL,
+  input = NULL,
+  unprocessed = NULL,
+  filename = NULL,
+  history = NULL,
+  ...
+) {
   if (!inherits(item, "DataProcessItem")) stop("Object must be of class 'DataProcessItem'.")
   if (!is.null(data)) item$data <- data
   if (!is.null(input)) {

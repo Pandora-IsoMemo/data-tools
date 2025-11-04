@@ -198,16 +198,13 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
                                  customNames = customNames)
 
       req(values$dataImport)
-      newData <- list(data = values$dataImport %>%
-                        formatColumnNames(silent = TRUE),
-                      input = list(
-                        file = loadedFileInputs,
-                        source = loadedSourceInputs
-                      ))
-      # enables download of data links:
-      attr(newData, "unprocessed") <- TRUE
-      # send queryString for input$sqlCommand via attr:
-      if (sqlCommandInput != "") attr(newData, "sqlCommandInput") <- sqlCommandInput
+      newData <- new_DataProcessItem(
+        data = values$dataImport %>% formatColumnNames(silent = TRUE),
+        input = input,
+        filename = values$fileName,
+        unprocessed = TRUE,
+        sql_command = sqlCommandInput
+      )
 
       newDataProcessList <-
         updateDataProcessList(

@@ -71,9 +71,11 @@ prepareDataServer <- function(id, dataProcessList) {
     observe({
       req(length(preparedData$history) > 0)
       logDebug("%s: Observe preparedData$history", id)
-      newData <- dataProcessList()[[input$dataToPrep]]
-      newData$history <- preparedData$history
-      attr(newData, "unprocessed") <- FALSE # disables download of data links
+      newData <- update(
+        dataProcessList()[[input$dataToPrep]],
+        history = preparedData$history,
+        unprocessed = FALSE  # disables download of data links
+      )
 
       newDataProcessList <- updateDataProcessList(
         dataProcessList = dataProcessList(),
