@@ -59,8 +59,5 @@ test_that("Test getCKANResourcesChoices()", {
 })
 
 test_that("Test getCKANGroupChoices()", {
-  expect_equal(
-    getCKANGroupChoices(),
-    c(`IsoMemo Network` = "isomemo-group")
-  )
+  expect_true("isomemo-group" %in% getCKANGroupChoices())
 })

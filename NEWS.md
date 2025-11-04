@@ -1,3 +1,8 @@
+# DataTools 25.11.0
+
+## Updates
+- align test to changes on CKAN (#116)
+
 # DataTools 25.06.1
 
 ## Bug Fixes
