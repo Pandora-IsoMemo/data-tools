@@ -78,6 +78,7 @@ new_DataProcessItem <- function(
 #' @param unprocessed New unprocessed status to set (optional).
 #' @param filename New filename to set (optional).
 #' @param history New history to set (optional).
+#' @param ... Additional arguments (not used).
 #' @return The updated DataProcessItem object.
 #' @export
 update.DataProcessItem <- function(
@@ -105,6 +106,7 @@ update.DataProcessItem <- function(
 #' S3 method: Map DataProcessItem to old format
 #' Converts a DataProcessItem object to the old format with data and input list.
 #' @param obj The DataProcessItem object to convert.
+#' @param ... Additional arguments (not used).
 #' @return A list with 'data' and 'input' fields, and 'unprocessed' attribute.
 #' @export
 mapToOldFormat.DataProcessItem <- function(obj, ...) {

@@ -27,6 +27,8 @@ Updates fields of a DataProcessItem object.}
 \item{filename}{New filename to set (optional).}
 
 \item{history}{New history to set (optional).}
+
+\item{...}{Additional arguments (not used).}
 }
 \value{
 The updated DataProcessItem object.

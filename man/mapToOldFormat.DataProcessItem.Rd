@@ -9,6 +9,8 @@ Converts a DataProcessItem object to the old format with data and input list.}
 }
 \arguments{
 \item{obj}{The DataProcessItem object to convert.}
+
+\item{...}{Additional arguments (not used).}
 }
 \value{
 A list with 'data' and 'input' fields, and 'unprocessed' attribute.
