@@ -72,50 +72,43 @@ new_DataProcessItem <- function(
 
 #' S3 method: Update fields of a DataProcessItem
 #' Updates fields of a DataProcessItem object.
-#' @param item The DataProcessItem object to update.
-#' @param data New data to set (optional).
-#' @param input New input list to set (optional).
-#' @param unprocessed New unprocessed status to set (optional).
-#' @param filename New filename to set (optional).
-#' @param history New history to set (optional).
-#' @param ... Additional arguments (not used).
+#' @param object The DataProcessItem object to update.
+#' @param ... New args to update. Possible args: data, input, unprocessed, filename, history.
 #' @return The updated DataProcessItem object.
 #' @export
 update.DataProcessItem <- function(
-  item,
-  data = NULL,
-  input = NULL,
-  unprocessed = NULL,
-  filename = NULL,
-  history = NULL,
+  object,
   ...
 ) {
-  if (!inherits(item, "DataProcessItem")) stop("Object must be of class 'DataProcessItem'.")
-  if (!is.null(data)) item$data <- data
-  if (!is.null(input)) {
-    item$file_inputs <- getFileInputs(input, type = "file")
-    item$source_inputs <- getFileInputs(input, type = "source")
-    item$query_inputs <- getFileInputs(input, type = "query")
+  args <- list(...)
+
+  if (!inherits(object, "DataProcessItem")) stop("Object must be of class 'DataProcessItem'.")
+  if (!is.null(args$data)) object$data <- args$data
+  if (!is.null(args$input)) {
+    object$file_inputs <- getFileInputs(args$input, type = "file")
+    object$source_inputs <- getFileInputs(args$input, type = "source")
+    object$query_inputs <- getFileInputs(args$input, type = "query")
   }
-  if (!is.null(unprocessed)) item$unprocessed <- unprocessed
-  if (!is.null(filename)) item$filename <- filename
-  if (!is.null(history)) item$history <- history
-  item
+  if (!is.null(args$unprocessed)) object$unprocessed <- args$unprocessed
+  if (!is.null(args$filename)) object$filename <- args$filename
+  if (!is.null(args$history)) object$history <- args$history
+
+  object
 }
 
 #' S3 method: Map DataProcessItem to old format
 #' Converts a DataProcessItem object to the old format with data and input list.
-#' @param obj The DataProcessItem object to convert.
+#' @param object The DataProcessItem object to convert.
 #' @param ... Additional arguments (not used).
 #' @return A list with 'data' and 'input' fields, and 'unprocessed' attribute.
 #' @export
-mapToOldFormat.DataProcessItem <- function(obj, ...) {
-  newData <- list(data = obj$data,
+mapToOldFormat.DataProcessItem <- function(object, ...) {
+  newData <- list(data = object$data,
                   input = list(
-                    file = obj$file_inputs,
-                    source = obj$source_inputs,
-                    query = obj$query_inputs
+                    file = object$file_inputs,
+                    source = object$source_inputs,
+                    query = object$query_inputs
                   ))
-  attr(newData, "unprocessed") <- obj$unprocessed
+  attr(newData, "unprocessed") <- object$unprocessed
   newData
 }

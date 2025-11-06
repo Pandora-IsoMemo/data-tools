@@ -5,10 +5,10 @@
 \title{S3 method: Map DataProcessItem to old format
 Converts a DataProcessItem object to the old format with data and input list.}
 \usage{
-\method{mapToOldFormat}{DataProcessItem}(obj, ...)
+\method{mapToOldFormat}{DataProcessItem}(object, ...)
 }
 \arguments{
-\item{obj}{The DataProcessItem object to convert.}
+\item{object}{The DataProcessItem object to convert.}
 
 \item{...}{Additional arguments (not used).}
 }

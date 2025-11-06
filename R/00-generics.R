@@ -4,6 +4,6 @@ update <- function(object, ...) {
   UseMethod("update")
 }
 
-mapToOldFormat <- function(obj, ...) {
+mapToOldFormat <- function(object, ...) {
   UseMethod("mapToOldFormat")
 }

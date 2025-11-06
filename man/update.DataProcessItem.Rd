@@ -5,30 +5,12 @@
 \title{S3 method: Update fields of a DataProcessItem
 Updates fields of a DataProcessItem object.}
 \usage{
-\method{update}{DataProcessItem}(
-  item,
-  data = NULL,
-  input = NULL,
-  unprocessed = NULL,
-  filename = NULL,
-  history = NULL,
-  ...
-)
+\method{update}{DataProcessItem}(object, ...)
 }
 \arguments{
-\item{item}{The DataProcessItem object to update.}
+\item{object}{The DataProcessItem object to update.}
 
-\item{data}{New data to set (optional).}
-
-\item{input}{New input list to set (optional).}
-
-\item{unprocessed}{New unprocessed status to set (optional).}
-
-\item{filename}{New filename to set (optional).}
-
-\item{history}{New history to set (optional).}
-
-\item{...}{Additional arguments (not used).}
+\item{...}{New args to update. Possible args: data, input, unprocessed, filename, history.}
 }
 \value{
 The updated DataProcessItem object.
