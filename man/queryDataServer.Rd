@@ -7,12 +7,12 @@
 \usage{
 queryDataUI(id)
 
-queryDataServer(id, mergeList, isActiveTab)
+queryDataServer(id, dataProcessList, isActiveTab)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{mergeList}{(list) list of data to be merged}
+\item{dataProcessList}{(list) list of data to be merged}
 
 \item{isActiveTab}{(reactive) TRUE if tab of query module is the active}
 }

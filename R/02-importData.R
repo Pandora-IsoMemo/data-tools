@@ -126,7 +126,7 @@ importDataServer <- function(id,
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
-                 mergeList <- reactiveVal(list())
+                 dataProcessList <- reactiveVal(list())
                  customNames <- reactiveValues(
                    withRownames = FALSE,
                    rownames = rowNames,
@@ -227,7 +227,7 @@ importDataServer <- function(id,
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
-                     mergeList = mergeList,
+                     dataProcessList = dataProcessList,
                      customNames = customNames
                    )
                  } else {
@@ -264,11 +264,11 @@ importDataServer <- function(id,
 
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList,
+                                         dataProcessList = dataProcessList,
                                          downloadBtnID = "dataSelector-downloadDataLink")
 
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList,
+                                         dataProcessList = dataProcessList,
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
                  valuesFromDataLink <-
@@ -276,7 +276,7 @@ importDataServer <- function(id,
                                          isInternet = internetCon,
                                          dataSource = dataSource,
                                          customNames = customNames,
-                                         mergeList = mergeList
+                                         dataProcessList = dataProcessList
                    )
 
                  ## Enable/Disable Accept button ----
@@ -296,15 +296,15 @@ importDataServer <- function(id,
                      bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
                  } else {
                    preparedData <- prepareDataServer("dataPreparer",
-                                                     mergeList = mergeList)
+                                                     dataProcessList = dataProcessList)
 
                    joinedData <-
-                     mergeDataServer("dataMerger", mergeList = mergeList)
+                     mergeDataServer("dataMerger", dataProcessList = dataProcessList)
 
                    queriedData <-
                      queryDataServer(
                        "dataQuerier",
-                       mergeList = mergeList,
+                       dataProcessList = dataProcessList,
                        isActiveTab = reactive(checkIfActive(currentTab = input[["tabImport"]],
                                                             tabName = "Query with SQL"))
                      )
@@ -401,7 +401,7 @@ importDataServer <- function(id,
                      returnData(values$data)
 
                      values <- values %>% resetValues()     # reset entries of values
-                     mergeList(list())                      # reset mergeList
+                     dataProcessList(list())                      # reset dataProcessList
                    }
                  }) %>%
                    bindEvent(values$data, ignoreNULL = FALSE, ignoreInit = TRUE)

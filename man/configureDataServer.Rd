@@ -17,7 +17,7 @@ configureDataUI(
 
 configureDataServer(
   id,
-  mergeList,
+  dataProcessList,
   customNames,
   dataSource,
   ignoreWarnings = FALSE
@@ -40,7 +40,7 @@ e.g. for batch = TRUE in Resources.}
 
 \item{userFileTypes}{(character) user file types specified in "Pandora Platform" settings}
 
-\item{mergeList}{(reactiveVal) list of data imports submitted for data processing via buttons
+\item{dataProcessList}{(reactiveVal) list of data imports submitted for data processing via buttons
 'Create Query with data' or 'Prepare / Merge data'}
 
 \item{customNames}{settings for custom column and row names}

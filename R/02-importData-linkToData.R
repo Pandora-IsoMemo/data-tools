@@ -23,33 +23,47 @@ downloadDataLinkUI <-
 # @param input input object from server function
 # @param output output object from server function
 # @param session session from server function
-# @param mergeList (reactiveVal) list of data imports
+# @param dataProcessList (reactiveVal) list of data imports
 # @param downloadBtnID (character) ID of the downloadButton
-observeDownloadDataLink <- function(id, input, output, session, mergeList, downloadBtnID = "downloadDataLink") {
+observeDownloadDataLink <- function(id, input, output, session, dataProcessList, downloadBtnID = "downloadDataLink") {
   dataLinkDownload <- reactive({
     logDebug("linkToData: create download")
 
     # export only data links from original (unprocessed) data submitted via button "Create Query with data"
-    mergeListExport <- mergeList() %>% filterUnprocessed()
+    dataProcessListExport <- dataProcessList() %>% filterUnprocessed()
 
     # remove data from list objects (only the source will be exported)
-    mergeListExport <- lapply(mergeListExport, function(x) {
+    dataProcessListExport <- lapply(dataProcessListExport, function(x) {
       x[["data"]] <- NULL
       x
     })
 
-    # add current inputs
-    c(
-      setNames(object = list(list(data = NULL,
-                                  input = list(
-                                    file = getFileInputs(input, type = "file"),
-                                    source = getFileInputs(input, type = "source"),
-                                    query = getFileInputs(input, type = "query")
-                                    )
-                                  )),
-               nm = nmLastInputs()),
-      mergeListExport
+    # add current inputs as additional item
+    current_item <- new_DataProcessItem(
+      data = NULL,
+      input = input,
+      filename = nmLastInputs(),
+      unprocessed = TRUE
     )
+
+    # UPDATE DATAPROCESSLIST ----
+    updateDataProcessList(
+      dataProcessList = dataProcessListExport,
+      fileName = nmLastInputs(),
+      newData = current_item
+    )
+
+    # c(
+    #   setNames(object = list(list(data = NULL,
+    #                               input = list(
+    #                                 file = getFileInputs(input, type = "file"),
+    #                                 source = getFileInputs(input, type = "source"),
+    #                                 query = getFileInputs(input, type = "query")
+    #                                 )
+    #                               )),
+    #            nm = nmLastInputs()),
+    #   dataProcessListExport
+    # )
   })
 
   output[[downloadBtnID]] <- downloadHandler(
@@ -71,20 +85,20 @@ observeDownloadDataLink <- function(id, input, output, session, mergeList, downl
 # Filter Unprocessed
 #
 # @inheritParams configureDataServer
-filterUnprocessed <- function(mergeList) {
-  if (length(mergeList) == 0) return(mergeList)
-  mergeList[sapply(mergeList, function(x) {
-    !is.null(attr(x, "unprocessed")) && isTRUE(attr(x, "unprocessed"))
+filterUnprocessed <- function(dataProcessList) {
+  if (length(dataProcessList) == 0) return(dataProcessList)
+  dataProcessList[sapply(dataProcessList, function(x) {
+    isTRUE(x[["unprocessed"]])
   })]
 }
 
 # Filter Processed
 #
 # @inheritParams configureDataServer
-filterProcessed <- function(mergeList) {
-  if (length(mergeList) == 0) return(mergeList)
-  mergeList[sapply(mergeList, function(x) {
-    !is.null(attr(x, "unprocessed")) && isFALSE(attr(x, "unprocessed"))
+filterProcessed <- function(dataProcessList) {
+  if (length(dataProcessList) == 0) return(dataProcessList)
+  dataProcessList[sapply(dataProcessList, function(x) {
+    isFALSE(x[["unprocessed"]])
   })]
 }
 
@@ -133,7 +147,7 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 # @inheritParams selectSourceUI
 # @inheritParams selectSourceServer
 observeUploadDataLink <- function(id, input, output, session, isInternet, dataSource, customNames,
-                                  mergeList) {
+                                  dataProcessList) {
   dataLinkUpload <- reactiveValues(
     import = list(),
     load = 0
@@ -164,9 +178,13 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
     # update user inputs ----
     logDebug("linkToData: update user inputs")
     lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
+
+    # here we must align if its old or new format...
+
     if (!is.null(lastUserInputValues) &&
         "input" %in% names(lastUserInputValues) &&
         length(lastUserInputValues[["input"]]) > 0) {
+          #browser()
       for (nm in names(lastUserInputValues[["input"]])) {
         updateUserInputs(id, input = input, output = output, session = session,
                          userInputs = lastUserInputValues[["input"]][[nm]], inDataTools = TRUE)
@@ -185,7 +203,7 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
       }
     }
 
-    # update mergeList() ----
+    # update dataProcessList() ----
     logDebug("linkToData: load data")
     linkNames <- dataLinkUpload$import %>%
       names()
@@ -198,26 +216,28 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
                                  customNames = customNames)
 
       req(values$dataImport)
-      newData <- list(data = values$dataImport %>%
-                        formatColumnNames(silent = TRUE),
-                      input = list(
-                        file = loadedFileInputs,
-                        source = loadedSourceInputs
-                      ))
-      # enables download of data links:
-      attr(newData, "unprocessed") <- TRUE
-      # send queryString for input$sqlCommand via attr:
-      if (sqlCommandInput != "") attr(newData, "sqlCommandInput") <- sqlCommandInput
+      newData <- new_DataProcessItem(
+        data = values$dataImport %>% formatColumnNames(silent = TRUE),
+        input = input,
+        filename = values$fileName,
+        unprocessed = TRUE, # only links to unprocessed data can be exported and imported
+        sql_command = sqlCommandInput
+      )
 
-      newMergeList <-
-        updateMergeList(
-          mergeList = mergeList(),
+      newDataProcessList <-
+        updateDataProcessList(
+          dataProcessList = dataProcessList(),
           fileName = values$fileName,
           newData = newData,
           notifications = c()
         )
-      mergeList(newMergeList$mergeList)
+      dataProcessList(newDataProcessList)
     }
+
+    # trigger load ckan file button -> not working
+    session$sendInputMessage("fileSource-resourceLoad-loadCKAN", list(value = TRUE))
+
+    
   }) %>%
     bindEvent(dataLinkUpload$import)
 
