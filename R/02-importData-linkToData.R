@@ -38,18 +38,32 @@ observeDownloadDataLink <- function(id, input, output, session, dataProcessList,
       x
     })
 
-    # add current inputs
-    c(
-      setNames(object = list(list(data = NULL,
-                                  input = list(
-                                    file = getFileInputs(input, type = "file"),
-                                    source = getFileInputs(input, type = "source"),
-                                    query = getFileInputs(input, type = "query")
-                                    )
-                                  )),
-               nm = nmLastInputs()),
-      dataProcessListExport
+    # add current inputs as additional item
+    current_item <- new_DataProcessItem(
+      data = NULL,
+      input = input,
+      filename = nmLastInputs(),
+      unprocessed = TRUE
     )
+
+    # UPDATE DATAPROCESSLIST ----
+    updateDataProcessList(
+      dataProcessList = dataProcessListExport,
+      fileName = nmLastInputs(),
+      newData = current_item
+    )
+
+    # c(
+    #   setNames(object = list(list(data = NULL,
+    #                               input = list(
+    #                                 file = getFileInputs(input, type = "file"),
+    #                                 source = getFileInputs(input, type = "source"),
+    #                                 query = getFileInputs(input, type = "query")
+    #                                 )
+    #                               )),
+    #            nm = nmLastInputs()),
+    #   dataProcessListExport
+    # )
   })
 
   output[[downloadBtnID]] <- downloadHandler(
@@ -74,7 +88,7 @@ observeDownloadDataLink <- function(id, input, output, session, dataProcessList,
 filterUnprocessed <- function(dataProcessList) {
   if (length(dataProcessList) == 0) return(dataProcessList)
   dataProcessList[sapply(dataProcessList, function(x) {
-    !is.null(attr(x, "unprocessed")) && isTRUE(attr(x, "unprocessed"))
+    isTRUE(x[["unprocessed"]])
   })]
 }
 
@@ -84,7 +98,7 @@ filterUnprocessed <- function(dataProcessList) {
 filterProcessed <- function(dataProcessList) {
   if (length(dataProcessList) == 0) return(dataProcessList)
   dataProcessList[sapply(dataProcessList, function(x) {
-    !is.null(attr(x, "unprocessed")) && isFALSE(attr(x, "unprocessed"))
+    isFALSE(x[["unprocessed"]])
   })]
 }
 
@@ -164,9 +178,13 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
     # update user inputs ----
     logDebug("linkToData: update user inputs")
     lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
+
+    # here we must align if its old or new format...
+
     if (!is.null(lastUserInputValues) &&
         "input" %in% names(lastUserInputValues) &&
         length(lastUserInputValues[["input"]]) > 0) {
+          #browser()
       for (nm in names(lastUserInputValues[["input"]])) {
         updateUserInputs(id, input = input, output = output, session = session,
                          userInputs = lastUserInputValues[["input"]][[nm]], inDataTools = TRUE)
@@ -202,7 +220,7 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
         data = values$dataImport %>% formatColumnNames(silent = TRUE),
         input = input,
         filename = values$fileName,
-        unprocessed = TRUE,
+        unprocessed = TRUE, # only links to unprocessed data can be exported and imported
         sql_command = sqlCommandInput
       )
 
@@ -215,6 +233,11 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
         )
       dataProcessList(newDataProcessList)
     }
+
+    # trigger load ckan file button -> not working
+    session$sendInputMessage("fileSource-resourceLoad-loadCKAN", list(value = TRUE))
+
+    
   }) %>%
     bindEvent(dataLinkUpload$import)
 

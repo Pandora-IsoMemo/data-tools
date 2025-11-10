@@ -4,14 +4,12 @@ testthat::test_that("Test queryDataServer", {
 
   testDataProcessList <- list(
     `table1` = list(data = testFile1,
+                    unprocessed = TRUE, # enables download of data links
                     history = list()),
     `table2` = list(data = testFile2,
+                    unprocessed = TRUE, # enables download of data links
                     history = list())
   )
-  testDataProcessList <- lapply(testDataProcessList, function(x) {
-    attr(x, "unprocessed") <- TRUE # enables download of data links
-    x
-  })
 
   shiny::testServer(queryDataServer,
                     args = list(dataProcessList = reactiveVal(testDataProcessList),

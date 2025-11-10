@@ -377,9 +377,10 @@ splitColumnsServer <- function(id, preparedData) {
 # helper functions ----
 
 extractProcessedData <- function(dat) {
-  if (!is.null(attr(dat, "unprocessed")) &&
-      isTRUE(attr(dat, "unprocessed")) ||
-      length(dat$history) == 0) {
+  if (
+    isTRUE(dat[["unprocessed"]]) ||
+    length(dat[["history"]]) == 0
+  ) {
     return(dat$data)
   } else {
     new_data <- dat$data

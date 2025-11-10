@@ -61,7 +61,6 @@ new_DataProcessItem <- function(
   )
 
   # deprecated attributes for backward compatibility
-  attr(new_item, "unprocessed") <- TRUE
   if (sql_command != "") attr(new_item, "sqlCommandInput") <- sql_command
 
   structure(
@@ -103,12 +102,12 @@ update.DataProcessItem <- function(
 #' @return A list with 'data' and 'input' fields, and 'unprocessed' attribute.
 #' @export
 mapToOldFormat.DataProcessItem <- function(object, ...) {
-  newData <- list(data = object$data,
-                  input = list(
-                    file = object$file_inputs,
-                    source = object$source_inputs,
-                    query = object$query_inputs
-                  ))
-  attr(newData, "unprocessed") <- object$unprocessed
-  newData
+  list(
+    data = object$data,
+    input = list(
+      file = object$file_inputs,
+      source = object$source_inputs,
+      query = object$query_inputs
+    )
+  )
 }
