@@ -81,11 +81,13 @@ configureDataUI <- function(id,
 #'  'Create Query with data' or 'Prepare / Merge data'
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
+#' @param dataSourceInputs (reactiveValues) inputs related to the data source
 #' @inheritParams importDataServer
 configureDataServer <- function(id,
                                 dataProcessList,
                                 customNames,
                                 dataSource,
+                                dataSourceInputs,
                                 ignoreWarnings = FALSE
 ) {
   moduleServer(id,
@@ -162,10 +164,9 @@ configureDataServer <- function(id,
 
                    observe({
                      logDebug("Updating input$keepDataForQuery")
-
                      newData <- new_DataProcessItem(
                        data = values$dataImport %>% formatColumnNames(silent = TRUE),
-                       input = input,
+                       input = c(getFileInputs(input, type = "file"), dataSourceInputs),
                        filename = values$fileName,
                        unprocessed = TRUE # enables download of data links
                      )

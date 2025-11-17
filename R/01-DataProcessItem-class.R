@@ -19,16 +19,23 @@ new_DataProcessItem <- function(
   history = list()
 ) {
   # Validate required fields
-  if (missing(data) || is.null(data)) stop("'data' must be provided and not NULL.")
-  if (missing(unprocessed) || !is.logical(unprocessed)) stop("'unprocessed' must be provided and be logical (TRUE/FALSE).")
-  if (unprocessed && (missing(input) || is.null(input))) stop("'input' must be provided and not NULL for unprocessed data.")
-  if (missing(filename) || is.null(filename) || filename == "") stop("'filename' must be provided and not empty.")
+  if (missing(data)) stop("'data' must be provided.")
+  if (missing(unprocessed) || !is.logical(unprocessed)) {
+    stop("'unprocessed' must be provided and be logical (TRUE/FALSE).")
+  }
 
+  # set fields if missing
+  if (missing(filename) || is.null(filename)) {
+    filename <- ""
+  }
   if (missing(history) || is.null(history)) {
     history <- list()
   }
 
   if (unprocessed) {
+    if ((missing(input) || is.null(input))) {
+      stop("'input' must be provided and not NULL for unprocessed data.")
+    }
     file <- getFileInputs(input, type = "file")
     source <- getFileInputs(input, type = "source")
     query <- getFileInputs(input, type = "query")
@@ -37,8 +44,17 @@ new_DataProcessItem <- function(
       file = file,
       source = source,
       query = query
-    )    # deprecated field for backward compatibility
+    )    # keep also deprecated field for backward compatibility
+
+    if (filename == "") {
+      # try to get filename from input if possible
+      dataSource <- extractDataSourceFromInputs(
+        loadedSourceInputs = source
+      )
+      filename <- dataSource$filename
+    }
   } else {
+    # do we really need to clean all this for processed data?
     input_list <- list()
     file <- list()
     source <- list()
@@ -95,19 +111,78 @@ update.DataProcessItem <- function(
   object
 }
 
-#' S3 method: Map DataProcessItem to old format
-#' Converts a DataProcessItem object to the old format with data and input list.
-#' @param object The DataProcessItem object to convert.
-#' @param ... Additional arguments (not used).
-#' @return A list with 'data' and 'input' fields, and 'unprocessed' attribute.
-#' @export
-mapToOldFormat.DataProcessItem <- function(object, ...) {
-  list(
-    data = object$data,
-    input = list(
-      file = object$file_inputs,
-      source = object$source_inputs,
-      query = object$query_inputs
-    )
+isOldDataLinkFormat <- function(object) {
+  is.list(object) &&
+    ("input" %in% names(object)) &&
+    is.list(object$input) &&
+    all(c("file", "source") %in% names(object$input))
+}
+
+mapOldFormatToDataProcessItem <- function(list, file_name = "") {
+  unprocessed <- if (!is.null(attr(list, "unprocessed"))) attr(list, "unprocessed") else TRUE
+  sql_command <- if (!is.null(attr(list, "sqlCommandInput"))) attr(list, "sqlCommandInput") else ""
+  history <- if (!is.null(attr(list, "history"))) attr(list, "history") else list()
+
+  all_user_inputs <- c(
+    list[["input"]][["source"]],
+    list[["input"]][["file"]],
+    list[["input"]][["query"]]
   )
+  new_DataProcessItem(
+    data = list$data,
+    input = all_user_inputs,
+    filename = file_name,
+    unprocessed = unprocessed,
+    sql_command = sql_command,
+    history = history
+  )
+}
+
+# Class Helpers ----
+
+# Get File Inputs
+#
+# Filter all inputs for file inputs or for source inputs
+#
+# @param input (reactiveValue) input
+# @param type (character) type of inputs
+getFileInputs <- function(input, type = c("file", "source", "query")) {
+  type <- match.arg(type)
+
+  pattern <- c(
+    "file" = "fileType-",
+    "source" = "fileSource-",
+    "query" = "dataQuerier-"
+  )
+
+  if (inherits(input, "reactivevalues")) {
+    all_inputs <- reactiveValuesToList(input)
+  } else {
+    all_inputs <- input
+  }
+
+  # Remove inputs related to internal tables and UI elements
+  all_inputs <- all_inputs[names(all_inputs)[
+    !grepl("repoInfoTable_", names(all_inputs)) &
+      !grepl("shinyjs-", names(all_inputs)) &
+      !grepl("inMemoryTables_", names(all_inputs)) &
+      !grepl("inMemoryColumns_", names(all_inputs)) &
+      !grepl("previewDat-", names(all_inputs))
+  ]]
+
+  # Filter (keep) pattern dependent on namespace
+  pattern_keep <- ifelse(any(grepl(pattern[type], names(all_inputs))), pattern[type], "")
+  all_inputs <- all_inputs[names(all_inputs)[grepl(pattern_keep, names(all_inputs))]]
+
+  # exclude patterns if(!) they are present in the inputs
+  pattern_exclude <- setdiff(unname(pattern), pattern_keep)
+  if (length(pattern_exclude) > 0) {
+    for (pat in pattern_exclude) {
+      if (any(grepl(pat, names(all_inputs)))) {
+        all_inputs <- all_inputs[names(all_inputs)[!grepl(pat, names(all_inputs))]]
+      }
+    }
+  }
+
+  return(all_inputs)
 }

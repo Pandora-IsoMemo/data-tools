@@ -20,6 +20,7 @@ configureDataServer(
   dataProcessList,
   customNames,
   dataSource,
+  dataSourceInputs,
   ignoreWarnings = FALSE
 )
 }
@@ -46,6 +47,8 @@ e.g. for batch = TRUE in Resources.}
 \item{customNames}{settings for custom column and row names}
 
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
+
+\item{dataSourceInputs}{(reactiveValues) inputs related to the data source}
 
 \item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
 }

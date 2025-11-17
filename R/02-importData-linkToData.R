@@ -38,7 +38,7 @@ observeDownloadDataLink <- function(id, input, output, session, dataProcessList,
       x
     })
 
-    # add current inputs as additional item
+    # add current inputs as additional item but without data
     current_item <- new_DataProcessItem(
       data = NULL,
       input = input,
@@ -47,23 +47,18 @@ observeDownloadDataLink <- function(id, input, output, session, dataProcessList,
     )
 
     # UPDATE DATAPROCESSLIST ----
-    updateDataProcessList(
+    dataProcessListExport <- updateDataProcessList(
       dataProcessList = dataProcessListExport,
       fileName = nmLastInputs(),
       newData = current_item
     )
 
-    # c(
-    #   setNames(object = list(list(data = NULL,
-    #                               input = list(
-    #                                 file = getFileInputs(input, type = "file"),
-    #                                 source = getFileInputs(input, type = "source"),
-    #                                 query = getFileInputs(input, type = "query")
-    #                                 )
-    #                               )),
-    #            nm = nmLastInputs()),
-    #   dataProcessListExport
-    # )
+    # unclass all list elements for json export
+    dataLinkExport <- lapply(dataProcessListExport, function(x) {
+      unclass(x)
+    })
+
+    dataLinkExport
   })
 
   output[[downloadBtnID]] <- downloadHandler(
@@ -102,41 +97,6 @@ filterProcessed <- function(dataProcessList) {
   })]
 }
 
-# Get File Inputs
-#
-# Filter all inputs for file inputs or for source inputs
-#
-# @param input (reactiveValue) input
-# @param type (character) type of inputs
-getFileInputs <- function(input, type = c("file", "source", "query")) {
-  type <- match.arg(type)
-
-  pattern <- switch (type,
-                     "file" = "fileType-",
-                     "source" = "fileSource-",
-                     "query" = "dataQuerier-"
-  )
-
-  if (inherits(input, "reactivevalues")) {
-    allInputs <- reactiveValuesToList(input)
-  } else {
-    allInputs <- input
-  }
-
-  allInputs <- allInputs[names(allInputs)[
-    !grepl("repoInfoTable_", names(allInputs)) &
-      !grepl("shinyjs-", names(allInputs)) &
-      !grepl("inMemoryTables_", names(allInputs)) &
-      !grepl("inMemoryColumns_", names(allInputs)) &
-      !grepl("previewDat-", names(allInputs))
-  ]]
-
-  # set pattern dependent on namespace
-  pattern <- ifelse(any(grepl(pattern, names(allInputs))), pattern, "")
-
-  allInputs[names(allInputs)[grepl(pattern, names(allInputs))]]
-}
-
 # Observe Upload of a link to import data
 #
 # @param id module id
@@ -146,8 +106,17 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 # @inheritParams configureDataServer
 # @inheritParams selectSourceUI
 # @inheritParams selectSourceServer
-observeUploadDataLink <- function(id, input, output, session, isInternet, dataSource, customNames,
-                                  dataProcessList) {
+observeUploadDataLink <- function(
+  id,
+  input,
+  output,
+  session,
+  isInternet,
+  dataSource,
+  customNames,
+  dataProcessList,
+  values
+) {
   dataLinkUpload <- reactiveValues(
     import = list(),
     load = 0
@@ -172,54 +141,92 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
 
   observe({
     req(length(dataLinkUpload$import) > 0)
-    logDebug("linkToData: observe import")
+    logDebug("linkToData: observe import%s", ifelse(isInternet(), "", " - no internet connection!"))
     req(isInternet())
 
     # update user inputs ----
     logDebug("linkToData: update user inputs")
     lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
 
-    # here we must align if its old or new format...
-
-    if (!is.null(lastUserInputValues) &&
-        "input" %in% names(lastUserInputValues) &&
-        length(lastUserInputValues[["input"]]) > 0) {
-          #browser()
-      for (nm in names(lastUserInputValues[["input"]])) {
-        updateUserInputs(id, input = input, output = output, session = session,
-                         userInputs = lastUserInputValues[["input"]][[nm]], inDataTools = TRUE)
+    if (
+      length(lastUserInputValues) > 0
+    ) {
+      # load deprecated format if needed
+      if (isOldDataLinkFormat(lastUserInputValues)) {
+        lastUserInputValues <- mapOldFormatToDataProcessItem(
+          list = lastUserInputValues
+        )
       }
+
+      # load online data from link
+      values <- loadFileFromLink(
+        values = values,
+        dataSource = extractDataSourceFromInputs(
+        loadedSourceInputs = lastUserInputValues[["source_inputs"]] %>%
+          removeNamespacePattern(pattern = c("fileSource"))
+      ),
+        loadedFileInputs = lastUserInputValues[["file_inputs"]] %>%
+          removeNamespacePattern(pattern = c("dataSelector")),
+        customNames = customNames
+      )
+
+      all_user_inputs <- c(
+        lastUserInputValues[["source_inputs"]],
+        lastUserInputValues[["file_inputs"]],
+        lastUserInputValues[["query_inputs"]]
+      )
+
+      updateUserInputs(id, input = input, output = output, session = session,
+                       userInputs = all_user_inputs, inDataTools = TRUE)
 
       # implicit update of input$sqlCommand is not working
       # -> explecitly reset value to allow update with query from dataLink
-      updateAceEditor(session = session,
-                      "dataQuerier-sqlCommand",
-                      value = "")
+      updateAceEditor(session = session, "dataQuerier-sqlCommand", value = "")
       # -> send queryString via attr
-      if ("query" %in% names(lastUserInputValues[["input"]])) {
-        sqlCommandInput <- lastUserInputValues[["input"]][["query"]][["dataQuerier-sqlCommand"]]
+      if ("dataQuerier-sqlCommand" %in% names(lastUserInputValues[["query_inputs"]])) {
+        sqlCommandInput <- lastUserInputValues[["query_inputs"]][["dataQuerier-sqlCommand"]]
       } else {
         sqlCommandInput <- ""
       }
+      updateAceEditor(session = session, "dataQuerier-sqlCommand", value = sqlCommandInput)
     }
 
     # update dataProcessList() ----
     logDebug("linkToData: load data")
-    linkNames <- dataLinkUpload$import %>%
-      names()
-    for (i in linkNames[linkNames != nmLastInputs()]) {
-      loadedFileInputs <- dataLinkUpload$import[[i]][["input"]][["file"]]
-      loadedSourceInputs <- dataLinkUpload$import[[i]][["input"]][["source"]]
+    link_names <- dataLinkUpload$import %>% names()
+    for (i in link_names[link_names != nmLastInputs()]) {
+      data_link_import <- dataLinkUpload$import[[i]]
 
-      values <- loadFileFromLink(loadedSourceInputs = loadedSourceInputs,
-                                 loadedFileInputs = loadedFileInputs,
-                                 customNames = customNames)
+      # load deprecated format if needed
+      if (isOldDataLinkFormat(data_link_import)) {
+        data_link_import <- mapOldFormatToDataProcessItem(
+          list = data_link_import,
+          file_name = i
+        )
+      }
 
-      req(values$dataImport)
+      # load online data from link
+      values_import <- loadFileFromLink(
+        dataSource = extractDataSourceFromInputs(
+          loadedSourceInputs = data_link_import[["source_inputs"]] %>%
+            removeNamespacePattern(pattern = c("fileSource"))
+        ),
+        loadedFileInputs = data_link_import[["file_inputs"]] %>%
+          removeNamespacePattern(pattern = c("dataSelector")),
+        customNames = customNames
+      )
+
+      req(values_import$dataImport)
+      if ("dataQuerier-sqlCommand" %in% names(data_link_import[["query_inputs"]])) {
+        sqlCommandInput <- data_link_import[["query_inputs"]][["dataQuerier-sqlCommand"]]
+      } else {
+        sqlCommandInput <- ""
+      }
+
       newData <- new_DataProcessItem(
-        data = values$dataImport %>% formatColumnNames(silent = TRUE),
+        data = values_import$dataImport %>% formatColumnNames(silent = TRUE),
         input = input,
-        filename = values$fileName,
+        filename = values_import$fileName,
         unprocessed = TRUE, # only links to unprocessed data can be exported and imported
         sql_command = sqlCommandInput
       )
@@ -227,24 +234,44 @@ observeUploadDataLink <- function(id, input, output, session, isInternet, dataSo
       newDataProcessList <-
         updateDataProcessList(
           dataProcessList = dataProcessList(),
-          fileName = values$fileName,
+          fileName = values_import$fileName,
           newData = newData,
           notifications = c()
         )
       dataProcessList(newDataProcessList)
     }
-
-    # trigger load ckan file button -> not working
-    session$sendInputMessage("fileSource-resourceLoad-loadCKAN", list(value = TRUE))
-
-    
   }) %>%
     bindEvent(dataLinkUpload$import)
 
-  #return(values)
+  return(values)
 }
 
 nmLastInputs <- function() "lastSelectDataInputs"
+
+extractDataSourceFromInputs <- function(loadedSourceInputs) {
+  loadedSourceInputs <- loadedSourceInputs %>%
+    removeNamespacePattern(pattern = c("dataSelector")) %>%
+    removeNamespacePattern(pattern = c("fileSource"))
+
+  # load only online data
+  if (!(loadedSourceInputs[["source"]] %in% c("ckan", "url"))) {
+    return(list(
+      file = NULL,
+      filename = NULL,
+      input = NULL
+    ))
+  }
+
+  # get file (path) and filename
+  dataSource <- getDataSource(input = loadedSourceInputs,
+                              type = loadedSourceInputs[["source"]],
+                              isInternet = TRUE) %>%
+    addSourceType(importType = "data",
+                  source = loadedSourceInputs[["source"]],
+                  inputDataOrLink = "fullData")
+
+  return(dataSource)
+}
 
 # Load File From Link
 #
@@ -261,26 +288,9 @@ loadFileFromLink <- function(values = reactiveValues(warnings = list(),
                                                      dataImport = NULL,
                                                      preview = NULL,
                                                      data = list()),
-                             loadedSourceInputs,
+                             dataSource,
                              loadedFileInputs,
                              customNames) {
-  loadedSourceInputs <- loadedSourceInputs %>%
-    removeNamespacePattern(pattern = c("dataSelector")) %>%
-    removeNamespacePattern(pattern = c("fileSource"))
-
-  # load only online data
-  if (!(loadedSourceInputs[["source"]] %in% c("ckan", "url"))) {
-    return(values)
-  }
-
-  # get file (path) and filename
-  dataSource <- getDataSource(input = loadedSourceInputs,
-                              type = loadedSourceInputs[["source"]],
-                              isInternet = TRUE) %>%
-    addSourceType(importType = "data",
-                  source = loadedSourceInputs[["source"]],
-                  inputDataOrLink = "fullData")
-
   # load data
   values <- loadDataWrapper(
     values = values,

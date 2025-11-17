@@ -227,6 +227,7 @@ importDataServer <- function(id,
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
+                     dataSourceInputs = getFileInputs(input, type = "source"),
                      dataProcessList = dataProcessList,
                      customNames = customNames
                    )
@@ -271,12 +272,13 @@ importDataServer <- function(id,
                                          dataProcessList = dataProcessList,
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
-                 valuesFromDataLink <-
+                 values <-
                    observeUploadDataLink(id, input = input, output = output, session = session,
                                          isInternet = internetCon,
                                          dataSource = dataSource,
                                          customNames = customNames,
-                                         dataProcessList = dataProcessList
+                                         dataProcessList = dataProcessList,
+                                         values = values
                    )
 
                  ## Enable/Disable Accept button ----
