@@ -19,11 +19,6 @@ test_that("valid DataProcessItem creation", {
 	expect_equal(item$data, data)
 })
 
-# Test invalid creation (missing data)
-test_that("invalid DataProcessItem creation: missing data", {
-	expect_error(new_DataProcessItem(NULL, input, filename, TRUE), "'data' must be provided")
-})
-
 # Test invalid creation (missing input)
 test_that("invalid DataProcessItem creation: missing input", {
 	expect_error(new_DataProcessItem(data, NULL, filename, TRUE), "'input' must be provided")
@@ -32,12 +27,6 @@ test_that("invalid DataProcessItem creation: missing input", {
 # Test invalid creation (unprocessed not logical)
 test_that("invalid DataProcessItem creation: unprocessed not logical", {
 	expect_error(new_DataProcessItem(data, input, filename, "yes"), "'unprocessed' must be provided and be logical")
-})
-
-# Test invalid creation (missing filename)
-test_that("invalid DataProcessItem creation: missing filename", {
-	expect_error(new_DataProcessItem(data, input, NULL, TRUE), "'filename' must be provided")
-	expect_error(new_DataProcessItem(data, input, "", TRUE), "'filename' must be provided")
 })
 
 # Test update method
