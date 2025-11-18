@@ -4,10 +4,10 @@
 \alias{extractTableIds}
 \title{Extract Table IDs}
 \usage{
-extractTableIds(mergeList)
+extractTableIds(dataProcessList)
 }
 \arguments{
-\item{mergeList}{(list) list of data to be merged}
+\item{dataProcessList}{(list) list of data to be merged}
 }
 \value{
 (character) short internal table names

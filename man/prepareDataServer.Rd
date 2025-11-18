@@ -7,12 +7,12 @@
 \usage{
 prepareDataUI(id)
 
-prepareDataServer(id, mergeList)
+prepareDataServer(id, dataProcessList)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{mergeList}{(list) list of selected data}
+\item{dataProcessList}{(list) list of selected data}
 }
 \description{
 UI of the module

@@ -77,15 +77,19 @@ configureDataUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param mergeList (reactiveVal) list of data imports submitted for data processing via buttons
+#' @param dataProcessList (reactiveVal) list of data imports submitted for data processing via buttons
 #'  'Create Query with data' or 'Prepare / Merge data'
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
+#' @param dataSourceInputs (reactiveValues) inputs related to the data source
+#' @param dataForPreview (reactive) data to show in preview
 #' @inheritParams importDataServer
 configureDataServer <- function(id,
-                                mergeList,
+                                dataProcessList,
                                 customNames,
                                 dataSource,
+                                dataSourceInputs,
+                                dataForPreview,
                                 ignoreWarnings = FALSE
 ) {
   moduleServer(id,
@@ -155,23 +159,27 @@ configureDataServer <- function(id,
                  }) %>%
                    bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
 
+                   observe({
+                     logDebug("Updating dataForPreview")
+                     values$preview <- dataForPreview()
+                   }) %>%
+                     bindEvent(dataForPreview())
+
                    previewDataServer("previewDat", dat = reactive(values$preview))
 
                    ## button keep data ----
-                   newDataForMergeList <- reactiveVal(NULL)
+                   newDataForDataProcessList <- reactiveVal(NULL)
 
                    observe({
                      logDebug("Updating input$keepDataForQuery")
+                     newData <- new_DataProcessItem(
+                       data = values$dataImport %>% formatColumnNames(silent = TRUE),
+                       input = c(getFileInputs(input, type = "file"), dataSourceInputs),
+                       filename = values$fileName,
+                       unprocessed = TRUE # enables download of data links
+                     )
 
-                     newData <- list(data = values$dataImport %>%
-                                       formatColumnNames(silent = TRUE),
-                                     input = list(
-                                       source = dataSource$input,
-                                       file = getFileInputs(input)
-                                     ))
-                     attr(newData, "unprocessed") <- TRUE # enables download of data links
-
-                     newDataForMergeList(newData)
+                     newDataForDataProcessList(newData)
 
                      # disable "keepData" to prevent loading data twice
                      shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
@@ -179,23 +187,23 @@ configureDataServer <- function(id,
                      bindEvent(input$keepDataForQuery)
 
                    observe({
-                     logDebug("Updating mergeList()")
+                     logDebug("Updating dataProcessList()")
                      notifications <- c()
                      if (customNames$withRownames) {
                        notifications <- c(notifications,
                                           "Rownames are not preserved when applying data processing.")
                      }
 
-                     # update mergeList() ----
-                     newMergeList <-
-                       updateMergeList(
-                         mergeList = mergeList(),
+                     # update dataProcessList() ----
+                     newDataProcessList <-
+                       updateDataProcessList(
+                         dataProcessList = dataProcessList(),
                          fileName = values$fileName,
-                         newData = newDataForMergeList(),
+                         newData = newDataForDataProcessList(),
                          notifications = notifications
                        )
-                     mergeList(newMergeList$mergeList)
-                     notifications <- newMergeList$notifications
+                     dataProcessList(newDataProcessList)
+                     notifications <- attr(newDataProcessList, "notifications")
 
                      showNotification(HTML(sprintf("File for data processing: <br>%s",
                                                    values$fileName)),
@@ -205,7 +213,7 @@ configureDataServer <- function(id,
                        shinyjs::info(paste0(notifications, collapse = "\n"))
                      }
                    }) %>%
-                     bindEvent(newDataForMergeList())
+                     bindEvent(newDataForDataProcessList())
 
                  values
                })

@@ -126,7 +126,7 @@ importDataServer <- function(id,
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
-                 mergeList <- reactiveVal(list())
+                 dataProcessList <- reactiveVal(list())
                  customNames <- reactiveValues(
                    withRownames = FALSE,
                    rownames = rowNames,
@@ -221,13 +221,16 @@ importDataServer <- function(id,
                    ckanFileTypes = ckanFileTypes
                  )
 
+                 data_for_preview <- reactiveVal(NULL)
                  if (importType == "data") {
                    # sets values$dataImport
                    values <- configureDataServer(
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
-                     mergeList = mergeList,
+                     dataSourceInputs = getFileInputs(input, type = "source"),
+                     dataProcessList = dataProcessList,
+                     dataForPreview = data_for_preview,
                      customNames = customNames
                    )
                  } else {
@@ -264,20 +267,31 @@ importDataServer <- function(id,
 
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList,
+                                         dataProcessList = dataProcessList,
                                          downloadBtnID = "dataSelector-downloadDataLink")
 
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList,
+                                         dataProcessList = dataProcessList,
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
-                 valuesFromDataLink <-
+                 values <-
                    observeUploadDataLink(id, input = input, output = output, session = session,
                                          isInternet = internetCon,
                                          dataSource = dataSource,
                                          customNames = customNames,
-                                         mergeList = mergeList
+                                         dataProcessList = dataProcessList,
+                                         values = values
                    )
+
+                 observe({
+                   req(values$dataImport)
+                   logDebug("%s: Update data_for_preview()", id)
+                   data_for_preview(values$dataImport)
+                 }) %>% 
+                   bindEvent(values$dataImport)
+
+
+                 # cancel does not reset the values/inputs...
 
                  ## Enable/Disable Accept button ----
                  if (importType != "data") {
@@ -296,15 +310,15 @@ importDataServer <- function(id,
                      bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
                  } else {
                    preparedData <- prepareDataServer("dataPreparer",
-                                                     mergeList = mergeList)
+                                                     dataProcessList = dataProcessList)
 
                    joinedData <-
-                     mergeDataServer("dataMerger", mergeList = mergeList)
+                     mergeDataServer("dataMerger", dataProcessList = dataProcessList)
 
                    queriedData <-
                      queryDataServer(
                        "dataQuerier",
-                       mergeList = mergeList,
+                       dataProcessList = dataProcessList,
                        isActiveTab = reactive(checkIfActive(currentTab = input[["tabImport"]],
                                                             tabName = "Query with SQL"))
                      )
@@ -401,7 +415,7 @@ importDataServer <- function(id,
                      returnData(values$data)
 
                      values <- values %>% resetValues()     # reset entries of values
-                     mergeList(list())                      # reset mergeList
+                     dataProcessList(list())                      # reset dataProcessList
                    }
                  }) %>%
                    bindEvent(values$data, ignoreNULL = FALSE, ignoreInit = TRUE)

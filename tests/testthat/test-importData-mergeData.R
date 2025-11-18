@@ -1,17 +1,17 @@
 testthat::test_that("Test module mergeSettings", {
-  testMergeList <-
+  testDataProcessList <-
     readRDS(testthat::test_path("test-importData-mergeData_data.rds"))
 
-  for (i in 1:length(testMergeList)) {
-    testMergeList[[i]]$dataImport <-
-      testMergeList[[i]]$dataImport %>%
+  for (i in 1:length(testDataProcessList)) {
+    testDataProcessList[[i]]$dataImport <-
+      testDataProcessList[[i]]$dataImport %>%
       formatColumnNames(silent = TRUE)
   }
 
   # to create new testCommonColumns use:
   #
-  #   colnamesX <- colnames(testMergeList[[names(testMergeList)[1]]]$dataImport)
-  #   colnamesY <- colnames(testMergeList[[names(testMergeList)[2]]]$dataImport)
+  #   colnamesX <- colnames(testDataProcessList[[names(testDataProcessList)[1]]]$dataImport)
+  #   colnamesY <- colnames(testDataProcessList[[names(testDataProcessList)[2]]]$dataImport)
   #   intersect(colnamesX, colnamesY) %>% dput()
 
   testCommonColumns <-
@@ -66,8 +66,8 @@ testthat::test_that("Test module mergeSettings", {
       "δ18O.Carbonate..VPDB..unc."
     )
 
-  tableXData <- testMergeList[[1]]$dataImport
-  tableYData <- testMergeList[[2]]$dataImport
+  tableXData <- testDataProcessList[[1]]$dataImport
+  tableYData <- testDataProcessList[[2]]$dataImport
 
   testMergeCommand <-
     "table1 %>%  left_join(table2,  by = c(\"Submitter.ID\"=\"Submitter.ID\", \"Context.ID\"=\"Context.ID\", \"Individual.ID\"=\"Individual.ID\", \"Sample.ID\"=\"Sample.ID\", \"Sex\"=\"Sex\", \"Age.Category\"=\"Age.Category\", \"Min..Age..yrs.\"=\"Min..Age..yrs.\", \"Max..Age..yrs.\"=\"Max..Age..yrs.\", \"Sampled.Element\"=\"Sampled.Element\", \"Analysed.Component\"=\"Analysed.Component\", \"Modern.Country\"=\"Modern.Country\", \"Site.Name\"=\"Site.Name\", \"Site.Description\"=\"Site.Description\", \"Central.Power..Empire.or.Kingdom.\"=\"Central.Power..Empire.or.Kingdom.\", \"Local.Power..e.g..Vassal..Petty.Kingdom..Tribe..etc..\"=\"Local.Power..e.g..Vassal..Petty.Kingdom..Tribe..etc..\", \"Probable.Cultural.Context\"=\"Probable.Cultural.Context\", \"Culture.Mix..Substratus..Dependence..External.Influence..etc..\"=\"Culture.Mix..Substratus..Dependence..External.Influence..etc..\", \"Latitude\"=\"Latitude\", \"Longitude\"=\"Longitude\", \"Exact.Site.location.\"=\"Exact.Site.location.\", \"unc..Radius..km.\"=\"unc..Radius..km.\", \"Min..Year..95..\"=\"Min..Year..95..\", \"Max..Year..95..\"=\"Max..Year..95..\", \"Dating.Method\"=\"Dating.Method\", \"General.Period.s.\"=\"General.Period.s.\", \"Additional.Chronological.Tags\"=\"Additional.Chronological.Tags\", \"Social.Status.Rank\"=\"Social.Status.Rank\", \"Elite.\"=\"Elite.\", \"Additional.Social.Information\"=\"Additional.Social.Information\", \"Probable.Religious.Culture\"=\"Probable.Religious.Culture\", \"Probable.Religious.Denomination\"=\"Probable.Religious.Denomination\", \"Reference\"=\"Reference\", \"IRMS.Lab.Institution.Stable.Carbon...Nitrogen.Measurement\"=\"IRMS.Lab.Institution.Stable.Carbon...Nitrogen.Measurement\", \"Nr..of.Samples..Collagen.δ13C...δ15N.\"=\"Nr..of.Samples..Collagen.δ13C...δ15N.\", \"IRMS.δ13C.Collagen\"=\"IRMS.δ13C.Collagen\", \"IRMS.δ13C.Collagen.unc\"=\"IRMS.δ13C.Collagen.unc\", \"δ15N.Collagen\"=\"δ15N.Collagen\", \"δ15N.Collagen.unc.\"=\"δ15N.Collagen.unc.\", \"Collagen.Yield\"=\"Collagen.Yield\", \"C\"=\"C\", \"N\"=\"N\", \"Atomic.C.N.Ratio\"=\"Atomic.C.N.Ratio\", \"IRMS.Lab.Institution.Stable.Carbon...Oxygen.Carbonate.Measurement\"=\"IRMS.Lab.Institution.Stable.Carbon...Oxygen.Carbonate.Measurement\", \"Nr..of.Samples..Carbonate.\"=\"Nr..of.Samples..Carbonate.\", \"δ13C.Carbonate\"=\"δ13C.Carbonate\", \"δ13C.Carbonate.unc.\"=\"δ13C.Carbonate.unc.\", \"δ18O.Carbonate..VPDB.\"=\"δ18O.Carbonate..VPDB.\", \"δ18O.Carbonate..VPDB..unc.\"=\"δ18O.Carbonate..VPDB..unc.\"))"
@@ -182,7 +182,7 @@ testthat::test_that("Test module mergeDataServer", {
   testFile1 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
   testFile2 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
 
-  testMergeList <- list(
+  testDataProcessList <- list(
     `table1` = list(data = testFile1,
                     history = list()),
     `table2` = list(data = testFile2,
@@ -190,7 +190,7 @@ testthat::test_that("Test module mergeDataServer", {
   )
 
   shiny::testServer(mergeDataServer,
-                    args = list(mergeList = reactive(testMergeList)),
+                    args = list(dataProcessList = reactive(testDataProcessList)),
                     {
                       # Arrange
                       print("test mergeDataServer")
@@ -202,14 +202,14 @@ testthat::test_that("Test module mergeDataServer", {
                       testthat::expect_equal(tableIds(),
                                              c(table1 = "table1", table2 = "table2"))
 
-                      extractTableData(mergeList(), "table1")
-                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>% nrow(), 88)
-                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>% ncol(), 12)
-                      testthat::expect_equal(extractTableData(mergeList(), "table2") %>% nrow(), 518)
-                      testthat::expect_equal(extractTableData(mergeList(), "table2") %>% ncol(), 14)
+                      extractTableData(dataProcessList(), "table1")
+                      testthat::expect_equal(extractTableData(dataProcessList(), "table1") %>% nrow(), 88)
+                      testthat::expect_equal(extractTableData(dataProcessList(), "table1") %>% ncol(), 12)
+                      testthat::expect_equal(extractTableData(dataProcessList(), "table2") %>% nrow(), 518)
+                      testthat::expect_equal(extractTableData(dataProcessList(), "table2") %>% ncol(), 14)
                       testthat::expect_equal(
-                        extractCommon(colnames(extractTableData(mergeList(), "table1")),
-                                      colnames(extractTableData(mergeList(), "table2")))[1:5],
+                        extractCommon(colnames(extractTableData(dataProcessList(), "table1")),
+                                      colnames(extractTableData(dataProcessList(), "table2")))[1:5],
                         c(
                           "Sample.date",
                           "Species",
@@ -227,9 +227,9 @@ testthat::test_that("Test module mergeDataServer", {
                       )
                       # cannot test directly on joinedResult$data since it depends on the output
                       # of a sub-module
-                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>%
+                      testthat::expect_equal(extractTableData(dataProcessList(), "table1") %>%
                                                dplyr::left_join(
-                                                 extractTableData(mergeList(), "table2"),
+                                                 extractTableData(dataProcessList(), "table2"),
                                                  by = c(
                                                    "Latitude" = "Latitude",
                                                    "Longitude" = "Longitude",
@@ -238,9 +238,9 @@ testthat::test_that("Test module mergeDataServer", {
                                                ) %>%
                                                nrow(),
                                              88)
-                      testthat::expect_equal(extractTableData(mergeList(), "table1") %>%
+                      testthat::expect_equal(extractTableData(dataProcessList(), "table1") %>%
                                                dplyr::left_join(
-                                                 extractTableData(mergeList(), "table2"),
+                                                 extractTableData(dataProcessList(), "table2"),
                                                  by = c(
                                                    "Latitude" = "Latitude",
                                                    "Longitude" = "Longitude",
