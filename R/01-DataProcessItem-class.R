@@ -48,9 +48,7 @@ new_DataProcessItem <- function(
 
     if (filename == "") {
       # try to get filename from input if possible
-      dataSource <- extractDataSourceFromInputs(
-        loadedSourceInputs = source
-      )
+      dataSource <- extractDataSourceFromInputs(source)
       filename <- dataSource$filename
     }
   } else {
@@ -142,7 +140,8 @@ mapOldFormatToDataProcessItem <- function(list, file_name = "") {
 
 # Get File Inputs
 #
-# Filter all inputs for file inputs or for source inputs
+# Filter all inputs for file inputs or for source inputs.
+# This does NOT remove the namespace pattern! Include?
 #
 # @param input (reactiveValue) input
 # @param type (character) type of inputs

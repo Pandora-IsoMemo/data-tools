@@ -161,10 +161,7 @@ observeUploadDataLink <- function(
       # load online data from link
       values <- loadFileFromLink(
         values = values,
-        dataSource = extractDataSourceFromInputs(
-        loadedSourceInputs = lastUserInputValues[["source_inputs"]] %>%
-          removeNamespacePattern(pattern = c("fileSource"))
-      ),
+        dataSource = extractDataSourceFromInputs(lastUserInputValues[["source_inputs"]]),
         loadedFileInputs = lastUserInputValues[["file_inputs"]] %>%
           removeNamespacePattern(pattern = c("dataSelector")),
         customNames = customNames
@@ -206,17 +203,14 @@ observeUploadDataLink <- function(
       }
 
       # load online data from link
-      values_import <- loadFileFromLink(
-        dataSource = extractDataSourceFromInputs(
-          loadedSourceInputs = data_link_import[["source_inputs"]] %>%
-            removeNamespacePattern(pattern = c("fileSource"))
-        ),
+      values_data_list <- loadFileFromLink(
+        dataSource = extractDataSourceFromInputs(data_link_import[["source_inputs"]]),
         loadedFileInputs = data_link_import[["file_inputs"]] %>%
           removeNamespacePattern(pattern = c("dataSelector")),
         customNames = customNames
       )
 
-      req(values_import$dataImport)
+      req(values_data_list$dataImport)
       if ("dataQuerier-sqlCommand" %in% names(data_link_import[["query_inputs"]])) {
         sqlCommandInput <- data_link_import[["query_inputs"]][["dataQuerier-sqlCommand"]]
       } else {
@@ -224,9 +218,9 @@ observeUploadDataLink <- function(
       }
 
       newData <- new_DataProcessItem(
-        data = values_import$dataImport %>% formatColumnNames(silent = TRUE),
+        data = values_data_list$dataImport %>% formatColumnNames(silent = TRUE),
         input = input,
-        filename = values_import$fileName,
+        filename = values_data_list$fileName,
         unprocessed = TRUE, # only links to unprocessed data can be exported and imported
         sql_command = sqlCommandInput
       )
@@ -234,7 +228,7 @@ observeUploadDataLink <- function(
       newDataProcessList <-
         updateDataProcessList(
           dataProcessList = dataProcessList(),
-          fileName = values_import$fileName,
+          fileName = values_data_list$fileName,
           newData = newData,
           notifications = c()
         )
@@ -250,7 +244,6 @@ nmLastInputs <- function() "lastSelectDataInputs"
 
 extractDataSourceFromInputs <- function(loadedSourceInputs) {
   loadedSourceInputs <- loadedSourceInputs %>%
-    removeNamespacePattern(pattern = c("dataSelector")) %>%
     removeNamespacePattern(pattern = c("fileSource"))
 
   # load only online data

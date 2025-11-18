@@ -88,6 +88,7 @@ configureDataServer <- function(id,
                                 customNames,
                                 dataSource,
                                 dataSourceInputs,
+                                dataForPreview,
                                 ignoreWarnings = FALSE
 ) {
   moduleServer(id,
@@ -156,6 +157,12 @@ configureDataServer <- function(id,
                      }
                  }) %>%
                    bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
+
+                   observe({
+                     logDebug("Updating dataForPreview")
+                     values$preview <- dataForPreview()
+                   }) %>%
+                     bindEvent(dataForPreview())
 
                    previewDataServer("previewDat", dat = reactive(values$preview))
 

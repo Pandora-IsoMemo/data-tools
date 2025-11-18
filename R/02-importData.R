@@ -221,6 +221,7 @@ importDataServer <- function(id,
                    ckanFileTypes = ckanFileTypes
                  )
 
+                 data_for_preview <- reactiveVal(NULL)
                  if (importType == "data") {
                    # sets values$dataImport
                    values <- configureDataServer(
@@ -229,6 +230,7 @@ importDataServer <- function(id,
                      dataSource = dataSource,
                      dataSourceInputs = getFileInputs(input, type = "source"),
                      dataProcessList = dataProcessList,
+                     dataForPreview = data_for_preview,
                      customNames = customNames
                    )
                  } else {
@@ -280,6 +282,16 @@ importDataServer <- function(id,
                                          dataProcessList = dataProcessList,
                                          values = values
                    )
+
+                 observe({
+                   req(values$dataImport)
+                   logDebug("%s: Update data_for_preview()", id)
+                   data_for_preview(values$dataImport)
+                 }) %>% 
+                   bindEvent(values$dataImport)
+
+
+                 # cancel does not reset the values/inputs...
 
                  ## Enable/Disable Accept button ----
                  if (importType != "data") {
