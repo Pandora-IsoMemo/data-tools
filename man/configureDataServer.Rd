@@ -21,6 +21,7 @@ configureDataServer(
   customNames,
   dataSource,
   dataSourceInputs,
+  dataForPreview,
   ignoreWarnings = FALSE
 )
 }
@@ -49,6 +50,8 @@ e.g. for batch = TRUE in Resources.}
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
 \item{dataSourceInputs}{(reactiveValues) inputs related to the data source}
+
+\item{dataForPreview}{(reactive) data to show in preview}
 
 \item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
 }

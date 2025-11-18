@@ -82,6 +82,7 @@ configureDataUI <- function(id,
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
 #' @param dataSourceInputs (reactiveValues) inputs related to the data source
+#' @param dataForPreview (reactive) data to show in preview
 #' @inheritParams importDataServer
 configureDataServer <- function(id,
                                 dataProcessList,
