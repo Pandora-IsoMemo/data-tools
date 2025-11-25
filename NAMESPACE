@@ -2,6 +2,8 @@
 
 S3method(extract_unique_inputs,DataProcessItem)
 S3method(extract_unique_inputs,DataProcessLink)
+S3method(print,DataProcessItem)
+S3method(print,DataProcessLink)
 S3method(update,DataProcessItem)
 export("%>%")
 export(checkAnyNonNumericColumns)

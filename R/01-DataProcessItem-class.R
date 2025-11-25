@@ -73,6 +73,24 @@ new_DataProcessItem <- function(
   )
 }
 
+#' S3 method: Print DataProcessItem
+#' Prints a summary of the DataProcessItem object.
+#' @param x The DataProcessItem object to print.
+#' @param ... Additional arguments (not used).
+#' @export
+print.DataProcessItem <- function(x, ...) {
+  cat("DataProcessItem Object\n")
+  cat("----------------------\n")
+  cat("Filename:", x$filename, "\n")
+  cat("Unprocessed:", x$unprocessed, "\n")
+  cat("Data Summary:\n")
+  print(summary(x$data))
+  cat("File Inputs:", names(x$file_inputs), "\n")
+  cat("Source Inputs:", names(x$source_inputs), "\n")
+  cat("Query Inputs:", names(x$query_inputs), "\n")
+  #cat("History Entries:", length(x$history), "\n")
+}
+
 #' S3 method: Update fields of a DataProcessItem
 #' Updates fields of a DataProcessItem object.
 #' @param object The DataProcessItem object to update.

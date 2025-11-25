@@ -59,6 +59,22 @@ new_DataProcessLink <- function(
   )
 }
 
+#' S3 method: Print DataProcessLink
+#' Prints a summary of the DataProcessLink object.
+#' @param x The DataProcessLink object to print.
+#' @param ... Additional arguments (not used).
+#' @export
+print.DataProcessLink <- function(x, ...) {
+  cat("DataProcessLink Object\n")
+  cat("----------------------\n")
+  cat("Filename:", x$filename, "\n")
+  cat("Unprocessed:", x$unprocessed, "\n")
+  cat("File Inputs:", length(x$file_inputs), "items\n")
+  cat("Source Inputs:", length(x$source_inputs), "items\n")
+  cat("Query Inputs:", length(x$query_inputs), "items\n")
+  #cat("History Entries:", length(x$history), "\n")
+}
+
 #' S3 method: Extract unique inputs for DataProcessLink
 #' Extracts unique user inputs from a DataProcessLink object.
 #' @param object The DataProcessLink object to extract from.
