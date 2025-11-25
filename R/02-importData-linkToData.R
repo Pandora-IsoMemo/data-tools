@@ -25,11 +25,18 @@ downloadDataLinkUI <-
 # @param session session from server function
 # @param dataProcessList (reactiveVal) list of data imports
 # @param downloadBtnID (character) ID of the downloadButton
-observeDownloadDataLink <- function(id, input, output, session, dataProcessList, downloadBtnID = "downloadDataLink") {
+observeDownloadDataLink <- function(
+  id,
+  input,
+  output,
+  session,
+  dataProcessList,
+  downloadBtnID = "downloadDataLink"
+) {
   dataLinkDownload <- reactive({
     logDebug("linkToData: create download")
 
-    # export only data links from original (unprocessed) data submitted via button "Create Query with data"
+    # export only data links from unprocessed data submitted via button "Create Query with data"
     dataProcessListExport <- dataProcessList() %>% filterUnprocessed()
 
     # remove data from list objects (only the source will be exported)
@@ -39,18 +46,16 @@ observeDownloadDataLink <- function(id, input, output, session, dataProcessList,
     })
 
     # add current inputs as additional item but without data
-    current_item <- new_DataProcessItem(
-      data = NULL,
+    current_file_link <- new_DataProcessLink(
       input = input,
-      filename = nmLastInputs(),
-      unprocessed = TRUE
+      filename = nmLastInputs()
     )
 
     # UPDATE DATAPROCESSLIST ----
     dataProcessListExport <- updateDataProcessList(
       dataProcessList = dataProcessListExport,
       fileName = nmLastInputs(),
-      newData = current_item
+      newData = current_file_link
     )
 
     # unclass all list elements for json export
@@ -146,19 +151,14 @@ observeUploadDataLink <- function(
 
     # update user inputs ----
     logDebug("linkToData: update user inputs")
-    lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]]
+    lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]] %>%
+      validate_data_link_import() %>%
+      shinyTryCatch(errorTitle = "Import of last selected user inputs failed.")
 
     if (
       length(lastUserInputValues) > 0
     ) {
-      # load deprecated format if needed
-      if (isOldDataLinkFormat(lastUserInputValues)) {
-        lastUserInputValues <- mapOldFormatToDataProcessItem(
-          list = lastUserInputValues
-        )
-      }
-
-      # load online data from link
+      # (down)load online data from link
       values <- loadFileFromLink(
         values = values,
         dataSource = extractDataSourceFromInputs(lastUserInputValues[["source_inputs"]]),
@@ -167,14 +167,9 @@ observeUploadDataLink <- function(
         customNames = customNames
       )
 
-      all_user_inputs <- c(
-        lastUserInputValues[["source_inputs"]],
-        lastUserInputValues[["file_inputs"]],
-        lastUserInputValues[["query_inputs"]]
-      )
-
+      unique_user_inputs <- extract_unique_inputs(lastUserInputValues) # need full namespaces!!!
       updateUserInputs(id, input = input, output = output, session = session,
-                       userInputs = all_user_inputs, inDataTools = TRUE)
+                       userInputs = unique_user_inputs, inDataTools = TRUE)
 
       # implicit update of input$sqlCommand is not working
       # -> explecitly reset value to allow update with query from dataLink
@@ -192,17 +187,13 @@ observeUploadDataLink <- function(
     logDebug("linkToData: load data")
     link_names <- dataLinkUpload$import %>% names()
     for (i in link_names[link_names != nmLastInputs()]) {
-      data_link_import <- dataLinkUpload$import[[i]]
+      data_link_import <- dataLinkUpload$import[[i]] %>%
+        validate_data_link_import()  %>%
+        shinyTryCatch(errorTitle = sprintf("Import for file '%s' failed", i))
 
-      # load deprecated format if needed
-      if (isOldDataLinkFormat(data_link_import)) {
-        data_link_import <- mapOldFormatToDataProcessItem(
-          list = data_link_import,
-          file_name = i
-        )
-      }
+      if (length(data_link_import) == 0) next
 
-      # load online data from link
+      # (down)load online data from link
       values_data_list <- loadFileFromLink(
         dataSource = extractDataSourceFromInputs(data_link_import[["source_inputs"]]),
         loadedFileInputs = data_link_import[["file_inputs"]] %>%
@@ -217,9 +208,10 @@ observeUploadDataLink <- function(
         sqlCommandInput <- ""
       }
 
+      unique_user_inputs <- extract_unique_inputs(data_link_import) # need full namespaces!!!
       newData <- new_DataProcessItem(
         data = values_data_list$dataImport %>% formatColumnNames(silent = TRUE),
-        input = input,
+        input = unique_user_inputs,
         filename = values_data_list$fileName,
         unprocessed = TRUE, # only links to unprocessed data can be exported and imported
         sql_command = sqlCommandInput
@@ -241,30 +233,6 @@ observeUploadDataLink <- function(
 }
 
 nmLastInputs <- function() "lastSelectDataInputs"
-
-extractDataSourceFromInputs <- function(loadedSourceInputs) {
-  loadedSourceInputs <- loadedSourceInputs %>%
-    removeNamespacePattern(pattern = c("fileSource"))
-
-  # load only online data
-  if (!(loadedSourceInputs[["source"]] %in% c("ckan", "url"))) {
-    return(list(
-      file = NULL,
-      filename = NULL,
-      input = NULL
-    ))
-  }
-
-  # get file (path) and filename
-  dataSource <- getDataSource(input = loadedSourceInputs,
-                              type = loadedSourceInputs[["source"]],
-                              isInternet = TRUE) %>%
-    addSourceType(importType = "data",
-                  source = loadedSourceInputs[["source"]],
-                  inputDataOrLink = "fullData")
-
-  return(dataSource)
-}
 
 # Load File From Link
 #

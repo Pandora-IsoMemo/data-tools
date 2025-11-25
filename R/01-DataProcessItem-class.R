@@ -40,20 +40,11 @@ new_DataProcessItem <- function(
     source <- getFileInputs(input, type = "source")
     query <- getFileInputs(input, type = "query")
 
-    input_list <- list(
-      file = file,
-      source = source,
-      query = query
-    )    # keep also deprecated field for backward compatibility
-
     if (filename == "") {
-      # try to get filename from input if possible
-      dataSource <- extractDataSourceFromInputs(source)
-      filename <- dataSource$filename
+      filename <- extract_filename_from_source_input(source)
     }
   } else {
     # do we really need to clean all this for processed data?
-    input_list <- list()
     file <- list()
     source <- list()
     query <- list()
@@ -70,8 +61,7 @@ new_DataProcessItem <- function(
     query_inputs = query,
     unprocessed = unprocessed, # enables download of data links,
     filename = filename,
-    history = history,
-    input = input_list
+    history = history
   )
 
   # deprecated attributes for backward compatibility
@@ -109,11 +99,23 @@ update.DataProcessItem <- function(
   object
 }
 
-isOldDataLinkFormat <- function(object) {
-  is.list(object) &&
-    ("input" %in% names(object)) &&
-    is.list(object$input) &&
-    all(c("file", "source") %in% names(object$input))
+#' S3 method: Extract unique inputs for DataProcessItem
+#' Extracts unique user inputs from a DataProcessItem object.
+#' @param object The DataProcessItem object to extract from.
+#' @param ... Additional arguments (not used).
+#' @return A named list of unique user inputs.
+#' @export
+extract_unique_inputs.DataProcessItem <- function(object, ...) {
+  all_user_inputs <- c(
+    object[["source_inputs"]],
+    object[["file_inputs"]],
+    object[["query_inputs"]]
+  ) # we need to preserve namespaces!!!
+
+  if (length(all_user_inputs) == 0) return(list())
+
+  # Keep only the first occurrence of each name
+  all_user_inputs[!duplicated(names(all_user_inputs))]
 }
 
 mapOldFormatToDataProcessItem <- function(list, file_name = "") {
