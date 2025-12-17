@@ -22,10 +22,7 @@ toolsImportUI <- function(id) {
       importDataUI(ns("batchData"), "Import Batch Data"),
       tags$br(),
       tags$br(),
-      importUI(ns("model"), "Import Model"),
-      tags$br(),
-      tags$br(),
-      importUI(ns("newModel"), "Import Model (new)")
+      importUI(ns("newModel"), "Import Model")
     ),
     mainPanel(
       tags$h2("Json Import"),
@@ -92,18 +89,6 @@ toolsImportServer <- function(id) {
                    options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
-                 importedModel <- importDataServer(
-                   "model",
-                   customWarningChecks = list(reactive(checkWarningEmptyValues)),
-                   customErrorChecks = list(reactive(checkErrorNoNumericColumns)),
-                   ckanFileTypes = config()[["modelFileTypes"]],
-                   ignoreWarnings = TRUE,
-                   defaultSource = config()[["defaultSource"]],
-                   importType = "model",
-                   fileExtension = config()[["fileExtension"]],
-                   options = importOptions(rPackageName = config()[["rPackageName"]])
-                 )
-
                  importedModelNew <- importServer(
                    "newModel",
                    ckanFileTypes = config()[["modelFileTypes"]],
@@ -120,7 +105,6 @@ toolsImportServer <- function(id) {
                    req(length(importedDataCKAN()) > 0 ||
                          length(importedDataOnlyNumeric()) > 0 ||
                          length(importedBatchData()) > 0 ||
-                         length(importedModel()) > 0 ||
                          length(importedModelNew()) > 0)
                    logDebug("Updating dataOut()")
                    dataOut(NULL)
@@ -138,10 +122,6 @@ toolsImportServer <- function(id) {
                      dataOut(importedBatchData()[[1]])
                    }
                    if (input$dataSel == "Model Data") {
-                     req(length(importedModel()) > 0)
-                     dataOut(importedModel()[[1]][["data"]])
-                   }
-                   if (input$dataSel == "Model Data (new)") {
                      req(length(importedModelNew()) > 0)
                      dataOut(importedModelNew()[[1]][["data"]])
                    }

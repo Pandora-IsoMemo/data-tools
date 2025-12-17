@@ -47,8 +47,11 @@ queryDataUI <- function(id) {
     tags$hr(),
     previewDataUI(ns("previewDat"), title = "Preview result of query"),
     tags$hr(),
-    downloadDataLinkUI(ns = ns,
-                       text = "Download the file path information and the SQL query as .json for later upload."),
+    downloadDataLinkUI(
+      ns = ns,
+      downloadBtnID = "downloadDataLink",
+      text = "Download the file path information and the SQL query as .json for later upload."
+    ),
   )
 }
 
@@ -99,7 +102,7 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                    logDebug("%s: update inMemoryDB and input$sqlCommand", id)
 
                    tmpDB <- inMemoryDB()
-                   # reset db (remove tables if they become "processed data")
+                   # reset db (this removes tables if they become "processed data")
                    for (i in dbListTables(tmpDB)) {
                      dbRemoveTable(tmpDB, i)
                    }
@@ -137,15 +140,11 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                    inMemColumns(inMemCols)
 
                    # logic to update the value of input$sqlCommand and the autoCompleteList
-                   ## if exists, update with value from Data Link
-                   loadedSQLCommand <- sapply(unprocessedData(), function(x) attr(x, "sqlCommandInput"))
-                   loadedSQLCommand <- loadedSQLCommand[!sapply(loadedSQLCommand, is.null)]
                    if (input$sqlCommand != "") {
                      # if not empty, keep last sqlCommand
                      newSqlCommand <- input$sqlCommand
-                   } else if (length(loadedSQLCommand) > 0) {
-                     newSqlCommand <- loadedSQLCommand[[1]]
                    } else {
+                     # if empty, use default example query
                      if (!is.null(inMemCols[["t1"]])) {
                        colSel <- paste0("[", inMemCols[["t1"]][1], "]")
                      } else {
@@ -170,12 +169,9 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                      "Tables:", names(emptyDataProcessListChoices())
                    )))
 
-                   req(tableIds())
+                   req(tableIds(), inMemColumns())
                    inMemColsPasted <-
-                     sapply(inMemColumns(), function(colnamesOfTable) {
-                       colnamesOfTable %>%
-                         paste(collapse = ", ")
-                     })
+                     sapply(inMemColumns(), function(colnms) paste(colnms, collapse = ", "))
 
                    DT::datatable(
                      data.frame(`ID` = tableIds(),

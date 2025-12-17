@@ -3,7 +3,6 @@
 #' @param input A list containing file, source, and query inputs.
 #' @param filename The name of the file associated with this data item.
 #' @param unprocessed Logical indicating if the data is unprocessed, currently TRUE for data links.
-#' @param sql_command Optional SQL command string for database queries.
 #' @param history Optional list of history entries.
 #' @return A new DataProcessLink object.
 #' @export
@@ -11,7 +10,6 @@ new_DataProcessLink <- function(
   input,
   filename,
   unprocessed = TRUE,
-  sql_command = "",
   history = list()
 ) {
   # Validate required fields
@@ -46,92 +44,130 @@ new_DataProcessLink <- function(
     query_inputs = query,
     unprocessed = TRUE, # enables download of data links,
     filename = filename,
-    history = history#,
-    #input = input_list
+    history = history,
+    pckg_version = packageVersion("DataTools")
   )
 
-  # deprecated attributes for backward compatibility
-  if (sql_command != "") attr(new_item, "sqlCommandInput") <- sql_command
-
-  structure(
-    new_item,
-    class = "DataProcessLink"
-  )
+  structure(new_item, class = c("DataProcessLink", "DataProcessItem", "list"))
 }
 
-#' S3 method: Print DataProcessLink
-#' Prints a summary of the DataProcessLink object.
-#' @param x The DataProcessLink object to print.
+#' S3 method: Convert DataProcessLink to a plain list
+#' Converts a DataProcessLink object to a plain list, excluding class attributes.
+#' @param x The DataProcessLink object to convert.
 #' @param ... Additional arguments (not used).
+#' @return A plain list representation of the DataProcessLink x.
 #' @export
-print.DataProcessLink <- function(x, ...) {
-  cat("DataProcessLink Object\n")
-  cat("----------------------\n")
-  cat("Filename:", x$filename, "\n")
-  cat("Unprocessed:", x$unprocessed, "\n")
-  cat("File Inputs:", length(x$file_inputs), "items\n")
-  cat("Source Inputs:", length(x$source_inputs), "items\n")
-  cat("Query Inputs:", length(x$query_inputs), "items\n")
-  #cat("History Entries:", length(x$history), "\n")
+as.list.DataProcessLink <- function(x, ...) {
+  if (!inherits(x, "DataProcessLink")) stop("Object must be of class 'DataProcessLink'.")
+
+  unclass(x)
 }
 
-#' S3 method: Extract unique inputs for DataProcessLink
-#' Extracts unique user inputs from a DataProcessLink object.
+
+#' S3 method: Extract SQL command from DataProcessLink
+#' Extracts the SQL command string from a DataProcessLink object, if available.
 #' @param object The DataProcessLink object to extract from.
 #' @param ... Additional arguments (not used).
-#' @return A named list of unique user inputs.
+#' @return The SQL command string, or an empty string if not available.
 #' @export
-extract_unique_inputs.DataProcessLink <- function(object, ...) {
-  all_user_inputs <- c(
-    object[["source_inputs"]],
-    object[["file_inputs"]],
-    object[["query_inputs"]]
-  ) # we need to preserve namespaces!!!
+extract_sql_command.DataProcessLink <- function(object, ...) {
+  sql_command <- ""
 
-  # Keep only the first occurrence of each name
-  all_user_inputs[!duplicated(names(all_user_inputs))]
+  if ("dataQuerier-sqlCommand" %in% names(object[["query_inputs"]])) {
+    sql_command <- object[["query_inputs"]][["dataQuerier-sqlCommand"]]
+  }
+
+  sql_command
 }
 
-map_old_format_to_link <- function(list, file_name = "") {
-  history <- if (!is.null(attr(list, "history"))) attr(list, "history") else list()
+#' S3 method: Load data from DataProcessLink
+#' Loads data from the source specified in the DataProcessLink object.
+#' @param object The DataProcessLink object to load data from.
+#' @param ... Additional arguments, including:
+#'   - values: A reactiveValues object to store loading results.
+#'   - customNames: A list with custom naming options (withRownames, withColnames).
+#' @return A reactiveValues object containing the loaded data and status.
+#' @export
+load_data_from_link.DataProcessLink <- function(object, ...) {
+  args <- list(...)
 
-  list(
-    file_inputs = list[["input"]][["file"]],
-    source_inputs = list[["input"]][["source"]],
-    query_inputs = list[["input"]][["query"]],
-    unprocessed = TRUE, # always TRUE for (old) links
-    filename = extract_filename_from_source_input(list[["input"]][["source"]]),
-    history = history
-  )
+  if (is.null(args$values)) {
+    args$values <- reactiveValues(
+      warnings = list(),
+      errors = list(),
+      fileName = NULL,
+      fileImportSuccess = NULL,
+      dataImport = NULL,
+      preview = NULL,
+      data = list()
+    )
+  }
+
+  data_source <- extractDataSourceFromInputs(object[["source_inputs"]])
+  file_inputs <- object[["file_inputs"]] %>%
+    removeNamespacePattern(pattern = c("dataSelector"))
+
+  # load data
+  values <- loadDataWrapper(
+    values = args$values,
+    filepath = data_source[["file"]],
+    filename = data_source[["filename"]],
+    type = file_inputs[["fileType-type"]],
+    sep = file_inputs[["fileType-colSep"]],
+    dec = file_inputs[["fileType-decSep"]],
+    sheetId = as.numeric(file_inputs[["fileType-sheet"]]),
+    withRownames = args$customNames$withRownames,
+    withColnames = args$customNames$withColnames
+  ) %>%
+    withProgress(value = 0.75,
+                 message = sprintf("Importing '%s' from link ...", data_source[["filename"]]))
+
+  values
 }
 
+removeNamespacePattern <- function(inputs, pattern) {
+  if (length(pattern) == 0) return(inputs)
+  if (!inherits(pattern, "character")) return(inputs)
 
-validate_data_link_import <- function(process_link) {
+  for (p in pattern) {
+    names(inputs) <- names(inputs) %>%
+      gsub(pattern = sprintf("%s-", p),
+           replacement = "")
+  }
+
+  return(inputs)
+}
+
+# Convert to DataProcessLink
+#
+# Converts a given object to a DataProcessLink object if possible.
+# Supports both valid and deprecated formats.
+# @param x The object to convert.
+# @return A DataProcessLink object or an empty list if conversion fails.
+as_DataProcessLink <- function(x) {
   # valid format?
   if (
-    is.list(process_link) &&
-      all(c("file_inputs", "unprocessed", "filename") %in% names(process_link))
+    is.list(x) && all(c("file_inputs", "unprocessed", "filename") %in% names(x))
   ) {
     # return class object
-    return(structure(
-      process_link,
-      class = "DataProcessLink"
-    ))
+    return(structure(x, class = c("DataProcessLink", "DataProcessItem", "list")))
   }
 
   # deprecated format?
   if (
-    is.list(process_link) && "input" %in% names(process_link) &&
-      all(c("file", "source") %in% names(process_link[["input"]]))
+    is.list(x) && "input" %in% names(x) &&
+      all(c("file", "source") %in% names(x[["input"]]))
   ) {
-    process_link <- map_old_format_to_link(
-      list = process_link
+    x_new <- list(
+      file_inputs = x[["input"]][["file"]],
+      source_inputs = x[["input"]][["source"]],
+      query_inputs = x[["input"]][["query"]],
+      unprocessed = TRUE, # always TRUE for (old) links
+      filename = extract_filename_from_source_input(x[["input"]][["source"]]),
+      history = if (!is.null(attr(x, "history"))) attr(x, "history") else list()
     )
     # return class object
-    return(structure(
-      process_link,
-      class = "DataProcessLink"
-    ))
+    return(structure(x_new, class = c("DataProcessLink", "DataProcessItem", "list")))
   }
 
   # format not known: return empty list with debug message
@@ -162,16 +198,4 @@ extractDataSourceFromInputs <- function(loadedSourceInputs) {
                   inputDataOrLink = "fullData")
 
   return(dataSource)
-}
-
-extract_filename_from_source_input <- function(file_inputs) {
-  data_source <- extractDataSourceFromInputs(file_inputs)
-
-  filename <- data_source$filename
-
-  if (is.null(filename) || filename == "") {
-    filename <- "unknown_filename"
-  }
-
-  filename
 }

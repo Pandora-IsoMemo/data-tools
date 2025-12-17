@@ -41,8 +41,7 @@ observeDownloadDataLink <- function(
 
     # remove data from list objects (only the source will be exported)
     dataProcessListExport <- lapply(dataProcessListExport, function(x) {
-      x[["data"]] <- NULL
-      x
+      as.DataProcessLink(x)
     })
 
     # add current inputs as additional item but without data
@@ -60,7 +59,7 @@ observeDownloadDataLink <- function(
 
     # unclass all list elements for json export
     dataLinkExport <- lapply(dataProcessListExport, function(x) {
-      unclass(x)
+      as.list(x)
     })
 
     dataLinkExport
@@ -149,82 +148,68 @@ observeUploadDataLink <- function(
     logDebug("linkToData: observe import%s", ifelse(isInternet(), "", " - no internet connection!"))
     req(isInternet())
 
-    # update user inputs ----
-    logDebug("linkToData: update user inputs")
-    lastUserInputValues <- dataLinkUpload$import[[nmLastInputs()]] %>%
-      validate_data_link_import() %>%
+    logDebug("linkToData: load data from list and update dataProcessList()")
+
+    new_list <- dataProcessList()
+    link_names <- dataLinkUpload$import %>% names()
+    for (i in link_names[link_names != nmLastInputs()]) {
+      data_link_import <- as_DataProcessLink(dataLinkUpload$import[[i]]) %>%
+        shinyTryCatch(errorTitle = sprintf("Import for file '%s' failed", i))
+
+      if (length(data_link_import) == 0) next # skip if empty from error
+
+      # (down)load online data from link
+      values_i <- load_data_from_link(data_link_import, customNames = customNames) %>%
+        shinyTryCatch(errorTitle = sprintf("Loading data for file '%s' failed", i))
+
+      req(values_i$dataImport)
+      logDebug("linkToData: update dataProcessList() with file '%s' for link '%s'", values_i$fileName, i)
+      user_inputs <- extract_all_inputs(data_link_import) # need full namespaces!!!
+      new_data <- new_DataProcessItem(
+        data = formatColumnNames(values_i$dataImport, silent = TRUE),
+        input = user_inputs,
+        filename = values_i$fileName,
+        unprocessed = TRUE # only links to unprocessed data can be exported and imported
+      )
+
+      new_list <-
+        updateDataProcessList(
+          dataProcessList = new_list,
+          fileName = values_i$fileName,
+          newData = new_data,
+          notifications = c()
+        )
+    }
+
+    # update reactive dataProcessList
+    dataProcessList(new_list)
+
+    logDebug("linkToData: update user inputs and 'values'")
+    lastUserInputValues <- as_DataProcessLink(dataLinkUpload$import[[nmLastInputs()]]) %>%
       shinyTryCatch(errorTitle = "Import of last selected user inputs failed.")
 
     if (
       length(lastUserInputValues) > 0
     ) {
-      # (down)load online data from link
-      values <- loadFileFromLink(
+      values <- load_data_from_link(
+        lastUserInputValues,
         values = values,
-        dataSource = extractDataSourceFromInputs(lastUserInputValues[["source_inputs"]]),
-        loadedFileInputs = lastUserInputValues[["file_inputs"]] %>%
-          removeNamespacePattern(pattern = c("dataSelector")),
         customNames = customNames
-      )
+      ) %>%
+        shinyTryCatch(errorTitle = "Loading data from last selected link failed.")
 
-      unique_user_inputs <- extract_unique_inputs(lastUserInputValues) # need full namespaces!!!
+      # update all the last user inputs
+      showNotification(HTML("Updating user inputs ..."), type = "default")
+      user_inputs <- extract_all_inputs(lastUserInputValues) # need full namespaces!!!
       updateUserInputs(id, input = input, output = output, session = session,
-                       userInputs = unique_user_inputs, inDataTools = TRUE)
+                      userInputs = user_inputs, inDataTools = TRUE)
 
-      # implicit update of input$sqlCommand is not working
-      # -> explecitly reset value to allow update with query from dataLink
+      # implicit update of input$sqlCommand is NOT working!!!
+      # -> explicitly reset value to allow update with query from dataLink
       updateAceEditor(session = session, "dataQuerier-sqlCommand", value = "")
-      # -> send queryString via attr
-      if ("dataQuerier-sqlCommand" %in% names(lastUserInputValues[["query_inputs"]])) {
-        sqlCommandInput <- lastUserInputValues[["query_inputs"]][["dataQuerier-sqlCommand"]]
-      } else {
-        sqlCommandInput <- ""
-      }
-      updateAceEditor(session = session, "dataQuerier-sqlCommand", value = sqlCommandInput)
-    }
-
-    # update dataProcessList() ----
-    logDebug("linkToData: load data")
-    link_names <- dataLinkUpload$import %>% names()
-    for (i in link_names[link_names != nmLastInputs()]) {
-      data_link_import <- dataLinkUpload$import[[i]] %>%
-        validate_data_link_import()  %>%
-        shinyTryCatch(errorTitle = sprintf("Import for file '%s' failed", i))
-
-      if (length(data_link_import) == 0) next
-
-      # (down)load online data from link
-      values_data_list <- loadFileFromLink(
-        dataSource = extractDataSourceFromInputs(data_link_import[["source_inputs"]]),
-        loadedFileInputs = data_link_import[["file_inputs"]] %>%
-          removeNamespacePattern(pattern = c("dataSelector")),
-        customNames = customNames
-      )
-
-      req(values_data_list$dataImport)
-      if ("dataQuerier-sqlCommand" %in% names(data_link_import[["query_inputs"]])) {
-        sqlCommandInput <- data_link_import[["query_inputs"]][["dataQuerier-sqlCommand"]]
-      } else {
-        sqlCommandInput <- ""
-      }
-
-      unique_user_inputs <- extract_unique_inputs(data_link_import) # need full namespaces!!!
-      newData <- new_DataProcessItem(
-        data = values_data_list$dataImport %>% formatColumnNames(silent = TRUE),
-        input = unique_user_inputs,
-        filename = values_data_list$fileName,
-        unprocessed = TRUE, # only links to unprocessed data can be exported and imported
-        sql_command = sqlCommandInput
-      )
-
-      newDataProcessList <-
-        updateDataProcessList(
-          dataProcessList = dataProcessList(),
-          fileName = values_data_list$fileName,
-          newData = newData,
-          notifications = c()
-        )
-      dataProcessList(newDataProcessList)
+      # -> send queryString
+      sql_command_input <- extract_sql_command(lastUserInputValues)
+      updateAceEditor(session = session, "dataQuerier-sqlCommand", value = sql_command_input)
     }
   }) %>%
     bindEvent(dataLinkUpload$import)
@@ -234,54 +219,6 @@ observeUploadDataLink <- function(
 
 nmLastInputs <- function() "lastSelectDataInputs"
 
-# Load File From Link
-#
-# Load a file a link points to
-#
-# @param values (reactiveValues)
-# @param loadedSourceInputs (list) user inputs from the dataLink file specifying the source
-# @param loadedFileInputs (list) user inputs from the dataLink file specifying the file
-# @inheritParams configureDataServer
-loadFileFromLink <- function(values = reactiveValues(warnings = list(),
-                                                     errors = list(),
-                                                     fileName = NULL,
-                                                     fileImportSuccess = NULL,
-                                                     dataImport = NULL,
-                                                     preview = NULL,
-                                                     data = list()),
-                             dataSource,
-                             loadedFileInputs,
-                             customNames) {
-  # load data
-  values <- loadDataWrapper(
-    values = values,
-    filepath = dataSource[["file"]],
-    filename = dataSource[["filename"]],
-    type = loadedFileInputs[["fileType-type"]],
-    sep = loadedFileInputs[["fileType-colSep"]],
-    dec = loadedFileInputs[["fileType-decSep"]],
-    sheetId = as.numeric(loadedFileInputs[["fileType-sheet"]]),
-    withRownames = customNames$withRownames,
-    withColnames = customNames$withColnames
-  ) %>%
-    withProgress(value = 0.75,
-                 message = sprintf("Importing '%s' from link ...", dataSource[["filename"]]))
-
-  return(values)
-}
-
-removeNamespacePattern <- function(inputs, pattern) {
-  if (length(pattern) == 0) return(inputs)
-  if (!inherits(pattern, "character")) return(inputs)
-
-  for (p in pattern) {
-    names(inputs) <- names(inputs) %>%
-      gsub(pattern = sprintf("%s-", p),
-           replacement = "")
-  }
-
-  return(inputs)
-}
 
 #' Update User Inputs
 #'

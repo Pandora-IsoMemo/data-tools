@@ -4,6 +4,18 @@ update <- function(object, ...) {
   UseMethod("update")
 }
 
-extract_unique_inputs <- function(object, ...) {
-  UseMethod("extract_unique_inputs")
+extract_all_inputs <- function(object, ...) {
+  UseMethod("extract_all_inputs")
+}
+
+extract_sql_command <- function(object, ...) {
+  UseMethod("extract_sql_command")
+}
+
+load_data_from_link <- function(object, ...) {
+  UseMethod("load_data_from_link")
+}
+
+as.DataProcessLink <- function(object, ...) {
+  UseMethod("as.DataProcessLink")
 }

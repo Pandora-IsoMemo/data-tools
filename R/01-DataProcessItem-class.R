@@ -6,7 +6,6 @@
 #' @param input A list containing file, source, and query inputs.
 #' @param filename The name of the file associated with this data item.
 #' @param unprocessed Logical indicating if the data is unprocessed.
-#' @param sql_command Optional SQL command string for database queries.
 #' @param history Optional list of history entries.
 #' @return A new DataProcessItem object.
 #' @export
@@ -15,7 +14,6 @@ new_DataProcessItem <- function(
   input,
   filename,
   unprocessed,
-  sql_command = "",
   history = list()
 ) {
   # Validate required fields
@@ -64,13 +62,7 @@ new_DataProcessItem <- function(
     history = history
   )
 
-  # deprecated attributes for backward compatibility
-  if (sql_command != "") attr(new_item, "sqlCommandInput") <- sql_command
-
-  structure(
-    new_item,
-    class = "DataProcessItem"
-  )
+  structure(new_item, class = c("DataProcessItem", "list"))
 }
 
 #' S3 method: Print DataProcessItem
@@ -83,8 +75,12 @@ print.DataProcessItem <- function(x, ...) {
   cat("----------------------\n")
   cat("Filename:", x$filename, "\n")
   cat("Unprocessed:", x$unprocessed, "\n")
-  cat("Data Summary:\n")
-  print(summary(x$data))
+  if (!is.null(x$data)) {
+    cat("Data Summary:\n")
+    print(summary(x$data))
+  } else {
+    cat("Data: not available\n")
+  }
   cat("File Inputs:", names(x$file_inputs), "\n")
   cat("Source Inputs:", names(x$source_inputs), "\n")
   cat("Query Inputs:", names(x$query_inputs), "\n")
@@ -123,7 +119,7 @@ update.DataProcessItem <- function(
 #' @param ... Additional arguments (not used).
 #' @return A named list of unique user inputs.
 #' @export
-extract_unique_inputs.DataProcessItem <- function(object, ...) {
+extract_all_inputs.DataProcessItem <- function(object, ...) {
   all_user_inputs <- c(
     object[["source_inputs"]],
     object[["file_inputs"]],
@@ -136,23 +132,24 @@ extract_unique_inputs.DataProcessItem <- function(object, ...) {
   all_user_inputs[!duplicated(names(all_user_inputs))]
 }
 
-mapOldFormatToDataProcessItem <- function(list, file_name = "") {
-  unprocessed <- if (!is.null(attr(list, "unprocessed"))) attr(list, "unprocessed") else TRUE
-  sql_command <- if (!is.null(attr(list, "sqlCommandInput"))) attr(list, "sqlCommandInput") else ""
-  history <- if (!is.null(attr(list, "history"))) attr(list, "history") else list()
+#' S3 method: Convert DataProcessItem to DataProcessLink
+#' Converts a DataProcessItem object to a DataProcessLink object.
+#' @param object The DataProcessItem object to convert.
+#' @param ... Additional arguments (not used).
+#' @return A DataProcessLink object.
+#' @export
+as.DataProcessLink.DataProcessItem <- function(object, ...) {
+  if (!inherits(object, "DataProcessItem")) stop("Object must be of class 'DataProcessItem'.")
+  if (!object$unprocessed) {
+    stop("Cannot create link for processed data (unprocessed = FALSE).")
+  }
 
-  all_user_inputs <- c(
-    list[["input"]][["source"]],
-    list[["input"]][["file"]],
-    list[["input"]][["query"]]
-  )
-  new_DataProcessItem(
-    data = list$data,
-    input = all_user_inputs,
-    filename = file_name,
-    unprocessed = unprocessed,
-    sql_command = sql_command,
-    history = history
+  # Convert DataProcessItem to DataProcessLink
+  new_DataProcessLink(
+    input = extract_all_inputs(object),
+    filename = object$filename,
+    unprocessed = object$unprocessed,
+    history = object$history
   )
 }
 
@@ -204,4 +201,16 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
   }
 
   return(all_inputs)
+}
+
+extract_filename_from_source_input <- function(source_inputs) {
+  data_source <- extractDataSourceFromInputs(source_inputs)
+
+  filename <- data_source$filename
+
+  if (is.null(filename) || filename == "") {
+    filename <- "unknown_filename"
+  }
+
+  filename
 }

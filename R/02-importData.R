@@ -228,7 +228,7 @@ importDataServer <- function(id,
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
-                     dataSourceInputs = getFileInputs(input, type = "source"),
+                     dataSourceInputs = reactive(getFileInputs(input, type = "source")),
                      dataProcessList = dataProcessList,
                      dataForPreview = data_for_preview,
                      customNames = customNames
@@ -370,7 +370,6 @@ importDataServer <- function(id,
                        shinyjs::enable(ns("accept"), asis = TRUE)
 
                        shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
-                       shinyjs::enable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
                        shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <- "Data import successful"
                      }

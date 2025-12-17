@@ -408,8 +408,7 @@ updateDataProcessList <- function(dataProcessList,
                             notifications = "") {
   if (length(dataProcessList) > 0 && fileName %in% names(dataProcessList)) {
     dataProcessList[[fileName]] <- newData
-    notifications <- c(notifications,
-                       "File was already selected and reloaded successfully now.")
+    notifications <- c(notifications, sprintf("File '%s' was updated successfully.", fileName))
   } else {
     dataProcessList <- c(dataProcessList, setNames(list(newData), fileName))
   }

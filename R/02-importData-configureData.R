@@ -51,24 +51,11 @@ configureDataUI <- function(id,
         tags$hr(),
         previewDataUI(ns("previewDat"), title = "Preview data"),
         tags$hr(),
-        fluidRow(
-          column(8,
-                 tags$html(
-                   HTML(
-                     "<b>Data processing</b> &nbsp;&nbsp; (Optional)"
-                   )
-                 ),
-                 helpText(width = "100%",
-                          "Process the loaded data for import via the 'Query with SQL', 'Prepare' or 'Merge' tabs.")
-          ),
-          column(4,
-                 align = "right",
-                 style = "margin-top: 1.5em",
-                 actionButton(ns("keepDataForQuery"), "Process data", width = "100%")
-          )
-        ),
-        downloadDataLinkUI(ns = ns,
-                           text = "Download the file path information as .json for later upload.")
+        downloadDataLinkUI(
+          ns = ns,
+          downloadBtnID = "downloadDataLink",
+          text = "Download the file path information as .json for later upload."
+        )
       ) else NULL
   )
 }
@@ -81,7 +68,7 @@ configureDataUI <- function(id,
 #'  'Create Query with data' or 'Prepare / Merge data'
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
-#' @param dataSourceInputs (reactiveValues) inputs related to the data source
+#' @param dataSourceInputs (reactive) inputs related to the data source
 #' @param dataForPreview (reactive) data to show in preview
 #' @inheritParams importDataServer
 configureDataServer <- function(id,
@@ -147,14 +134,24 @@ configureDataServer <- function(id,
 
                  observe({
                      if (length(values$dataImport) == 0 || dataSource$type == "dataLink") {
-                       logDebug("%s: Disable keepData button", id)
-                       shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
+                      logDebug("%s: Data import is empty or is link", id)
+                      shinyjs::disable(ns("downloadDataLink"), asis = TRUE)
                      } else {
-                       logDebug("%s: Enable keepData button", id)
-                       shinyjs::enable(ns("keepDataForQuery"), asis = TRUE)
+                      logDebug("%s: Data import successful", id)
+                      shinyjs::enable(ns("downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
                        values$preview <- values$dataImport
+
+                      logDebug("%s: Update DataProcessList", id)
+                      newData <- new_DataProcessItem(
+                        data = values$dataImport %>% formatColumnNames(silent = TRUE),
+                        input = c(getFileInputs(input, type = "file"), dataSourceInputs()),
+                        filename = values$fileName,
+                        unprocessed = TRUE # enables download of data links
+                      )
+
+                      newDataForDataProcessList(newData)
                      }
                  }) %>%
                    bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
@@ -167,24 +164,7 @@ configureDataServer <- function(id,
 
                    previewDataServer("previewDat", dat = reactive(values$preview))
 
-                   ## button keep data ----
                    newDataForDataProcessList <- reactiveVal(NULL)
-
-                   observe({
-                     logDebug("Updating input$keepDataForQuery")
-                     newData <- new_DataProcessItem(
-                       data = values$dataImport %>% formatColumnNames(silent = TRUE),
-                       input = c(getFileInputs(input, type = "file"), dataSourceInputs),
-                       filename = values$fileName,
-                       unprocessed = TRUE # enables download of data links
-                     )
-
-                     newDataForDataProcessList(newData)
-
-                     # disable "keepData" to prevent loading data twice
-                     shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
-                   }) %>%
-                     bindEvent(input$keepDataForQuery)
 
                    observe({
                      logDebug("Updating dataProcessList()")
@@ -204,10 +184,6 @@ configureDataServer <- function(id,
                        )
                      dataProcessList(newDataProcessList)
                      notifications <- attr(newDataProcessList, "notifications")
-
-                     showNotification(HTML(sprintf("File for data processing: <br>%s",
-                                                   values$fileName)),
-                                      type = "message")
 
                      if (length(notifications) > 0) {
                        shinyjs::info(paste0(notifications, collapse = "\n"))

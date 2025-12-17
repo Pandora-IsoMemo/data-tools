@@ -5,13 +5,7 @@
 \title{Constructor for DataProcessLink
 Creates a new DataProcessLink object.}
 \usage{
-new_DataProcessLink(
-  input,
-  filename,
-  unprocessed = TRUE,
-  sql_command = "",
-  history = list()
-)
+new_DataProcessLink(input, filename, unprocessed = TRUE, history = list())
 }
 \arguments{
 \item{input}{A list containing file, source, and query inputs.}
@@ -19,8 +13,6 @@ new_DataProcessLink(
 \item{filename}{The name of the file associated with this data item.}
 
 \item{unprocessed}{Logical indicating if the data is unprocessed, currently TRUE for data links.}
-
-\item{sql_command}{Optional SQL command string for database queries.}
 
 \item{history}{Optional list of history entries.}
 }
