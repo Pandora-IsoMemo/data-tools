@@ -17,7 +17,7 @@ new_DataProcessItem <- function(
   history = list()
 ) {
   # Validate required fields
-  if (missing(data)) stop("'data' must be provided.")
+  if (missing(data)) stop("The 'data' parameter is required.")
   if (missing(unprocessed) || !is.logical(unprocessed)) {
     stop("'unprocessed' must be provided and be logical.")
   }
