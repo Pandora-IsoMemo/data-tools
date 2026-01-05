@@ -102,7 +102,7 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                    logDebug("%s: update inMemoryDB and input$sqlCommand", id)
 
                    tmpDB <- inMemoryDB()
-                   # reset db (this removes tables if they become "processed data")
+                   # reset db (this removes tables if they become processed data)
                    for (i in dbListTables(tmpDB)) {
                      dbRemoveTable(tmpDB, i)
                    }
