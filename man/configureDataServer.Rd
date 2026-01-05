@@ -22,6 +22,7 @@ configureDataServer(
   dataSource,
   dataSourceInputs,
   dataForPreview,
+  defaultFileTypes = config()[["dataFileTypes"]],
   ignoreWarnings = FALSE
 )
 }

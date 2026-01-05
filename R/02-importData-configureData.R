@@ -70,6 +70,7 @@ configureDataUI <- function(id,
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
 #' @param dataSourceInputs (reactive) inputs related to the data source
 #' @param dataForPreview (reactive) data to show in preview
+#' @param defaultFileTypes (character) default file types
 #' @inheritParams importDataServer
 configureDataServer <- function(id,
                                 dataProcessList,
@@ -77,6 +78,7 @@ configureDataServer <- function(id,
                                 dataSource,
                                 dataSourceInputs,
                                 dataForPreview,
+                                defaultFileTypes = config()[["dataFileTypes"]],
                                 ignoreWarnings = FALSE
 ) {
   moduleServer(id,
@@ -95,7 +97,7 @@ configureDataServer <- function(id,
                  )
 
                  # logic to select sheet ----
-                 selectFileTypeServer("fileType", dataSource)
+                 selectFileTypeServer("fileType", dataSource, defaultFileTypes)
 
                  # specify file server & load file ----
                  observeEvent(
@@ -113,7 +115,6 @@ configureDataServer <- function(id,
                      req(dataSource$type)
                      req(dataSource$type != "dataLink")
                      logDebug("Updating values$dataImport")
-
                      # importType is now always "data" here
                      values <- loadDataWrapper(
                        values = values,

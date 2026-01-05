@@ -55,14 +55,26 @@ selectFileTypeUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
+#' @param defaultFileTypes default file types
 #' @inheritParams configureFileServer
-selectFileTypeServer <- function(id, dataSource) {
+selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
                  observe({
+                   logDebug("Updating input$type")
+                   if (is.null(input$type) || is.null(dataSource$file)) {
+                     updateSelectInput(session = session, "type", selected = character(0))
+                   } else {
+                     auto_type <- getExtension(dataSource$file)
+                     if (!(auto_type %in% defaultFileTypes)) {
+                       auto_type <- defaultFileTypes[1]
+                     }
+                     updateSelectInput(session, "type", selected = auto_type)
+                   }
+
                    logDebug("Updating input$sheet")
                    if (is.null(input$type) || is.null(dataSource$file) ||
                        !(input$type %in% c("xls", "xlsx"))) {

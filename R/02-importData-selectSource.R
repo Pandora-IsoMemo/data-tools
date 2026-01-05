@@ -4,8 +4,8 @@
 #'
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
-#' @param fileInputAccept (character) (optional) accept attribute for fileInput. E.g. ".zip" or
-#'  output from \code{getFileInputAccept(importType, fileExtension)}
+#' @param fileInputAccept (character) (optional) accept attribute for fileInput. E.g. ".zip"
+#'  or ".csv"
 #' @rdname selectSourceServer
 selectSourceUI <- function(id,
                            defaultSource,
@@ -671,15 +671,3 @@ loadCKANResourceServer <- function(id) {
                    bindEvent(input[["ckanResource"]])
                })
 }
-
-getFileInputAccept <- function(importType, fileExtension) {
-  # default if importType is "data"
-  acceptExt <- NULL
-
-  if (importType %in% c("model", "zip", "list") && !is.null(fileExtension) && all(fileExtension != "")) {
-    acceptExt <- paste0(".", fileExtension)
-  }
-
-  return(acceptExt)
-}
-

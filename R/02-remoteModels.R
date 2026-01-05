@@ -306,7 +306,7 @@ getGithubContent <-
 
 getExtension <- function(file, prefix = "") {
   file <- basename(file)
-  res <- strsplit(file, ".", fixed=T)[[1]][-1]
+  res <- strsplit(file, ".", fixed = TRUE)[[1]][-1]
   paste0(prefix, res)
 }
 

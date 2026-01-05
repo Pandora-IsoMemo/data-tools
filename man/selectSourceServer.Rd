@@ -44,8 +44,8 @@ ImportType == "list" expects a json file containing a list. The file will be rea
 \item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
 ignored if \code{type = "file"} or \code{type = "remoteModel"}}
 
-\item{fileInputAccept}{(character) (optional) accept attribute for fileInput. E.g. ".zip" or
-output from \code{getFileInputAccept(importType, fileExtension)}}
+\item{fileInputAccept}{(character) (optional) accept attribute for fileInput. E.g. ".zip"
+or ".csv"}
 
 \item{openPopupReset}{(reactive) TRUE if popup is (re-)opened}
 

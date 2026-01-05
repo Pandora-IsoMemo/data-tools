@@ -50,8 +50,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param batch (logical) use batch import.
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
 #'  e.g. for batch = TRUE in Resources.
-#' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
-#'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
+#' @param fileExtension (character) DEPRECATED. Instead, please use ckanFileTypes.
 #' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
 #'  File names that must be contained in the zip upload.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
@@ -77,8 +76,8 @@ importDataServer <- function(id,
                              customErrorChecks = list(),
                              batch = FALSE,
                              outputAsMatrix = FALSE,
+                             fileExtension = NULL,
                              # parameters for model upload
-                             fileExtension = "zip",
                              mainFolder = NULL,
                              subFolder = NULL,
                              rPackageName = "",
@@ -97,6 +96,14 @@ importDataServer <- function(id,
       with = "DataTools::importDataServer(options = 'importOptions(rPackageName)')",
       details = sprintf("For example, importDataServer(options = importOptions(rPackageName = '%s')).", rPackageName)
     )
+  }
+
+  if (!is.null(fileExtension)) {
+    deprecate_warn("26.01.0",
+                   "DataTools::importDataServer(fileExtension)",
+                   details = c(
+                    x = "The argument will be ignored, ckanFileTypes is now used instead."
+                  ))
   }
 
   if (!is.null(mainFolder)) {
@@ -190,7 +197,6 @@ importDataServer <- function(id,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
-                       fileExtension = fileExtension,
                        isInternet = internetCon(),
                        options = options
                      )
@@ -231,7 +237,8 @@ importDataServer <- function(id,
                      dataSourceInputs = reactive(getFileInputs(input, type = "source")),
                      dataProcessList = dataProcessList,
                      dataForPreview = data_for_preview,
-                     customNames = customNames
+                     defaultFileTypes = ckanFileTypes,
+                     customNames = customNames                     
                    )
                  } else {
                    # sets values$dataImport
@@ -242,7 +249,7 @@ importDataServer <- function(id,
                      subFolder = subFolder,
                      rPackageName = options[["rPackageName"]],
                      onlySettings = onlySettings,
-                     fileExtension = fileExtension,
+                     fileExtension = ckanFileTypes,
                      expectedFileInZip = expectedFileInZip
                    )
                  }
@@ -432,7 +439,6 @@ importDataDialog <-
            batch = FALSE,
            outputAsMatrix = FALSE,
            importType = "data",
-           fileExtension = "zip",
            isInternet = FALSE,
            options = importOptions()) {
     modalDialog(
@@ -468,7 +474,7 @@ importDataDialog <-
                            ckanFileTypes = ckanFileTypes,
                            importType = importType,
                            isInternet = isInternet,
-                           fileInputAccept = getFileInputAccept(importType, fileExtension)),
+                           fileInputAccept = paste0(".", ckanFileTypes)),
             uiOutput(ns("selectDataDialog"))
           )
         ),

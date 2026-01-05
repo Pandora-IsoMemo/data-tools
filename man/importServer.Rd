@@ -14,7 +14,7 @@ importServer(
   ckanFileTypes = c("zip"),
   ignoreWarnings = FALSE,
   importType = c("model", "zip", "list"),
-  fileExtension = "zip",
+  fileExtension = NULL,
   subFolder = NULL,
   onlySettings = FALSE,
   expectedFileInZip = c(),
@@ -46,8 +46,7 @@ ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file
 and the path to the zip file will be returned.
 ImportType == "list" expects a json file containing a list. The file will be read and checked.}
 
-\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
+\item{fileExtension}{(character) DEPRECATED. Instead, please use ckanFileTypes.}
 
 \item{subFolder}{(character) (optional) subfolder containing loadable .zip files.}
 

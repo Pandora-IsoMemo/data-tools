@@ -1,3 +1,9 @@
+# DataTools 26.01.0
+
+## Updates
+- Improved file import handling with automatic file type detection, filtering of allowed types, and clearer error messages.
+- Data preparation in Query with SQL, Prepare, and Merge is now automatically enabled once a file is successfully loaded.
+
 # DataTools 25.11.0
 
 ## Updates

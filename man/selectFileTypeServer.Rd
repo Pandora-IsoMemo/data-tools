@@ -11,12 +11,12 @@ selectFileTypeUI(
   userFileTypes = c()
 )
 
-selectFileTypeServer(id, dataSource)
+selectFileTypeServer(id, dataSource, defaultFileTypes)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{defaultFileTypes}{(character) default file types}
+\item{defaultFileTypes}{default file types}
 
 \item{userFileTypes}{(character) user file types specified in "Pandora Platform" settings}
 

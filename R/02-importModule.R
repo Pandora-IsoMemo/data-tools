@@ -40,8 +40,7 @@ importUI <- function(id, label = "Import Model", title = NULL, titleTag = "h4") 
 #'  ImportType == "zip" enables the optional parameter 'expectedFileInZip'. The file is validated
 #'  and the path to the zip file will be returned.
 #'  ImportType == "list" expects a json file containing a list. The file will be read and checked.
-#' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
-#'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
+#' @param fileExtension (character) DEPRECATED. Instead, please use ckanFileTypes.
 #' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
 #'  File names that must be contained in the zip upload.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
@@ -55,11 +54,19 @@ importServer <- function(id,
                          ckanFileTypes = c("zip"),
                          ignoreWarnings = FALSE,
                          importType = c("model", "zip", "list"),
-                         fileExtension = "zip",
+                         fileExtension = NULL,
                          subFolder = NULL,
                          onlySettings = FALSE,
                          expectedFileInZip = c(),
                          options = importOptions()) {
+  if (!is.null(fileExtension)) {
+    deprecate_warn("26.01.0",
+                   "DataTools::importServer(fileExtension)",
+                   details = c(
+                    x = "The argument will be ignored, ckanFileTypes is now used instead."
+                  ))
+  }
+
   defaultSource <- match.arg(defaultSource)
   importType <- match.arg(importType)
 
@@ -113,7 +120,7 @@ importServer <- function(id,
               ckanFileTypes = ckanFileTypes,
               importType = importType,
               isInternet = internetCon(),
-              fileInputAccept = getFileInputAccept(importType, fileExtension)
+              fileInputAccept = paste0(".", ckanFileTypes)
             ),
             # rendered "configureFileUI" not only updated if "openPopup" is clicked as the modalDialog is
             uiOutput(ns("configureFileDialog"))
@@ -147,7 +154,7 @@ importServer <- function(id,
       subFolder = subFolder,
       rPackageName = options[["rPackageName"]],
       onlySettings = onlySettings,
-      fileExtension = fileExtension,
+      fileExtension = ckanFileTypes,
       expectedFileInZip = expectedFileInZip
     )
 
