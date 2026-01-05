@@ -19,7 +19,7 @@ new_DataProcessItem <- function(
   # Validate required fields
   if (missing(data)) stop("'data' must be provided.")
   if (missing(unprocessed) || !is.logical(unprocessed)) {
-    stop("'unprocessed' must be provided and be logical (TRUE/FALSE).")
+    stop("'unprocessed' must be provided and be logical.")
   }
 
   # set fields if missing
