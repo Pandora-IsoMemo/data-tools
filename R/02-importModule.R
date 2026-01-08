@@ -182,31 +182,22 @@ importServer <- function(id,
                 ignoreNULL = FALSE,
                 ignoreInit = TRUE)
 
-    ## ACCEPT buttons ----
+    ## ACCEPT button ----
+    returnData <- reactiveVal()
     observe({
       logDebug("%s: Entering observe 'input$accept'", id)
       removeModal()
 
-      req(values$dataImport)
-      res <- values$dataImport
+      req(values$dataImport, isTRUE(nrow(values$dataImport) > 0))
+      res <- setNames(object = list(values$dataImport), nm = values$fileName)
+      returnData(res)
 
-      values$data[[values$fileName]] <- res
+      values <- values %>% resetValues()     # reset entries of values
     }) %>%
       bindEvent(input$accept)
 
     # return value for parent module: ----
     # currently only the data is returned, not the path(s) to the source(s)
-    returnData <- reactiveVal()
-    observe({
-      logDebug("%s: Updating returnData()", id)
-      if (length(values$data) > 0) {
-        returnData(values$data)
-
-        values <- values %>% resetValues()     # reset entries of values
-      }
-    }) %>%
-      bindEvent(values$data, ignoreNULL = FALSE, ignoreInit = TRUE)
-
     return(returnData)
   })
 }

@@ -388,16 +388,18 @@ importDataServer <- function(id,
                  }
 
                  ## ACCEPT data ----
+                 returnData <- reactiveVal(list())
                  observeEvent(input$accept, {
                    logDebug("%s: Pressed input$accept", id)
                    removeModal()
 
-                   req(values$dataImport)
+                   req(values$dataImport, isTRUE(nrow(values$dataImport) > 0))
 
                    if (importType != "data") {
-                     values$data[[values$fileName]] <- values$dataImport
+                     res <- setNames(object = list(values$dataImport), nm = values$fileName)
                    } else {
-                     values$data <- extractTableFromTab(
+                     # choose the data to return from the active tab
+                     res <- extractTableFromTab(
                        unprocessed_data = setNames(object = list(values$dataImport), nm = values$fileName),
                        queried_data = queriedData(),
                        prepared_data = setNames(object = list(preparedData$data), nm = preparedData$fileName),
@@ -411,21 +413,14 @@ importDataServer <- function(id,
                          silent = TRUE
                        )
                    }
+
+                   returnData(res)
+
+                   values <- values %>% resetValues()           # reset entries of values
+                   dataProcessList(list())                      # reset dataProcessList
                  })
 
                  # return value for parent module: ----
-                 returnData <- reactiveVal(list())
-                 observe({
-                   logDebug("%s: Updating returnData()", id)
-                   if (length(values$data) > 0) {
-                     returnData(values$data)
-
-                     values <- values %>% resetValues()     # reset entries of values
-                     dataProcessList(list())                      # reset dataProcessList
-                   }
-                 }) %>%
-                   bindEvent(values$data, ignoreNULL = FALSE, ignoreInit = TRUE)
-
                  return(returnData)
                })
 }

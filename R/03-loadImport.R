@@ -13,7 +13,7 @@ loadImport <- function(importType, params) {
     shinyTryCatch(errorTitle = "Could not load file!")
 }
 
-resetValues <- function(values, includeData = TRUE) {
+resetValues <- function(values) {
   # reset values
   values$warnings <- list()
   values$errors <- list()
@@ -22,8 +22,6 @@ resetValues <- function(values, includeData = TRUE) {
   values$version <- NULL
   values$dataImport <- NULL
   values$preview <- NULL
-
-  if (includeData) values$data <- list()
 
   gc()
   return(values)

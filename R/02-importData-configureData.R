@@ -133,6 +133,8 @@ configureDataServer <- function(id,
 
                  importMessageServer("importMessage", values)
 
+                 newDataForDataProcessList <- reactiveVal(NULL)
+
                  observe({
                      if (length(values$dataImport) == 0 || dataSource$type == "dataLink") {
                       logDebug("%s: Data import is empty or is link", id)
@@ -164,8 +166,6 @@ configureDataServer <- function(id,
                      bindEvent(dataForPreview())
 
                    previewDataServer("previewDat", dat = reactive(values$preview))
-
-                   newDataForDataProcessList <- reactiveVal(NULL)
 
                    observe({
                      logDebug("Updating dataProcessList()")
