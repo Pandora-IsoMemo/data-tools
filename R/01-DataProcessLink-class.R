@@ -45,7 +45,7 @@ new_DataProcessLink <- function(
     unprocessed = TRUE, # enables download of data links,
     filename = filename,
     history = history,
-    pckg_version = packageVersion("DataTools")
+    pckg_version = as.character(packageVersion("DataTools"))
   )
 
   structure(new_item, class = c("DataProcessLink", "DataProcessItem", "list"))

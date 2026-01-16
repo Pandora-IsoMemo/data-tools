@@ -76,6 +76,7 @@ observeDownloadDataLink <- function(
             sep = "_")
     },
     content = function(file) {
+      logDebug("linkToData: download as json to '%s'", file)
       jsonlite::write_json(dataLinkDownload(), file, null = "null")
     }
   )
@@ -213,8 +214,6 @@ observeUploadDataLink <- function(
     }
   }) %>%
     bindEvent(dataLinkUpload$import)
-
-  return(values)
 }
 
 nmLastInputs <- function() "lastSelectDataInputs"

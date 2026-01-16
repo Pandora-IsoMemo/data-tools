@@ -281,20 +281,20 @@ importDataServer <- function(id,
                                          dataProcessList = dataProcessList,
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
-                 values <-
-                   observeUploadDataLink(id, input = input, output = output, session = session,
-                                         isInternet = internetCon,
-                                         dataSource = dataSource,
-                                         customNames = customNames,
-                                         dataProcessList = dataProcessList,
-                                         values = values
-                   )
+                 observeUploadDataLink(
+                   id, input = input, output = output, session = session,
+                   isInternet = internetCon,
+                   dataSource = dataSource,
+                   customNames = customNames,
+                   dataProcessList = dataProcessList,
+                   values = values        # this will set values$dataImport
+                 )
 
                  observe({
                    req(values$dataImport)
                    logDebug("%s: Update data_for_preview()", id)
                    data_for_preview(values$dataImport)
-                 }) %>% 
+                 }) %>%
                    bindEvent(values$dataImport)
 
 
@@ -439,7 +439,7 @@ importDataDialog <-
     modalDialog(
       shinyjs::useShinyjs(),
       title = title %>% setImportTitle(importType = importType, version = packageVersion("DataTools")),
-      style = if (importType == "data") 'height: 1200px' else 'height: 800px',
+      style = if (importType == "data") 'height: 1050px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
         column(4,
