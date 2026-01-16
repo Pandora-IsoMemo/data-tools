@@ -22,9 +22,10 @@ selectFileTypeUI <- function(id,
   tagList(
     fluidRow(
       column(6,
+             tags$strong("2. Select file type"),
              selectInput(
                ns("type"),
-               "Select file type",
+               label = NULL,
                choices = defaultFileTypes %>% formatTypeChoices(),
                selected = defaultSelected[1] %>% formatTypeChoices()
              )

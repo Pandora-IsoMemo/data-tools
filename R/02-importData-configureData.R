@@ -44,7 +44,7 @@ configureDataUI <- function(id,
              } else NULL,
              ## custom help text ----
              customHelpText),
-      column(6, importMessageUI(ns("importMessage")))
+      column(6, if (!isLink) importMessageUI(ns("importMessage")) else NULL)
     ),
     if (!isLink) # importType is now always "data" here
       div(

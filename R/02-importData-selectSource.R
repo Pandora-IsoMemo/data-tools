@@ -37,9 +37,10 @@ selectSourceUI <- function(id,
     # source selection ----
     fluidRow(
       column(6,
+             tags$strong("1. Select source"),
              radioButtons(
                ns("source"),
-               label = "Select source",
+               label = NULL,
                choices = sourceChoices,
                selected = defaultSource,
                inline = TRUE)),
@@ -81,11 +82,19 @@ selectSourceUI <- function(id,
     ),
     ## source == file
     conditionalPanel(
-      condition = "input.source == 'file'",
+      condition = "input.source == 'file' && input.dataOrLink == 'fullData'",
       ns = ns,
       fileInput(ns("file"),
                 label = NULL,
                 accept = fileInputAccept,
+                width = "100%")
+    ),
+    conditionalPanel(
+      condition = "input.source == 'file' && input.dataOrLink == 'dataLink'",
+      ns = ns,
+      fileInput(ns("file"),
+                label = NULL,
+                accept = ".json",
                 width = "100%")
     ),
     ## source == url
@@ -478,7 +487,7 @@ filterCKANRepoUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    tags$strong(HTML(
+    tags$label(class = "control-label", HTML(
       paste(
         "Filter Pandora repositories &nbsp",
         # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
