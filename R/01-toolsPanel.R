@@ -106,9 +106,17 @@ toolsImportServer <- function(id) {
 
                  model_notes <- reactiveVal(NULL)
 
+                 observe({
+                   req(length(importedModel()) > 0, !is.null(importedModel()[[1]][["notes"]]))
+
+                   # update notes
+                   model_notes(importedModel()[[1]][["notes"]])
+                 }) %>%
+                   bindEvent(importedModel())
+
                  downloadModelServer(
                    "modelDownload",
-                   dat = dataOut(),
+                   dat = dataOut,
                    inputs = input,
                    model = reactive(importedModel()[[1]][["model"]]),
                    rPackageName = config()[["rPackageName"]],
