@@ -22,14 +22,17 @@ toolsImportUI <- function(id) {
       importDataUI(ns("batchData"), "Import Batch Data"),
       tags$br(),
       tags$br(),
-      importUI(ns("newModel"), "Import Model")
+      importUI(ns("model"), "Import Model"),
+      tags$br(),
+      tags$br(),
+      downloadModelUI(ns("modelDownload"), label = "Download")
     ),
     mainPanel(
       tags$h2("Json Import"),
       textOutput(ns("itemList")),
       tags$h2("Data Import"),
-      selectInput(ns("dataSel"), "Select which Import to display" ,
-                  choices = c("CKAN Data", "Numeric Data", "Batch Data", "Model Data", "Model Data (new)")),
+      selectInput(ns("dataSel"), "Select which Import to display",
+                  choices = c("CKAN Data", "Numeric Data", "Batch Data", "Model Data")),
       DT::dataTableOutput(ns("importedDataTable"))
     )
   )
@@ -89,8 +92,8 @@ toolsImportServer <- function(id) {
                    options = importOptions(rPackageName = config()[["rPackageName"]])
                  )
 
-                 importedModelNew <- importServer(
-                   "newModel",
+                 importedModel <- importServer(
+                   "model",
                    ckanFileTypes = config()[["modelFileTypes"]],
                    ignoreWarnings = TRUE,
                    defaultSource = config()[["defaultSource"]],
@@ -101,11 +104,24 @@ toolsImportServer <- function(id) {
 
                  dataOut <- reactiveVal(NULL)
 
+                 model_notes <- reactiveVal(NULL)
+
+                 downloadModelServer(
+                   "modelDownload",
+                   dat = dataOut(),
+                   inputs = input,
+                   model = reactive(importedModel()[[1]][["model"]]),
+                   rPackageName = config()[["rPackageName"]],
+                   fileExtension = config()[["fileExtension"]],
+                   modelNotes = model_notes,
+                   triggerUpdate = reactive(TRUE)
+                 )
+
                  observe({
                    req(length(importedDataCKAN()) > 0 ||
                          length(importedDataOnlyNumeric()) > 0 ||
                          length(importedBatchData()) > 0 ||
-                         length(importedModelNew()) > 0)
+                         length(importedModel()) > 0)
                    logDebug("Updating dataOut()")
                    dataOut(NULL)
 
@@ -122,8 +138,8 @@ toolsImportServer <- function(id) {
                      dataOut(importedBatchData()[[1]])
                    }
                    if (input$dataSel == "Model Data") {
-                     req(length(importedModelNew()) > 0)
-                     dataOut(importedModelNew()[[1]][["data"]])
+                     req(length(importedModel()) > 0)
+                     dataOut(importedModel()[[1]][["data"]])
                    }
                  })
 

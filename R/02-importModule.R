@@ -188,7 +188,7 @@ importServer <- function(id,
       logDebug("%s: Entering observe 'input$accept'", id)
       removeModal()
 
-      req(values$dataImport, isTRUE(nrow(values$dataImport) > 0))
+      req(values$dataImport, isTRUE("inputs" %in% names(values$dataImport)))
       res <- setNames(object = list(values$dataImport), nm = values$fileName)
       returnData(res)
 

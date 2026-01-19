@@ -82,7 +82,7 @@ selectSourceUI <- function(id,
     ),
     ## source == file
     conditionalPanel(
-      condition = "input.source == 'file' && input.dataOrLink == 'fullData'",
+      condition = "input.source == 'file' && (input.dataOrLink == null || input.dataOrLink == 'fullData')",
       ns = ns,
       fileInput(ns("file"),
                 label = NULL,
@@ -90,7 +90,7 @@ selectSourceUI <- function(id,
                 width = "100%")
     ),
     conditionalPanel(
-      condition = "input.source == 'file' && input.dataOrLink == 'dataLink'",
+      condition = "input.source == 'file' && input.dataOrLink != null && input.dataOrLink == 'dataLink'",
       ns = ns,
       fileInput(ns("file"),
                 label = NULL,
