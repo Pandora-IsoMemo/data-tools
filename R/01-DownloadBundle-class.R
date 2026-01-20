@@ -292,7 +292,10 @@ build_download_zip <- function(
   on.exit(downloadBundle_cleanup(bundle), add = TRUE)
 
   # Only add files if both include_paths and include_root are provided and valid
-  if (!is.null(include_paths) && length(include_paths) > 0L && !is.null(include_root) && nzchar(include_root)) {
+  if (
+    !is.null(include_paths) && length(include_paths) > 0L &&
+      !is.null(include_root) && nzchar(include_root)
+  ) {
     bundle <- downloadBundle_add_files(bundle, include_paths, root = include_root)
   }
 
