@@ -5,20 +5,20 @@
 \title{Create a new DownloadBundle object}
 \usage{
 new_DownloadBundle(
-  rPackageName,
+  package_name,
   sub_model = NULL,
-  helpHTML = "",
-  compressionLevel = 9
+  help_html = "",
+  compression_level = 9
 )
 }
 \arguments{
-\item{rPackageName}{The name of the R package for which the bundle is created.}
+\item{package_name}{The name of the R package for which the bundle is created.}
 
 \item{sub_model}{Optional sub-model name within the R package.}
 
-\item{helpHTML}{Optional HTML content for help documentation.}
+\item{help_html}{Optional HTML content for help documentation.}
 
-\item{compressionLevel}{The level of compression to use when zipping the bundle (default is 9).}
+\item{compression_level}{The level of compression to use when zipping the bundle (default is 9).}
 }
 \value{
 A DownloadBundle object containing the specified parameters and a temporary directory for file storage.

@@ -5,24 +5,24 @@
 #' This function creates a new DownloadBundle object, which is used to
 #' prepare a bundle of files for download, including RDS files, notes, and help files.
 #'
-#' @param rPackageName The name of the R package for which the bundle is created.
+#' @param package_name The name of the R package for which the bundle is created.
 #' @param sub_model Optional sub-model name within the R package.
-#' @param helpHTML Optional HTML content for help documentation.
-#' @param compressionLevel The level of compression to use when zipping the bundle (default is 9).
+#' @param help_html Optional HTML content for help documentation.
+#' @param compression_level The level of compression to use when zipping the bundle (default is 9).
 #'
 #' @return A DownloadBundle object containing the specified parameters and a temporary directory for file storage.
 #' @export
 new_DownloadBundle <- function(
-  rPackageName,
+  package_name,
   sub_model = NULL,
-  helpHTML = "",
-  compressionLevel = 9
+  help_html = "",
+  compression_level = 9
 ) {
   new_item <- list(
-    rPackageName = rPackageName,
+    package_name = package_name,
     sub_model = sub_model,
-    helpHTML = helpHTML,
-    compressionLevel = compressionLevel,
+    help_html = help_html,
+    compression_level = compression_level,
 
     # runtime / ephemeral
     tempDir = NULL
@@ -35,10 +35,10 @@ is_DownloadBundle <- function(x) inherits(x, "DownloadBundle")
 
 validate_DownloadBundle <- function(x) {
   stopifnot(is_DownloadBundle(x))
-  stopifnot(is.character(x$rPackageName), length(x$rPackageName) == 1L, nzchar(x$rPackageName))
+  stopifnot(is.character(x$package_name), length(x$package_name) == 1L, nzchar(x$package_name))
   stopifnot(is.null(x$sub_model) || (is.character(x$sub_model) && length(x$sub_model) == 1L))
-  stopifnot(is.character(x$helpHTML), length(x$helpHTML) == 1L)
-  stopifnot(is.numeric(x$compressionLevel), length(x$compressionLevel) == 1L)
+  stopifnot(is.character(x$help_html), length(x$help_html) == 1L)
+  stopifnot(is.numeric(x$compression_level), length(x$compression_level) == 1L)
   invisible(x)
 }
 
@@ -157,11 +157,11 @@ downloadBundle_add_files <- function(bundle, paths, root, include_hidden = FALSE
   bundle
 }
 
-downloadBundle_add_model <- function(bundle, dat, inputs, model, onlySettings = FALSE) {
+downloadBundle_add_model <- function(bundle, dat, inputs, model, exclude_model = FALSE) {
   validate_DownloadBundle(bundle)
   is_bundle_prepared(bundle)
 
-  version_export <- get_package_string(bundle$rPackageName) |>
+  version_export <- get_package_string(bundle$package_name) |>
     format_model_version(sub_model = bundle$sub_model)
 
   # create model file
@@ -169,12 +169,12 @@ downloadBundle_add_model <- function(bundle, dat, inputs, model, onlySettings = 
     list(
       data = dat,
       inputs = inputs[!sapply(inputs, is.null)], # no NULLs -> inputs upload fail without warnings
-      model = if (isTRUE(onlySettings)) NULL else model,
+      model = if (isTRUE(exclude_model)) NULL else model,
       version = version_export
     ),
     file = file.path(
       bundle$tempDir,
-      if (isTRUE(onlySettings)) "inputs.rds" else "model.rds"
+      if (isTRUE(exclude_model)) "inputs.rds" else "model.rds"
     )
   )
 
@@ -215,26 +215,26 @@ downloadBundle_add_help <- function(bundle) {
   is_bundle_prepared(bundle)
 
   if (
-    is.null(bundle$helpHTML) ||
-    !nzchar(bundle$helpHTML) ##||
-    ## any(bundle$helpHTML == "") # could helpHTML be vector?
+    is.null(bundle$help_html) ||
+    !nzchar(bundle$help_html) ##||
+    ## any(bundle$help_html == "") # could help_html be vector?
   ) return(bundle)
 
-  save_html(bundle$helpHTML, file.path(bundle$tempDir, "help.html"))
+  save_html(bundle$help_html, file.path(bundle$tempDir, "help.html"))
   bundle
 }
 
 
 # 4) Zip output
 
-downloadBundle_zip_to <- function(bundle, out_file) {
+downloadBundle_zip_to <- function(bundle, zipfile) {
   validate_DownloadBundle(bundle)
   is_bundle_prepared(bundle)
 
   filesToZip <- list.files(bundle$tempDir, full.names = TRUE, recursive = TRUE)
-  zip::zipr(out_file, filesToZip, compression_level = bundle$compressionLevel)
+  zip::zipr(zipfile, filesToZip, compression_level = bundle$compression_level)
 
-  invisible(out_file)
+  invisible(zipfile)
 }
 
 # 5) One orchestration helper
@@ -245,58 +245,60 @@ downloadBundle_zip_to <- function(bundle, out_file) {
 #' notes, and help documentation. It utilizes the DownloadBundle class to manage
 #' the bundling process.
 #'
-#' @param out_file The path to the output zip file.
-#' @param rPackageName The name of the R package for which the bundle is created.
+#' @param zipfile The path to the output zip file.
+#' @param package_name The name of the R package for which the bundle is created.
 #' @param dat The model data to be included in the bundle.
 #' @param inputs The model inputs to be included in the bundle.
 #' @param model The model object to be included in the bundle.
 #' @param sub_model Optional sub-model name within the R package.
-#' @param helpHTML Optional HTML content for help documentation.
+#' @param help_html Optional HTML content for help documentation.
 #' @param notes Optional notes to be included in the bundle.
-#' @param onlySettings Logical indicating whether to include only settings (inputs) in the bundle.
-#' @param otherPaths Optional character vector of additional file/directory paths to include in the
-#'  bundle.
-#' @param otherRoot Optional root directory for the additional paths to preserve relative structure.
-#' @param compressionLevel The level of compression to use when zipping the bundle (default is 9).
+#' @param exclude_model Logical indicating whether to include only settings (inputs and data) in
+#'  the bundle, rather than the full model (default is FALSE).
+#' @param include_paths Optional character vector of additional file/directory paths to include
+#'  in the bundle.
+#' @param include_root Optional root directory for the additional paths to preserve relative
+#'  structure.
+#' @param compression_level The level of compression to use when zipping the bundle (default is 9).
 #' @return The path to the created zip file (invisible).
 #' @export
-buildDownloadZip <- function(
-  out_file = tempfile(fileext = ".zip"),
-  rPackageName = NULL,
+build_download_zip <- function(
+  zipfile = tempfile(fileext = ".zip"),
+  package_name = NULL,
   dat = NULL,
   inputs = NULL,
   model = NULL,
   sub_model = NULL,
-  helpHTML = NULL,
+  help_html = NULL,
   notes = NULL,
-  onlySettings = FALSE,
-  otherPaths = NULL,
-  otherRoot = NULL,
-  compressionLevel = 9
+  exclude_model = FALSE,
+  include_paths = NULL,
+  include_root = NULL,
+  compression_level = 9
 ) {
   # Provide sensible defaults for missing/NULL values
-  if (is.null(rPackageName)) rPackageName <- "unnamedPackage"
-  if (is.null(helpHTML)) helpHTML <- ""
+  if (is.null(package_name)) package_name <- "unnamedPackage"
+  if (is.null(help_html)) help_html <- ""
   if (is.null(notes)) notes <- ""
 
   bundle <- new_DownloadBundle(
-    rPackageName = rPackageName,
+    package_name = package_name,
     sub_model = sub_model,
-    helpHTML = helpHTML,
-    compressionLevel = compressionLevel
+    help_html = help_html,
+    compression_level = compression_level
   )
 
   bundle <- downloadBundle_prepare(bundle)
   on.exit(downloadBundle_cleanup(bundle), add = TRUE)
 
-  # Only add files if both otherPaths and otherRoot are provided and valid
-  if (!is.null(otherPaths) && length(otherPaths) > 0L && !is.null(otherRoot) && nzchar(otherRoot)) {
-    bundle <- downloadBundle_add_files(bundle, otherPaths, root = otherRoot)
+  # Only add files if both include_paths and include_root are provided and valid
+  if (!is.null(include_paths) && length(include_paths) > 0L && !is.null(include_root) && nzchar(include_root)) {
+    bundle <- downloadBundle_add_files(bundle, include_paths, root = include_root)
   }
 
   # Only add model if any of dat, inputs, or model are provided
   if (!is.null(dat) || !is.null(inputs) || !is.null(model)) {
-    bundle <- downloadBundle_add_model(bundle, dat, inputs, model, onlySettings = onlySettings)
+    bundle <- downloadBundle_add_model(bundle, dat, inputs, model, exclude_model = exclude_model)
   }
 
   # Only add notes if notes is not NULL or empty
@@ -304,10 +306,10 @@ buildDownloadZip <- function(
     bundle <- downloadBundle_add_notes(bundle, notes)
   }
 
-  # Only add help if helpHTML is not NULL or empty
-  if (!is.null(helpHTML) && nzchar(helpHTML)) {
+  # Only add help if help_html is not NULL or empty
+  if (!is.null(help_html) && nzchar(help_html)) {
     bundle <- downloadBundle_add_help(bundle)
   }
 
-  downloadBundle_zip_to(bundle, out_file)
+  downloadBundle_zip_to(bundle, zipfile)
 }

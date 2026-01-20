@@ -39,7 +39,7 @@ downUploadButtonServer <- function(id,
                                    modelNotes = reactive(""),
                                    onlySettings = FALSE,
                                    compress = TRUE,
-                                   compressionLevel = 9,
+                                   compression_level = 9,
                                    reset = reactive(FALSE),
                                    title = "Download and Upload of Models",
                                    labelRemote = "Load online model",
@@ -86,7 +86,7 @@ downUploadButtonServer <- function(id,
                    modelNotes = modelNotes,
                    onlySettings = onlySettings,
                    compress = compress,
-                   compressionLevel = compressionLevel,
+                   compression_level = compression_level,
                    triggerUpdate = reactive(input[["showModal"]] > 0)
                  )
 
@@ -184,7 +184,7 @@ downloadModelUI <- function(id, title = NULL, titleTag = "h4", label = "Download
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
-#' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
+#' @param compression_level A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
 #' @inheritParams importOptions
 #'
@@ -205,7 +205,7 @@ downloadModelServer <-
            triggerUpdate = reactive(TRUE),
            onlySettings = FALSE,
            compress = TRUE,
-           compressionLevel = 9) {
+           compression_level = 9) {
     moduleServer(id,
                  function(input, output, session) {
                    ns <- session$ns
@@ -258,20 +258,20 @@ downloadModelServer <-
                          # Use helper to unpack zip if provided
                          zip_info <- unpack_zip_to_temp(pathToOtherZip())
 
-                         buildDownloadZip(
-                           out_file = file,
+                         build_download_zip(
+                           zipfile = file,
                            dat = dat(),
                            inputs = reactiveValuesToList(inputs),
                            model = model(),
-                           rPackageName = rPackageName,
+                           package_name = rPackageName,
                            sub_model = subFolder,
-                           helpHTML = helpHTML,
+                           help_html = helpHTML,
                            notes = input$exportNotes,
-                           onlySettings = onlySettings ||
+                           exclude_model = onlySettings ||
                              (!is.null(input$onlyInputs) && input$onlyInputs),
-                           compressionLevel = compressionLevel,
-                           otherPaths = zip_info$paths,
-                           otherRoot = zip_info$root
+                           compression_level = compression_level,
+                           include_paths = zip_info$paths,
+                           include_root = zip_info$root
                          )
                        },
                        value = 0.8,
