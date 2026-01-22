@@ -9,7 +9,7 @@ Server function of the module"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">25.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">26.01.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -53,9 +53,12 @@ Server function of the module"></head><body>
 <span></span>
 <span><span class="fu">configureDataServer</span><span class="op">(</span></span>
 <span>  <span class="va">id</span>,</span>
-<span>  <span class="va">mergeList</span>,</span>
+<span>  <span class="va">dataProcessList</span>,</span>
 <span>  <span class="va">customNames</span>,</span>
 <span>  <span class="va">dataSource</span>,</span>
+<span>  <span class="va">dataSourceInputs</span>,</span>
+<span>  <span class="va">dataForPreview</span>,</span>
+<span>  defaultFileTypes <span class="op">=</span> <span class="fu">config</span><span class="op">(</span><span class="op">)</span><span class="op">[[</span><span class="st">"dataFileTypes"</span><span class="op">]</span><span class="op">]</span>,</span>
 <span>  ignoreWarnings <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -94,7 +97,7 @@ e.g. for batch = TRUE in Resources.</p></dd>
 <dd><p>(character) user file types specified in "Pandora Platform" settings</p></dd>
 
 
-<dt id="arg-mergelist">mergeList<a class="anchor" aria-label="anchor" href="#arg-mergelist"></a></dt>
+<dt id="arg-dataprocesslist">dataProcessList<a class="anchor" aria-label="anchor" href="#arg-dataprocesslist"></a></dt>
 <dd><p>(reactiveVal) list of data imports submitted for data processing via buttons
 'Create Query with data' or 'Prepare / Merge data'</p></dd>
 
@@ -105,6 +108,14 @@ e.g. for batch = TRUE in Resources.</p></dd>
 
 <dt id="arg-datasource">dataSource<a class="anchor" aria-label="anchor" href="#arg-datasource"></a></dt>
 <dd><p>(reactiveValues) path, filename, type and input, output of <code><a href="selectSourceServer.html">selectSourceServer()</a></code></p></dd>
+
+
+<dt id="arg-datasourceinputs">dataSourceInputs<a class="anchor" aria-label="anchor" href="#arg-datasourceinputs"></a></dt>
+<dd><p>(reactive) inputs related to the data source</p></dd>
+
+
+<dt id="arg-dataforpreview">dataForPreview<a class="anchor" aria-label="anchor" href="#arg-dataforpreview"></a></dt>
+<dd><p>(reactive) data to show in preview</p></dd>
 
 
 <dt id="arg-ignorewarnings">ignoreWarnings<a class="anchor" aria-label="anchor" href="#arg-ignorewarnings"></a></dt>
@@ -121,7 +132,7 @@ e.g. for batch = TRUE in Resources.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

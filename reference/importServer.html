@@ -9,7 +9,7 @@ Backend for import module"></head><body>
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">25.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">26.01.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -50,7 +50,7 @@ Backend for import module"></head><body>
 <span>  ckanFileTypes <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"zip"</span><span class="op">)</span>,</span>
 <span>  ignoreWarnings <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  importType <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"model"</span>, <span class="st">"zip"</span>, <span class="st">"list"</span><span class="op">)</span>,</span>
-<span>  fileExtension <span class="op">=</span> <span class="st">"zip"</span>,</span>
+<span>  fileExtension <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  subFolder <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  onlySettings <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  expectedFileInZip <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">)</span>,</span>
@@ -103,8 +103,7 @@ ImportType == "list" expects a json file containing a list. The file will be rea
 
 
 <dt id="arg-fileextension">fileExtension<a class="anchor" aria-label="anchor" href="#arg-fileextension"></a></dt>
-<dd><p>(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.</p></dd>
+<dd><p>(character) DEPRECATED. Instead, please use ckanFileTypes.</p></dd>
 
 
 <dt id="arg-subfolder">subFolder<a class="anchor" aria-label="anchor" href="#arg-subfolder"></a></dt>
@@ -134,7 +133,7 @@ File names that must be contained in the zip upload.</p></dd>
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>

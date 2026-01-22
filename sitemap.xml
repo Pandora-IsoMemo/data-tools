@@ -4,6 +4,9 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/authors.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/index.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/news/index.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/as.DataProcessLink.DataProcessItem.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/as.list.DataProcessLink.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/build_download_zip.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/checkAnyNonNumericColumns.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/checkErrorNoNumericColumns.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/checkNonNumericColumnsExceptFirst.html</loc></url>
@@ -21,6 +24,8 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extractNotes.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extractObjectFromFile.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extractTableIds.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/extract_all_inputs.DataProcessItem.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/extract_sql_command.DataProcessLink.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/fillIsoData.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/formatColumnNames.html</loc></url>
@@ -38,6 +43,7 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importOptions.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/importServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/import_bundle_zip.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/incIndexOfName.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/index.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/initServerLogTxt.html</loc></url>
@@ -48,13 +54,19 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadList.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadListWrapper.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/loadZipWrapper.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/load_data_from_link.DataProcessLink.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/mergeDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/mergeSettingsServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/new_DataProcessItem.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/new_DataProcessLink.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/new_DownloadBundle.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/new_ZipImport.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/pipe.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/pkg.env.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/prefixSysTime.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/prepareDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/previewDataServer.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/print.DataProcessItem.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/queryDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/remoteModelsServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/renameColumnsServer.html</loc></url>
@@ -69,6 +81,7 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/toolsLoadServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/toolsLoadUI.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/tryCatchWithWarningsAndErrors.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/update.DataProcessItem.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/updateListNamesIfDuplicate.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/updateNameEntryIfDuplicate.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/updateUserInputs.html</loc></url>

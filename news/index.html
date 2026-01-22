@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">25.11.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">26.01.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,25 @@
 
     </div>
 
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="26.01.0" id="datatools-26010">DataTools 26.01.0<a class="anchor" aria-label="anchor" href="#datatools-26010"></a></h2>
+<div class="section level3">
+<h3 id="new-features-26-01-0">New Features<a class="anchor" aria-label="anchor" href="#new-features-26-01-0"></a></h3>
+<ul><li><p>Extracted and refactored export/import logic for model bundles by introducing two new classes: <code>DownloadBundle</code> and <code>ZipImport</code>.</p></li>
+<li><p>These classes handle file bundling and zip extraction operations, improving code organization and reusability by moving bundle creation logic out of server functions.</p></li>
+<li><p>Refactored <code>downloadModelServer</code> to use the new <code>build_download_zip</code> function instead of inline bundle creation.</p></li>
+<li><p>Standardized parameter naming across the codebase (e.g., <code>compressionLevel</code> → <code>compression_level</code>, <code>subFolder</code> → <code>sub_model</code>).</p></li>
+<li><p>Introduced a new <code>DataProcessItem</code> class structure to modernize and organize data processing workflows.</p></li>
+<li><p>Added S3 classes: <code>DataProcessItem</code> and <code>DataProcessLink</code> to represent data in different processing states.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="updates-26-01-0">Updates<a class="anchor" aria-label="anchor" href="#updates-26-01-0"></a></h3>
+<ul><li>Improved file import handling with automatic file type detection, filtering of allowed types, and clearer error messages.</li>
+<li>Data preparation in Query with SQL, Prepare, and Merge is now automatically enabled once a file is successfully loaded.</li>
+<li>Renamed <code>mergeList</code> to <code>dataProcessList</code> throughout the codebase for improved clarity.</li>
+<li>Deprecated the <code>fileExtension</code> parameter in favor of using <code>ckanFileTypes</code>.</li>
+</ul></div>
+</div>
     <div class="section level2">
 <h2 class="pkg-version" data-toc-text="25.11.0" id="datatools-25110">DataTools 25.11.0<a class="anchor" aria-label="anchor" href="#datatools-25110"></a></h2>
 <div class="section level3">
@@ -678,7 +697,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
     </footer></div>
