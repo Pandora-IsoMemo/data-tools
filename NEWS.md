@@ -1,5 +1,11 @@
 # DataTools 26.01.0
 
+## New Features
+
+- Extracted and refactored export/import logic for model bundles by introducing two new classes: `DownloadBundle` and `ZipImport`.
+- These classes handle file bundling and zip extraction operations, improving code organization and reusability by moving bundle creation logic out of server functions.
+- Refactored `downloadModelServer` to use the new `build_download_zip` function instead of inline bundle creation.
+
 ## Updates
 - Improved file import handling with automatic file type detection, filtering of allowed types, and clearer error messages.
 - Data preparation in Query with SQL, Prepare, and Merge is now automatically enabled once a file is successfully loaded.
