@@ -73,7 +73,7 @@ is_bundle_prepared <- function(bundle) {
 # better do not zip and unzip files into tmp folder, cant we directly move to tmp folder?
 # not really, e.g. in mapR zipping is done inside the app...
 #
-# we can inline some of the adders functions after refactoring to improve readabillity
+# we can inline some of the adders functions after refactoring to improve readability
 
 # Add files and/or directories to a DownloadBundle
 #
