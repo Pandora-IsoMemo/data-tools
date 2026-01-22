@@ -232,6 +232,16 @@ downloadBundle_zip_to <- function(bundle, zipfile) {
   is_bundle_prepared(bundle)
 
   filesToZip <- list.files(bundle$tempDir, full.names = TRUE, recursive = TRUE)
+
+  # Ensure output directory exists
+  if (!dir.exists(dirname(zipfile))) {
+    logging(
+      "Creating directory '%s' for saving zip file.",
+      dirname(zipfile)
+    )
+    dir.create(dirname(zipfile), recursive = TRUE)
+  }
+
   zip::zipr(zipfile, filesToZip, compression_level = bundle$compression_level)
 
   invisible(zipfile)

@@ -298,17 +298,11 @@ updateDefaultFileName <- function(defaultFileName, sub_model, fileExtension, rPa
 }
 
 setFileName <- function(fileName, defaultFileName, extension) {
-  newName <- defaultFileName
-
-  # set custom name
-  if (length(fileName) > 0 && fileName != "") {
-    newName <- fileName
+  if (length(fileName) == 0 || fileName == "") {
+    fileName <- defaultFileName
   }
 
-  newName <- newName %>%
-    suffixExtension(extension)
-
-  return(newName)
+  sprintf("%s.%s", fileName, extension)
 }
 
 #' Prefix Systime
@@ -334,12 +328,6 @@ suffixSubFolder <- function(fileString, fileExtension, rPackageName, sub_model =
          paste0(c(fileString, rPackageName, sub_model), collapse = "_"),
          paste0(c(fileString, sub_model), collapse = "_"))
 }
-
-suffixExtension <- function(fileString, extension) {
-  sprintf("%s.%s", fileString, extension)
-}
-
-
 
 
 #' Upload model module
