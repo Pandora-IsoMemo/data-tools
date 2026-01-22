@@ -92,7 +92,7 @@ getSourceFile <- function(dataSource, input) {
 
   # "file" will be used to load the file
   # "filename" will be stored in values$fileName
-  dataSource$file <- inFile$datapath
+  dataSource$file <- inFile$datapath # this is a tmp path with random name
   dataSource$filename <- inFile$name
   dataSource$input <- getFileInputs(input, type = "source")
 

@@ -50,8 +50,7 @@ loading example models or zip or data links.}
 
 \item{onlySettings}{(logical) if TRUE allow only upload of user inputs and user data.}
 
-\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
+\item{fileExtension}{(character) DEPRECATED. Instead, please use ckanFileTypes.}
 
 \item{expectedFileInZip}{(character) (optional) This parameter is ignored if importType != "zip".
 File names that must be contained in the zip upload.}

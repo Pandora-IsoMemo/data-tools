@@ -13,7 +13,7 @@ prepareDataUI <- function(id) {
     selectInput(
       ns("dataToPrep"),
       "Select a File",
-      choices = emptyMergeListChoices(),
+      choices = emptyDataProcessListChoices(),
       width = "75%"
     ),
     renameColumnsUI(ns("renameCols")),
@@ -33,19 +33,19 @@ prepareDataUI <- function(id) {
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param mergeList (list) list of selected data
-prepareDataServer <- function(id, mergeList) {
+#' @param dataProcessList (list) list of selected data
+prepareDataServer <- function(id, dataProcessList) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns
     logDebug(initServerLogTxt(ns("")))
 
     preparedData <- reactiveValues(data = NULL, history = list())
 
-    observeEvent(mergeList(), ignoreInit = TRUE, {
-      req(length(mergeList()) > 0)
-      logDebug("%s: Updating input select from mergeList", id)
+    observeEvent(dataProcessList(), ignoreInit = TRUE, {
+      req(length(dataProcessList()) > 0)
+      logDebug("%s: Updating input select from dataProcessList", id)
 
-      choices <- extractMergeListChoices(mergeList())
+      choices <- extractDataProcessListChoices(dataProcessList())
       updateSelectInput(
         session,
         "dataToPrep",
@@ -56,31 +56,33 @@ prepareDataServer <- function(id, mergeList) {
 
     observe({
       logDebug("%s: Entering preparedData", id)
-      req(length(mergeList()) > 0)
+      req(length(dataProcessList()) > 0)
       preparedData$data <- NULL
 
       req(input$dataToPrep)
       logDebug("%s: Updating preparedData", id)
-      preparedData$data <- mergeList()[[input$dataToPrep]] %>% extractProcessedData()
+      preparedData$data <- dataProcessList()[[input$dataToPrep]] %>% extractProcessedData()
       preparedData$fileName <- input$dataToPrep
       preparedData$history <-
-        mergeList()[[input$dataToPrep]]$history
+        dataProcessList()[[input$dataToPrep]]$history
     }) %>%
-      bindEvent(list(input$dataToPrep, mergeList()), ignoreInit = TRUE)
+      bindEvent(list(input$dataToPrep, dataProcessList()), ignoreInit = TRUE)
 
     observe({
       req(length(preparedData$history) > 0)
       logDebug("%s: Observe preparedData$history", id)
-      newData <- mergeList()[[input$dataToPrep]]
-      newData$history <- preparedData$history
-      attr(newData, "unprocessed") <- FALSE # disables download of data links
+      newData <- update(
+        dataProcessList()[[input$dataToPrep]],
+        history = preparedData$history,
+        unprocessed = FALSE  # disables download of data links
+      )
 
-      newMergeList <- updateMergeList(
-        mergeList = mergeList(),
+      newDataProcessList <- updateDataProcessList(
+        dataProcessList = dataProcessList(),
         fileName = input$dataToPrep,
         newData = newData
       )
-      mergeList(newMergeList$mergeList)
+      dataProcessList(newDataProcessList)
 
       preparedData$data <- newData %>% extractProcessedData()
     }) %>%
@@ -375,9 +377,10 @@ splitColumnsServer <- function(id, preparedData) {
 # helper functions ----
 
 extractProcessedData <- function(dat) {
-  if (!is.null(attr(dat, "unprocessed")) &&
-      isTRUE(attr(dat, "unprocessed")) ||
-      length(dat$history) == 0) {
+  if (
+    isTRUE(dat[["unprocessed"]]) ||
+    length(dat[["history"]]) == 0
+  ) {
     return(dat$data)
   } else {
     new_data <- dat$data
@@ -391,27 +394,27 @@ extractProcessedData <- function(dat) {
 
 # Update Merge List
 #
-# Checks if an object that should be added is already existing in mergeList. If so, the existing
+# Checks if an object that should be added is already existing in dataProcessList. If so, the existing
 #  object will be replaced (updated). This is important to keep most recent changes from data
 #  preparation steps.
 #
-# @param mergeList list of files that were submitted for data preparation
+# @param dataProcessList list of files that were submitted for data preparation
 # @param fileName (character) name of the file to be updated or added to the merge list
 # @param newData (list) data and history of the data source and the changes
 # @param notifications (character) previous notifications
-updateMergeList <- function(mergeList,
+updateDataProcessList <- function(dataProcessList,
                             fileName,
                             newData,
                             notifications = "") {
-  if (length(mergeList) > 0 && fileName %in% names(mergeList)) {
-    mergeList[[fileName]] <- newData
-    notifications <- c(notifications,
-                       "File was already selected and reloaded successfully now.")
+  if (length(dataProcessList) > 0 && fileName %in% names(dataProcessList)) {
+    dataProcessList[[fileName]] <- newData
+    notifications <- c(notifications, sprintf("File '%s' was updated successfully.", fileName))
   } else {
-    mergeList <- c(mergeList, setNames(list(newData), fileName))
+    dataProcessList <- c(dataProcessList, setNames(list(newData), fileName))
   }
 
-  list(mergeList = mergeList, notifications = notifications)
+  attr(dataProcessList, "notifications") <- notifications
+  dataProcessList
 }
 
 getColnameChoices <- function(dat, textIfEmpty = "Select a file ...") {

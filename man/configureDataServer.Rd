@@ -17,9 +17,12 @@ configureDataUI(
 
 configureDataServer(
   id,
-  mergeList,
+  dataProcessList,
   customNames,
   dataSource,
+  dataSourceInputs,
+  dataForPreview,
+  defaultFileTypes = config()[["dataFileTypes"]],
   ignoreWarnings = FALSE
 )
 }
@@ -40,12 +43,16 @@ e.g. for batch = TRUE in Resources.}
 
 \item{userFileTypes}{(character) user file types specified in "Pandora Platform" settings}
 
-\item{mergeList}{(reactiveVal) list of data imports submitted for data processing via buttons
+\item{dataProcessList}{(reactiveVal) list of data imports submitted for data processing via buttons
 'Create Query with data' or 'Prepare / Merge data'}
 
 \item{customNames}{settings for custom column and row names}
 
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
+
+\item{dataSourceInputs}{(reactive) inputs related to the data source}
+
+\item{dataForPreview}{(reactive) data to show in preview}
 
 \item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
 }

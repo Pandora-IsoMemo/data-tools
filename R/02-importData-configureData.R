@@ -44,31 +44,18 @@ configureDataUI <- function(id,
              } else NULL,
              ## custom help text ----
              customHelpText),
-      column(6, importMessageUI(ns("importMessage")))
+      column(6, if (!isLink) importMessageUI(ns("importMessage")) else NULL)
     ),
     if (!isLink) # importType is now always "data" here
       div(
         tags$hr(),
         previewDataUI(ns("previewDat"), title = "Preview data"),
         tags$hr(),
-        fluidRow(
-          column(8,
-                 tags$html(
-                   HTML(
-                     "<b>Data processing</b> &nbsp;&nbsp; (Optional)"
-                   )
-                 ),
-                 helpText(width = "100%",
-                          "Process the loaded data for import via the 'Query with SQL', 'Prepare' or 'Merge' tabs.")
-          ),
-          column(4,
-                 align = "right",
-                 style = "margin-top: 1.5em",
-                 actionButton(ns("keepDataForQuery"), "Process data", width = "100%")
-          )
-        ),
-        downloadDataLinkUI(ns = ns,
-                           text = "Download the file path information as .json for later upload.")
+        downloadDataLinkUI(
+          ns = ns,
+          downloadBtnID = "downloadDataLink",
+          text = "Download the file path information as .json for later upload."
+        )
       ) else NULL
   )
 }
@@ -77,15 +64,21 @@ configureDataUI <- function(id,
 #'
 #' Server function of the module
 #' @param id id of module
-#' @param mergeList (reactiveVal) list of data imports submitted for data processing via buttons
+#' @param dataProcessList (reactiveVal) list of data imports submitted for data processing via buttons
 #'  'Create Query with data' or 'Prepare / Merge data'
 #' @param customNames settings for custom column and row names
 #' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
+#' @param dataSourceInputs (reactive) inputs related to the data source
+#' @param dataForPreview (reactive) data to show in preview
+#' @param defaultFileTypes (character) default file types
 #' @inheritParams importDataServer
 configureDataServer <- function(id,
-                                mergeList,
+                                dataProcessList,
                                 customNames,
                                 dataSource,
+                                dataSourceInputs,
+                                dataForPreview,
+                                defaultFileTypes = config()[["dataFileTypes"]],
                                 ignoreWarnings = FALSE
 ) {
   moduleServer(id,
@@ -104,7 +97,7 @@ configureDataServer <- function(id,
                  )
 
                  # logic to select sheet ----
-                 selectFileTypeServer("fileType", dataSource)
+                 selectFileTypeServer("fileType", dataSource, defaultFileTypes)
 
                  # specify file server & load file ----
                  observeEvent(
@@ -122,7 +115,6 @@ configureDataServer <- function(id,
                      req(dataSource$type)
                      req(dataSource$type != "dataLink")
                      logDebug("Updating values$dataImport")
-
                      # importType is now always "data" here
                      values <- loadDataWrapper(
                        values = values,
@@ -141,71 +133,64 @@ configureDataServer <- function(id,
 
                  importMessageServer("importMessage", values)
 
+                 newDataForDataProcessList <- reactiveVal(NULL)
+
                  observe({
                      if (length(values$dataImport) == 0 || dataSource$type == "dataLink") {
-                       logDebug("%s: Disable keepData button", id)
-                       shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
+                      logDebug("%s: Data import is empty or is link", id)
+                      shinyjs::disable(ns("downloadDataLink"), asis = TRUE)
                      } else {
-                       logDebug("%s: Enable keepData button", id)
-                       shinyjs::enable(ns("keepDataForQuery"), asis = TRUE)
+                      logDebug("%s: Data import successful", id)
+                      shinyjs::enable(ns("downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <-
                          "Data import successful"
                        values$preview <- values$dataImport
+
+                      logDebug("%s: Update DataProcessList", id)
+                      newData <- new_DataProcessItem(
+                        data = values$dataImport %>% formatColumnNames(silent = TRUE),
+                        input = c(getFileInputs(input, type = "file"), dataSourceInputs()),
+                        filename = values$fileName,
+                        unprocessed = TRUE # enables download of data links
+                      )
+
+                      newDataForDataProcessList(newData)
                      }
                  }) %>%
                    bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
 
+                   observe({
+                     logDebug("Updating dataForPreview")
+                     values$preview <- dataForPreview()
+                   }) %>%
+                     bindEvent(dataForPreview())
+
                    previewDataServer("previewDat", dat = reactive(values$preview))
 
-                   ## button keep data ----
-                   newDataForMergeList <- reactiveVal(NULL)
-
                    observe({
-                     logDebug("Updating input$keepDataForQuery")
-
-                     newData <- list(data = values$dataImport %>%
-                                       formatColumnNames(silent = TRUE),
-                                     input = list(
-                                       source = dataSource$input,
-                                       file = getFileInputs(input)
-                                     ))
-                     attr(newData, "unprocessed") <- TRUE # enables download of data links
-
-                     newDataForMergeList(newData)
-
-                     # disable "keepData" to prevent loading data twice
-                     shinyjs::disable(ns("keepDataForQuery"), asis = TRUE)
-                   }) %>%
-                     bindEvent(input$keepDataForQuery)
-
-                   observe({
-                     logDebug("Updating mergeList()")
+                     logDebug("Updating dataProcessList()")
                      notifications <- c()
                      if (customNames$withRownames) {
                        notifications <- c(notifications,
                                           "Rownames are not preserved when applying data processing.")
                      }
 
-                     # update mergeList() ----
-                     newMergeList <-
-                       updateMergeList(
-                         mergeList = mergeList(),
+                     # update dataProcessList() ----
+                     newDataProcessList <-
+                       updateDataProcessList(
+                         dataProcessList = dataProcessList(),
                          fileName = values$fileName,
-                         newData = newDataForMergeList(),
+                         newData = newDataForDataProcessList(),
                          notifications = notifications
                        )
-                     mergeList(newMergeList$mergeList)
-                     notifications <- newMergeList$notifications
-
-                     showNotification(HTML(sprintf("File for data processing: <br>%s",
-                                                   values$fileName)),
-                                      type = "message")
+                     dataProcessList(newDataProcessList)
+                     notifications <- attr(newDataProcessList, "notifications")
 
                      if (length(notifications) > 0) {
                        shinyjs::info(paste0(notifications, collapse = "\n"))
                      }
                    }) %>%
-                     bindEvent(newDataForMergeList())
+                     bindEvent(newDataForDataProcessList())
 
                  values
                })

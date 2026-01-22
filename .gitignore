@@ -4,3 +4,10 @@
 .Ruserdata
 .Renviron
 docs
+
+# R scripts
+inst/RScripts/*
+
+# vs code files
+launch.json
+settings.json

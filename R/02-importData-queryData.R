@@ -47,8 +47,11 @@ queryDataUI <- function(id) {
     tags$hr(),
     previewDataUI(ns("previewDat"), title = "Preview result of query"),
     tags$hr(),
-    downloadDataLinkUI(ns = ns,
-                       text = "Download the file path information and the SQL query as .json for later upload."),
+    downloadDataLinkUI(
+      ns = ns,
+      downloadBtnID = "downloadDataLink",
+      text = "Download the file path information and the SQL query as .json for later upload."
+    ),
   )
 }
 
@@ -57,9 +60,9 @@ queryDataUI <- function(id) {
 #'
 #' Server function of the qery data module
 #' @param id id of module
-#' @param mergeList (list) list of data to be merged
+#' @param dataProcessList (list) list of data to be merged
 #' @param isActiveTab (reactive) TRUE if tab of query module is the active
-queryDataServer <- function(id, mergeList, isActiveTab) {
+queryDataServer <- function(id, dataProcessList, isActiveTab) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -84,22 +87,22 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  observe({
                    req(isTRUE(isActiveTab()))
-                   logDebug("%s: observe mergeList()", id)
-                   if (length(mergeList()) > 0) {
-                     unprocessedData(mergeList() %>%
+                   logDebug("%s: observe dataProcessList()", id)
+                   if (length(dataProcessList()) > 0) {
+                     unprocessedData(dataProcessList() %>%
                                        filterUnprocessed())
                    } else {
                      unprocessedData(list())
                    }
                  }) %>%
-                   bindEvent(list(mergeList(), isActiveTab())) # cannot set ignoreInit = TRUE because of tests
+                   bindEvent(list(dataProcessList(), isActiveTab())) # cannot set ignoreInit = TRUE because of tests
 
                  tableIds <- reactive({
                    req(length(unprocessedData()) > 0)
                    logDebug("%s: update inMemoryDB and input$sqlCommand", id)
 
                    tmpDB <- inMemoryDB()
-                   # reset db (remove tables if they become "processed data")
+                   # reset db (this removes tables if they become processed data)
                    for (i in dbListTables(tmpDB)) {
                      dbRemoveTable(tmpDB, i)
                    }
@@ -137,15 +140,11 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                    inMemColumns(inMemCols)
 
                    # logic to update the value of input$sqlCommand and the autoCompleteList
-                   ## if exists, update with value from Data Link
-                   loadedSQLCommand <- sapply(unprocessedData(), function(x) attr(x, "sqlCommandInput"))
-                   loadedSQLCommand <- loadedSQLCommand[!sapply(loadedSQLCommand, is.null)]
                    if (input$sqlCommand != "") {
                      # if not empty, keep last sqlCommand
                      newSqlCommand <- input$sqlCommand
-                   } else if (length(loadedSQLCommand) > 0) {
-                     newSqlCommand <- loadedSQLCommand[[1]]
                    } else {
+                     # if empty, use default example query
                      if (!is.null(inMemCols[["t1"]])) {
                        colSel <- paste0("[", inMemCols[["t1"]][1], "]")
                      } else {
@@ -167,15 +166,12 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
 
                  output$inMemoryTables <- renderDataTable({
                    validate(need(length(unprocessedData()) > 0, paste(
-                     "Tables:", names(emptyMergeListChoices())
+                     "Tables:", names(emptyDataProcessListChoices())
                    )))
 
-                   req(tableIds())
+                   req(tableIds(), inMemColumns())
                    inMemColsPasted <-
-                     sapply(inMemColumns(), function(colnamesOfTable) {
-                       colnamesOfTable %>%
-                         paste(collapse = ", ")
-                     })
+                     sapply(inMemColumns(), function(colnms) paste(colnms, collapse = ", "))
 
                    DT::datatable(
                      data.frame(`ID` = tableIds(),
@@ -218,21 +214,25 @@ queryDataServer <- function(id, mergeList, isActiveTab) {
                      dbGetQuery(tmpDB, input$sqlCommand) %>%
                      shinyTryCatch(errorTitle = "Query failed")
 
-                   # update mergeList if query succeeded
+                   # update dataProcessList if query succeeded
                    if (!is.null(result$data)) {
                      ### format column names for import ----
                      result$data <- result$data %>%
                        formatColumnNames(silent = TRUE)
 
-                     # UPDATE MERGELIST ----
-                     newData <- list(data = result$data,
-                                     history = list())
-                     attr(newData, "unprocessed") <- FALSE # disables download of data links
+                     # UPDATE DATAPROCESSLIST ----
+                     newData <- new_DataProcessItem(
+                       data = result$data,
+                       input = list(),
+                       filename = input$fileNameQueried,
+                       unprocessed = FALSE,
+                       history = list()
+                     )
 
-                     newMergeList <- updateMergeList(mergeList = mergeList(),
+                     newDataProcessList <- updateDataProcessList(dataProcessList = dataProcessList(),
                                                      fileName = input$fileNameQueried,
                                                      newData = newData)
-                     mergeList(newMergeList$mergeList)
+                     dataProcessList(newDataProcessList)
 
                      # keep filename
                      result$import <- setNames(list(result$data), input$fileNameQueried)

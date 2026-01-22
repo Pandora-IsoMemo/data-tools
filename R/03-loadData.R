@@ -24,6 +24,12 @@ loadDataWrapper <- function(values,
                             sheetId) {
   values <- values %>% resetValues()
   if (is.null(filepath)) return(values)
+  if (getExtension(filepath) != type) {
+    values$errors <- list(
+      load = paste("File extension does not match selected file type.")
+    )
+    return(values)
+  }
 
   df <- tryCatch(
     Pandora::loadData(

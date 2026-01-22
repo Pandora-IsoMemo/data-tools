@@ -7,12 +7,12 @@
 \usage{
 mergeDataUI(id)
 
-mergeDataServer(id, mergeList)
+mergeDataServer(id, dataProcessList)
 }
 \arguments{
 \item{id}{id of module}
 
-\item{mergeList}{(list) list of data to be merged}
+\item{dataProcessList}{(list) list of data to be merged}
 }
 \description{
 UI of the merge data module

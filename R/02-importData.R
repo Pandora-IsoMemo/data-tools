@@ -50,8 +50,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param batch (logical) use batch import.
 #' @param outputAsMatrix (logical) TRUE if output must be a matrix,
 #'  e.g. for batch = TRUE in Resources.
-#' @param fileExtension (character) (otional) app specific file extension, e.g. "resources", "bmsc",
-#'  "bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.
+#' @param fileExtension (character) DEPRECATED. Instead, please use ckanFileTypes.
 #' @param expectedFileInZip (character) (optional) This parameter is ignored if importType != "zip".
 #'  File names that must be contained in the zip upload.
 #' @param onlySettings (logical) if TRUE allow only upload of user inputs and user data.
@@ -77,8 +76,8 @@ importDataServer <- function(id,
                              customErrorChecks = list(),
                              batch = FALSE,
                              outputAsMatrix = FALSE,
+                             fileExtension = NULL,
                              # parameters for model upload
-                             fileExtension = "zip",
                              mainFolder = NULL,
                              subFolder = NULL,
                              rPackageName = "",
@@ -97,6 +96,14 @@ importDataServer <- function(id,
       with = "DataTools::importDataServer(options = 'importOptions(rPackageName)')",
       details = sprintf("For example, importDataServer(options = importOptions(rPackageName = '%s')).", rPackageName)
     )
+  }
+
+  if (!is.null(fileExtension)) {
+    deprecate_warn("26.01.0",
+                   "DataTools::importDataServer(fileExtension)",
+                   details = c(
+                    x = "The argument will be ignored, ckanFileTypes is now used instead."
+                  ))
   }
 
   if (!is.null(mainFolder)) {
@@ -126,7 +133,7 @@ importDataServer <- function(id,
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
-                 mergeList <- reactiveVal(list())
+                 dataProcessList <- reactiveVal(list())
                  customNames <- reactiveValues(
                    withRownames = FALSE,
                    rownames = rowNames,
@@ -190,7 +197,6 @@ importDataServer <- function(id,
                        batch = batch,
                        outputAsMatrix = outputAsMatrix,
                        importType = importType,
-                       fileExtension = fileExtension,
                        isInternet = internetCon(),
                        options = options
                      )
@@ -221,14 +227,18 @@ importDataServer <- function(id,
                    ckanFileTypes = ckanFileTypes
                  )
 
+                 data_for_preview <- reactiveVal(NULL)
                  if (importType == "data") {
                    # sets values$dataImport
                    values <- configureDataServer(
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
-                     mergeList = mergeList,
-                     customNames = customNames
+                     dataSourceInputs = reactive(getFileInputs(input, type = "source")),
+                     dataProcessList = dataProcessList,
+                     dataForPreview = data_for_preview,
+                     defaultFileTypes = ckanFileTypes,
+                     customNames = customNames                     
                    )
                  } else {
                    # sets values$dataImport
@@ -239,7 +249,7 @@ importDataServer <- function(id,
                      subFolder = subFolder,
                      rPackageName = options[["rPackageName"]],
                      onlySettings = onlySettings,
-                     fileExtension = fileExtension,
+                     fileExtension = ckanFileTypes,
                      expectedFileInZip = expectedFileInZip
                    )
                  }
@@ -264,20 +274,31 @@ importDataServer <- function(id,
 
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList,
+                                         dataProcessList = dataProcessList,
                                          downloadBtnID = "dataSelector-downloadDataLink")
 
                  observeDownloadDataLink(id, input = input, output = output, session = session,
-                                         mergeList = mergeList,
+                                         dataProcessList = dataProcessList,
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
-                 valuesFromDataLink <-
-                   observeUploadDataLink(id, input = input, output = output, session = session,
-                                         isInternet = internetCon,
-                                         dataSource = dataSource,
-                                         customNames = customNames,
-                                         mergeList = mergeList
-                   )
+                 observeUploadDataLink(
+                   id, input = input, output = output, session = session,
+                   isInternet = internetCon,
+                   dataSource = dataSource,
+                   customNames = customNames,
+                   dataProcessList = dataProcessList,
+                   values = values        # this will set values$dataImport
+                 )
+
+                 observe({
+                   req(values$dataImport)
+                   logDebug("%s: Update data_for_preview()", id)
+                   data_for_preview(values$dataImport)
+                 }) %>%
+                   bindEvent(values$dataImport)
+
+
+                 # cancel does not reset the values/inputs...
 
                  ## Enable/Disable Accept button ----
                  if (importType != "data") {
@@ -296,15 +317,15 @@ importDataServer <- function(id,
                      bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
                  } else {
                    preparedData <- prepareDataServer("dataPreparer",
-                                                     mergeList = mergeList)
+                                                     dataProcessList = dataProcessList)
 
                    joinedData <-
-                     mergeDataServer("dataMerger", mergeList = mergeList)
+                     mergeDataServer("dataMerger", dataProcessList = dataProcessList)
 
                    queriedData <-
                      queryDataServer(
                        "dataQuerier",
-                       mergeList = mergeList,
+                       dataProcessList = dataProcessList,
                        isActiveTab = reactive(checkIfActive(currentTab = input[["tabImport"]],
                                                             tabName = "Query with SQL"))
                      )
@@ -356,7 +377,6 @@ importDataServer <- function(id,
                        shinyjs::enable(ns("accept"), asis = TRUE)
 
                        shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
-                       shinyjs::enable(ns("dataSelector-keepDataForQuery"), asis = TRUE)
                        shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <- "Data import successful"
                      }
@@ -368,16 +388,18 @@ importDataServer <- function(id,
                  }
 
                  ## ACCEPT data ----
+                 returnData <- reactiveVal(list())
                  observeEvent(input$accept, {
                    logDebug("%s: Pressed input$accept", id)
                    removeModal()
 
-                   req(values$dataImport)
+                   req(values$dataImport, isTRUE(nrow(values$dataImport) > 0))
 
                    if (importType != "data") {
-                     values$data[[values$fileName]] <- values$dataImport
+                     res <- setNames(object = list(values$dataImport), nm = values$fileName)
                    } else {
-                     values$data <- extractTableFromTab(
+                     # choose the data to return from the active tab
+                     res <- extractTableFromTab(
                        unprocessed_data = setNames(object = list(values$dataImport), nm = values$fileName),
                        queried_data = queriedData(),
                        prepared_data = setNames(object = list(preparedData$data), nm = preparedData$fileName),
@@ -391,21 +413,14 @@ importDataServer <- function(id,
                          silent = TRUE
                        )
                    }
+
+                   returnData(res)
+
+                   values <- values %>% resetValues()           # reset entries of values
+                   dataProcessList(list())                      # reset dataProcessList
                  })
 
                  # return value for parent module: ----
-                 returnData <- reactiveVal(list())
-                 observe({
-                   logDebug("%s: Updating returnData()", id)
-                   if (length(values$data) > 0) {
-                     returnData(values$data)
-
-                     values <- values %>% resetValues()     # reset entries of values
-                     mergeList(list())                      # reset mergeList
-                   }
-                 }) %>%
-                   bindEvent(values$data, ignoreNULL = FALSE, ignoreInit = TRUE)
-
                  return(returnData)
                })
 }
@@ -419,13 +434,12 @@ importDataDialog <-
            batch = FALSE,
            outputAsMatrix = FALSE,
            importType = "data",
-           fileExtension = "zip",
            isInternet = FALSE,
            options = importOptions()) {
     modalDialog(
       shinyjs::useShinyjs(),
       title = title %>% setImportTitle(importType = importType, version = packageVersion("DataTools")),
-      style = if (importType == "data") 'height: 1200px' else 'height: 800px',
+      style = if (importType == "data") 'height: 1050px' else 'height: 800px',
       size = "l",
       footer = tagList(fluidRow(
         column(4,
@@ -455,7 +469,7 @@ importDataDialog <-
                            ckanFileTypes = ckanFileTypes,
                            importType = importType,
                            isInternet = isInternet,
-                           fileInputAccept = getFileInputAccept(importType, fileExtension)),
+                           fileInputAccept = paste0(".", ckanFileTypes)),
             uiOutput(ns("selectDataDialog"))
           )
         ),

@@ -39,7 +39,7 @@ downUploadButtonServer <- function(id,
                                    modelNotes = reactive(""),
                                    onlySettings = FALSE,
                                    compress = TRUE,
-                                   compressionLevel = 9,
+                                   compression_level = 9,
                                    reset = reactive(FALSE),
                                    title = "Download and Upload of Models",
                                    labelRemote = "Load online model",
@@ -86,7 +86,7 @@ downUploadButtonServer <- function(id,
                    modelNotes = modelNotes,
                    onlySettings = onlySettings,
                    compress = compress,
-                   compressionLevel = compressionLevel,
+                   compression_level = compression_level,
                    triggerUpdate = reactive(input[["showModal"]] > 0)
                  )
 
@@ -104,6 +104,28 @@ downUploadButtonServer <- function(id,
 
                  return(uploadedData)
                })
+}
+
+
+# Unpack a zip file to a temp directory and return extracted paths and root
+#
+# @param zip_path Path to the zip file (character)
+# @return list with elements: paths (character vector of extracted files),
+#  root (temp directory path)
+unpack_zip_to_temp <- function(zip_path) {
+  if (is.null(zip_path) || !nzchar(zip_path)) return(list(paths = NULL, root = NULL))
+
+  temp_unzip_dir <- tempfile("unzip_dir_")
+  dir.create(temp_unzip_dir)
+  unzip(zip_path, exdir = temp_unzip_dir)
+  extracted_paths <- list.files(
+    temp_unzip_dir,
+    full.names = TRUE,
+    recursive = TRUE,
+    all.files = TRUE,
+    no.. = TRUE
+  )
+  list(paths = extracted_paths, root = temp_unzip_dir)
 }
 
 
@@ -162,7 +184,7 @@ downloadModelUI <- function(id, title = NULL, titleTag = "h4", label = "Download
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
-#' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
+#' @param compression_level A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
 #' @inheritParams importOptions
 #'
@@ -183,7 +205,7 @@ downloadModelServer <-
            triggerUpdate = reactive(TRUE),
            onlySettings = FALSE,
            compress = TRUE,
-           compressionLevel = 9) {
+           compression_level = 9) {
     moduleServer(id,
                  function(input, output, session) {
                    ns <- session$ns
@@ -211,7 +233,7 @@ downloadModelServer <-
                      logDebug("%s: Entering observe 'customFileName()'", id)
 
                      placeholder <- defaultFileName %>%
-                       updateDefaultFileName(subFolder = subFolder,
+                       updateDefaultFileName(sub_model = subFolder,
                                              fileExtension = fileExtension,
                                              rPackageName = rPackageName)
                      updateTextInput(session,
@@ -224,7 +246,7 @@ downloadModelServer <-
                      filename = function() {
                        setFileName(fileName = input[["userFileName"]],
                                    defaultFileName = defaultFileName %>%
-                                     updateDefaultFileName(subFolder = subFolder,
+                                     updateDefaultFileName(sub_model = subFolder,
                                                            fileExtension = fileExtension,
                                                            rPackageName = rPackageName),
                                    extension = fileExtension)
@@ -233,34 +255,24 @@ downloadModelServer <-
                        withProgress({
                          logDebug("%s: Entering 'download'", id)
 
-                         # create subfolder "downloadFiles" in tempdir
-                         tempDir <- file.path(tempdir(), "downloadFiles")
-                         dir.create(tempDir, recursive = TRUE)
+                         # Use helper to unpack zip if provided
+                         zip_info <- unpack_zip_to_temp(pathToOtherZip())
 
-                         # add files to tempDir
-                         addFilesFromOtherZip(tempDir = tempDir, pathToOtherZip = pathToOtherZip())
-
-                         # adding next files might update existing files (which is desired behavior)
-                         addModelRDSFile(tempDir = tempDir,
-                                         dat = dat(),
-                                         inputs = inputs,
-                                         model = model(),
-                                         rPackageName = rPackageName,
-                                         subFolder = subFolder,
-                                         onlySettings = onlySettings || (!is.null(input$onlyInputs) && input$onlyInputs))
-                         addNotesFile(tempDir = tempDir, notes = input$exportNotes)
-                         addHelpFile(tempDir = tempDir, helpHTML = helpHTML)
-
-                         # get all files from tempDir
-                         filesToZip <- list.files(tempDir, full.names = TRUE)
-
-                         # zip all files
-                         zip::zipr(file,
-                                   filesToZip,
-                                   compression_level = compressionLevel)
-
-                         # clean up
-                         unlink(tempDir, recursive = TRUE)
+                         build_download_zip(
+                           zipfile = file,
+                           dat = dat(),
+                           inputs = reactiveValuesToList(inputs),
+                           model = model(),
+                           package_name = rPackageName,
+                           sub_model = subFolder,
+                           help_html = helpHTML,
+                           notes = input$exportNotes,
+                           exclude_model = onlySettings ||
+                             (!is.null(input$onlyInputs) && input$onlyInputs),
+                           compression_level = compression_level,
+                           include_paths = zip_info$paths,
+                           include_root = zip_info$root
+                         )
                        },
                        value = 0.8,
                        message = "Downloading ...")
@@ -272,106 +284,25 @@ downloadModelServer <-
                  })
   }
 
-# Add Model RDS File
-#
-# @param tempDir (character) temporary directory to store the model file
-# @inheritParams downloadModelServer
-addModelRDSFile <- function(tempDir, dat, inputs, model, rPackageName, subFolder, onlySettings) {
-  # prepare inputs
-  inputExport <- reactiveValuesToList(inputs)
-  # remove NULL values, they cause upload of inputs to fail without warnings
-  inputExport <-
-    inputExport[!sapply(inputExport, is.null)]
 
-  # prepare model or user inputs (settings)
-  if (onlySettings) {
-    modelExport <- NULL
-    modelfilename <- "inputs.rds"
-  } else {
-    modelExport <- model
-    modelfilename <- "model.rds"
-  }
-
-  versionExport <-
-    getModelVersion(rPackageName, subFolder)
-
-  # create model file
-  saveRDS(
-    list(
-      data = dat,
-      inputs = inputExport,
-      model = modelExport,
-      version = versionExport
-    ),
-    file = file.path(tempDir, modelfilename)
-  )
-
-  return()
-}
-
-# Add Notes File
-#
-# @param tempDir (character) temporary directory to store the notes file
-# @param notes (character) notes to be added to the zip file
-addNotesFile <- function(tempDir, notes) {
-  if (notes == "") return()
-
-  # create notes file
-  writeLines(notes, file.path(tempDir, "README.txt"))
-
-  return()
-}
-
-# Add Help File
-#
-# @param tempDir (character) temporary directory to store the help file
-# @inheritParams downloadModelServer
-addHelpFile <- function(tempDir, helpHTML) {
-  if (is.null(helpHTML) || any(helpHTML == "")) return()
-
-  # create help file
-  save_html(helpHTML, file.path(tempDir, "help.html"))
-
-  return()
-}
-
-# Add Internal Zip File
-#
-# @param tempDir (character) temporary directory to store the help file
-# @inheritParams downloadModelServer
-addFilesFromOtherZip <- function(tempDir, pathToOtherZip) {
-  if (is.null(pathToOtherZip) || pathToOtherZip == "") return()
-
-  # unzip inner zip file to temp directory
-  unzip(pathToOtherZip, exdir = tempDir)
-
-  return()
-}
-
-updateDefaultFileName <- function(defaultFileName, subFolder, fileExtension, rPackageName) {
+updateDefaultFileName <- function(defaultFileName, sub_model, fileExtension, rPackageName) {
   # if already specified return that file name
   if (defaultFileName != "") return(defaultFileName)
 
   # else create a default file name
   defaultFileName <- "model" %>%
     prefixSysTime() %>%
-    suffixSubFolder(subFolder = subFolder,
+    suffixSubFolder(sub_model = sub_model,
                     fileExtension = fileExtension,
                     rPackageName = rPackageName)
 }
 
 setFileName <- function(fileName, defaultFileName, extension) {
-  newName <- defaultFileName
-
-  # set custom name
-  if (length(fileName) > 0 && fileName != "") {
-    newName <- fileName
+  if (length(fileName) == 0 || fileName == "") {
+    fileName <- defaultFileName
   }
 
-  newName <- newName %>%
-    suffixExtension(extension)
-
-  return(newName)
+  sprintf("%s.%s", fileName, extension)
 }
 
 #' Prefix Systime
@@ -390,30 +321,12 @@ prefixSysTime <- function(fileString) {
   sprintf("%s_%s",timestamp, fileString)
 }
 
-suffixSubFolder <- function(fileString, fileExtension, rPackageName, subFolder = NULL) {
-  # use collapse to catch the case if is.null(subFolder)
+suffixSubFolder <- function(fileString, fileExtension, rPackageName, sub_model = NULL) {
+  # use collapse to catch the case if is.null(sub_model)
+  # Should fileExtensions like .dssm also contain package name? <---- maybe not
   ifelse(fileExtension == "zip",
-         paste0(c(fileString, rPackageName, subFolder), collapse = "_"),
-         paste0(c(fileString, subFolder), collapse = "_"))
-}
-
-suffixExtension <- function(fileString, extension) {
-  sprintf("%s.%s", fileString, extension)
-}
-
-getModelVersion <- function(rPackageName, subFolder) {
-  versionNo <- try(packageVersion(rPackageName))
-
-  if (inherits(versionNo, "try-error")) {
-    versionNo <- ""
-  }
-
-  version <- paste(rPackageName, versionNo)
-  if (!is.null(subFolder) && subFolder != "") {
-    version <- paste(version, subFolder, sep = " - ")
-  }
-
-  version
+         paste0(c(fileString, rPackageName, sub_model), collapse = "_"),
+         paste0(c(fileString, sub_model), collapse = "_"))
 }
 
 
@@ -499,6 +412,7 @@ uploadModelServer <-
                                                   inputs = NULL,
                                                   model = NULL)
 
+                   # observe upload from local file
                    observeEvent(input$uploadModel, {
                      pathToModel(input$uploadModel$datapath)
                    })
@@ -512,6 +426,7 @@ uploadModelServer <-
                      reloadChoices = reloadChoices
                    )
 
+                   # when remote path changes, update pathToModel
                    observeEvent(pathToRemote(), {
                      pathToModel(pathToRemote())
                    })

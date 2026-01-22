@@ -90,7 +90,7 @@ configureFileServer <- function(id,
         withProgress(value = 0.75,
                      message = sprintf("Importing '%s' ...", dataSource[["filename"]]))
     }) %>%
-      bindEvent(list(dataSource$file, input[["fileType-type"]]), ignoreInit = TRUE)
+      bindEvent(list(dataSource[["file"]], input[["fileType-type"]]), ignoreInit = TRUE)
 
     importMessageServer("importMessage", values)
 

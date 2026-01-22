@@ -20,7 +20,7 @@ importDataServer(
   customErrorChecks = list(),
   batch = FALSE,
   outputAsMatrix = FALSE,
-  fileExtension = "zip",
+  fileExtension = NULL,
   mainFolder = NULL,
   subFolder = NULL,
   rPackageName = "",
@@ -68,8 +68,7 @@ of data.
 \item{outputAsMatrix}{(logical) TRUE if output must be a matrix,
 e.g. for batch = TRUE in Resources.}
 
-\item{fileExtension}{(character) (otional) app specific file extension, e.g. "resources", "bmsc",
-"bpred", or (app-unspecific) "zip". Only files with this extension are valid for import.}
+\item{fileExtension}{(character) DEPRECATED. Instead, please use ckanFileTypes.}
 
 \item{mainFolder}{(character) DEPRECATED. folder containing all loadable .zip files.}
 

@@ -4,8 +4,8 @@
 #'
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
-#' @param fileInputAccept (character) (optional) accept attribute for fileInput. E.g. ".zip" or
-#'  output from \code{getFileInputAccept(importType, fileExtension)}
+#' @param fileInputAccept (character) (optional) accept attribute for fileInput. E.g. ".zip"
+#'  or ".csv"
 #' @rdname selectSourceServer
 selectSourceUI <- function(id,
                            defaultSource,
@@ -37,9 +37,10 @@ selectSourceUI <- function(id,
     # source selection ----
     fluidRow(
       column(6,
+             tags$strong("1. Select source"),
              radioButtons(
                ns("source"),
-               label = "Select source",
+               label = NULL,
                choices = sourceChoices,
                selected = defaultSource,
                inline = TRUE)),
@@ -81,11 +82,19 @@ selectSourceUI <- function(id,
     ),
     ## source == file
     conditionalPanel(
-      condition = "input.source == 'file'",
+      condition = "input.source == 'file' && (input.dataOrLink == null || input.dataOrLink == 'fullData')",
       ns = ns,
       fileInput(ns("file"),
                 label = NULL,
                 accept = fileInputAccept,
+                width = "100%")
+    ),
+    conditionalPanel(
+      condition = "input.source == 'file' && input.dataOrLink != null && input.dataOrLink == 'dataLink'",
+      ns = ns,
+      fileInput(ns("file"),
+                label = NULL,
+                accept = ".json",
                 width = "100%")
     ),
     ## source == url
@@ -478,7 +487,7 @@ filterCKANRepoUI <- function(id) {
   ns <- NS(id)
 
   tagList(
-    tags$strong(HTML(
+    tags$label(class = "control-label", HTML(
       paste(
         "Filter Pandora repositories &nbsp",
         # cannot use function 'showInfoUI' -> error when load_all; problem in conditional panel?
@@ -671,15 +680,3 @@ loadCKANResourceServer <- function(id) {
                    bindEvent(input[["ckanResource"]])
                })
 }
-
-getFileInputAccept <- function(importType, fileExtension) {
-  # default if importType is "data"
-  acceptExt <- NULL
-
-  if (importType %in% c("model", "zip", "list") && !is.null(fileExtension) && all(fileExtension != "")) {
-    acceptExt <- paste0(".", fileExtension)
-  }
-
-  return(acceptExt)
-}
-
