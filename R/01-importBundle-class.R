@@ -162,7 +162,7 @@ zipImport_load_known <- function(
   load_model = TRUE,
   load_inputs = TRUE,
   load_notes = TRUE,
-  load_help = FALSE
+  load_help = TRUE
 ) {
   validate_ZipImport(zi)
   if (is.null(zi$index)) stop("ZipImport not indexed yet. Call zipImport_index() first.")
