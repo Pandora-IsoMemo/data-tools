@@ -1,3 +1,12 @@
+# DataTools 26.01.2
+
+## Updates
+- Refactored model and zip import workflows to use `import_bundle_zip()`, replacing manual unzip logic
+- Added `extract_model_import()` and `extract_model_notes()` helpers
+- Added support for loading models from directories via `from_dir`
+- Deprecated `extractNotes()` and `extractObjectFromFile()`
+- Added support for legacy `model.RData` bundles
+
 # DataTools 26.01.1
 
 ## Bug Fixes
