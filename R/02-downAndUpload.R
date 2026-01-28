@@ -39,7 +39,7 @@ downUploadButtonServer <- function(id,
                                    modelNotes = reactive(""),
                                    onlySettings = FALSE,
                                    compress = TRUE,
-                                   compression_level = 9,
+                                   compressionLevel = 9,
                                    reset = reactive(FALSE),
                                    title = "Download and Upload of Models",
                                    labelRemote = "Load online model",
@@ -86,7 +86,7 @@ downUploadButtonServer <- function(id,
                    modelNotes = modelNotes,
                    onlySettings = onlySettings,
                    compress = compress,
-                   compression_level = compression_level,
+                   compressionLevel = compressionLevel,
                    triggerUpdate = reactive(input[["showModal"]] > 0)
                  )
 
@@ -184,7 +184,7 @@ downloadModelUI <- function(id, title = NULL, titleTag = "h4", label = "Download
 #' @param compress a logical specifying whether saving to a named file is to use "gzip" compression,
 #'  or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 #'  file is a connection.
-#' @param compression_level A number between 1 and 9. 9 compresses best, but it also takes the
+#' @param compressionLevel A number between 1 and 9. 9 compresses best, but it also takes the
 #'  longest.
 #' @inheritParams importOptions
 #'
@@ -205,7 +205,7 @@ downloadModelServer <-
            triggerUpdate = reactive(TRUE),
            onlySettings = FALSE,
            compress = TRUE,
-           compression_level = 9) {
+           compressionLevel = 9) {
     moduleServer(id,
                  function(input, output, session) {
                    ns <- session$ns
@@ -269,7 +269,7 @@ downloadModelServer <-
                            notes = input$exportNotes,
                            exclude_model = onlySettings ||
                              (!is.null(input$onlyInputs) && input$onlyInputs),
-                           compression_level = compression_level,
+                           compression_level = compressionLevel,
                            include_paths = zip_info$paths,
                            include_root = zip_info$root
                          )
