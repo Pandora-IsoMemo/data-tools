@@ -244,7 +244,6 @@ extractNotes <- function(pathToUnzipped) {
 #' @return (list) model object
 #' @export
 extractObjectFromFile <- function(pathToUnzipped, what = NULL) {
-  # depractation warning
   deprecate_warn(
     "26.01.1", "DataTools::extractObjectFromFile()",
     details = "Please use 'import_bundle_zip()' and 'extract_model_import()' instead."

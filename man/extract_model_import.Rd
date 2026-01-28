@@ -2,8 +2,7 @@
 % Please edit documentation in R/01-importBundle-class.R
 \name{extract_model_import}
 \alias{extract_model_import}
-\title{Extract model import from bundle import
-Extracts either full model or inputs-only from a bundle import.}
+\title{Extract model import from bundle import}
 \usage{
 extract_model_import(bundle_import)
 }
@@ -14,6 +13,5 @@ extract_model_import(bundle_import)
 Model import (list) or NULL if not found.
 }
 \description{
-Extract model import from bundle import
 Extracts either full model or inputs-only from a bundle import.
 }

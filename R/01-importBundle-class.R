@@ -242,6 +242,7 @@ import_bundle_zip <- function(
 }
 
 #' Extract model import from bundle import
+#'
 #' Extracts either full model or inputs-only from a bundle import.
 #'
 #' @param bundle_import Result of import_bundle_zip().
@@ -264,6 +265,7 @@ extract_model_import <- function(bundle_import) {
 }
 
 #' Extract model notes from bundle import
+#'
 #' Extracts README.txt contents from a bundle import.
 #'
 #' @param bundle_import Result of import_bundle_zip().

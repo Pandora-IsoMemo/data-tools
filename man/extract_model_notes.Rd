@@ -2,8 +2,7 @@
 % Please edit documentation in R/01-importBundle-class.R
 \name{extract_model_notes}
 \alias{extract_model_notes}
-\title{Extract model notes from bundle import
-Extracts README.txt contents from a bundle import.}
+\title{Extract model notes from bundle import}
 \usage{
 extract_model_notes(bundle_import)
 }
@@ -14,6 +13,5 @@ extract_model_notes(bundle_import)
 Model notes (character) or NULL if not found.
 }
 \description{
-Extract model notes from bundle import
 Extracts README.txt contents from a bundle import.
 }
