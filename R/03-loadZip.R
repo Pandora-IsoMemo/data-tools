@@ -18,6 +18,11 @@ loadZipWrapper <- function(values,
   if (is.null(filename))
     return(values)
 
+  # check if file is a zip file
+  res <- filepath %>%
+    checkExtension(fileExtension = c(fileExtension, "zip")) %>%
+    shinyTryCatch(errorTitle = "Cannot unzip file.")
+
   # Import zip -> extract (temp) -> index (cleanup handled internally via on.exit)
   imp <- tryCatch(
     import_bundle_zip(
