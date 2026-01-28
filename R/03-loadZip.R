@@ -23,41 +23,59 @@ loadZipWrapper <- function(values,
     checkExtension(fileExtension = c(fileExtension, "zip")) %>%
     shinyTryCatch(errorTitle = "Cannot unzip file.")
 
-  # try to unzip the file
-  unzippedFileNames <- tryCatch({
-    zip::unzip(res, exdir = "unzippedTmp")
-    #zip::unzip(importZip, exdir = tempdir())
-    list.files("unzippedTmp")
-  }, error = function(cond) {
-    values$errors <-
-      list(load = paste("Could not unzip file:", cond$message))
-    NULL
-  }, warning = function(cond) {
-    values$warnings <- list(load = paste("Warning:", cond$message))
-    NULL
-  })
+  # Import zip -> extract (temp) -> index (cleanup handled internally via on.exit)
+  imp <- tryCatch(
+    import_bundle_zip(
+      zipfile = res,
+      extract_dir = NULL,
+      keep_dir = FALSE,
+      include_hidden = FALSE,
+      load_known = FALSE
+    ), error = function(cond) {
+      values$errors <- list(load = paste("Could not unzip file:", cond$message))
+      return(NULL)
+    }, warning = function(cond) {
+      values$warnings <- list(load = paste("Warning:", cond$message))
+      return(NULL)
+    })
 
-  # clean up (remove unzipped)
-  unlink("unzippedTmp", recursive = TRUE)
+   values$fileName <- filename
 
-  # check if files exist
-  if (is.null(unzippedFileNames)) {
-    values$errors <- c(values$errors, list(check = "No files found in zip file"))
+  if (is.null(imp)) {
     values$dataImport <- NULL
-  } else if (length(expectedFileInZip) > 0 &&
-             !all(expectedFileInZip %in% unzippedFileNames)) {
-    values$errors <-
-      list(load = "Expected files not found!")
-    values$dataImport <- NULL
-  } else {
-    ## Import technically successful
-    # return zip file itself
-    values$dataImport <- res
-    values$fileImportSuccess <- "Zip import successful"
+    return(values)
   }
 
-  values$fileName <- filename
+  # Use indexed listing to check contents
+  zi <- imp$zip_import
+  all_rel <- names(zi$index$files)
 
-  # return reactiveVal list
+  if (length(all_rel) == 0L) {
+    values$errors <- c(values$errors, list(check = "No files found in zip file"))
+    values$dataImport <- NULL
+    return(values)
+  }
+
+  # Check expected files (robust to subfolders by default)
+  if (length(expectedFileInZip) > 0) {
+    chk <- zipImport_has_files(
+      zi,
+      expected = expectedFileInZip,
+      match = "basename",
+      ignore_case = TRUE
+    )
+
+    if (!isTRUE(chk$ok)) {
+      values$errors <- c(values$errors, list(load = paste0(
+        "Expected files not found: ", paste(chk$missing, collapse = ", ")
+      )))
+      values$dataImport <- NULL
+      return(values)
+    }
+  }
+
+  # Import successful: store zip path as before
+  values$dataImport <- res
+  values$fileImportSuccess <- "Zip import successful"
   values
 }

@@ -34,12 +34,9 @@ testthat::test_that("Test downloadModelServer with custom filename", {
                               grepl("var", output$download))
       testthat::expect_equal(getExtension(output$download), "datatools")
 
-      # unzip
-      zip::unzip(output$download, exdir = test_path("unzippedTmp"))
-      modelImport <- extractObjectFromFile(pathToUnzipped = test_path("unzippedTmp"))
-      readMe <- readLines(file.path(test_path("unzippedTmp"), "README.txt"))
-      # clean up
-      unlink(test_path("unzippedTmp"), recursive = TRUE)
+      bundle_import <- import_bundle_zip(output$download)
+      modelImport <- extract_model_import(bundle_import)
+      readMe <- extract_model_notes(bundle_import)
 
       testthat::expect_equal(names(modelImport),
                              c("data", "inputs", "model", "version"))
