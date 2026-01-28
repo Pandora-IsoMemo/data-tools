@@ -29,7 +29,7 @@ downloadModelServer(
   triggerUpdate = reactive(TRUE),
   onlySettings = FALSE,
   compress = TRUE,
-  compression_level = 9
+  compressionLevel = 9
 )
 }
 \arguments{
@@ -83,7 +83,7 @@ applying this module inside a modal window.}
 or one of "gzip", "bzip2" or "xz" to indicate the type of compression to be used. Ignored if
 file is a connection.}
 
-\item{compression_level}{A number between 1 and 9. 9 compresses best, but it also takes the
+\item{compressionLevel}{A number between 1 and 9. 9 compresses best, but it also takes the
 longest.}
 }
 \description{
