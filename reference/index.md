@@ -52,6 +52,10 @@
 - [`extract_all_inputs(`*`<DataProcessItem>`*`)`](https://pandora-isomemo.github.io/data-tools/reference/extract_all_inputs.DataProcessItem.md)
   : S3 method: Extract unique inputs for DataProcessItem Extracts unique
   user inputs from a DataProcessItem object.
+- [`extract_model_import()`](https://pandora-isomemo.github.io/data-tools/reference/extract_model_import.md)
+  : Extract model import from bundle import
+- [`extract_model_notes()`](https://pandora-isomemo.github.io/data-tools/reference/extract_model_notes.md)
+  : Extract model notes from bundle import
 - [`extract_sql_command(`*`<DataProcessLink>`*`)`](https://pandora-isomemo.github.io/data-tools/reference/extract_sql_command.DataProcessLink.md)
   : S3 method: Extract SQL command from DataProcessLink Extracts the SQL
   command string from a DataProcessLink object, if available.

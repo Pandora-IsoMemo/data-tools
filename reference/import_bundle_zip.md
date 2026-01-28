@@ -10,7 +10,8 @@ import_bundle_zip(
   extract_dir = NULL,
   keep_dir = FALSE,
   include_hidden = FALSE,
-  load_known = TRUE
+  load_known = TRUE,
+  from_dir = FALSE
 )
 ```
 
@@ -35,6 +36,11 @@ import_bundle_zip(
 - load_known:
 
   Logical; if TRUE returns loaded known parts as well.
+
+- from_dir:
+
+  Logical; if TRUE, treat 'zipfile' as a directory path instead of a zip
+  file. Assumes files are already extracted.
 
 ## Value
 

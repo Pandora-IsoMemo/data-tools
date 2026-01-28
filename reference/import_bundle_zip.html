@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">DataTools</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">26.01.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">26.01.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -43,7 +43,8 @@
 <span>  extract_dir <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  keep_dir <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  include_hidden <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  load_known <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  load_known <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  from_dir <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -69,6 +70,11 @@
 
 <dt id="arg-load-known">load_known<a class="anchor" aria-label="anchor" href="#arg-load-known"></a></dt>
 <dd><p>Logical; if TRUE returns loaded known parts as well.</p></dd>
+
+
+<dt id="arg-from-dir">from_dir<a class="anchor" aria-label="anchor" href="#arg-from-dir"></a></dt>
+<dd><p>Logical; if TRUE, treat 'zipfile' as a directory path instead of a zip file.
+Assumes files are already extracted.</p></dd>
 
 </dl></div>
     <div class="section level2">

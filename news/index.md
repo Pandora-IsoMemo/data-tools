@@ -1,5 +1,30 @@
 # Changelog
 
+## DataTools 26.01.3
+
+### Updates
+
+- Refactored model and zip import workflows to use
+  [`import_bundle_zip()`](https://pandora-isomemo.github.io/data-tools/reference/import_bundle_zip.md),
+  replacing manual unzip logic
+- Added
+  [`extract_model_import()`](https://pandora-isomemo.github.io/data-tools/reference/extract_model_import.md)
+  and
+  [`extract_model_notes()`](https://pandora-isomemo.github.io/data-tools/reference/extract_model_notes.md)
+  helpers
+- Added support for loading models from directories via `from_dir`
+- Deprecated
+  [`extractNotes()`](https://pandora-isomemo.github.io/data-tools/reference/extractNotes.md)
+  and
+  [`extractObjectFromFile()`](https://pandora-isomemo.github.io/data-tools/reference/extractObjectFromFile.md)
+- Added support for legacy `model.RData` bundles
+
+## DataTools 26.01.2
+
+### Bug Fixes
+
+- Reverted pushes to the false branch
+
 ## DataTools 26.01.1
 
 ### Bug Fixes
