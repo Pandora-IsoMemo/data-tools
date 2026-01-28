@@ -19,7 +19,7 @@ downUploadButtonServer(
   modelNotes = reactive(""),
   onlySettings = FALSE,
   compress = TRUE,
-  compression_level = 9,
+  compressionLevel = 9,
   reset = reactive(FALSE),
   title = "Download and Upload of Models",
   labelRemote = "Load online model",
@@ -91,7 +91,7 @@ downUploadButtonServer(
   compression, or one of "gzip", "bzip2" or "xz" to indicate the type of
   compression to be used. Ignored if file is a connection.
 
-- compression_level:
+- compressionLevel:
 
   A number between 1 and 9. 9 compresses best, but it also takes the
   longest.

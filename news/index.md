@@ -1,5 +1,13 @@
 # Changelog
 
+## DataTools 26.01.1
+
+### Bug Fixes
+
+- Reverted parameter name from `compression_level` to its original
+  `compressionLevel` in function signatures of already exported
+  functions.
+
 ## DataTools 26.01.0
 
 ### New Features
