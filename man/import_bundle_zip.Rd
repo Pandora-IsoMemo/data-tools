@@ -9,7 +9,8 @@ import_bundle_zip(
   extract_dir = NULL,
   keep_dir = FALSE,
   include_hidden = FALSE,
-  load_known = TRUE
+  load_known = TRUE,
+  from_dir = FALSE
 )
 }
 \arguments{
@@ -22,6 +23,9 @@ import_bundle_zip(
 \item{include_hidden}{Include dotfiles.}
 
 \item{load_known}{Logical; if TRUE returns loaded known parts as well.}
+
+\item{from_dir}{Logical; if TRUE, treat 'zipfile' as a directory path instead of a zip file.
+Assumes files are already extracted.}
 }
 \value{
 A list with $zip_import (ZipImport), $available (list), and optionally $loaded.

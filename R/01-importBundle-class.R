@@ -121,10 +121,11 @@ zipImport_index <- function(zi, include_hidden = FALSE) {
     root = zi$root,
     files = setNames(all_files, rel),
     known = list(
-      model_rds  = pick_first("model.rds"),
-      inputs_rds = pick_first("inputs.rds"),
-      notes_txt  = pick_first("README.txt"),
-      help_html  = pick_first("help.html")
+      model_rds   = pick_first("model.rds"),
+      model_rdata = pick_first("model.RData"),
+      inputs_rds  = pick_first("inputs.rds"),
+      notes_txt   = pick_first("README.txt"),
+      help_html   = pick_first("help.html")
     )
   )
 
@@ -169,16 +170,21 @@ zipImport_load_known <- function(
 
   out <- list()
 
-  if (isTRUE(load_model) && !is.null(zi$index$known$model_rds)) {
+  if (isTRUE(load_model) && !is.null(zi$index$known$model_rds)) {         # model.rds
     out$full_model <- readRDS(zi$index$known$model_rds)
+  } else if (isTRUE(load_model) && !is.null(zi$index$known$model_rdata)) {# model.RData (deprecated)
+    local_env <- new.env()
+    load(zi$index$known$model_rdata, envir = local_env)
+
+    out$full_model <- local_env %>% envToList()
   }
-  if (isTRUE(load_inputs) && !is.null(zi$index$known$inputs_rds)) {
+  if (isTRUE(load_inputs) && !is.null(zi$index$known$inputs_rds)) {       # inputs.rds
     out$inputs_only <- readRDS(zi$index$known$inputs_rds)
   }
-  if (isTRUE(load_notes) && !is.null(zi$index$known$notes_txt)) {
+  if (isTRUE(load_notes) && !is.null(zi$index$known$notes_txt)) {         # README.txt
     out$notes <- paste(readLines(zi$index$known$notes_txt, warn = FALSE), collapse = "\n")
   }
-  if (isTRUE(load_help) && !is.null(zi$index$known$help_html)) {
+  if (isTRUE(load_help) && !is.null(zi$index$known$help_html)) {          # help.html (new)
     out$help_html <- paste(readLines(zi$index$known$help_html, warn = FALSE), collapse = "\n")
   }
 
@@ -192,6 +198,8 @@ zipImport_load_known <- function(
 #' @param keep_dir Keep extracted files if temp dir is used.
 #' @param include_hidden Include dotfiles.
 #' @param load_known Logical; if TRUE returns loaded known parts as well.
+#' @param from_dir Logical; if TRUE, treat 'zipfile' as a directory path instead of a zip file.
+#'  Assumes files are already extracted.
 #' @return A list with $zip_import (ZipImport), $available (list), and optionally $loaded.
 #' @export
 import_bundle_zip <- function(
@@ -199,11 +207,25 @@ import_bundle_zip <- function(
   extract_dir = NULL,
   keep_dir = FALSE,
   include_hidden = FALSE,
-  load_known = TRUE
+  load_known = TRUE,
+  from_dir = FALSE
 ) {
-  zi <- new_ZipImport(zipfile, extract_dir = extract_dir, keep_dir = keep_dir)
-  zi <- zipImport_extract(zi)
-  on.exit(zipImport_cleanup(zi), add = TRUE)
+  if (isTRUE(from_dir)) {
+    # treat zipfile as a directory path
+    zi <- list(
+      zipfile = NULL,
+      extract_dir = zipfile,
+      keep_dir = keep_dir,
+      extracted = TRUE,
+      root = zipfile,
+      index = NULL
+    )
+    class(zi) <- c("ZipImport", "list")
+  } else {
+    zi <- new_ZipImport(zipfile, extract_dir = extract_dir, keep_dir = keep_dir)
+    zi <- zipImport_extract(zi)
+    on.exit(zipImport_cleanup(zi), add = TRUE)
+  }
 
   zi <- zipImport_index(zi, include_hidden = include_hidden)
 
@@ -217,4 +239,43 @@ import_bundle_zip <- function(
   }
 
   res
+}
+
+#' Extract model import from bundle import
+#' Extracts either full model or inputs-only from a bundle import.
+#'
+#' @param bundle_import Result of import_bundle_zip().
+#' @return Model import (list) or NULL if not found.
+#' @export
+extract_model_import <- function(bundle_import) {
+  if (
+    "full_model" %in% names(bundle_import$loaded) &&
+      !is.null(bundle_import$loaded$full_model)
+  ) {
+    return(bundle_import$loaded$full_model)
+  } else if (
+    "inputs_only" %in% names(bundle_import$loaded) &&
+      !is.null(bundle_import$loaded$inputs_only)
+  ) {
+    return(bundle_import$loaded$inputs_only)
+  }
+
+  NULL
+}
+
+#' Extract model notes from bundle import
+#' Extracts README.txt contents from a bundle import.
+#'
+#' @param bundle_import Result of import_bundle_zip().
+#' @return Model notes (character) or NULL if not found.
+#' @export
+extract_model_notes <- function(bundle_import) {
+  if (
+    "notes" %in% names(bundle_import$loaded) &&
+      !is.null(bundle_import$loaded$notes)
+  ) {
+    return(bundle_import$loaded$notes)
+  }
+
+  NULL
 }

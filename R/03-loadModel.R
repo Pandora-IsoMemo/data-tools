@@ -97,12 +97,15 @@ loadModel <-
     ## unzip file ----
     res <- try({
       unzip(filepath, exdir = "unzippedTmp")
-      modelImport <- extractObjectFromFile(pathToUnzipped = "unzippedTmp")
-      modelNotes <- extractNotes(pathToUnzipped = "unzippedTmp")
+      bundle_import <- import_bundle_zip(filepath)
     }, silent = TRUE)
 
     # clean up
     unlink("unzippedTmp", recursive = TRUE)
+
+    # extract model object ----
+    modelImport <- extract_model_import(bundle_import)
+    modelNotes <- extract_model_notes(bundle_import)
 
     ## import failures
     if (inherits(res, "try-error")) {
@@ -221,9 +224,12 @@ loadModel <-
 #' @return (character) notes
 #' @export
 extractNotes <- function(pathToUnzipped) {
-  if (!file.exists(file.path(pathToUnzipped, "README.txt"))) return("")
-
-  readLines(file.path(pathToUnzipped, "README.txt"))
+  deprecate_warn(
+    "26.01.1", "DataTools::extractNotes()",
+    details = "Please use 'import_bundle_zip()' and 'extract_model_notes()' instead."
+  )
+  bundle_import <- import_bundle_zip(pathToUnzipped, from_dir = TRUE)
+  extract_model_notes(bundle_import)
 }
 
 #' Extract Object From File
@@ -238,34 +244,20 @@ extractNotes <- function(pathToUnzipped) {
 #' @return (list) model object
 #' @export
 extractObjectFromFile <- function(pathToUnzipped, what = NULL) {
+  # depractation warning
+  deprecate_warn(
+    "26.01.1", "DataTools::extractObjectFromFile()",
+    details = "Please use 'import_bundle_zip()' and 'extract_model_import()' instead."
+  )
+
   if (!is.null(what)) {
     deprecate_warn("25.03.0", "DataTools::extractObjectFromFile(what)")
   }
 
-  modelImport <- NULL
+  bundle_import <- import_bundle_zip(pathToUnzipped, from_dir = TRUE)
 
-  # load model.rds file
-  if (file.exists(file.path(pathToUnzipped, "model.rds"))) {
-    modelImport <- readRDS(file.path(pathToUnzipped, "model.rds"))
-    return(modelImport)
-  }
-
-  # load inputs.rds file
-  if (file.exists(file.path(pathToUnzipped, "inputs.rds"))) {
-    modelImport <- readRDS(file.path(pathToUnzipped, "inputs.rds"))
-    return(modelImport)
-  }
-
-  # load .RData file (deprecated version of model object)
-  if (file.exists(file.path(pathToUnzipped, "model.Rdata"))) {
-    localEnv <- new.env()
-    load(file.path(pathToUnzipped, "model.Rdata"), envir = localEnv)
-    modelImport <- localEnv %>%
-      envToList()
-    return(modelImport)
-  }
-
-  modelImport
+  # return model object
+  extract_model_import(bundle_import)
 }
 
 envToList <- function(envir) {
