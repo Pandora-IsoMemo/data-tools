@@ -112,7 +112,7 @@ zipImport_index <- function(zi, include_hidden = FALSE) {
 
   # classify common elements
   pick_first <- function(pattern) {
-    i <- which(tolower(rel) == tolower(pattern))
+    i <- which(tolower(basename(rel)) == tolower(pattern))
     if (length(i) == 0L) return(NULL)
     all_files[[i[[1L]]]]
   }
@@ -183,6 +183,45 @@ zipImport_load_known <- function(
   }
 
   out
+}
+
+# Check whether expected files exist in the extracted zip
+#
+# @param zi ZipImport (must be indexed)
+# @param expected Character vector of expected filenames/paths
+# @param match How to match: "basename" (recommended) or "relative"
+# @param ignore_case Logical; case-insensitive match (default TRUE)
+# @return list(ok = logical(1), missing = character(), present = character())
+zipImport_has_files <- function(
+  zi,
+  expected,
+  match = c("basename", "relative"),
+  ignore_case = TRUE
+) {
+  validate_ZipImport(zi)
+  if (is.null(zi$index)) stop("ZipImport not indexed yet. Call zipImport_index() first.")
+
+  match <- match.arg(match)
+  if (is.null(expected)) expected <- character()
+  expected <- as.character(expected)
+  expected <- expected[nzchar(expected)]
+
+  all_rel <- names(zi$index$files)
+  present <- if (match == "relative") all_rel else basename(all_rel)
+
+  if (isTRUE(ignore_case)) {
+    present_cmp <- tolower(present)
+    expected_cmp <- tolower(expected)
+    missing <- expected[!expected_cmp %in% present_cmp]
+  } else {
+    missing <- expected[!expected %in% present]
+  }
+
+  list(
+    ok = length(missing) == 0L,
+    missing = missing,
+    present = present
+  )
 }
 
 #' Convenience: import zip, index it, optionally load known parts
