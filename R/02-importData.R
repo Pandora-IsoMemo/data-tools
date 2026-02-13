@@ -390,7 +390,7 @@ importDataServer <- function(id,
                  ## ACCEPT data ----
                  returnData <- reactiveVal(list())
                  observeEvent(input$accept, {
-                   logDebug("%s: Pressed input$accept", id)
+                   logDebug("%s: Pressed input$accept to import data", id)
                    removeModal()
 
                    req(values$dataImport, isTRUE(nrow(values$dataImport) > 0))

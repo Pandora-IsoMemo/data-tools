@@ -109,19 +109,21 @@ loadModel <-
 
     ## import failures
     if (inherits(res, "try-error")) {
-      errMsg <- ""
-      if (length(res[[1]]) > 0) errMsg <- res[[1]]
-
-      stop(
-        sprintf(paste(
+      err_msg <- ""
+      if (length(res[[1]]) > 0) err_msg <- res[[1]]
+      err_msg <- sprintf(
+        paste(
           "%s     \n",
           "The file must be a %s file that contains the following files:",
           "help.html, model.rds, README.txt.",
           "If you download a model it will have exactly this format."
         ),
-        errMsg,
-        expectedExtStrng(fileExtension))
+        err_msg,
+        expectedExtStrng(fileExtension)
       )
+      logDebug("Model import failed: %s", err_msg)
+
+      stop(err_msg)
       return(NULL)
     }
 
@@ -132,7 +134,13 @@ loadModel <-
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
     )
     ) {
-      stop("Model object not found. The file format may be invalid or deprecated.")
+      err_msg <- sprintf(
+        "The file format may be invalid or deprecated. Expected a model object with names: %s.",
+        paste(c("data", "inputs", "values", "model", "version"), collapse = ", ")
+      )
+      err_msg <- paste("Model object not found in unzipped file.", err_msg)
+      logDebug(err_msg)
+      stop(err_msg)
       return(NULL)
     }
 
@@ -141,10 +149,12 @@ loadModel <-
     ## extract the name of the package without version numbers
     rPackageLoaded <- gsub("[^a-zA-Z]", "", modelImport$version)
 
-    if (!is.null(rPackageName) && (rPackageName != "") &&
+    if (
+      !is.null(rPackageName) && (rPackageName != "") &&
         length(rPackageLoaded) > 0 && rPackageLoaded != "" &&
         !(grepl(rPackageName, modelImport$version)) &&
-        !(grepl(config()$packageMapping[[rPackageName]], modelImport$version))) {
+        !(grepl(config()$packageMapping[[rPackageName]], modelImport$version))
+    ) {
       versionTxt <- ""
       if (!is.null(modelImport$version))
         versionTxt <- sprintf("Trying to upload a model from %s.", modelImport$version)
@@ -153,29 +163,32 @@ loadModel <-
                                  versionTxt, rPackageName),
                          sprintf(" Make sure to upload a model that was previously saved with %s.",
                                  rPackageName))
+      logDebug(errorMsg)
       stop(errorMsg)
       return(NULL)
     }
 
     # Currently, this check is relevant for the iso-app where sub-models are stored in sub-folders
     # and the name of the sub-model is kept inside $version.
-    if (!is.null(rPackageName) &&
+    if (
+      !is.null(rPackageName) &&
         (rPackageName != "") &&
         !is.null(subFolder) &&
-        !grepl(subFolder, modelImport$version)) {
-      stop(
-        paste(
-          "Wrong model loaded! Trying to upload",
-          modelImport$version,
-          ". Model not valid for",
-          subFolder,
-          "of",
-          rPackageName,
-          ". Make sure to upload a model that was previously saved exactly within",
-          subFolder,
-          "."
-        )
+        !grepl(subFolder, modelImport$version)
+    ) {
+      err_msg <- paste(
+        "Wrong model loaded! Trying to upload",
+        modelImport$version,
+        ". Model not valid for",
+        subFolder,
+        "of",
+        rPackageName,
+        ". Make sure to upload a model that was previously saved exactly within",
+        subFolder,
+        "."
       )
+      logDebug(err_msg)
+      stop(err_msg)
       return(NULL)
     }
 
@@ -212,6 +225,7 @@ loadModel <-
         paste("Saved version:", modelImport$version, ".")
     }
 
+    logDebug("Model import successful. Returning model object.")
     return(dat)
   }
 

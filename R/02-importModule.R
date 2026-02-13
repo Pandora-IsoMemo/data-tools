@@ -185,10 +185,19 @@ importServer <- function(id,
     ## ACCEPT button ----
     returnData <- reactiveVal()
     observe({
-      logDebug("%s: Entering observe 'input$accept'", id)
+      logDebug("%s: Pressed input$accept to import object", id)
       removeModal()
 
-      req(values$dataImport, isTRUE("inputs" %in% names(values$dataImport)))
+      is_model_import <- (importType == "model") && ("inputs" %in% names(values$dataImport))
+      is_zip_import <- (importType == "zip") &&
+        (is.character(values$dataImport)) &&
+        (length(values$dataImport) == 1)
+      is_list_import <- (importType == "list") &&
+        (is.list(values$dataImport)) &&
+        (length(values$dataImport) > 0)
+
+      req(values$dataImport, isTRUE(is_model_import || is_zip_import || is_list_import))
+      logDebug("%s: Import successful. Returning object of type %s", id, importType)
       res <- setNames(object = list(values$dataImport), nm = values$fileName)
       returnData(res)
 

@@ -42,6 +42,7 @@ loadZipWrapper <- function(values,
    values$fileName <- filename
 
   if (is.null(imp)) {
+    logDebug("Zip import failed.")
     values$dataImport <- NULL
     return(values)
   }
@@ -51,6 +52,7 @@ loadZipWrapper <- function(values,
   all_rel <- names(zi$index$files)
 
   if (length(all_rel) == 0L) {
+    logDebug("No files found in zip file.")
     values$errors <- c(values$errors, list(check = "No files found in zip file"))
     values$dataImport <- NULL
     return(values)
@@ -66,6 +68,7 @@ loadZipWrapper <- function(values,
     )
 
     if (!isTRUE(chk$ok)) {
+      logDebug("Expected files not found in zip file.")
       values$errors <- c(values$errors, list(load = paste0(
         "Expected files not found: ", paste(chk$missing, collapse = ", ")
       )))
@@ -74,7 +77,8 @@ loadZipWrapper <- function(values,
     }
   }
 
-  # Import successful: store zip path as before
+  # Import successful: return zip path
+  logDebug("Zip import successful. Returning path to unzipped file: %s", res)
   values$dataImport <- res
   values$fileImportSuccess <- "Zip import successful"
   values
