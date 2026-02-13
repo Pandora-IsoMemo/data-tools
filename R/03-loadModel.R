@@ -124,7 +124,6 @@ loadModel <-
       logDebug("Model import failed: %s", err_msg)
 
       stop(err_msg)
-      return(NULL)
     }
 
     if (!exists("modelImport") || length(modelImport) == 0 || !(
@@ -134,14 +133,12 @@ loadModel <-
       all(names(modelImport) %in% c("dataObj", "formulasObj", "inputObj", "model"))
     )
     ) {
-      err_msg <- sprintf(
-        "The file format may be invalid or deprecated. Expected a model object with names: %s.",
-        paste(c("data", "inputs", "values", "model", "version"), collapse = ", ")
+      err_msg <- paste(
+        "Model object not found in unzipped file.",
+        "The file format may be invalid or deprecated."
       )
-      err_msg <- paste("Model object not found in unzipped file.", err_msg)
-      logDebug(err_msg)
+      logDebug("%s", err_msg)
       stop(err_msg)
-      return(NULL)
     }
 
     # check if import was downloaded from the correct app
@@ -163,9 +160,8 @@ loadModel <-
                                  versionTxt, rPackageName),
                          sprintf(" Make sure to upload a model that was previously saved with %s.",
                                  rPackageName))
-      logDebug(errorMsg)
+      logDebug("%s", errorMsg)
       stop(errorMsg)
-      return(NULL)
     }
 
     # Currently, this check is relevant for the iso-app where sub-models are stored in sub-folders
@@ -187,9 +183,8 @@ loadModel <-
         subFolder,
         "."
       )
-      logDebug(err_msg)
+      logDebug("%s", err_msg)
       stop(err_msg)
-      return(NULL)
     }
 
     # Data check: which data objects are available (data, inputs and model?) ----

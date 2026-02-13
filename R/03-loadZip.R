@@ -78,7 +78,7 @@ loadZipWrapper <- function(values,
   }
 
   # Import successful: return zip path
-  logDebug("Zip import successful. Returning path to unzipped file: %s", res)
+  logDebug("Zip import successful. Returning the validated zip path: %s", res)
   values$dataImport <- res
   values$fileImportSuccess <- "Zip import successful"
   values
