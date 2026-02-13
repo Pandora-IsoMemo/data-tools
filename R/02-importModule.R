@@ -193,7 +193,7 @@ importServer <- function(id,
         (is.character(values$dataImport)) &&
         (length(values$dataImport) == 1)
       is_list_import <- (importType == "list") &&
-        (is.list(values$dataImport)) &&
+        (is.list(values$dataImport) || is.raw(values$dataImport)) &&
         (length(values$dataImport) > 0)
 
       req(values$dataImport, isTRUE(is_model_import || is_zip_import || is_list_import))
