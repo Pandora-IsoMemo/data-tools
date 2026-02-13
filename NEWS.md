@@ -1,3 +1,11 @@
+# DataTools 26.02.0
+
+## Updates
+- Improved observability and import handling by adding debug logging to zip/model imports and extending ACCEPT validation to support multiple return types (model/zip/list).
+
+## Bug Fixes
+- Fixed an issue where the ACCEPT button did not properly validate imported zips or lists, resulting in those objects not being imported.
+
 # DataTools 26.01.3
 
 ## Updates
