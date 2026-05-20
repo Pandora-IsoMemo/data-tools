@@ -1,3 +1,8 @@
+# DataTools 26.05.0
+
+## Updates
+- Replaced import of `llmModule` package by `llmModuleS` package that now contains the Shiny modules
+
 # DataTools 26.02.0
 
 ## Updates
