@@ -350,7 +350,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    llmSqlCommand(NULL)
 
                    req(inherits(llm_response(), "LlmResponse"))
-                   response_table <- llm_response() |> llmModule::as_table(output_type = "text")
+                   response_table <- llm_response()
                    command <- response_table$core_output$content |>
                      gsub(pattern = "^\n+", replacement = "")
                    llmSqlCommand(command)
