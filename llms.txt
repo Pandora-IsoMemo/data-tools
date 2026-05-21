@@ -21,12 +21,14 @@ merge data before the import via UI or SQL.
 UI function:
 
 ``` r
+
 DataTools::importDataUI(id, label = "Import Data")
 ```
 
 Server function:
 
 ``` r
+
 DataTools::importDataServer(id, rowNames = NULL, colNames = NULL, customWarningChecks = list(), customErrorChecks = list(), ignoreWarnings = FALSE, defaultSource = "ckan")
 ```
 
@@ -39,6 +41,7 @@ Example how to apply the UI and the server function in a shiny module:
 Functions to check the validity of imports:
 
 ``` r
+
 DataTools::checkWarningEmptyValues(data)
 DataTools::checkAnyNonNumericColumns(data)
 DataTools::checkErrorNoNumericColumns(data)
@@ -49,6 +52,7 @@ DataTools::checkErrorNoNumericColumns(data)
 - function to catch and forward errors and warnings to the app’s UI
 
   ``` r
+
   shinyTools::shinyTryCatch(expr, messagePreError)
   ```
 

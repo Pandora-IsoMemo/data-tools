@@ -1,8 +1,8 @@
-pandoc: 3.1.11
+pandoc: 3.8.3
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles: {}
-last_built: 2026-02-13T12:01Z
+last_built: 2026-05-21T07:12Z
 urls:
   reference: https://pandora-isomemo.github.io/data-tools/reference
   article: https://pandora-isomemo.github.io/data-tools/articles
