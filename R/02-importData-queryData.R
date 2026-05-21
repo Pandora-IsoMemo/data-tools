@@ -289,7 +289,7 @@ gptUI <- function(id) {
     conditionalPanel(
       ns = ns,
       condition = "input.useGPT && input.confirmUsingGPT",
-      llmModule::llm_generate_prompt_ui(
+      llmModuleS::llm_generate_prompt_ui(
         ns("llm_prompt"),
         prompt_beginning = "Write an SQL query to",
         prompt_placeholder = "... your natural language instructions",
@@ -338,7 +338,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                  }) %>%
                    bindEvent(isActiveTab())
 
-                 llm_response <- llmModule::llm_generate_prompt_server(
+                 llm_response <- llmModuleS::llm_generate_prompt_server(
                    "llm_prompt",
                    autoCompleteList,
                    no_internet = !internetCon(),
@@ -350,7 +350,7 @@ gptServer <- function(id, autoCompleteList, isActiveTab) {
                    llmSqlCommand(NULL)
 
                    req(inherits(llm_response(), "LlmResponse"))
-                   response_table <- llm_response() |> llmModule::as_table(output_type = "text")
+                   response_table <- llm_response()
                    command <- response_table$core_output$content |>
                      gsub(pattern = "^\n+", replacement = "")
                    llmSqlCommand(command)
