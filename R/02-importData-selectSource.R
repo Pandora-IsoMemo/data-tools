@@ -149,13 +149,13 @@ selectSourceServer <- function(id,
                      options(timeout = 10)  # Set timeout to 10 seconds
 
                      on.exit(options(timeout = old_timeout))  # Restore old timeout when function ends
-                     shinyTryCatch(
-                       expr = withProgress(message = "Connecting to Pandora...", {
-                         callAPI(action = "group_list", all_fields = "true")
-                       }),
-                       errorTitle = "Pandora connection error",
-                       alertStyle = "shinyalert"
-                     )
+                      shinyTryCatch(
+                        expr = withProgress(message = "Connecting to Pandora...", expr = {
+                          callAPI(action = "group_list", all_fields = "true")
+                        }),
+                        errorTitle = "Pandora connection error",
+                        alertStyle = "shinyalert"
+                      )
                    })
                    } else {
                      res <- NULL
