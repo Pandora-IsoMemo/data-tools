@@ -111,7 +111,7 @@ load_data_from_link.DataProcessLink <- function(object, ...) {
   values <- withProgress(
     value = 0.75,
     message = sprintf("Importing '%s' from link ...", data_source[["filename"]]),
-    {
+    expr = {
       loadDataWrapper(
         values = args$values,
         filepath = data_source[["file"]],
