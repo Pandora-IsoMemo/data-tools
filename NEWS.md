@@ -1,7 +1,7 @@
 # DataTools 26.08.0
 
 ## Bug Fixes
-- Fixed an issue where Pandora API connection failures were not caught correctly in the import source selector
+- Fixed handling of Pandora/import failures by correcting progress-wrapper evaluation and error catching across import modules.
 
 # DataTools 26.05.0
 
