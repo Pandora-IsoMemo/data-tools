@@ -1,3 +1,5 @@
+skip_if_no_pandora_api()
+
 test_that("Test module importData", {
   testServer(importDataServer,
              {

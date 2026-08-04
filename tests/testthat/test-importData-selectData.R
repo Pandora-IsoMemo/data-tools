@@ -1,3 +1,5 @@
+skip_if_no_pandora_api()
+
 test_that("Test module selectSourceServer", {
   testServer(selectSourceServer,
              args = list(importType = "data",
