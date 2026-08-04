@@ -77,7 +77,7 @@ configureFileServer <- function(id,
       values <- withProgress(
         value = 0.75,
         message = sprintf("Importing '%s' ...", dataSource[["filename"]]),
-        {
+        expr = {
           loadImport(
             importType = importType,
             params = list(
