@@ -116,19 +116,23 @@ configureDataServer <- function(id,
                      req(dataSource$type != "dataLink")
                      logDebug("Updating values$dataImport")
                      # importType is now always "data" here
-                     values <- loadDataWrapper(
-                       values = values,
-                       filepath = dataSource[["file"]],
-                       filename = dataSource[["filename"]],
-                       type = input[["fileType-type"]],
-                       sep = input[["fileType-colSep"]],
-                       dec = input[["fileType-decSep"]],
-                       sheetId = as.numeric(input[["fileType-sheet"]]),
-                       withRownames = customNames$withRownames,
-                       withColnames = customNames$withColnames
-                     ) %>%
-                       withProgress(value = 0.75,
-                                    message = sprintf("Importing '%s' ...", dataSource[["filename"]]))
+                     values <- withProgress(
+                       value = 0.75,
+                       message = sprintf("Importing '%s' ...", dataSource[["filename"]]),
+                       {
+                         loadDataWrapper(
+                           values = values,
+                           filepath = dataSource[["file"]],
+                           filename = dataSource[["filename"]],
+                           type = input[["fileType-type"]],
+                           sep = input[["fileType-colSep"]],
+                           dec = input[["fileType-decSep"]],
+                           sheetId = as.numeric(input[["fileType-sheet"]]),
+                           withRownames = customNames$withRownames,
+                           withColnames = customNames$withColnames
+                         )
+                       }
+                     )
                    }) # end observe loadImport
 
                  importMessageServer("importMessage", values)

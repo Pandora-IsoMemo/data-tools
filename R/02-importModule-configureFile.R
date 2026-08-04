@@ -72,23 +72,27 @@ configureFileServer <- function(id,
       req(dataSource$type != "dataLink")
       logDebug("Updating values$dataImport")
 
-      values <- values %>% resetValues()
+      values <- resetValues(values)
 
-      values <- loadImport(
-        importType = importType,
-        params = list(
-          values = values,
-          filepath = dataSource[["file"]],
-          filename = dataSource[["filename"]],
-          subFolder = subFolder,
-          rPackageName = rPackageName,
-          onlySettings = onlySettings,
-          fileExtension = fileExtension,
-          expectedFileInZip = expectedFileInZip
-        )
-      ) %>%
-        withProgress(value = 0.75,
-                     message = sprintf("Importing '%s' ...", dataSource[["filename"]]))
+      values <- withProgress(
+        value = 0.75,
+        message = sprintf("Importing '%s' ...", dataSource[["filename"]]),
+        {
+          loadImport(
+            importType = importType,
+            params = list(
+              values = values,
+              filepath = dataSource[["file"]],
+              filename = dataSource[["filename"]],
+              subFolder = subFolder,
+              rPackageName = rPackageName,
+              onlySettings = onlySettings,
+              fileExtension = fileExtension,
+              expectedFileInZip = expectedFileInZip
+            )
+          )
+        }
+      )
     }) %>%
       bindEvent(list(dataSource[["file"]], input[["fileType-type"]]), ignoreInit = TRUE)
 
