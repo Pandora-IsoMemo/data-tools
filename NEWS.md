@@ -1,3 +1,8 @@
+# DataTools 26.08.0
+
+## Bug Fixes
+- Fixed handling of Pandora/import failures by correcting progress-wrapper evaluation and error catching across import modules.
+
 # DataTools 26.05.0
 
 ## Updates

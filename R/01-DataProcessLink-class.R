@@ -108,19 +108,23 @@ load_data_from_link.DataProcessLink <- function(object, ...) {
     removeNamespacePattern(pattern = c("dataSelector"))
 
   # load data
-  values <- loadDataWrapper(
-    values = args$values,
-    filepath = data_source[["file"]],
-    filename = data_source[["filename"]],
-    type = file_inputs[["fileType-type"]],
-    sep = file_inputs[["fileType-colSep"]],
-    dec = file_inputs[["fileType-decSep"]],
-    sheetId = as.numeric(file_inputs[["fileType-sheet"]]),
-    withRownames = args$customNames$withRownames,
-    withColnames = args$customNames$withColnames
-  ) %>%
-    withProgress(value = 0.75,
-                 message = sprintf("Importing '%s' from link ...", data_source[["filename"]]))
+  values <- withProgress(
+    value = 0.75,
+    message = sprintf("Importing '%s' from link ...", data_source[["filename"]]),
+    expr = {
+      loadDataWrapper(
+        values = args$values,
+        filepath = data_source[["file"]],
+        filename = data_source[["filename"]],
+        type = file_inputs[["fileType-type"]],
+        sep = file_inputs[["fileType-colSep"]],
+        dec = file_inputs[["fileType-decSep"]],
+        sheetId = as.numeric(file_inputs[["fileType-sheet"]]),
+        withRownames = args$customNames$withRownames,
+        withColnames = args$customNames$withColnames
+      )
+    }
+  )
 
   values
 }
