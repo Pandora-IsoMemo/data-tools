@@ -1,5 +1,30 @@
-lib
+# Version control
 .git
-.Rprofile
+.github
+
+# CI/CD
+Dockerfile
+.dockerignore
 Jenkinsfile
-Dockerfiles
+
+# R IDE & environment
+*.Rproj
+.Rproj.user
+.Rhistory
+*.Rhistory
+.RData
+*.RData
+.Rprofile
+
+# Documentation & metadata
+README.md
+NEWS.md
+LICENSE.md
+_pkgdown.yml
+docs/
+
+# Development only
+lib/
+tests/
+
+
