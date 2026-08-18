@@ -91,10 +91,14 @@
 <code class="sourceCode R"><span><span class="fu">DataTools</span><span class="fu">::</span><span class="fu"><a href="reference/checkWarningEmptyValues.html">checkWarningEmptyValues</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="fu">DataTools</span><span class="fu">::</span><span class="fu"><a href="reference/checkAnyNonNumericColumns.html">checkAnyNonNumericColumns</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span>
 <span><span class="fu">DataTools</span><span class="fu">::</span><span class="fu"><a href="reference/checkErrorNoNumericColumns.html">checkErrorNoNumericColumns</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span></span></code></pre></div>
+<hr>
 </div>
 <div class="section level2">
-<h2 id="general-helper-functions">General helper functions<a class="anchor" aria-label="anchor" href="#general-helper-functions"></a>
+<h2 id="notes-for-developers">Notes for developers<a class="anchor" aria-label="anchor" href="#notes-for-developers"></a>
 </h2>
+<div class="section level3">
+<h3 id="general-helper-functions">General helper functions<a class="anchor" aria-label="anchor" href="#general-helper-functions"></a>
+</h3>
 <ul>
 <li>
 <p>function to catch and forward errors and warnings to the app’s UI</p>
@@ -102,7 +106,7 @@
 <code class="sourceCode R"><span><span class="fu">shinyTools</span><span class="fu">::</span><span class="fu"><a href="https://pandora-isomemo.github.io/shiny-tools/reference/shinyTryCatch.html" class="external-link">shinyTryCatch</a></span><span class="op">(</span><span class="va">expr</span>, <span class="va">messagePreError</span><span class="op">)</span></span></code></pre></div>
 </li>
 </ul>
-<hr>
+</div>
 <div class="section level3">
 <h3 id="naming-conventions-in-this-package">Naming conventions in this package<a class="anchor" aria-label="anchor" href="#naming-conventions-in-this-package"></a>
 </h3>
@@ -112,6 +116,25 @@ Lower number indicate that the functions are closer to the functionality of the 
 01: Main shiny modules (basically tabs in the app)<br>
 02: Helper shiny modules (files include ui + server component)<br>
 03: Helper functions</p>
+</div>
+<div class="section level3">
+<h3 id="documentaion">Documentaion<a class="anchor" aria-label="anchor" href="#documentaion"></a>
+</h3>
+<p>When adding information to the <em>help</em> sites, <em>docstrings</em> or the <em>vignette</em> of this package, please update documentation locally as follows. The documentation of the main branch is built automatically via GitHub Actions.</p>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/document.html" class="external-link">document</a></span><span class="op">(</span><span class="op">)</span> <span class="co"># or CTRL + SHIFT + D in RStudio</span></span>
+<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://devtools.r-lib.org/reference/build_site.html" class="external-link">build_site</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="docker">Docker<a class="anchor" aria-label="anchor" href="#docker"></a>
+</h3>
+<p>When testing with a local docker container, please make sure to rebuild the docker image after changes in the R code or dependencies. You can do this from the root of the repository via:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">docker</span> build <span class="at">-t</span> datatools-test-app:latest .</span></code></pre></div>
+<p>After that, start the container as usual via:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a><span class="ex">docker</span> run <span class="at">-p</span> 3838:3838 datatools-test-app:latest</span></code></pre></div>
+<p>and access the app in your browser at <code>http://localhost:3838/</code>. Stop the container with <code>CTRL + C</code> in the terminal.</p>
+<p><strong>Optional:</strong></p>
+<p>Add <code>-it</code> for interactive mode, or <code>--rm</code> to remove the container after stopping.</p>
 </div>
 </div>
 </div>
