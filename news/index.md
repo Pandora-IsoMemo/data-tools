@@ -1,5 +1,11 @@
 # Changelog
 
+## DataTools 26.08.2
+
+### Updates
+
+- Increased Pandora version for updates with error handling and messages
+
 ## DataTools 26.08.1
 
 ### Bug Fixes
