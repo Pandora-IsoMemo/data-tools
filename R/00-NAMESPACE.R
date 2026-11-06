@@ -7,8 +7,8 @@
 #' @importFrom lifecycle deprecate_warn
 #' @importFrom llmModuleS llm_generate_prompt_ui llm_generate_prompt_server
 #' @importFrom openxlsx loadWorkbook
-#' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData
-#'  formatRepositoryList
+#' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData 
+#' @importFrom Pandora formatRepositoryList
 #' @importFrom readxl excel_sheets
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable dbRemoveTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor
