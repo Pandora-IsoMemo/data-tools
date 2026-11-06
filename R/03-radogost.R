@@ -1,138 +1,300 @@
-#' Fetch and server-side filter file metadata from RADOGOST API with pagination support
-#'
-#' @param base_url Base search API endpoint URL
-#' @param include_restricted Also list restricted files (defaults to FALSE). Their file_url returns HTTP 403
-#'   without permission. Files under an active embargo are listed as not restricted but also return 403.
-#' @param per_page Number of items returned per page (defaults to 100)
-#' @param name_pattern Optional character string. One or more words to match in file name (order-independent AND logic);
-#'   any character other than a letter or digit separates words
-#' @param extension Optional character string. File extension to filter by (e.g., "tif", "zip", ".jpg").
-#'   Ingested tabular files (e.g. uploaded as .xlsx or .csv) are indexed under "tab"
-#' @return A data frame containing: file_name, file_url, file_content_type, restricted, dataset_name and
-#'   dataset_persistent_id, sorted hierarchically by dataset_name, dataset_persistent_id, and file_name.
-#'   For tabular files file_url points to the originally uploaded file (?format=original)
-fetch_radogost_files <- function(base_url = "https://radogost.dariah.pl/api/search",
-                                 include_restricted = FALSE,
-                                 per_page = 100,
-                                 name_pattern = NULL,
-                                 extension = NULL) {
+radogost_validate_url <- function(url, endpoint = c("search", "file")) {
+  endpoint <- match.arg(endpoint)
+  if (!is.character(url) || length(url) != 1L || is.na(url) || !nzchar(url)) {
+    stop("URL is not a supported RADOGOST endpoint", call. = FALSE)
+  }
+  parsed_url <- tryCatch(httr::parse_url(url), error = function(error) NULL)
+  expected_path <- if (endpoint == "search") {
+    "api/search"
+  } else {
+    "^api/access/datafile/[0-9]+/?$"
+  }
+  valid_path <- if (endpoint == "search") {
+    identical(parsed_url$path, expected_path)
+  } else {
+    !is.null(parsed_url$path) && grepl(expected_path, parsed_url$path)
+  }
+  valid_port <- is.null(parsed_url$port) ||
+    identical(suppressWarnings(as.integer(parsed_url$port)), 443L)
 
-  # 1. Build Solr query string for the 'q' parameter dynamically
-  query_parts <- c()
+  if (is.null(parsed_url) ||
+      !identical(tolower(parsed_url$scheme), "https") ||
+      !identical(tolower(parsed_url$hostname), "radogost.dariah.pl") ||
+      !valid_port ||
+      !is.null(parsed_url$username) ||
+      !is.null(parsed_url$password) ||
+      !valid_path) {
+    stop("URL is not a supported RADOGOST endpoint", call. = FALSE)
+  }
+
+  invisible(url)
+}
+
+radogost_build_query <- function(name_pattern = NULL, extension = NULL) {
+  query_parts <- character()
 
   if (!is.null(name_pattern) && nzchar(trimws(name_pattern))) {
-    # Split input into words on anything that is not a letter or digit, as Solr does when indexing file names,
-    # so that no Solr special character reaches the query
     words <- unlist(strsplit(trimws(name_pattern), "[^\\p{L}\\p{N}]+", perl = TRUE))
     words <- words[nzchar(words)]
-
-    if (length(words) > 0) {
-      # Each word becomes an independent wildcard clause combined with AND
-      words_query <- sprintf("name:*%s*", words)
-      query_parts <- c(query_parts, sprintf("(%s)", paste(words_query, collapse = " AND ")))
-    } else {
-      stop("name_pattern must contain at least one letter or digit")
+    if (length(words) == 0) {
+      stop("name_pattern must contain at least one letter or digit", call. = FALSE)
     }
+
+    words_query <- sprintf("name:*%s*", words)
+    query_parts <- c(query_parts, sprintf("(%s)", paste(words_query, collapse = " AND ")))
   }
 
   if (!is.null(extension) && nzchar(trimws(extension))) {
     ext_clean <- gsub("[^\\p{L}\\p{N}]", "", trimws(extension), perl = TRUE)
+    if (!nzchar(ext_clean)) {
+      stop("extension must contain at least one letter or digit", call. = FALSE)
+    }
     query_parts <- c(query_parts, sprintf("fileExtension:%s", tolower(ext_clean)))
   }
 
-  # Fallback to wildcard search if no specific filters were requested
-  q_param <- if (length(query_parts) > 0) {
-    paste(query_parts, collapse = " AND ")
-  } else {
-    "*"
+  if (length(query_parts) == 0) "*" else paste(query_parts, collapse = " AND ")
+}
+
+radogost_get <- function(url, query, timeout) {
+  radogost_validate_url(url, endpoint = "search")
+  response <- httr::GET(
+    url = url,
+    query = query,
+    httr::timeout(timeout),
+    httr::config(followlocation = FALSE)
+  )
+  httr::stop_for_status(response)
+  radogost_validate_url(response$url, endpoint = "search")
+  httr::content(response, as = "text", encoding = "UTF-8")
+}
+
+radogost_empty_files <- function() {
+  data.frame(
+    file_name = character(),
+    file_url = character(),
+    file_content_type = character(),
+    dataset_name = character(),
+    dataset_persistent_id = character(),
+    restricted = logical()
+  )
+}
+
+radogost_download_request <- function(url, path, timeout) {
+  response <- httr::GET(
+    url = url,
+    httr::write_disk(path, overwrite = TRUE),
+    httr::timeout(timeout),
+    httr::config(followlocation = FALSE)
+  )
+  httr::stop_for_status(response)
+  list(url = response$url, headers = response$headers)
+}
+
+radogost_filename_from_headers <- function(headers) {
+  disposition <- headers[["content-disposition"]]
+  if (is.null(disposition) || length(disposition) != 1L) {
+    stop("RADOGOST download did not provide a filename", call. = FALSE)
   }
 
-  # The search API does not say per file whether it is restricted, so each access level is fetched separately
-  access_types <- if (include_restricted) c("Public", "Restricted") else "Public"
+  encoded_match <- regexec("filename\\*=[^']*''([^;]+)", disposition, ignore.case = TRUE)
+  encoded_name <- regmatches(disposition, encoded_match)[[1L]]
+  if (length(encoded_name) > 1L) {
+    filename <- utils::URLdecode(encoded_name[2L])
+  } else {
+    plain_match <- regexec("filename=\"?([^\";]+)\"?", disposition, ignore.case = TRUE)
+    plain_name <- regmatches(disposition, plain_match)[[1L]]
+    if (length(plain_name) < 2L) {
+      stop("RADOGOST download did not provide a filename", call. = FALSE)
+    }
+    filename <- trimws(plain_name[2L])
+  }
+
+  if (!nzchar(filename) ||
+      grepl("/", filename, fixed = TRUE) ||
+      grepl("\\\\", filename, fixed = TRUE) ||
+      grepl("[[:cntrl:]]", filename) ||
+      filename %in% c(".", "..")) {
+    stop("RADOGOST returned an invalid filename", call. = FALSE)
+  }
+
+  filename
+}
+
+download_radogost_file <- function(file_url,
+                                   timeout = 60,
+                                   allowed_types = config()[["dataFileTypes"]],
+                                   .request = radogost_download_request) {
+  radogost_validate_url(file_url, endpoint = "file")
+  if (!is.numeric(timeout) || length(timeout) != 1L || !is.finite(timeout) || timeout <= 0) {
+    stop("timeout must be a positive number", call. = FALSE)
+  }
+
+  tmp_path <- tempfile(fileext = ".download")
+  on.exit(unlink(tmp_path), add = TRUE)
+  response <- .request(url = file_url, path = tmp_path, timeout = timeout)
+  if (is.null(response$url) || is.null(response$headers)) {
+    stop("RADOGOST returned incomplete download metadata", call. = FALSE)
+  }
+  radogost_validate_url(response$url, endpoint = "file")
+
+  file_info <- file.info(tmp_path)
+  if (is.na(file_info$size) || file_info$size == 0) {
+    stop("RADOGOST download was empty", call. = FALSE)
+  }
+  content_length <- suppressWarnings(as.numeric(response$headers[["content-length"]]))
+  if (length(content_length) == 1L && !is.na(content_length) && file_info$size != content_length) {
+    stop("RADOGOST download was incomplete", call. = FALSE)
+  }
+
+  filename <- radogost_filename_from_headers(response$headers)
+  extension <- tolower(getExtension(filename))
+  if (!extension %in% tolower(allowed_types)) {
+    stop("RADOGOST file format is not supported for data import", call. = FALSE)
+  }
+
+  final_path <- tempfile(fileext = paste0(".", extension))
+  if (!file.rename(tmp_path, final_path)) {
+    unlink(final_path)
+    stop("Could not prepare RADOGOST file for import", call. = FALSE)
+  }
+
+  list(file = final_path, filename = filename)
+}
+
+#' Search RADOGOST files
+#'
+#' Fetch file metadata from RADOGOST, applying filename and extension filters and following the
+#' API's pagination. Public files are returned by default. Restricted or embargoed files may not
+#' be downloadable; data imports are limited to formats in the package's `dataFileTypes` setting.
+#'
+#' @param base_url RADOGOST search endpoint. Only the trusted RADOGOST HTTPS endpoint is accepted.
+#' @param include_restricted Also search restricted files. They may return HTTP 403 when downloaded.
+#' @param per_page Number of results requested per API page.
+#' @param max_results Maximum number of results to return. The default returns all matching pages.
+#' @param name_pattern Optional filename words to match using order-independent AND logic.
+#' @param extension Optional file extension. Ingested tabular files are indexed as `tab`.
+#' @param timeout Request timeout in seconds.
+#' @param .request Internal request function, primarily used to mock API responses in tests.
+#' @return A data frame with file name, URL, content type, access status, and parent dataset metadata,
+#'   sorted by dataset name, dataset identifier, and file name. Tabular-file URLs request the original
+#'   uploaded format; its actual filename and extension are obtained from the download response.
+fetch_radogost_files <- function(base_url = "https://radogost.dariah.pl/api/search",
+                                 include_restricted = FALSE,
+                                 per_page = 100,
+                                 max_results = Inf,
+                                 name_pattern = NULL,
+                                 extension = NULL,
+                                 timeout = 20,
+                                 .request = radogost_get) {
+  radogost_validate_url(base_url, endpoint = "search")
+  if (!is.numeric(per_page) || length(per_page) != 1L || !is.finite(per_page) ||
+      per_page < 1 || per_page != as.integer(per_page)) {
+    stop("per_page must be a positive integer", call. = FALSE)
+  }
+  if (!is.numeric(max_results) || length(max_results) != 1L || is.na(max_results) ||
+      max_results < 1 || (!is.infinite(max_results) && max_results != as.integer(max_results))) {
+    stop("max_results must be a positive integer or Inf", call. = FALSE)
+  }
+  if (!is.numeric(timeout) || length(timeout) != 1L || !is.finite(timeout) || timeout <= 0) {
+    stop("timeout must be a positive number", call. = FALSE)
+  }
+
+  q_param <- radogost_build_query(name_pattern, extension)
+  access_types <- if (isTRUE(include_restricted)) c("Public", "Restricted") else "Public"
   all_items <- list()
+  result_count <- 0L
+  truncated <- FALSE
 
   for (access_type in access_types) {
-    start <- 0
+    start <- 0L
     total_count <- Inf
-    page <- 1
 
-    while (start < total_count) {
-      # 2. Define query parameters for the current page
+    while (start < total_count && result_count < max_results) {
+      page_size <- as.integer(min(per_page, max_results - result_count))
       query_params <- list(
         q = q_param,
         type = "file",
         fq = sprintf("fileAccess:%s", access_type),
-        per_page = per_page,
+        per_page = page_size,
         start = start
       )
+      content_text <- .request(url = base_url, query = query_params, timeout = timeout)
+      parsed_json <- tryCatch(
+        jsonlite::fromJSON(content_text, flatten = FALSE),
+        error = function(error) stop("RADOGOST returned invalid JSON", call. = FALSE)
+      )
 
-      message(sprintf("Fetching %s page %d (start = %d) with query: %s...", access_type, page, start, q_param))
-
-      # 3. Query the API endpoint
-      response <- httr::GET(url = base_url, query = query_params)
-      httr::stop_for_status(response)
-
-      # 4. Parse JSON response
-      content_text <- httr::content(response, as = "text", encoding = "UTF-8")
-      parsed_json <- jsonlite::fromJSON(content_text, flatten = FALSE)
-
-      if (parsed_json$status != "OK") {
-        stop(sprintf("API returned error status: %s", parsed_json$status))
+      if (!identical(parsed_json$status, "OK")) {
+        stop("RADOGOST returned an unsuccessful response", call. = FALSE)
+      }
+      if (is.null(parsed_json$data) ||
+          length(parsed_json$data$total_count) != 1L ||
+          length(parsed_json$data$count_in_response) != 1L) {
+        stop("RADOGOST returned an incomplete response", call. = FALSE)
       }
 
-      # 5. Extract total count and item list
       total_count <- parsed_json$data$total_count
+      count_in_response <- parsed_json$data$count_in_response
       items <- parsed_json$data$items
-
-      # Stop if no items are returned or matching criteria
-      if (is.null(items) || length(items) == 0 || nrow(items) == 0) {
+        if (!is.numeric(total_count) || length(total_count) != 1L || !is.finite(total_count) ||
+          total_count < 0 || total_count != as.integer(total_count) ||
+          !is.numeric(count_in_response) || length(count_in_response) != 1L ||
+          !is.finite(count_in_response) || count_in_response < 0 ||
+          count_in_response != as.integer(count_in_response) || count_in_response > page_size) {
+        stop("RADOGOST returned invalid pagination metadata", call. = FALSE)
+      }
+      if (is.null(items) || length(items) == 0L || NROW(items) == 0L) {
         break
       }
+      required_columns <- c("name", "url", "file_content_type", "dataset_name", "dataset_persistent_id")
+      if (!is.data.frame(items) || !all(required_columns %in% names(items))) {
+        stop("RADOGOST returned file records with an unexpected format", call. = FALSE)
+      }
+      if (NROW(items) != count_in_response) {
+        stop("RADOGOST returned inconsistent pagination metadata", call. = FALSE)
+      }
+      if (count_in_response == 0) {
+        stop("RADOGOST returned files without advancing the result offset", call. = FALSE)
+      }
 
-      # 6. Retain relevant columns and rename them
-      items_subset <- items[, c("name", "url", "file_content_type", "dataset_name", "dataset_persistent_id"),
-                            drop = FALSE] %>%
-        dplyr::rename(
-          file_name = name,
-          file_url = url
-        )
+      items_subset <- items[, required_columns, drop = FALSE]
+      names(items_subset)[names(items_subset) == "name"] <- "file_name"
+      names(items_subset)[names(items_subset) == "url"] <- "file_url"
       items_subset$restricted <- access_type == "Restricted"
 
-      # Ingested tabular files are served as .tab unless the original format is requested
-      is_tab <- items_subset$file_content_type == "text/tab-separated-values"
-      items_subset$file_url[is_tab] <- paste0(items_subset$file_url[is_tab], "?format=original")
+      is_tab <- !is.na(items_subset$file_content_type) &
+        items_subset$file_content_type == "text/tab-separated-values"
+      items_subset$file_url[is_tab] <- vapply(
+        items_subset$file_url[is_tab],
+        function(file_url) {
+          radogost_validate_url(file_url, endpoint = "file")
+          parsed_url <- httr::parse_url(file_url)
+          parsed_url$query$format <- "original"
+          httr::build_url(parsed_url)
+        },
+        character(1)
+      )
+      all_items[[length(all_items) + 1L]] <- items_subset
 
-      all_items[[length(all_items) + 1]] <- items_subset
-
-      # 7. Update pagination offset based on the actual count received
-      count_in_response <- parsed_json$data$count_in_response
-      start <- start + count_in_response
-      page <- page + 1
-
-      # Safeguard against infinite loop if response yields no records
-      if (count_in_response == 0) {
-        break
+      start <- start + as.integer(count_in_response)
+      result_count <- result_count + NROW(items_subset)
+      if (result_count >= max_results && start < total_count) {
+        truncated <- TRUE
       }
+    }
+    if (truncated) {
+      break
     }
   }
 
-  # 8. Return empty data frame if no records matched the criteria
-  if (length(all_items) == 0) {
-    return(data.frame(
-      file_name = character(),
-      file_url = character(),
-      file_content_type = character(),
-      dataset_name = character(),
-      dataset_persistent_id = character(),
-      restricted = logical()
-    ))
+  if (length(all_items) == 0L) {
+    return(radogost_empty_files())
   }
 
-  # 9. Combine pages and sort hierarchically: dataset_name -> dataset_persistent_id -> file_name
-  final_df <- dplyr::bind_rows(all_items) %>%
-    dplyr::arrange(dataset_name, dataset_persistent_id, file_name)
-
-  message(sprintf("Successfully retrieved %d rows matching criteria.", nrow(final_df)))
-
-  return(final_df)
+  results <- dplyr::bind_rows(all_items)
+  results <- results[order(results$dataset_name,
+                           results$dataset_persistent_id,
+                           results$file_name), , drop = FALSE]
+  attr(results, "truncated") <- truncated
+  results
 }

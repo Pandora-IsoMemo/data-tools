@@ -2,35 +2,43 @@
 % Please edit documentation in R/03-radogost.R
 \name{fetch_radogost_files}
 \alias{fetch_radogost_files}
-\title{Fetch and server-side filter file metadata from RADOGOST API with pagination support}
+\title{Search RADOGOST files}
 \usage{
 fetch_radogost_files(
   base_url = "https://radogost.dariah.pl/api/search",
   include_restricted = FALSE,
   per_page = 100,
+  max_results = Inf,
   name_pattern = NULL,
-  extension = NULL
+  extension = NULL,
+  timeout = 20,
+  .request = radogost_get
 )
 }
 \arguments{
-\item{base_url}{Base search API endpoint URL}
+\item{base_url}{RADOGOST search endpoint. Only the trusted RADOGOST HTTPS endpoint is accepted.}
 
-\item{include_restricted}{Also list restricted files (defaults to FALSE). Their file_url returns HTTP 403
-without permission. Files under an active embargo are listed as not restricted but also return 403.}
+\item{include_restricted}{Also search restricted files. They may return HTTP 403 when downloaded.}
 
-\item{per_page}{Number of items returned per page (defaults to 100)}
+\item{per_page}{Number of results requested per API page.}
 
-\item{name_pattern}{Optional character string. One or more words to match in file name (order-independent AND logic);
-any character other than a letter or digit separates words}
+\item{max_results}{Maximum number of results to return. The default returns all matching pages.}
 
-\item{extension}{Optional character string. File extension to filter by (e.g., "tif", "zip", ".jpg").
-Ingested tabular files (e.g. uploaded as .xlsx or .csv) are indexed under "tab"}
+\item{name_pattern}{Optional filename words to match using order-independent AND logic.}
+
+\item{extension}{Optional file extension. Ingested tabular files are indexed as `tab`.}
+
+\item{timeout}{Request timeout in seconds.}
+
+\item{.request}{Internal request function, primarily used to mock API responses in tests.}
 }
 \value{
-A data frame containing: file_name, file_url, file_content_type, restricted, dataset_name and
-  dataset_persistent_id, sorted hierarchically by dataset_name, dataset_persistent_id, and file_name.
-  For tabular files file_url points to the originally uploaded file (?format=original)
+A data frame with file name, URL, content type, access status, and parent dataset metadata,
+  sorted by dataset name, dataset identifier, and file name. Tabular-file URLs request the original
+  uploaded format; its actual filename and extension are obtained from the download response.
 }
 \description{
-Fetch and server-side filter file metadata from RADOGOST API with pagination support
+Fetch file metadata from RADOGOST, applying filename and extension filters and following the
+API's pagination. Public files are returned by default. Restricted or embargoed files may not
+be downloadable; data imports are limited to formats in the package's `dataFileTypes` setting.
 }

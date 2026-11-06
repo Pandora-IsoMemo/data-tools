@@ -1,3 +1,8 @@
+# DataTools 26.11.0
+
+## Updates
+- Added RADOGOST Repository search and import for supported public tabular files (#124).
+
 # DataTools 26.08.2
 
 ## Updates

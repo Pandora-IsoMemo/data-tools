@@ -7,9 +7,11 @@
 getDataSource(
   dataSource = reactiveValues(file = NULL, filename = NULL, type = NULL, input = NULL),
   input,
-  type = c("ckan", "file", "url", "remoteModel"),
+  type = c("ckan", "radogost", "file", "url", "remoteModel"),
   isInternet = TRUE,
-  pathToFile = NULL
+  pathToFile = NULL,
+  radogostFiles = NULL,
+  radogostDownload = download_radogost_file
 )
 }
 \arguments{
@@ -17,7 +19,7 @@ getDataSource(
 
 \item{input}{(reactiveValues)}
 
-\item{type}{(character) source of import, one of "ckan", "file", "url", "remoteModel".
+\item{type}{(character) source of import, one of "ckan", "radogost", "file", "url", "remoteModel".
 Possible sources for data are: "ckan", "file", "url".
 Possible sources for models are: "ckan", "file", "url", "remoteModel".}
 
@@ -25,6 +27,10 @@ Possible sources for models are: "ckan", "file", "url", "remoteModel".}
 ignored if \code{type = "file"} or \code{type = "remoteModel"}}
 
 \item{pathToFile}{(character) file path, ignored if \code{type != "remoteModel"}}
+
+\item{radogostFiles}{(data.frame) RADOGOST search results when \code{type = "radogost"}}
+
+\item{radogostDownload}{(function) RADOGOST file downloader}
 }
 \description{
 Get Data Source

@@ -1,10 +1,11 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 26.08.2
-Date: 2026-08-18
+Version: 26.11.0
+Date: 2026-11-06
 Authors@R: c(
-            person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
+            person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
+            person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("aut", "cre"))
             )
 Maintainer: Antonia Runge <antonia.runge@inwt-statistics.de>
 Description: Helpful functions and modules that can be applied across the Isomemo Apps.

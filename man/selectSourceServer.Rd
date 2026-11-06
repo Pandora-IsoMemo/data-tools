@@ -22,7 +22,12 @@ selectSourceServer(
   githubRepo,
   folderOnGithub,
   pathToLocal,
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")
+  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+  radogostFetch = fetch_radogost_files,
+  radogostDownload = function(file_url) {
+     download_radogost_file(file_url,
+    allowed_types = ckanFileTypes)
+ }
 )
 }
 \arguments{
@@ -57,6 +62,10 @@ or ".csv"}
 correspond to 'pathToLocal' since online and offline files should be the same and up-to-date}
 
 \item{pathToLocal}{(character) relative path to the folder storing local files}
+
+\item{radogostFetch}{(function) search function for RADOGOST}
+
+\item{radogostDownload}{(function) downloader for RADOGOST files}
 }
 \description{
 UI of the module

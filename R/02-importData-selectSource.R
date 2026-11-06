@@ -17,6 +17,7 @@ selectSourceUI <- function(id,
 
   sourceChoices <- switch(importType,
                           data = c("Pandora Platform" = "ckan",
+                                   "Radogost Repository" = "radogost",
                                    "File" = "file",
                                    "URL" = "url",
                                    "Github Repository" = "remoteModel"),
@@ -80,6 +81,24 @@ selectSourceUI <- function(id,
              ))
       ))
     ),
+    ## source == radogost
+    conditionalPanel(
+      condition = "input.source == 'radogost'",
+      ns = ns,
+      fluidRow(
+        column(
+          width = 5,
+          textInput(ns("radogost-name"), "File name", value = ""),
+          actionButton(ns("radogost-search"), "Search")
+        ),
+        column(
+          width = 7,
+          selectizeInput(ns("radogost-file"), "File", choices = c("Search for files first" = "")),
+          actionButton(ns("radogost-load"), "Load selected file"),
+          textOutput(ns("radogost-status"))
+        )
+      )
+    ),
     ## source == file
     conditionalPanel(
       condition = "input.source == 'file' && (input.dataOrLink == null || input.dataOrLink == 'fullData')",
@@ -123,6 +142,8 @@ selectSourceUI <- function(id,
 #' @param id id of module
 #' @param openPopupReset (reactive) TRUE if popup is (re-)opened
 #' @param internetCon (reactive) TRUE if there is an internet connection
+#' @param radogostFetch (function) search function for RADOGOST
+#' @param radogostDownload (function) downloader for RADOGOST files
 #' @inheritParams configureFileServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
@@ -133,7 +154,11 @@ selectSourceServer <- function(id,
                                githubRepo,
                                folderOnGithub,
                                pathToLocal,
-                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")) {
+                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                               radogostFetch = fetch_radogost_files,
+                               radogostDownload = function(file_url) {
+                                 download_radogost_file(file_url, allowed_types = ckanFileTypes)
+                               }) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -205,12 +230,21 @@ selectSourceServer <- function(id,
                                               filename = NULL,
                                               type = NULL,
                                               input = NULL)
+                 radogostFiles <- reactiveVal(radogost_empty_files())
+                 radogostSearchError <- reactiveVal(NULL)
 
                  observe({
                    req(isTRUE(openPopupReset()))
                    logDebug("Update after openPopupReset()")
                    # reset
                    reset("file")
+                   radogostFiles(radogost_empty_files())
+                   radogostSearchError(NULL)
+                   updateTextInput(session, "radogost-name", value = "")
+                   updateSelectizeInput(session,
+                                        "radogost-file",
+                                        choices = c("Search for files first" = ""),
+                                        selected = "")
                    updateTextInput(session, "repoFilter-ckanMeta", value = "")
 
                    if (isTRUE(internetCon())) {
@@ -298,11 +332,96 @@ selectSourceServer <- function(id,
                    dataSource$filename <- NULL
                    dataSource$type <- NULL
                    dataSource$input <- NULL
+                   if (!identical(input$source, "radogost")) {
+                     radogostFiles(radogost_empty_files())
+                     radogostSearchError(NULL)
+                     updateSelectizeInput(session,
+                                          "radogost-file",
+                                          choices = c("Search for files first" = ""),
+                                          selected = "")
+                   }
 
                    # Do not reset inputs when switching the input$source!!
                    # This would also reset input values after importing a data link.
                  }) %>%
                    bindEvent(input$source)
+
+                 observeEvent(input[["radogost-search"]], {
+                   req(input$source == "radogost")
+                   radogostSearchError(NULL)
+                   if (!isTRUE(internetCon())) {
+                     radogostFiles(radogost_empty_files())
+                     radogostSearchError("No internet connection.")
+                   } else {
+                     tryCatch({
+                       results <- withProgress(
+                         message = "Searching RADOGOST...",
+                         value = 0,
+                         radogostFetch(name_pattern = input[["radogost-name"]],
+                                       extension = "tab",
+                                       per_page = 100,
+                                       max_results = 500)
+                       )
+                       radogostFiles(results)
+                     }, error = function(error) {
+                       radogostFiles(radogost_empty_files())
+                       radogostSearchError(conditionMessage(error))
+                     })
+                   }
+
+                   results <- radogostFiles()
+                   choices <- if (nrow(results) == 0L) {
+                     c("No matching files" = "")
+                   } else {
+                     labels <- paste(results$dataset_name, results$file_name, sep = " / ")
+                     stats::setNames(as.character(seq_len(nrow(results))), labels)
+                   }
+                   updateSelectizeInput(session,
+                                        "radogost-file",
+                                        choices = choices,
+                                        selected = "")
+                 }, ignoreInit = TRUE)
+
+                 output[["radogost-status"]] <- renderText({
+                   if (!is.null(radogostSearchError())) {
+                     return(radogostSearchError())
+                   }
+                   if (nrow(radogostFiles()) == 0L) {
+                     return("")
+                   }
+                   if (isTRUE(attr(radogostFiles(), "truncated"))) {
+                     return(sprintf("Showing first %d files. Refine the name search for more specific results.",
+                                    nrow(radogostFiles())))
+                   }
+                   sprintf("%d file(s) found.", nrow(radogostFiles()))
+                 })
+
+                 observeEvent(input[["radogost-load"]], {
+                   req(input$source == "radogost")
+                   req(input[["radogost-file"]], nrow(radogostFiles()) > 0L)
+                   if (!isTRUE(internetCon())) {
+                     showNotification("No internet connection.", type = "error")
+                     return()
+                   }
+                   tryCatch({
+                     loadedSource <- getDataSource(dataSource = dataSource,
+                                                   input = input,
+                                                   type = "radogost",
+                                                   isInternet = internetCon(),
+                                                   radogostFiles = radogostFiles(),
+                                                   radogostDownload = radogostDownload)
+                     dataSource <- addSourceType(dataSource = loadedSource,
+                                                 importType = importType,
+                                                 source = "radogost",
+                                                 inputDataOrLink = input[["dataOrLink"]])
+                   }, error = function(error) {
+                     dataSource$file <- NULL
+                     dataSource$filename <- NULL
+                     dataSource$type <- NULL
+                     dataSource$input <- NULL
+                     showNotification(conditionMessage(error), type = "error")
+                   })
+                 }, ignoreInit = TRUE)
 
                  observe({
                    logDebug("reset CKAN fields")
