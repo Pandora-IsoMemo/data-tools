@@ -16,22 +16,22 @@ selectSourceUI <- function(id,
   ns <- NS(id)
 
   sourceChoices <- switch(importType,
-                          data = c("Pandora Platform" = "ckan",
-                                   "Radogost Repository" = "radogost",
-                                   "File" = "file",
+                          data = c("Pandora" = "ckan",
+                                   "Radogost" = "radogost",
                                    "URL" = "url",
-                                   "Github Repository" = "remoteModel"),
-                          model = c("Pandora Platform" = "ckan",
-                                    "File" = "file",
+                                   "Github" = "remoteModel",
+                                   "File" = "file"),
+                          model = c("Pandora" = "ckan",
                                     "URL" = "url",
-                                    "Github Repository" = "remoteModel"),
-                          zip = c("Pandora Platform" = "ckan",
-                                  "File" = "file",
+                                    "Github" = "remoteModel",
+                                    "File" = "file"),
+                          zip = c("Pandora" = "ckan",
                                   "URL" = "url",
-                                  "Github Repository" = "remoteModel"),
-                          list = c("Pandora Platform" = "ckan",
-                                   "File" = "file",
-                                   "URL" = "url")
+                                  "Github" = "remoteModel",
+                                  "File" = "file"),
+                          list = c("Pandora" = "ckan",
+                                   "URL" = "url",
+                                   "File" = "file")
   )
 
   tagList(
@@ -39,28 +39,30 @@ selectSourceUI <- function(id,
     fluidRow(
       column(6,
              tags$strong("1. Select source"),
-             radioButtons(
-               ns("source"),
-               label = NULL,
-               choices = sourceChoices,
-               selected = defaultSource,
-               inline = TRUE)),
+             radioButtons(ns("source"),
+                          label = NULL,
+                          choices = sourceChoices,
+                          selected = defaultSource,
+                          inline = TRUE),
+             if (!isInternet) helpText("No internet connection!") else NULL),
       if (importType == "data") {
         column(6,
                align = "right",
-               style = "margin-top: 1.7em;",
+               style = "margin-top: 1.5em;",
                conditionalPanel(
-                 ns = ns,
                  condition = "input.source == 'file'",
-                 radioButtons(ns("dataOrLink"),
-                              label = NULL,
-                              choices = c("Load Dataset" = "fullData", "Load Data Query" = "dataLink"),
-                              selected = "fullData",
-                              inline = TRUE),
-                 if (!isInternet) helpText("No internet connection!") else NULL
-               )
-        )
-      } else NULL
+                 ns = ns,
+                 radioButtons(
+                   ns("dataOrLink"),
+                   label = NULL,
+                   choices = c("Load Dataset" = "fullData", "Load Data Query" = "dataLink"),
+                   selected = "fullData",
+                   inline = TRUE
+                 )
+               ))
+      } else {
+        NULL
+      }
     ),
     tags$br(),
     # source == ckan/file/url/model ----

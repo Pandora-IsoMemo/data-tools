@@ -346,7 +346,7 @@ has_internet <- function(timeout = 2) {
     httr::GET("http://google.com/", timeout(timeout))
   }, silent = FALSE)
 
-  !inherits(res, "try-error")
+  isFALSE(inherits(res, "try-error"))
 }
 
 
