@@ -228,14 +228,13 @@ setImportTitle <- function(title = "", importType, version) {
   }
 
   tagList(
-    title, " (",
+    title, " ",
     tags$a(
       sprintf("v%s", version),
       href = "https://pandora-isomemo.github.io/data-tools/news/index.html",
       target = "_blank",
       rel = "noopener noreferrer"
-    ),
-    ")"
+    )
   )
 }
 
