@@ -32,5 +32,6 @@ selectFileTypeServer(id, dataSource, defaultFileTypes)
 
 - dataSource:
 
-  (reactiveValues) path, filename, type and input, output of
+  (reactiveValues) path, filename, type, input and loadFailed (counter
+  of failed loads), output of
   [`selectSourceServer()`](https://pandora-isomemo.github.io/data-tools/reference/selectSourceServer.md)

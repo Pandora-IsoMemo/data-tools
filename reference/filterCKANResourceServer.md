@@ -21,6 +21,6 @@ filterCKANResourceServer(id)
 - ckanFileTypes:
 
   (character) file types allowed for import from Pandora ("ckan"). E.g.
-  for \`importType = "data"\`: c("xls", "xlsx", "csv", "odt", "txt");
+  for \`importType = "data"\`: c("xls", "xlsx", "csv", "ods", "txt");
   for \`importType = "zip"\`: c("zip"); for \`importType = "list"\`:
   c("json")

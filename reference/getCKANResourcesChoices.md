@@ -19,7 +19,7 @@ getCKANResourcesChoices(
 - fileType:
 
   (character) list of relevant file types, e.g. c("xls", "xlsx", "csv",
-  "odt")
+  "ods")
 
 - repository:
 

@@ -28,6 +28,7 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extract_model_import.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extract_model_notes.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/extract_sql_command.DataProcessLink.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/fetch_radogost_files.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/fillIsoData.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/formatColumnNames.html</loc></url>
@@ -37,6 +38,7 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getCKANResourcesChoices.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getDataSource.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getGithubMapping.html</loc></url>
+<url><loc>https://pandora-isomemo.github.io/data-tools/reference/getSheetNames.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getSheetSelection.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/getZip.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/gptServer.html</loc></url>
@@ -64,7 +66,6 @@
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/new_DownloadBundle.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/new_ZipImport.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/pipe.html</loc></url>
-<url><loc>https://pandora-isomemo.github.io/data-tools/reference/pkg.env.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/prefixSysTime.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/prepareDataServer.html</loc></url>
 <url><loc>https://pandora-isomemo.github.io/data-tools/reference/previewDataServer.html</loc></url>

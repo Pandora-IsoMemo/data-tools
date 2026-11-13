@@ -8,9 +8,11 @@ Get Data Source
 getDataSource(
   dataSource = reactiveValues(file = NULL, filename = NULL, type = NULL, input = NULL),
   input,
-  type = c("ckan", "file", "url", "remoteModel"),
+  type = c("ckan", "radogost", "file", "url", "remoteModel"),
   isInternet = TRUE,
-  pathToFile = NULL
+  pathToFile = NULL,
+  radogostFiles = NULL,
+  radogostDownload = download_radogost_file
 )
 ```
 
@@ -27,9 +29,10 @@ getDataSource(
 
 - type:
 
-  (character) source of import, one of "ckan", "file", "url",
-  "remoteModel". Possible sources for data are: "ckan", "file", "url".
-  Possible sources for models are: "ckan", "file", "url", "remoteModel".
+  (character) source of import, one of "ckan", "radogost", "file",
+  "url", "remoteModel". Possible sources for data are: "ckan",
+  "radogost", "file", "url". Possible sources for models are: "ckan",
+  "file", "url", "remoteModel".
 
 - isInternet:
 
@@ -39,3 +42,12 @@ getDataSource(
 - pathToFile:
 
   (character) file path, ignored if `type != "remoteModel"`
+
+- radogostFiles:
+
+  (data.frame) RADOGOST search results when `type = "radogost"`. If
+  NULL, reconstruct a saved source using `input[["radogost-file-url"]]`.
+
+- radogostDownload:
+
+  (function) RADOGOST file downloader

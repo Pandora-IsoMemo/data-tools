@@ -15,8 +15,8 @@ importDataUI(id, label = "Import Data")
 importDataServer(
   id,
   title = "",
-  defaultSource = c("ckan", "file", "url", "remoteModel"),
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+  defaultSource = c("ckan", "file", "url", "remoteModel", "radogost"),
+  ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
   ignoreWarnings = FALSE,
   importType = c("data", "model", "zip", "list"),
   rowNames = reactiveVal(NULL),
@@ -57,7 +57,7 @@ importDataServer(
 - ckanFileTypes:
 
   (character) file types allowed for import from Pandora ("ckan"). E.g.
-  for \`importType = "data"\`: c("xls", "xlsx", "csv", "odt", "txt");
+  for \`importType = "data"\`: c("xls", "xlsx", "csv", "ods", "txt");
   for \`importType = "zip"\`: c("zip"); for \`importType = "list"\`:
   c("json")
 

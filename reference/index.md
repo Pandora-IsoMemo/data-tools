@@ -59,6 +59,8 @@
 - [`extract_sql_command(`*`<DataProcessLink>`*`)`](https://pandora-isomemo.github.io/data-tools/reference/extract_sql_command.DataProcessLink.md)
   : S3 method: Extract SQL command from DataProcessLink Extracts the SQL
   command string from a DataProcessLink object, if available.
+- [`fetch_radogost_files()`](https://pandora-isomemo.github.io/data-tools/reference/fetch_radogost_files.md)
+  : Search RADOGOST files
 - [`fillIsoData()`](https://pandora-isomemo.github.io/data-tools/reference/fillIsoData.md)
   : Fill Iso Data
 - [`filterCKANResourceUI()`](https://pandora-isomemo.github.io/data-tools/reference/filterCKANResourceServer.md)
@@ -78,6 +80,8 @@
   : Get Data Source
 - [`getGithubMapping()`](https://pandora-isomemo.github.io/data-tools/reference/getGithubMapping.md)
   : Get Github Mapping
+- [`getSheetNames()`](https://pandora-isomemo.github.io/data-tools/reference/getSheetNames.md)
+  : Get Workbook Sheet Names
 - [`getSheetSelection()`](https://pandora-isomemo.github.io/data-tools/reference/getSheetSelection.md)
   : Get Sheet Selection
 - [`getZip()`](https://pandora-isomemo.github.io/data-tools/reference/getZip.md)
@@ -138,8 +142,6 @@
   : Create a new DownloadBundle object
 - [`new_ZipImport()`](https://pandora-isomemo.github.io/data-tools/reference/new_ZipImport.md)
   : Create a ZipImport object
-- [`pkg.env`](https://pandora-isomemo.github.io/data-tools/reference/pkg.env.md)
-  : globals
 - [`prefixSysTime()`](https://pandora-isomemo.github.io/data-tools/reference/prefixSysTime.md)
   : Prefix Systime
 - [`prepareDataUI()`](https://pandora-isomemo.github.io/data-tools/reference/prepareDataServer.md)

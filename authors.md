@@ -2,17 +2,20 @@
 
 ## Authors
 
-- **Antonia Runge**. Maintainer, author.
+- **Ricardo Fernandes**. Author.
+
+- **Antonia Runge**. Author, maintainer.
 
 ## Citation
 
-Runge A (2026). *DataTools: Data Tools for Shiny Apps*. R package
-version 26.08.2, <https://pandora-isomemo.github.io/data-tools/>.
+Fernandes R, Runge A (2026). *DataTools: Data Tools for Shiny Apps*. R
+package version 26.11.0,
+<https://pandora-isomemo.github.io/data-tools/>.
 
     @Manual{,
       title = {DataTools: Data Tools for Shiny Apps},
-      author = {Antonia Runge},
+      author = {Ricardo Fernandes and Antonia Runge},
       year = {2026},
-      note = {R package version 26.08.2},
+      note = {R package version 26.11.0},
       url = {https://pandora-isomemo.github.io/data-tools/},
     }

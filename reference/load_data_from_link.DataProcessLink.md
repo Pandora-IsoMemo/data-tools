@@ -25,3 +25,8 @@ load_data_from_link(object, ...)
 ## Value
 
 A reactiveValues object containing the loaded data and status.
+
+## Details
+
+RADOGOST links use a saved file URL rather than a search-result row
+index. Their temporary downloads are removed after reading.

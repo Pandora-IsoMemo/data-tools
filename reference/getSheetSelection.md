@@ -5,7 +5,7 @@ Get Sheet Selection
 ## Usage
 
 ``` r
-getSheetSelection(filepath)
+getSheetSelection(filepath, workbookFormat = detectWorkbookFormat(filepath))
 ```
 
 ## Arguments
@@ -13,3 +13,7 @@ getSheetSelection(filepath)
 - filepath:
 
   (character) url or path
+
+- workbookFormat:
+
+  detected workbook format

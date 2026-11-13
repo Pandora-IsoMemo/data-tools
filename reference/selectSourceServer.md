@@ -24,7 +24,12 @@ selectSourceServer(
   githubRepo,
   folderOnGithub,
   pathToLocal,
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")
+  ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
+  radogostFetch = fetch_radogost_files,
+  radogostDownload = function(file_url) {
+     download_radogost_file(file_url,
+    allowed_types = ckanFileTypes)
+ }
 )
 ```
 
@@ -42,7 +47,7 @@ selectSourceServer(
 - ckanFileTypes:
 
   (character) file types allowed for import from Pandora ("ckan"). E.g.
-  for \`importType = "data"\`: c("xls", "xlsx", "csv", "odt", "txt");
+  for \`importType = "data"\`: c("xls", "xlsx", "csv", "ods", "txt");
   for \`importType = "zip"\`: c("zip"); for \`importType = "list"\`:
   c("json")
 
@@ -87,3 +92,13 @@ selectSourceServer(
 - pathToLocal:
 
   (character) relative path to the folder storing local files
+
+- radogostFetch:
+
+  (function) search function for RADOGOST
+
+- radogostDownload:
+
+  (function) downloader for RADOGOST files. Returned local files are
+  owned by this module and removed on replacement, source reset, or
+  session end.
