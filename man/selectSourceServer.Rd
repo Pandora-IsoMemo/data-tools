@@ -65,7 +65,9 @@ correspond to 'pathToLocal' since online and offline files should be the same an
 
 \item{radogostFetch}{(function) search function for RADOGOST}
 
-\item{radogostDownload}{(function) downloader for RADOGOST files}
+\item{radogostDownload}{(function) downloader for RADOGOST files. Returned
+local files are owned by this module and removed on replacement, source reset,
+or session end.}
 }
 \description{
 UI of the module

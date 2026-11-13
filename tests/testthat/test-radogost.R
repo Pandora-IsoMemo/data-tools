@@ -303,10 +303,15 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
       restricted = FALSE
     )
   }
+  downloaded_paths <- character()
+  download_state <- new.env(parent = emptyenv())
+  download_state$fail <- FALSE
   mock_download <- function(file_url) {
     expect_equal(file_url, "https://radogost.dariah.pl/api/access/datafile/2")
+    if (download_state$fail) stop("download failed")
     path <- tempfile(fileext = ".csv")
     writeLines(c("first;second", "1;2", "3;4"), path)
+    downloaded_paths <<- c(downloaded_paths, path)
     list(file = path, filename = "original_table.csv")
   }
   file_input_message <- NULL
@@ -367,9 +372,34 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
       expect_equal(names(loaded$dataImport), c("first", "second"))
       expect_equal(as.numeric(loaded$dataImport[1, ]), c(1, 2))
 
+      active_path <- session$returned$file
+      session$setInputs(`fileType-colSep` = ",")
+      expect_true(file.exists(active_path))
+      expect_equal(session$returned$file, active_path)
+      session$setInputs(`radogost-load` = 2)
+      expect_false(file.exists(active_path))
+      expect_true(file.exists(session$returned$file))
+      expect_length(downloaded_paths, 2L)
+
+      download_state$fail <- TRUE
+      session$setInputs(`radogost-load` = 3)
+      expect_null(session$returned$file)
+      expect_false(any(file.exists(downloaded_paths)))
+      download_state$fail <- FALSE
+      session$setInputs(`radogost-load` = 4)
+      expect_true(file.exists(session$returned$file))
+
       session$setInputs(source = "url")
       expect_null(session$returned$file)
       expect_null(session$returned$filename)
+      expect_false(any(file.exists(downloaded_paths)))
+
+      session$setInputs(source = "radogost", `radogost-search` = 3)
+      session$setInputs(`radogost-file` = "2", `radogost-load` = 5)
+      expect_true(file.exists(session$returned$file))
+      expect_length(downloaded_paths, 4L)
+      session$close()
+      expect_false(any(file.exists(downloaded_paths)))
     }
   )
 })

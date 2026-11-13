@@ -155,7 +155,9 @@ selectSourceUI <- function(id,
 #' @param openPopupReset (reactive) TRUE if popup is (re-)opened
 #' @param internetCon (reactive) TRUE if there is an internet connection
 #' @param radogostFetch (function) search function for RADOGOST
-#' @param radogostDownload (function) downloader for RADOGOST files
+#' @param radogostDownload (function) downloader for RADOGOST files. Returned
+#' local files are owned by this module and removed on replacement, source reset,
+#' or session end.
 #' @inheritParams configureFileServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
@@ -244,6 +246,27 @@ selectSourceServer <- function(id,
                                               input = NULL)
                  radogostFiles <- reactiveVal(radogost_empty_files())
                  radogostSearchError <- reactiveVal(NULL)
+                 radogostDownloadPaths <- character()
+                 cleanupRadogostFiles <- function(keep = character()) {
+                   obsolete <- setdiff(radogostDownloadPaths, keep)
+                   if (length(obsolete) == 0L) return(invisible(NULL))
+                   status <- unlink(obsolete)
+                   radogostDownloadPaths <<- radogostDownloadPaths[
+                     file.exists(radogostDownloadPaths)
+                   ]
+                   if (status != 0L) {
+                     warning("Could not remove temporary RADOGOST downloads.", call. = FALSE)
+                   }
+                 }
+                 session$onSessionEnded(function() cleanupRadogostFiles())
+                 managedRadogostDownload <- function(file_url) {
+                   downloaded <- radogostDownload(file_url)
+                   radogostDownloadPaths <<- union(radogostDownloadPaths, downloaded$file)
+                   downloaded
+                 }
+                 observeEvent(dataSource$file, {
+                   cleanupRadogostFiles(keep = dataSource$file)
+                 }, ignoreNULL = FALSE)
 
                  observe({
                    req(isTRUE(openPopupReset()))
@@ -440,12 +463,13 @@ selectSourceServer <- function(id,
                                                    type = "radogost",
                                                    isInternet = internetCon(),
                                                    radogostFiles = radogostFiles(),
-                                                   radogostDownload = radogostDownload)
+                                                   radogostDownload = managedRadogostDownload)
                      dataSource <- addSourceType(dataSource = loadedSource,
                                                  importType = importType,
                                                  source = "radogost",
                                                  inputDataOrLink = input[["dataOrLink"]])
                    }, error = function(error) {
+                     cleanupRadogostFiles()
                      dataSource$file <- NULL
                      dataSource$filename <- NULL
                      dataSource$type <- NULL
