@@ -54,6 +54,30 @@ test_that("remote XLS sheet discovery stages the detected extension and cleans u
   expect_false(file.exists(staged_path))
 })
 
+test_that("remote ODS sheet discovery stages a local archive and cleans up", {
+  staged_path <- NULL
+  local_mocked_bindings(download.file = function(url, destfile, mode, quiet) {
+    expect_equal(url, "https://example.com/workbook.ods")
+    staged_path <<- destfile
+    expect_equal(getExtension(destfile), "ods")
+    readODS::write_ods(list(
+      First = data.frame(value = 1),
+      Second = data.frame(value = 2)
+    ), destfile)
+    0L
+  })
+
+  expect_equal(
+    getSheetSelection("https://example.com/workbook.ods"),
+    c(First = 1L, Second = 2L)
+  )
+  expect_false(file.exists(staged_path))
+
+  local_mocked_bindings(list_ods_sheets = function(path) stop("invalid archive"))
+  expect_error(getSheetSelection("https://example.com/workbook.ods"), "invalid archive")
+  expect_false(file.exists(staged_path))
+})
+
 test_that("ODS sheet choices are available", {
   ods_path <- tempfile(fileext = ".ods")
   on.exit(unlink(ods_path), add = TRUE)

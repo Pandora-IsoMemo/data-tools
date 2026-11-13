@@ -100,7 +100,8 @@ selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
 #' Get Workbook Sheet Names
 #'
 #' XLS content is staged with an XLS extension when needed because the sheet
-#' reader also checks the filename.
+#' reader also checks the filename. Remote ODS files are staged because their
+#' sheet reader requires a local archive.
 #'
 #' @param filepath (character) url or path
 #' @param workbookFormat detected workbook format
@@ -110,8 +111,9 @@ getSheetNames <- function(filepath, workbookFormat = detectWorkbookFormat(filepa
   }
 
   is_url <- grepl("^https?://", filepath, ignore.case = TRUE)
-  if (workbookFormat == "xls" && (is_url || getExtension(filepath) != "xls")) {
-    staged_path <- tempfile(fileext = ".xls")
+  if ((workbookFormat == "xls" && (is_url || getExtension(filepath) != "xls")) ||
+      (workbookFormat == "ods" && is_url)) {
+    staged_path <- tempfile(fileext = paste0(".", workbookFormat))
     on.exit(unlink(staged_path), add = TRUE)
     if (is_url) {
       status <- download.file(filepath, staged_path, mode = "wb", quiet = TRUE)

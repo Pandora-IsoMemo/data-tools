@@ -210,6 +210,9 @@ extract_filename_from_source_input <- function(source_inputs) {
     return(normalized[["radogost-filename"]])
   }
   data_source <- extractDataSourceFromInputs(source_inputs)
+  if (identical(normalized[["source"]], "radogost")) {
+    on.exit(unlink(data_source$file), add = TRUE)
+  }
 
   filename <- data_source$filename
 

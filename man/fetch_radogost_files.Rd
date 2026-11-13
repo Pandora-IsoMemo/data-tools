@@ -40,6 +40,8 @@ Ingested tabular files are indexed as `tab`.}
 A data frame with file name, URL, content type, access status, and parent dataset metadata,
   sorted by dataset name, dataset identifier, and file name. Tabular-file URLs request the original
   uploaded format; its actual filename and extension are obtained from the download response.
+  The \code{truncated} attribute is TRUE if more matches exist or the result limit prevents
+  searching a remaining access filter.
 }
 \description{
 Fetch file metadata from RADOGOST, applying filename and extension filters and following the

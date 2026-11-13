@@ -102,6 +102,23 @@ test_that("RADOGOST search excludes restricted files by default", {
 
   expect_equal(public_files$file_name, "public.csv")
   expect_equal(all_files$restricted, c(FALSE, TRUE))
+
+  limited_public <- fetch_radogost_files(max_results = 1, .request = mock_request)
+  expect_false(attr(limited_public, "truncated"))
+
+  filters <- character()
+  limited_all <- fetch_radogost_files(
+    include_restricted = TRUE,
+    max_results = 1,
+    .request = function(url, query, timeout) {
+      filters <<- c(filters, query$fq)
+      mock_request(url, query, timeout)
+    }
+  )
+  expect_equal(limited_all$file_name, "public.csv")
+  expect_true(attr(limited_all, "truncated"))
+  expect_equal(filters, "fileAccess:Public")
+  expect_false(attr(all_files, "truncated"))
 })
 
 test_that("RADOGOST source refuses restricted records without downloading", {
@@ -266,6 +283,20 @@ test_that("Excel type selections accept both workbook extensions but reject unre
       expect_null(loaded$warnings$load)
       expect_equal(loaded$dataImport, expected)
     }
+  }
+})
+
+test_that("RADOGOST filenames reject decoded path separators", {
+  for (disposition in c(
+    "attachment; filename*=UTF-8''..%5Ctable.csv",
+    "attachment; filename=..\\table.csv",
+    'attachment; filename="..\\\\table.csv"',
+    "attachment; filename*=UTF-8''..%2Ftable.csv"
+  )) {
+    expect_error(
+      radogost_filename_from_headers(list("content-disposition" = disposition)),
+      "invalid filename"
+    )
   }
 })
 
@@ -515,6 +546,33 @@ test_that("RADOGOST query JSON reloads saved and current sources by stable URL",
   })
   expect_length(downloaded_paths, 3L)
   expect_true(file.exists(source$file))
+})
+
+test_that("RADOGOST link filename inference cleans up its fallback download", {
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(download_radogost_file = function(...) {
+    downloads <<- downloads + 1L
+    writeLines(c("first,second", "1,2"), path)
+    list(file = path, filename = "original.csv")
+  })
+  source_inputs <- list(
+    `fileSource-source` = "radogost",
+    `fileSource-radogost-file-url` = "https://radogost.dariah.pl/api/access/datafile/1"
+  )
+
+  testServer(function(input, output, session) {}, {
+    link <- new_DataProcessLink(input = source_inputs)
+    expect_equal(link$filename, "original.csv")
+    expect_equal(downloads, 1L)
+    expect_false(file.exists(path))
+
+    source_inputs[["fileSource-radogost-filename"]] <- "saved.csv"
+    link <- new_DataProcessLink(input = source_inputs)
+    expect_equal(link$filename, "saved.csv")
+    expect_equal(downloads, 1L)
+  })
 })
 
 test_that("RADOGOST query reconstruction reports invalid URLs and download failures", {

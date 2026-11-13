@@ -130,7 +130,7 @@ radogost_filename_from_headers <- function(headers) {
 
   if (!nzchar(filename) ||
       grepl("/", filename, fixed = TRUE) ||
-      grepl("\\\\", filename, fixed = TRUE) ||
+      grepl("\\", filename, fixed = TRUE) ||
       grepl("[[:cntrl:]]", filename) ||
       filename %in% c(".", "..")) {
     stop("RADOGOST returned an invalid filename", call. = FALSE)
@@ -201,6 +201,8 @@ download_radogost_file <- function(file_url,
 #' @return A data frame with file name, URL, content type, access status, and parent dataset metadata,
 #'   sorted by dataset name, dataset identifier, and file name. Tabular-file URLs request the original
 #'   uploaded format; its actual filename and extension are obtained from the download response.
+#'   The \code{truncated} attribute is TRUE if more matches exist or the result limit prevents
+#'   searching a remaining access filter.
 fetch_radogost_files <- function(base_url = "https://radogost.dariah.pl/api/search",
                                  include_restricted = FALSE,
                                  per_page = 100,
@@ -229,6 +231,10 @@ fetch_radogost_files <- function(base_url = "https://radogost.dariah.pl/api/sear
   truncated <- FALSE
 
   for (access_type in access_types) {
+    if (result_count >= max_results) {
+      truncated <- TRUE
+      break
+    }
     start <- 0L
     total_count <- Inf
 
