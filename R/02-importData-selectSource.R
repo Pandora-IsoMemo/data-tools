@@ -103,8 +103,11 @@ selectSourceUI <- function(id,
                          choices = c("Search files to see available results" = ""),
                          options = list(placeholder = "Search files to see available results"),
                          width = "100%"),
-          actionButton(ns("radogost-load"), "Load"),
-          tags$div(style = "width: 50%;", textOutput(ns("radogost-status")))
+          tags$div(
+            style = "display: flex; align-items: center; gap: 0.75em;",
+            actionButton(ns("radogost-load"), "Load"),
+            textOutput(ns("radogost-status"))
+          )
         )
       )
     ),
