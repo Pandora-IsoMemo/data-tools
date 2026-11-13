@@ -111,12 +111,21 @@ radogost_filename_from_headers <- function(headers) {
   if (length(encoded_name) > 1L) {
     filename <- utils::URLdecode(encoded_name[2L])
   } else {
-    plain_match <- regexec("filename=\"?([^\";]+)\"?", disposition, ignore.case = TRUE)
-    plain_name <- regmatches(disposition, plain_match)[[1L]]
-    if (length(plain_name) < 2L) {
-      stop("RADOGOST download did not provide a filename", call. = FALSE)
+    # quoted values may contain `;` and backslash-escaped characters; unquoted values end at `;`
+    quoted_match <- regexec("(?:^|;)\\s*filename\\s*=\\s*\"((?:[^\"\\\\]|\\\\.)*)\"",
+                            disposition, ignore.case = TRUE, perl = TRUE)
+    quoted_name <- regmatches(disposition, quoted_match)[[1L]]
+    if (length(quoted_name) > 1L) {
+      filename <- gsub("\\\\(.)", "\\1", quoted_name[2L], perl = TRUE)
+    } else {
+      plain_match <- regexec("(?:^|;)\\s*filename\\s*=\\s*([^;\"]+)",
+                             disposition, ignore.case = TRUE, perl = TRUE)
+      plain_name <- regmatches(disposition, plain_match)[[1L]]
+      if (length(plain_name) < 2L) {
+        stop("RADOGOST download did not provide a filename", call. = FALSE)
+      }
+      filename <- trimws(plain_name[2L])
     }
-    filename <- trimws(plain_name[2L])
   }
 
   if (!nzchar(filename) ||

@@ -172,6 +172,30 @@ test_that("RADOGOST downloads preserve the original supported filename", {
   expect_equal(getExtension(downloaded$file), "csv")
   expect_equal(readBin(downloaded$file, "raw", n = length(contents)), contents)
   unlink(downloaded$file)
+
+  mock_download_hash <- function(url, path, timeout) {
+    writeBin(contents, path)
+    list(url = url, headers = list(
+      "content-disposition" = "attachment; filename=\"sample#1.csv\"",
+      "content-length" = as.character(length(contents))
+    ))
+  }
+  downloaded <- download_radogost_file(file_url, .request = mock_download_hash)
+  expect_equal(downloaded$filename, "sample#1.csv")
+  expect_equal(getExtension(downloaded$file), "csv")
+  unlink(downloaded$file)
+})
+
+test_that("RADOGOST filenames keep semicolons inside quoted values", {
+  filename_from <- function(disposition) {
+    radogost_filename_from_headers(list("content-disposition" = disposition))
+  }
+  expect_equal(filename_from('attachment; filename="measurements;2026.csv"'),
+               "measurements;2026.csv")
+  expect_equal(filename_from('attachment; filename="say \\"hi\\".csv"; size=10'),
+               'say "hi".csv')
+  expect_equal(filename_from("attachment; filename=plain.csv; size=10"), "plain.csv")
+  expect_equal(filename_from("attachment;filename = spaced.csv"), "spaced.csv")
 })
 
 test_that("RADOGOST Excel downloads use the existing workbook loader", {

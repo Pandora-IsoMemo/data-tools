@@ -161,7 +161,7 @@ getSourceUrl <- function(dataSource, input, isInternet) {
 
   tmpPath <- try(downloadFileToTmp(
     url = input$url,
-    fileext = getExtension(basename(input$url), prefix = ".")
+    fileext = getExtension(input$url, prefix = ".")
   ))
 
   # "file" will be used to load the file

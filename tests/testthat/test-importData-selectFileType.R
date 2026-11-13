@@ -110,6 +110,17 @@ test_that("getExtension returns lowercase extensions and ignores URL query strin
   expect_equal(getExtension("https://example.com/data.XLS?download=1"), "xls")
   expect_equal(getExtension("https://example.com/data.XLS#section", prefix = "."), ".xls")
   expect_equal(getExtension("no-extension"), "")
+  expect_equal(getExtension("sample#1.csv"), "csv")
+  expect_equal(getExtension("/tmp/batch#1/table?.XLSX"), "xlsx")
+})
+
+test_that("workbook detection keeps `#` in local paths", {
+  dir <- file.path(tempdir(), "batch#1")
+  dir.create(dir, showWarnings = FALSE)
+  on.exit(unlink(dir, recursive = TRUE), add = TRUE)
+  path <- file.path(dir, "table.xlsx")
+  file.copy(testthat::test_path("sources.xlsx"), path)
+  expect_equal(detectWorkbookFormat(path), "xlsx")
 })
 
 test_that("remote signature reads request a range and consume only eight bytes", {

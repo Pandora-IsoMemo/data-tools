@@ -1,5 +1,7 @@
 getExtension <- function(file, prefix = "") {
-  file <- sub("[?#].*$", "", file)
+  # `?` and `#` are valid in local paths and filenames; only URLs carry queries/fragments
+  is_url <- grepl("^[a-z][a-z0-9+.-]*://", file, ignore.case = TRUE)
+  file[is_url] <- sub("[?#].*$", "", file[is_url])
   file <- basename(file)
   extension <- tools::file_ext(file)
   paste0(prefix, tolower(extension))
