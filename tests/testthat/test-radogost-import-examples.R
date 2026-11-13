@@ -1,11 +1,11 @@
-# Opt-in live reproductions, not yet resolved regression tests.
+# Opt-in live RADOGOST import checks.
 # RUN_RADOGOST_IMPORT_EXAMPLES=true Rscript -e \
 #   'devtools::test(filter = "radogost-import-examples")'
 
 radogost_import_example <- function(file_id, filename, type) {
   skip_if_not(
     identical(Sys.getenv("RUN_RADOGOST_IMPORT_EXAMPLES"), "true"),
-    "Set RUN_RADOGOST_IMPORT_EXAMPLES=true to run known-failing live imports."
+    "Set RUN_RADOGOST_IMPORT_EXAMPLES=true to run live imports."
   )
   downloaded <- download_radogost_file(
     paste0("https://radogost.dariah.pl/api/access/datafile/", file_id)
@@ -30,13 +30,15 @@ radogost_import_example <- function(file_id, filename, type) {
   })
 }
 
-test_that("RADOGOST protocol.odt (5353) imports as an advertised data format", {
-  # Nowy Lowicz, doi:10.82343/KTB6YH. This is a text document with no tables;
-  # whether ODT should be advertised for data import remains to be decided.
-  loaded <- radogost_import_example(5353, "protocol.odt", "odt")
-  expect_null(loaded$errors$load)
-  expect_null(loaded$warnings$load)
-  expect_false(is.null(loaded$dataImport))
+test_that("RADOGOST rejects unsupported protocol.odt (5353)", {
+  skip_if_not(
+    identical(Sys.getenv("RUN_RADOGOST_IMPORT_EXAMPLES"), "true"),
+    "Set RUN_RADOGOST_IMPORT_EXAMPLES=true to run live imports."
+  )
+  expect_error(
+    download_radogost_file("https://radogost.dariah.pl/api/access/datafile/5353"),
+    "not supported"
+  )
 })
 
 test_that("RADOGOST Strontium.xls (5472) imports despite its XLSX contents", {

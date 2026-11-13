@@ -22,7 +22,7 @@ selectSourceServer(
   githubRepo,
   folderOnGithub,
   pathToLocal,
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+  ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
   radogostFetch = fetch_radogost_files,
   radogostDownload = function(file_url) {
      download_radogost_file(file_url,
@@ -36,7 +36,7 @@ selectSourceServer(
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan"). E.g. for
-`importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+`importType = "data"`: c("xls", "xlsx", "csv", "ods", "txt"); for `importType = "zip"`: c("zip");
  for `importType = "list"`: c("json")}
 
 \item{importType}{(character) type of import, either "model", "zip" or "list".

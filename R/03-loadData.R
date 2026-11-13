@@ -2,7 +2,7 @@
 
 #' Load Data Wrapper
 #'
-#' Wrapper to load a data.frame from a `"xlsx", "xls", "odt", "csv", "txt"` file.
+#' Wrapper to load a data.frame from a `"xlsx", "xls", "ods", "csv", "txt"` file.
 #' XLS and XLSX extensions are compatible with either Excel type selection;
 #' Pandora determines the actual workbook format.
 #'
@@ -27,7 +27,10 @@ loadDataWrapper <- function(values,
   values <- values %>% resetValues()
   if (is.null(filepath)) return(values)
   extension <- getExtension(filepath)
-  is_excel <- extension %in% c("xls", "xlsx") && type %in% c("xls", "xlsx")
+  workbook_format <- detectWorkbookFormat(filepath, inspectContent = FALSE)
+  is_excel <- !is.null(workbook_format) &&
+    workbook_format %in% c("xls", "xlsx") &&
+    type %in% c("xls", "xlsx")
   if (extension != type && !is_excel) {
     values$errors <- list(
       load = paste("File extension does not match selected file type.")

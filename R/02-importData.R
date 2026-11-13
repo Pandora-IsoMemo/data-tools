@@ -30,7 +30,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param title title of import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan"). E.g. for
-#' `importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+#' `importType = "data"`: c("xls", "xlsx", "csv", "ods", "txt"); for `importType = "zip"`: c("zip");
 #'  for `importType = "list"`: c("json")
 #' @param ignoreWarnings (logical) TRUE to enable imports in case of warnings
 #' @param importType (character) DEPRECATED. type of import, either "data", "model", "zip" or "list".
@@ -66,7 +66,7 @@ importDataUI <- function(id, label = "Import Data") {
 importDataServer <- function(id,
                              title = "",
                              defaultSource = c("ckan", "file", "url", "remoteModel"),
-                             ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                             ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
                              ignoreWarnings = FALSE,
                              importType = c("data", "model", "zip", "list"),
                              # parameters for data upload

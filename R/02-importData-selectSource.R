@@ -166,7 +166,7 @@ selectSourceServer <- function(id,
                                githubRepo,
                                folderOnGithub,
                                pathToLocal,
-                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                               ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
                                radogostFetch = fetch_radogost_files,
                                radogostDownload = function(file_url) {
                                  download_radogost_file(file_url, allowed_types = ckanFileTypes)

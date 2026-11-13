@@ -25,6 +25,7 @@ Imports:
   openxlsx,
   readxl,
   Pandora (>= 26.11.0),
+  readODS (>= 2.2.0),
   RSQLite,
   shiny,
   shinyAce,

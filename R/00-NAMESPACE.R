@@ -9,6 +9,7 @@
 #' @importFrom openxlsx loadWorkbook
 #' @importFrom Pandora callAPI getFileTypes getNetworks getRepositories getResources loadData 
 #' @importFrom Pandora formatRepositoryList
+#' @importFrom readODS list_ods_sheets
 #' @importFrom readxl excel_sheets
 #' @importFrom RSQLite dbConnect dbGetQuery dbListTables dbWriteTable dbRemoveTable SQLite
 #' @importFrom shinyAce aceEditor updateAceEditor

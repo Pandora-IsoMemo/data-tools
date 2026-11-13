@@ -38,7 +38,7 @@ selectFileTypeUI <- function(id,
                textInput(ns("decSep"), "decimal separator:", value = ".")
              ),
              conditionalPanel(
-               condition = paste0("input.type == 'xlsx'"),
+               condition = paste0("input.type == 'xlsx' || input.type == 'ods'"),
                ns = ns,
                selectInput(
                  ns("sheet"),
@@ -64,56 +64,72 @@ selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
-                 observe({
-                   logDebug("Updating input$type")
-                   if (is.null(input$type) || is.null(dataSource$file)) {
-                     updateSelectInput(session = session, "type", selected = character(0))
-                   } else {
-                     auto_type <- getExtension(dataSource$file)
-                     if (!(auto_type %in% defaultFileTypes)) {
-                       auto_type <- defaultFileTypes[1]
-                     }
-                     updateSelectInput(session, "type", selected = auto_type)
+                 observeEvent(dataSource$file, {
+                   filepath <- dataSource$file
+                   if (is.null(filepath)) {
+                     updateSelectInput(session, "type", selected = character(0))
+                     updateSelectInput(session, "sheet", selected = character(0))
+                     return()
                    }
 
-                   logDebug("Updating input$sheet")
-                   if (is.null(input$type) || is.null(dataSource$file) ||
-                       !(input$type %in% c("xls", "xlsx"))) {
-                     updateSelectInput(session = session, "sheet",
-                                       selected = character(0))
+                   file_selection <- getFileTypeSelection(filepath, defaultFileTypes)
+                   workbook_format <- file_selection$workbookFormat
+                   updateSelectInput(session, "type", selected = file_selection$type)
+
+                   if (is.null(workbook_format)) {
+                     updateSelectInput(session, "sheet", selected = character(0))
                    } else {
-                     updateSelectInput(session, "sheet",
-                                       choices = getSheetSelection(dataSource$file))
+                     tryCatch(
+                       updateSelectInput(
+                         session,
+                         "sheet",
+                         choices = getSheetSelection(filepath, workbook_format)
+                       ),
+                       error = function(error) {
+                         updateSelectInput(session, "sheet", selected = character(0))
+                         showNotification(
+                           paste("Could not read workbook sheets:", conditionMessage(error)),
+                           type = "error"
+                         )
+                       }
+                     )
                    }
-                 }) %>%
-                   bindEvent(dataSource$file, ignoreNULL = FALSE, ignoreInit = TRUE)
+                 }, ignoreNULL = FALSE, ignoreInit = TRUE)
                })
+}
+
+#' Get Workbook Sheet Names
+#'
+#' @param filepath (character) url or path
+#' @param workbookFormat detected workbook format
+getSheetNames <- function(filepath, workbookFormat = detectWorkbookFormat(filepath)) {
+  if (is.null(filepath) || is.null(workbookFormat)) {
+    return(NULL)
+  }
+
+  sheetNames <- switch(
+    workbookFormat,
+    xlsx = names(loadWorkbook(filepath)),
+    xls = excel_sheets(filepath),
+    ods = list_ods_sheets(filepath),
+    stop("Unsupported workbook format.", call. = FALSE)
+  )
+
+  if (length(sheetNames) == 0L) return(NULL)
+  sheetNames
 }
 
 #' Get Sheet Selection
 #'
 #' @param filepath (character) url or path
-getSheetSelection <- function(filepath) {
-  if (is.null(filepath))
-    return(list())
+#' @param workbookFormat detected workbook format
+getSheetSelection <- function(filepath, workbookFormat = detectWorkbookFormat(filepath)) {
+  if (is.null(filepath)) return(list())
 
-  fileSplit <- strsplit(filepath, split = "\\.")[[1]]
-  typeOfFile <- fileSplit[length(fileSplit)]
+  sheetNames <- getSheetNames(filepath, workbookFormat)
+  if (is.null(sheetNames)) return(NULL)
 
-  if (!(typeOfFile %in% c("xls", "xlsx")))
-    return(NULL)
-
-  if (typeOfFile == "xlsx") {
-    # loadWorkbook() is also able to handle url's
-    sheetNames <- loadWorkbook(filepath) %>% names()
-  } else if (typeOfFile == "xls") {
-    sheetNames <- excel_sheets(filepath)
-  }
-
-  if (length(sheetNames) == 0)
-    return(NULL)
-
-  sheets <- 1:length(sheetNames)
+  sheets <- seq_along(sheetNames)
   names(sheets) <- sheetNames
 
   sheets

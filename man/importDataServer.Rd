@@ -11,7 +11,7 @@ importDataServer(
   id,
   title = "",
   defaultSource = c("ckan", "file", "url", "remoteModel"),
-  ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+  ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
   ignoreWarnings = FALSE,
   importType = c("data", "model", "zip", "list"),
   rowNames = reactiveVal(NULL),
@@ -39,7 +39,7 @@ importDataServer(
 \item{defaultSource}{(character) default source for input "Source", e.g. "ckan", "file", or "url"}
 
 \item{ckanFileTypes}{(character) file types allowed for import from Pandora ("ckan"). E.g. for
-`importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+`importType = "data"`: c("xls", "xlsx", "csv", "ods", "txt"); for `importType = "zip"`: c("zip");
  for `importType = "list"`: c("json")}
 
 \item{ignoreWarnings}{(logical) TRUE to enable imports in case of warnings}
