@@ -65,14 +65,12 @@ selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
+                 # Do not clear type and sheet when dataSource is reset: switching input$source
+                 # resets dataSource, which would discard inputs restored from a data link.
                  observeEvent(dataSource$file, {
+                   # file types are restored from the data link, not detected from its json
+                   req(!identical(dataSource$type, "dataLink"))
                    filepath <- dataSource$file
-                   if (is.null(filepath)) {
-                     updateSelectInput(session, "type", selected = character(0))
-                     updateSelectInput(session, "sheet", selected = character(0))
-                     return()
-                   }
-
                    file_selection <- getFileTypeSelection(filepath, defaultFileTypes)
                    workbook_format <- file_selection$workbookFormat
                    updateSelectInput(session, "type", selected = file_selection$type)
@@ -95,7 +93,7 @@ selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
                        }
                      )
                    }
-                 }, ignoreNULL = FALSE, ignoreInit = TRUE)
+                 }, ignoreInit = TRUE)
                })
 }
 

@@ -78,6 +78,34 @@ test_that("ODS sheet choices are available", {
   )
 })
 
+test_that("file type is kept when the source is reset or a data link is uploaded", {
+  updates <- list()
+  testthat::local_mocked_bindings(updateSelectInput = function(session, inputId, ...) {
+    updates[[length(updates) + 1L]] <<- c(list(inputId = inputId), list(...))
+  })
+  dataSource <- reactiveValues(file = NULL, type = NULL)
+
+  testServer(selectFileTypeServer,
+             args = list(dataSource = dataSource,
+                         defaultFileTypes = c("xlsx", "xls", "csv", "ods", "txt")), {
+    session$flushReact()
+    dataSource$type <- "fullData"
+    dataSource$file <- test_path("alkane_database.xlsx")
+    session$flushReact()
+    expect_equal(updates[[1]], list(inputId = "type", selected = "xlsx"))
+
+    updates <<- list()
+    dataSource$file <- NULL
+    session$flushReact()
+    expect_length(updates, 0)
+
+    dataSource$type <- "dataLink"
+    dataSource$file <- tempfile(fileext = ".json")
+    session$flushReact()
+    expect_length(updates, 0)
+  })
+})
+
 test_that("getExtension returns lowercase extensions and ignores URL query strings", {
   expect_equal(getExtension("https://example.com/data.XLS?download=1"), "xls")
   expect_equal(getExtension("https://example.com/data.XLS#section", prefix = "."), ".xls")

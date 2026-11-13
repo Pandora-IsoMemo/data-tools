@@ -158,31 +158,45 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
+                   # Render only when the popup opens. Re-rendering on source changes would reset
+                   # file type, sheet, etc. after restoring them from a data link.
+                   input$openPopup
+                   userFileTypes <- isolate(
+                     if (identical(input[["fileSource-source"]], "ckan"))
+                       input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                   )
                    # re-rendered buttons start in their default state; restore it after rendering
                    session$onFlushed(function() {
                      withReactiveDomain(session, isolate(applyButtonStates()))
                    }, once = TRUE)
                    if (importType == "data") {
-                     configureDataUI(
-                       ns("dataSelector"),
-                       batch = batch,
-                       outputAsMatrix = outputAsMatrix,
-                       isLink = ((input[["fileSource-source"]] == "remoteModel") || # remote (github) data
-                                   (input[["fileSource-source"]] == "file" && # local link
-                                      !is.null(input[["fileSource-dataOrLink"]]) &&
-                                      input[["fileSource-dataOrLink"]] == "dataLink")),
-                       customHelpText = options[["customHelpText"]],
-                       defaultFileTypes = ckanFileTypes,
-                       userFileTypes = if (input[["fileSource-source"]] == "ckan")
-                         input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                     source_id <- ns("fileSource-source")
+                     link_condition <- sprintf(
+                       "input['%1$s'] == 'remoteModel' || (input['%1$s'] == 'file' && input['%2$s'] == 'dataLink')",
+                       source_id,
+                       ns("fileSource-dataOrLink")
+                     )
+                     tagList(
+                       conditionalPanel(
+                         condition = sprintf("!(%s)", link_condition),
+                         configureDataUI(
+                           ns("dataSelector"),
+                           batch = batch,
+                           outputAsMatrix = outputAsMatrix,
+                           isLink = FALSE,
+                           customHelpText = options[["customHelpText"]],
+                           defaultFileTypes = ckanFileTypes,
+                           userFileTypes = userFileTypes
+                         )
+                       ),
+                       conditionalPanel(condition = link_condition, options[["customHelpText"]])
                      )
                    } else {
                      configureFileUI(
                        ns("dataSelector"),
                        customHelpText = options[["customHelpText"]],
                        defaultFileTypes = ckanFileTypes,
-                       userFileTypes = if (input[["fileSource-source"]] == "ckan")
-                         input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                       userFileTypes = userFileTypes
                      )
                    }
                  })
