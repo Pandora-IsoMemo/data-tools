@@ -240,10 +240,12 @@ selectSourceServer <- function(id,
                  })
 
 
+                 # loadFailed counts failed loads so consumers can drop previously imported data
                  dataSource <- reactiveValues(file = NULL,
                                               filename = NULL,
                                               type = NULL,
-                                              input = NULL)
+                                              input = NULL,
+                                              loadFailed = 0L)
                  radogostFiles <- reactiveVal(radogost_empty_files())
                  radogostSearchError <- reactiveVal(NULL)
                  radogostDownloadPaths <- character()
@@ -474,6 +476,7 @@ selectSourceServer <- function(id,
                      dataSource$filename <- NULL
                      dataSource$type <- NULL
                      dataSource$input <- NULL
+                     dataSource$loadFailed <- dataSource$loadFailed + 1L
                      showNotification(conditionMessage(error), type = "error")
                    })
                  }, ignoreInit = TRUE)

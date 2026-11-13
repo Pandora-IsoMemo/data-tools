@@ -393,8 +393,10 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
       expect_length(downloaded_paths, 2L)
 
       download_state$fail <- TRUE
+      expect_equal(session$returned$loadFailed, 0L)
       session$setInputs(`radogost-load` = 3)
       expect_null(session$returned$file)
+      expect_equal(session$returned$loadFailed, 1L)
       expect_false(any(file.exists(downloaded_paths)))
       download_state$fail <- FALSE
       session$setInputs(`radogost-load` = 4)
@@ -535,6 +537,50 @@ test_that("RADOGOST query downloads are cleaned up after parsing fails", {
     expect_match(loaded$errors$load, "Could not read in file")
   })
   expect_false(file.exists(path))
+})
+
+test_that("a failed source load clears the previous import but a plain reset keeps it", {
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c("first;second", "1;2", "3;4"), path)
+  dataSource <- shiny::reactiveValues(file = NULL, filename = NULL, type = NULL,
+                                      input = NULL, loadFailed = 0L)
+  customNames <- shiny::reactiveValues(withRownames = FALSE, withColnames = TRUE)
+
+  testServer(
+    configureDataServer,
+    args = list(
+      dataProcessList = reactiveVal(list()),
+      customNames = customNames,
+      dataSource = dataSource,
+      dataSourceInputs = reactive(list(`fileSource-source` = "radogost")),
+      dataForPreview = reactiveVal(NULL)
+    ),
+    {
+      session$flushReact()
+      session$setInputs(`fileType-type` = "csv", `fileType-colSep` = ";",
+                        `fileType-decSep` = ".", `fileType-sheet` = "1")
+      dataSource$file <- path
+      dataSource$filename <- "original.csv"
+      dataSource$type <- "data"
+      session$flushReact()
+      expect_equal(names(session$returned$dataImport), c("first", "second"))
+
+      # restoring a data query resets the source after loading; data must survive
+      dataSource$file <- NULL
+      dataSource$type <- NULL
+      session$flushReact()
+      expect_equal(names(session$returned$dataImport), c("first", "second"))
+      expect_equal(session$returned$sourceInputs[["fileSource-source"]], "radogost")
+
+      dataSource$loadFailed <- 1L
+      session$flushReact()
+      expect_null(session$returned$dataImport)
+      expect_null(session$returned$fileName)
+      expect_null(session$returned$preview)
+      expect_length(session$returned$sourceInputs, 0L)
+    }
+  )
 })
 
 test_that("text imports normalize a typed tab separator", {

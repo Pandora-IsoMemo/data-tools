@@ -67,7 +67,8 @@ configureDataUI <- function(id,
 #' @param dataProcessList (reactiveVal) list of data imports submitted for data processing via buttons
 #'  'Create Query with data' or 'Prepare / Merge data'
 #' @param customNames settings for custom column and row names
-#' @param dataSource (reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}
+#' @param dataSource (reactiveValues) path, filename, type, input and loadFailed (counter of failed
+#'  loads), output of \code{selectSourceServer()}
 #' @param dataSourceInputs (reactive) inputs identifying the loaded data source,
 #'  including the stable file URL for RADOGOST
 #' @param dataForPreview (reactive) data to show in preview
@@ -137,6 +138,20 @@ configureDataServer <- function(id,
                       )
                       values$sourceInputs <- dataSourceInputs()
                    }) # end observe loadImport
+
+                 # A plain dataSource reset must keep values: restoring a data link resets the
+                 # source after its data was loaded. Only an explicit failed load clears them.
+                 observeEvent(dataSource$loadFailed, {
+                   logDebug("%s: Clearing data import after failed load", id)
+                   values$warnings <- list()
+                   values$errors <- list()
+                   values$fileName <- NULL
+                   values$fileImportSuccess <- NULL
+                   values$dataImport <- NULL
+                   values$sourceInputs <- list()
+                   values$preview <- NULL
+                   values$data <- list()
+                 }, ignoreInit = TRUE)
 
                  importMessageServer("importMessage", values)
 

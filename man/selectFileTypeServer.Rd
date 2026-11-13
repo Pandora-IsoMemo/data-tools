@@ -20,7 +20,8 @@ selectFileTypeServer(id, dataSource, defaultFileTypes)
 
 \item{userFileTypes}{(character) user file types specified in "Pandora Platform" settings}
 
-\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
+\item{dataSource}{(reactiveValues) path, filename, type, input and loadFailed (counter of failed
+loads), output of \code{selectSourceServer()}}
 }
 \description{
 UI of the module

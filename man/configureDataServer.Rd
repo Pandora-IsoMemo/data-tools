@@ -48,7 +48,8 @@ e.g. for batch = TRUE in Resources.}
 
 \item{customNames}{settings for custom column and row names}
 
-\item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
+\item{dataSource}{(reactiveValues) path, filename, type, input and loadFailed (counter of failed
+loads), output of \code{selectSourceServer()}}
 
 \item{dataSourceInputs}{(reactive) inputs identifying the loaded data source,
 including the stable file URL for RADOGOST}
