@@ -209,6 +209,42 @@ test_that("RADOGOST Excel downloads use the existing workbook loader", {
   unlink(downloaded$file)
 })
 
+test_that("Excel type selections accept both workbook extensions but reject unrelated types", {
+  workbook <- test_path("alkane_database.xlsx")
+  xls_path <- tempfile(fileext = ".xls")
+  on.exit(unlink(xls_path), add = TRUE)
+  expect_true(file.copy(workbook, xls_path))
+  expected <- openxlsx::read.xlsx(workbook, sheet = 2)
+
+  for (case in list(list(path = xls_path, type = "xlsx"),
+                    list(path = workbook, type = "xls"),
+                    list(path = workbook, type = "csv"))) {
+    values <- shiny::reactiveValues()
+    loaded <- shiny::isolate({
+      result <- loadDataWrapper(
+        values = values,
+        filepath = case$path,
+        filename = basename(case$path),
+        type = case$type,
+        sep = ",",
+        dec = ".",
+        withRownames = FALSE,
+        withColnames = TRUE,
+        sheetId = 2
+      )
+      shiny::reactiveValuesToList(result)
+    })
+    if (case$type == "csv") {
+      expect_identical(loaded$errors$load, "File extension does not match selected file type.")
+      expect_null(loaded$dataImport)
+    } else {
+      expect_null(loaded$errors$load)
+      expect_null(loaded$warnings$load)
+      expect_equal(loaded$dataImport, expected)
+    }
+  }
+})
+
 test_that("RADOGOST rejects unsafe, incomplete, inaccessible, and unsupported downloads", {
   file_url <- "https://radogost.dariah.pl/api/access/datafile/5360?format=original"
   mock_download <- function(filename, response_url = file_url, content_length = 1L) {

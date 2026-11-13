@@ -2,7 +2,7 @@ Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
 Version: 26.11.0
-Date: 2026-11-06
+Date: 2026-11-13
 Authors@R: c(
             person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
             person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("aut", "cre"))
@@ -24,7 +24,7 @@ Imports:
   magrittr,
   openxlsx,
   readxl,
-  Pandora (>= 26.08.3),
+  Pandora (>= 26.11.0),
   RSQLite,
   shiny,
   shinyAce,

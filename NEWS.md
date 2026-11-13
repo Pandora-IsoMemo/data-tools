@@ -3,6 +3,9 @@
 ## Updates
 - Added RADOGOST Repository search and import for supported public tabular files (#124).
 
+## Bug Fixes
+- Allowed both XLS and XLSX files through Excel type validation, fixing XLS imports using the combined xls(x) choice.
+
 # DataTools 26.08.2
 
 ## Updates
