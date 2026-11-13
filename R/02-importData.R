@@ -141,6 +141,7 @@ importDataServer <- function(id,
                    colnames = colNames
                  )
                  internetCon <- reactiveVal(FALSE)
+                 canAccept <- reactiveVal(FALSE)
 
                  observe({
                    logDebug("Update withRownames")
@@ -157,6 +158,10 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
+                   # re-rendered buttons start in their default state; restore it after rendering
+                   session$onFlushed(function() {
+                     withReactiveDomain(session, isolate(applyButtonStates()))
+                   }, once = TRUE)
                    if (importType == "data") {
                      configureDataUI(
                        ns("dataSelector"),
@@ -207,6 +212,7 @@ importDataServer <- function(id,
                    shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("dataQuerier-downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
+                   canAccept(FALSE)
                  })
 
                  dataSource <- selectSourceServer(
@@ -234,7 +240,7 @@ importDataServer <- function(id,
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
-                     dataSourceInputs = reactive(getFileInputs(input, type = "source")),
+                     dataSourceInputs = reactive(getDataSourceInputs(input, dataSource)),
                      dataProcessList = dataProcessList,
                      dataForPreview = data_for_preview,
                      defaultFileTypes = ckanFileTypes,
@@ -254,18 +260,6 @@ importDataServer <- function(id,
                    )
                  }
 
-                 observeEvent(input$tabImport, {
-                   logDebug("Updating input$tabImport")
-                   if (input$tabImport == "Select") {
-                     if (!is.null(values$fileImportSuccess) &&
-                         values$fileImportSuccess == "Data import successful") {
-                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
-                     } else {
-                       shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
-                     }
-                   }
-                 })
-
                  ## button cancel ----
                  observeEvent(input$cancel, {
                    logDebug("Cancel import")
@@ -275,10 +269,14 @@ importDataServer <- function(id,
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,
                                          dataProcessList = dataProcessList,
+                                         sourceInputs = reactive(values$sourceInputs),
+                                         canDownload = canAccept,
                                          downloadBtnID = "dataSelector-downloadDataLink")
 
                  observeDownloadDataLink(id, input = input, output = output, session = session,
                                          dataProcessList = dataProcessList,
+                                         sourceInputs = reactive(values$sourceInputs),
+                                         canDownload = reactive(canAccept() && length(queriedData()) > 0L),
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
                  observeUploadDataLink(
@@ -307,11 +305,11 @@ importDataServer <- function(id,
                          isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                        # disable button if import was reset or custom checks fail
                        logDebug("%s: Disable Accept button", id)
-                       shinyjs::disable(ns("accept"), asis = TRUE)
+                       canAccept(FALSE)
                        values$fileImportSuccess <- NULL
                      } else {
                        logDebug("%s: Enable Accept button", id)
-                       shinyjs::enable(ns("accept"), asis = TRUE)
+                       canAccept(TRUE)
                      }
                    }) %>%
                      bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
@@ -370,22 +368,35 @@ importDataServer <- function(id,
                      if (length(values$dataImport) == 0 ||
                          isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                        logDebug("%s: Disable Accept button", id)
-                       shinyjs::disable(ns("accept"), asis = TRUE)
+                       canAccept(FALSE)
                        values$fileImportSuccess <- NULL
                      } else {
                        logDebug("%s: Enable Accept button", id)
-                       shinyjs::enable(ns("accept"), asis = TRUE)
+                       canAccept(TRUE)
 
                        shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
-                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <- "Data import successful"
                      }
                    }) %>%
                      bindEvent(list(values$dataImport,
                                     queriedData(),
                                     preparedData$data,
-                                    joinedData()), ignoreNULL = FALSE, ignoreInit = TRUE)
+                                    joinedData(),
+                                    input$tabImport), ignoreNULL = FALSE, ignoreInit = TRUE)
                  }
+
+                 applyButtonStates <- function() {
+                   allowed <- isTRUE(canAccept())
+                   shinyjs::toggleState(ns("accept"), condition = allowed, asis = TRUE)
+                   if (importType == "data") {
+                     shinyjs::toggleState(ns("dataSelector-downloadDataLink"),
+                                          condition = allowed, asis = TRUE)
+                     shinyjs::toggleState(ns("dataQuerier-downloadDataLink"),
+                                          condition = allowed && length(queriedData()) > 0L,
+                                          asis = TRUE)
+                   }
+                 }
+                 observe(applyButtonStates())
 
                  ## ACCEPT data ----
                  returnData <- reactiveVal(list())

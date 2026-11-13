@@ -21,3 +21,7 @@ A reactiveValues object containing the loaded data and status.
 S3 method: Load data from DataProcessLink
 Loads data from the source specified in the DataProcessLink object.
 }
+\details{
+RADOGOST links use a saved file URL rather than a search-result row index.
+Their temporary downloads are removed after reading.
+}

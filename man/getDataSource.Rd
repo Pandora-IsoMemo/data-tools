@@ -20,7 +20,7 @@ getDataSource(
 \item{input}{(reactiveValues)}
 
 \item{type}{(character) source of import, one of "ckan", "radogost", "file", "url", "remoteModel".
-Possible sources for data are: "ckan", "file", "url".
+Possible sources for data are: "ckan", "radogost", "file", "url".
 Possible sources for models are: "ckan", "file", "url", "remoteModel".}
 
 \item{isInternet}{(logical) set TRUE, if there is an internet connection. This parameter is
@@ -28,7 +28,8 @@ ignored if \code{type = "file"} or \code{type = "remoteModel"}}
 
 \item{pathToFile}{(character) file path, ignored if \code{type != "remoteModel"}}
 
-\item{radogostFiles}{(data.frame) RADOGOST search results when \code{type = "radogost"}}
+\item{radogostFiles}{(data.frame) RADOGOST search results when \code{type = "radogost"}.
+If NULL, reconstruct a saved source using \code{input[["radogost-file-url"]]}.}
 
 \item{radogostDownload}{(function) RADOGOST file downloader}
 }

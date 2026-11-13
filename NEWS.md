@@ -6,6 +6,7 @@
 - Excluded plain-text documents from RADOGOST search while retaining TXT imports for other sources.
 
 ## Bug Fixes
+- Query JSON downloads are now disabled whenever Accept is disabled.
 - Allowed both XLS and XLSX files through Excel type validation, fixing XLS imports using the combined xls(x) choice.
 - Improved automatic file-type selection for combined Excel choices and normalized filename extensions to lowercase.
 - TXT imports now accept `\t` as a tab separator, and the separator help explains whitespace separation.

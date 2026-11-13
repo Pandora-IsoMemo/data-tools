@@ -50,7 +50,8 @@ e.g. for batch = TRUE in Resources.}
 
 \item{dataSource}{(reactiveValues) path, filename, type and input, output of \code{selectSourceServer()}}
 
-\item{dataSourceInputs}{(reactive) inputs related to the data source}
+\item{dataSourceInputs}{(reactive) inputs identifying the loaded data source,
+including the stable file URL for RADOGOST}
 
 \item{dataForPreview}{(reactive) data to show in preview}
 

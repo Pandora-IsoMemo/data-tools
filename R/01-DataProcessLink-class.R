@@ -86,6 +86,8 @@ extract_sql_command.DataProcessLink <- function(object, ...) {
 #' @param ... Additional arguments, including:
 #'   - values: A reactiveValues object to store loading results.
 #'   - customNames: A list with custom naming options (withRownames, withColnames).
+#' @details RADOGOST links use a saved file URL rather than a search-result row index.
+#' Their temporary downloads are removed after reading.
 #' @return A reactiveValues object containing the loaded data and status.
 #' @export
 load_data_from_link.DataProcessLink <- function(object, ...) {
@@ -104,6 +106,14 @@ load_data_from_link.DataProcessLink <- function(object, ...) {
   }
 
   data_source <- extractDataSourceFromInputs(object[["source_inputs"]])
+  source_inputs <- removeNamespacePattern(object[["source_inputs"]], "fileSource")
+  if (identical(source_inputs[["source"]], "radogost")) {
+    on.exit({
+      if (unlink(data_source$file) != 0L) {
+        warning("Could not remove temporary RADOGOST query download.", call. = FALSE)
+      }
+    }, add = TRUE)
+  }
   file_inputs <- object[["file_inputs"]] %>%
     removeNamespacePattern(pattern = c("dataSelector"))
 
@@ -126,6 +136,7 @@ load_data_from_link.DataProcessLink <- function(object, ...) {
     }
   )
 
+  values$sourceInputs <- object[["source_inputs"]]
   values
 }
 
@@ -185,7 +196,7 @@ extractDataSourceFromInputs <- function(loadedSourceInputs) {
     removeNamespacePattern(pattern = c("fileSource"))
 
   # load only online data
-  if (!(loadedSourceInputs[["source"]] %in% c("ckan", "url"))) {
+  if (!(loadedSourceInputs[["source"]] %in% c("ckan", "radogost", "url"))) {
     return(list(
       file = NULL,
       filename = NULL,
