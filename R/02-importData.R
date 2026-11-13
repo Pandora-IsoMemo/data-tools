@@ -65,7 +65,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @export
 importDataServer <- function(id,
                              title = "",
-                             defaultSource = c("ckan", "file", "url", "remoteModel"),
+                             defaultSource = c("ckan", "file", "url", "remoteModel", "radogost"),
                              ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
                              ignoreWarnings = FALSE,
                              importType = c("data", "model", "zip", "list"),
