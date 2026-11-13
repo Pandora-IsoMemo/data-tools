@@ -245,21 +245,29 @@ test_that("RADOGOST rejects unsafe, incomplete, inaccessible, and unsupported do
   )
 })
 
+test_that("import source UI renders even when RADOGOST is not selected", {
+  expect_error(
+    selectSourceUI("test", "file", c("csv", "xlsx"), "data", TRUE),
+    NA
+  )
+})
+
 test_that("RADOGOST source searches only on demand and loads through the shared source path", {
   search_calls <- 0L
   mock_fetch <- function(name_pattern, extension, per_page, max_results) {
     search_calls <<- search_calls + 1L
     expect_equal(max_results, 500)
     data.frame(
-      file_name = "original_table.tab",
-      file_url = "https://radogost.dariah.pl/api/access/datafile/1",
+      file_name = c("original_table.tab", "original_table.tab", "second_table.csv", "third_table.csv"),
+      file_url = paste0("https://radogost.dariah.pl/api/access/datafile/", seq_len(4L)),
       file_content_type = "text/tab-separated-values",
-      dataset_name = "Example dataset",
-      dataset_persistent_id = "doi:1",
+      dataset_name = c("Example dataset", "Another dataset", "Example dataset", "Another dataset"),
+      dataset_persistent_id = c("doi:1", "doi:2", "doi:1", "doi:3"),
       restricted = FALSE
     )
   }
   mock_download <- function(file_url) {
+    expect_equal(file_url, "https://radogost.dariah.pl/api/access/datafile/2")
     path <- tempfile(fileext = ".csv")
     writeLines(c("first;second", "1;2", "3;4"), path)
     list(file = path, filename = "original_table.csv")
@@ -295,8 +303,17 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
       expect_equal(file_input_message$value, "")
       expect_match(file_input_message$options, 'value=""', fixed = TRUE)
       expect_match(file_input_message$options, 'value="1"', fixed = TRUE)
+      expect_match(
+        file_input_message$options,
+        '<optgroup label="Example dataset">\\s*<option value="1">original_table.tab</option>\\s*<option value="3">second_table.csv</option>\\s*</optgroup>'
+      )
+      expect_match(
+        file_input_message$options,
+        '<optgroup label="Another dataset \\(doi:2\\)">\\s*<option value="2">original_table.tab</option>\\s*</optgroup>'
+      )
+      expect_match(file_input_message$options, '<optgroup label="Another dataset (doi:3)">', fixed = TRUE)
 
-      session$setInputs(`radogost-file` = "1", `radogost-load` = 1)
+      session$setInputs(`radogost-file` = "2", `radogost-load` = 1)
       expect_equal(session$returned$filename, "original_table.csv")
       expect_equal(session$returned$type, "data")
       loaded <- loadDataWrapper(

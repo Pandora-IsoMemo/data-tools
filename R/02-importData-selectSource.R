@@ -104,7 +104,7 @@ selectSourceUI <- function(id,
                          options = list(placeholder = "Search files to see available results"),
                          width = "100%"),
           actionButton(ns("radogost-load"), "Load"),
-          textOutput(ns("radogost-status"))
+          tags$div(style = "width: 50%;", textOutput(ns("radogost-status")))
         )
       )
     ),
@@ -385,9 +385,17 @@ selectSourceServer <- function(id,
                    choices <- if (nrow(results) == 0L) {
                      c("No matching files - try different words" = "")
                    } else {
-                     labels <- paste(results$dataset_name, results$file_name, sep = " / ")
-                     c("Select a file..." = "",
-                       stats::setNames(as.character(seq_len(nrow(results))), labels))
+                     dataset_ids <- unique(results$dataset_persistent_id)
+                     groups <- lapply(dataset_ids, function(dataset_id) {
+                       rows <- which(results$dataset_persistent_id == dataset_id)
+                       stats::setNames(as.character(rows), results$file_name[rows])
+                     })
+                     labels <- results$dataset_name[match(dataset_ids, results$dataset_persistent_id)]
+                     duplicate_labels <- duplicated(labels) | duplicated(labels, fromLast = TRUE)
+                     labels[duplicate_labels] <- paste0(labels[duplicate_labels],
+                                                        " (", dataset_ids[duplicate_labels], ")")
+                     c(list("Select a file..." = ""),
+                       stats::setNames(groups, labels))
                    }
                    updateSelectizeInput(session,
                                         "radogost-file",
