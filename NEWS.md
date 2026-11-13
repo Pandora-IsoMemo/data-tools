@@ -1,6 +1,7 @@
 # DataTools 26.11.0
 
 ## Updates
+- Linked the version in import dialog titles to the DataTools changelog.
 - Added RADOGOST Repository search and import for supported public tabular files (#124).
 - Replaced the unsupported ODT data-import option with ODS, added content-based Excel format detection, and enabled ODS sheet selection.
 - Excluded plain-text documents from RADOGOST search while retaining TXT imports for other sources.
