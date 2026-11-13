@@ -4,10 +4,12 @@
 \alias{getSheetSelection}
 \title{Get Sheet Selection}
 \usage{
-getSheetSelection(filepath)
+getSheetSelection(filepath, workbookFormat = detectWorkbookFormat(filepath))
 }
 \arguments{
 \item{filepath}{(character) url or path}
+
+\item{workbookFormat}{detected workbook format}
 }
 \description{
 Get Sheet Selection

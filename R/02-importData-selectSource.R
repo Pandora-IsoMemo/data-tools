@@ -16,21 +16,22 @@ selectSourceUI <- function(id,
   ns <- NS(id)
 
   sourceChoices <- switch(importType,
-                          data = c("Pandora Platform" = "ckan",
-                                   "File" = "file",
+                          data = c("Pandora" = "ckan",
+                                   "Radogost" = "radogost",
+                                   "Github" = "remoteModel",
                                    "URL" = "url",
-                                   "Github Repository" = "remoteModel"),
-                          model = c("Pandora Platform" = "ckan",
-                                    "File" = "file",
+                                   "File" = "file"),
+                          model = c("Pandora" = "ckan",
+                                    "Github" = "remoteModel",
                                     "URL" = "url",
-                                    "Github Repository" = "remoteModel"),
-                          zip = c("Pandora Platform" = "ckan",
-                                  "File" = "file",
+                                    "File" = "file"),
+                          zip = c("Pandora" = "ckan",
+                                  "Github" = "remoteModel",
                                   "URL" = "url",
-                                  "Github Repository" = "remoteModel"),
-                          list = c("Pandora Platform" = "ckan",
-                                   "File" = "file",
-                                   "URL" = "url")
+                                  "File" = "file"),
+                          list = c("Pandora" = "ckan",
+                                   "URL" = "url",
+                                   "File" = "file")
   )
 
   tagList(
@@ -38,28 +39,30 @@ selectSourceUI <- function(id,
     fluidRow(
       column(6,
              tags$strong("1. Select source"),
-             radioButtons(
-               ns("source"),
-               label = NULL,
-               choices = sourceChoices,
-               selected = defaultSource,
-               inline = TRUE)),
+             radioButtons(ns("source"),
+                          label = NULL,
+                          choices = sourceChoices,
+                          selected = defaultSource,
+                          inline = TRUE),
+             if (!isInternet) helpText("No internet connection!") else NULL),
       if (importType == "data") {
         column(6,
                align = "right",
-               style = "margin-top: 1.7em;",
+               style = "margin-top: 1.5em;",
                conditionalPanel(
-                 ns = ns,
                  condition = "input.source == 'file'",
-                 radioButtons(ns("dataOrLink"),
-                              label = NULL,
-                              choices = c("Load Dataset" = "fullData", "Load Data Query" = "dataLink"),
-                              selected = "fullData",
-                              inline = TRUE),
-                 if (!isInternet) helpText("No internet connection!") else NULL
-               )
-        )
-      } else NULL
+                 ns = ns,
+                 radioButtons(
+                   ns("dataOrLink"),
+                   label = NULL,
+                   choices = c("Load Dataset" = "fullData", "Load Data Query" = "dataLink"),
+                   selected = "fullData",
+                   inline = TRUE
+                 )
+               ))
+      } else {
+        NULL
+      }
     ),
     tags$br(),
     # source == ckan/file/url/model ----
@@ -67,18 +70,46 @@ selectSourceUI <- function(id,
     conditionalPanel(
       condition = "input.source == 'ckan'",
       ns = ns,
-      fluidRow(column(width = 6,
-                      filterCKANRepoUI(ns("repoFilter")),
-                      filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
-                      loadCKANResourceUI(ns("resourceLoad"))
-      ),
-      column(width = 6,
-             tags$strong("Additional information about the repository from ",
-                         tags$a("Pandora", href = "https://pandora.earth/", target = "_blank")),
-             dataTableOutput(ns(
-               "repoInfoTable"
-             ))
-      ))
+      fluidRow(
+        column(width = 6,
+               filterCKANRepoUI(ns("repoFilter")),
+               filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
+               loadCKANResourceUI(ns("resourceLoad"))),
+        column(width = 6,
+               tags$strong("Additional information about the repository from ",
+                           tags$a("Pandora", href = "https://pandora.earth/", target = "_blank")),
+               dataTableOutput(ns("repoInfoTable")))
+      )
+    ),
+    ## source == radogost
+    conditionalPanel(
+      condition = "input.source == 'radogost'",
+      ns = ns,
+      fluidRow(
+        column(
+          width = 4,
+          textInput(ns("radogost-name"), "File name contains", value = "", width = "100%",
+                    placeholder = "Leave blank or enter words ..."),
+          helpText("Click Search to update the File list.")
+        ),
+        column(
+          width = 2,
+          style = "margin-top: 1.7em;",
+          actionButton(ns("radogost-search"), "Search")
+        ),
+        column(
+          width = 6,
+          selectizeInput(ns("radogost-file"), "File",
+                         choices = c("Search files to see available results" = ""),
+                         options = list(placeholder = "Search files to see available results"),
+                         width = "100%"),
+          tags$div(
+            style = "display: flex; align-items: center; gap: 0.75em;",
+            actionButton(ns("radogost-load"), "Load"),
+            textOutput(ns("radogost-status"))
+          )
+        )
+      )
     ),
     ## source == file
     conditionalPanel(
@@ -123,6 +154,10 @@ selectSourceUI <- function(id,
 #' @param id id of module
 #' @param openPopupReset (reactive) TRUE if popup is (re-)opened
 #' @param internetCon (reactive) TRUE if there is an internet connection
+#' @param radogostFetch (function) search function for RADOGOST
+#' @param radogostDownload (function) downloader for RADOGOST files. Returned
+#' local files are owned by this module and removed on replacement, source reset,
+#' or session end.
 #' @inheritParams configureFileServer
 #' @inheritParams remoteModelsServer
 #' @inheritParams importDataServer
@@ -133,7 +168,11 @@ selectSourceServer <- function(id,
                                githubRepo,
                                folderOnGithub,
                                pathToLocal,
-                               ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt")) {
+                               ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
+                               radogostFetch = fetch_radogost_files,
+                               radogostDownload = function(file_url) {
+                                 download_radogost_file(file_url, allowed_types = ckanFileTypes)
+                               }) {
   moduleServer(id,
                function(input, output, session) {
                  ns <- session$ns
@@ -201,16 +240,49 @@ selectSourceServer <- function(id,
                  })
 
 
+                 # loadFailed counts failed loads so consumers can drop previously imported data
                  dataSource <- reactiveValues(file = NULL,
                                               filename = NULL,
                                               type = NULL,
-                                              input = NULL)
+                                              input = NULL,
+                                              loadFailed = 0L)
+                 radogostFiles <- reactiveVal(radogost_empty_files())
+                 radogostSearchError <- reactiveVal(NULL)
+                 radogostDownloadPaths <- character()
+                 cleanupRadogostFiles <- function(keep = character()) {
+                   obsolete <- setdiff(radogostDownloadPaths, keep)
+                   if (length(obsolete) == 0L) return(invisible(NULL))
+                   status <- unlink(obsolete)
+                   radogostDownloadPaths <<- radogostDownloadPaths[
+                     file.exists(radogostDownloadPaths)
+                   ]
+                   if (status != 0L) {
+                     warning("Could not remove temporary RADOGOST downloads.", call. = FALSE)
+                   }
+                 }
+                 session$onSessionEnded(function() cleanupRadogostFiles())
+                 managedRadogostDownload <- function(file_url) {
+                   downloaded <- radogostDownload(file_url)
+                   radogostDownloadPaths <<- union(radogostDownloadPaths, downloaded$file)
+                   downloaded
+                 }
+                 observeEvent(dataSource$file, {
+                   cleanupRadogostFiles(keep = dataSource$file)
+                 }, ignoreNULL = FALSE)
 
                  observe({
                    req(isTRUE(openPopupReset()))
                    logDebug("Update after openPopupReset()")
                    # reset
                    reset("file")
+                   radogostFiles(radogost_empty_files())
+                   radogostSearchError(NULL)
+                   updateTextInput(session, "radogost-name", value = "")
+                   updateSelectizeInput(session,
+                                        "radogost-file",
+                                        choices = c("Search files to see available results" = ""),
+                                        selected = "",
+                                        options = list(placeholder = "Search files to see available results"))
                    updateTextInput(session, "repoFilter-ckanMeta", value = "")
 
                    if (isTRUE(internetCon())) {
@@ -298,11 +370,116 @@ selectSourceServer <- function(id,
                    dataSource$filename <- NULL
                    dataSource$type <- NULL
                    dataSource$input <- NULL
+                   if (!identical(input$source, "radogost")) {
+                     radogostFiles(radogost_empty_files())
+                     radogostSearchError(NULL)
+                     updateSelectizeInput(session,
+                                          "radogost-file",
+                                          choices = c("Search files to see available results" = ""),
+                                          selected = "",
+                                          options = list(placeholder = "Search files to see available results"))
+                   }
 
                    # Do not reset inputs when switching the input$source!!
                    # This would also reset input values after importing a data link.
                  }) %>%
                    bindEvent(input$source)
+
+                 observeEvent(input[["radogost-search"]], {
+                   req(input$source == "radogost")
+                   radogostSearchError(NULL)
+                   if (!isTRUE(internetCon())) {
+                     radogostFiles(radogost_empty_files())
+                     radogostSearchError("No internet connection.")
+                   } else {
+                     logDebug("%s: Updating RADOGOST files", id)
+                     tryCatch({
+                       results <- withProgress(
+                         message = "Searching RADOGOST...",
+                         value = 0,
+                         radogostFetch(name_pattern = input[["radogost-name"]],
+                                       extension = c("tab", ckanFileTypes[
+                                         !tolower(ckanFileTypes) %in% "txt"
+                                       ]),
+                                       per_page = 100,
+                                       max_results = 500)
+                       )
+                       radogostFiles(results)
+                     }, error = function(error) {
+                       radogostFiles(radogost_empty_files())
+                       radogostSearchError(conditionMessage(error))
+                     })
+                   }
+
+                   results <- radogostFiles()
+                   choices <- if (nrow(results) == 0L) {
+                     c("No matching files - try different words" = "")
+                   } else {
+                     dataset_ids <- unique(results$dataset_persistent_id)
+                     groups <- lapply(dataset_ids, function(dataset_id) {
+                       rows <- which(results$dataset_persistent_id == dataset_id)
+                       stats::setNames(as.character(rows), results$file_name[rows])
+                     })
+                     labels <- results$dataset_name[match(dataset_ids, results$dataset_persistent_id)]
+                     duplicate_labels <- duplicated(labels) | duplicated(labels, fromLast = TRUE)
+                     labels[duplicate_labels] <- paste0(labels[duplicate_labels],
+                                                        " (", dataset_ids[duplicate_labels], ")")
+                     c(list("Select a file..." = ""),
+                       stats::setNames(groups, labels))
+                   }
+                   updateSelectizeInput(session,
+                                        "radogost-file",
+                                        choices = choices,
+                                        selected = "",
+                                        options = list(placeholder = if (nrow(results) == 0L) {
+                                          "No matching files - try different words"
+                                        } else {
+                                          "Select a file..."
+                                        }))
+                 }, ignoreInit = TRUE)
+
+                 output[["radogost-status"]] <- renderText({
+                   if (!is.null(radogostSearchError())) {
+                     return(radogostSearchError())
+                   }
+                   if (nrow(radogostFiles()) == 0L) {
+                     return("")
+                   }
+                   if (isTRUE(attr(radogostFiles(), "truncated"))) {
+                     return(sprintf("Showing first %d files. Refine the name search for more specific results.",
+                                    nrow(radogostFiles())))
+                   }
+                   sprintf("%d file(s) found.", nrow(radogostFiles()))
+                 })
+
+                 observeEvent(input[["radogost-load"]], {
+                   req(input$source == "radogost")
+                   req(input[["radogost-file"]], nrow(radogostFiles()) > 0L)
+                   if (!isTRUE(internetCon())) {
+                     showNotification("No internet connection.", type = "error")
+                     return()
+                   }
+                   tryCatch({
+                     loadedSource <- getDataSource(dataSource = dataSource,
+                                                   input = input,
+                                                   type = "radogost",
+                                                   isInternet = internetCon(),
+                                                   radogostFiles = radogostFiles(),
+                                                   radogostDownload = managedRadogostDownload)
+                     dataSource <- addSourceType(dataSource = loadedSource,
+                                                 importType = importType,
+                                                 source = "radogost",
+                                                 inputDataOrLink = input[["dataOrLink"]])
+                   }, error = function(error) {
+                     cleanupRadogostFiles()
+                     dataSource$file <- NULL
+                     dataSource$filename <- NULL
+                     dataSource$type <- NULL
+                     dataSource$input <- NULL
+                     dataSource$loadFailed <- dataSource$loadFailed + 1L
+                     showNotification(conditionMessage(error), type = "error")
+                   })
+                 }, ignoreInit = TRUE)
 
                  observe({
                    logDebug("reset CKAN fields")

@@ -30,7 +30,7 @@ importDataUI <- function(id, label = "Import Data") {
 #' @param title title of import module
 #' @param defaultSource (character) default source for input "Source", e.g. "ckan", "file", or "url"
 #' @param ckanFileTypes (character) file types allowed for import from Pandora ("ckan"). E.g. for
-#' `importType = "data"`: c("xls", "xlsx", "csv", "odt", "txt"); for `importType = "zip"`: c("zip");
+#' `importType = "data"`: c("xls", "xlsx", "csv", "ods", "txt"); for `importType = "zip"`: c("zip");
 #'  for `importType = "list"`: c("json")
 #' @param ignoreWarnings (logical) TRUE to enable imports in case of warnings
 #' @param importType (character) DEPRECATED. type of import, either "data", "model", "zip" or "list".
@@ -65,8 +65,8 @@ importDataUI <- function(id, label = "Import Data") {
 #' @export
 importDataServer <- function(id,
                              title = "",
-                             defaultSource = c("ckan", "file", "url", "remoteModel"),
-                             ckanFileTypes = c("xls", "xlsx", "csv", "odt", "txt"),
+                             defaultSource = c("ckan", "file", "url", "remoteModel", "radogost"),
+                             ckanFileTypes = c("xls", "xlsx", "csv", "ods", "txt"),
                              ignoreWarnings = FALSE,
                              importType = c("data", "model", "zip", "list"),
                              # parameters for data upload
@@ -141,6 +141,7 @@ importDataServer <- function(id,
                    colnames = colNames
                  )
                  internetCon <- reactiveVal(FALSE)
+                 canAccept <- reactiveVal(FALSE)
 
                  observe({
                    logDebug("Update withRownames")
@@ -157,27 +158,45 @@ importDataServer <- function(id,
                    bindEvent(input[["dataSelector-withColnames"]])
 
                  output$selectDataDialog <- renderUI({
+                   # Render only when the popup opens. Re-rendering on source changes would reset
+                   # file type, sheet, etc. after restoring them from a data link.
+                   input$openPopup
+                   userFileTypes <- isolate(
+                     if (identical(input[["fileSource-source"]], "ckan"))
+                       input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                   )
+                   # re-rendered buttons start in their default state; restore it after rendering
+                   session$onFlushed(function() {
+                     withReactiveDomain(session, isolate(applyButtonStates()))
+                   }, once = TRUE)
                    if (importType == "data") {
-                     configureDataUI(
-                       ns("dataSelector"),
-                       batch = batch,
-                       outputAsMatrix = outputAsMatrix,
-                       isLink = ((input[["fileSource-source"]] == "remoteModel") || # remote (github) data
-                                   (input[["fileSource-source"]] == "file" && # local link
-                                      !is.null(input[["fileSource-dataOrLink"]]) &&
-                                      input[["fileSource-dataOrLink"]] == "dataLink")),
-                       customHelpText = options[["customHelpText"]],
-                       defaultFileTypes = ckanFileTypes,
-                       userFileTypes = if (input[["fileSource-source"]] == "ckan")
-                         input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                     source_id <- ns("fileSource-source")
+                     link_condition <- sprintf(
+                       "input['%1$s'] == 'remoteModel' || (input['%1$s'] == 'file' && input['%2$s'] == 'dataLink')",
+                       source_id,
+                       ns("fileSource-dataOrLink")
+                     )
+                     tagList(
+                       conditionalPanel(
+                         condition = sprintf("!(%s)", link_condition),
+                         configureDataUI(
+                           ns("dataSelector"),
+                           batch = batch,
+                           outputAsMatrix = outputAsMatrix,
+                           isLink = FALSE,
+                           customHelpText = options[["customHelpText"]],
+                           defaultFileTypes = ckanFileTypes,
+                           userFileTypes = userFileTypes
+                         )
+                       ),
+                       conditionalPanel(condition = link_condition, options[["customHelpText"]])
                      )
                    } else {
                      configureFileUI(
                        ns("dataSelector"),
                        customHelpText = options[["customHelpText"]],
                        defaultFileTypes = ckanFileTypes,
-                       userFileTypes = if (input[["fileSource-source"]] == "ckan")
-                         input[["fileSource-resourceFilter-ckanResourceTypes"]] else ckanFileTypes
+                       userFileTypes = userFileTypes
                      )
                    }
                  })
@@ -207,6 +226,7 @@ importDataServer <- function(id,
                    shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("dataQuerier-downloadDataLink"), asis = TRUE)
                    shinyjs::disable(ns("accept"), asis = TRUE)
+                   canAccept(FALSE)
                  })
 
                  dataSource <- selectSourceServer(
@@ -234,7 +254,7 @@ importDataServer <- function(id,
                      "dataSelector",
                      ignoreWarnings = ignoreWarnings,
                      dataSource = dataSource,
-                     dataSourceInputs = reactive(getFileInputs(input, type = "source")),
+                     dataSourceInputs = reactive(getDataSourceInputs(input, dataSource)),
                      dataProcessList = dataProcessList,
                      dataForPreview = data_for_preview,
                      defaultFileTypes = ckanFileTypes,
@@ -254,18 +274,6 @@ importDataServer <- function(id,
                    )
                  }
 
-                 observeEvent(input$tabImport, {
-                   logDebug("Updating input$tabImport")
-                   if (input$tabImport == "Select") {
-                     if (!is.null(values$fileImportSuccess) &&
-                         values$fileImportSuccess == "Data import successful") {
-                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
-                     } else {
-                       shinyjs::disable(ns("dataSelector-downloadDataLink"), asis = TRUE)
-                     }
-                   }
-                 })
-
                  ## button cancel ----
                  observeEvent(input$cancel, {
                    logDebug("Cancel import")
@@ -275,10 +283,14 @@ importDataServer <- function(id,
                  # LINK to DATA down-/upload ----
                  observeDownloadDataLink(id, input = input, output = output, session = session,
                                          dataProcessList = dataProcessList,
+                                         sourceInputs = reactive(values$sourceInputs),
+                                         canDownload = canAccept,
                                          downloadBtnID = "dataSelector-downloadDataLink")
 
                  observeDownloadDataLink(id, input = input, output = output, session = session,
                                          dataProcessList = dataProcessList,
+                                         sourceInputs = reactive(values$sourceInputs),
+                                         canDownload = reactive(canAccept() && length(queriedData()) > 0L),
                                          downloadBtnID = "dataQuerier-downloadDataLink")
 
                  observeUploadDataLink(
@@ -307,11 +319,11 @@ importDataServer <- function(id,
                          isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                        # disable button if import was reset or custom checks fail
                        logDebug("%s: Disable Accept button", id)
-                       shinyjs::disable(ns("accept"), asis = TRUE)
+                       canAccept(FALSE)
                        values$fileImportSuccess <- NULL
                      } else {
                        logDebug("%s: Enable Accept button", id)
-                       shinyjs::enable(ns("accept"), asis = TRUE)
+                       canAccept(TRUE)
                      }
                    }) %>%
                      bindEvent(values$dataImport, ignoreNULL = FALSE, ignoreInit = TRUE)
@@ -370,22 +382,35 @@ importDataServer <- function(id,
                      if (length(values$dataImport) == 0 ||
                          isNotValid(values$errors, values$warnings, ignoreWarnings)) {
                        logDebug("%s: Disable Accept button", id)
-                       shinyjs::disable(ns("accept"), asis = TRUE)
+                       canAccept(FALSE)
                        values$fileImportSuccess <- NULL
                      } else {
                        logDebug("%s: Enable Accept button", id)
-                       shinyjs::enable(ns("accept"), asis = TRUE)
+                       canAccept(TRUE)
 
                        shinyjs::enable(ns("dataSelector-keepData"), asis = TRUE)
-                       shinyjs::enable(ns("dataSelector-downloadDataLink"), asis = TRUE)
                        values$fileImportSuccess <- "Data import successful"
                      }
                    }) %>%
                      bindEvent(list(values$dataImport,
                                     queriedData(),
                                     preparedData$data,
-                                    joinedData()), ignoreNULL = FALSE, ignoreInit = TRUE)
+                                    joinedData(),
+                                    input$tabImport), ignoreNULL = FALSE, ignoreInit = TRUE)
                  }
+
+                 applyButtonStates <- function() {
+                   allowed <- isTRUE(canAccept())
+                   shinyjs::toggleState(ns("accept"), condition = allowed, asis = TRUE)
+                   if (importType == "data") {
+                     shinyjs::toggleState(ns("dataSelector-downloadDataLink"),
+                                          condition = allowed, asis = TRUE)
+                     shinyjs::toggleState(ns("dataQuerier-downloadDataLink"),
+                                          condition = allowed && length(queriedData()) > 0L,
+                                          asis = TRUE)
+                   }
+                 }
+                 observe(applyButtonStates())
 
                  ## ACCEPT data ----
                  returnData <- reactiveVal(list())

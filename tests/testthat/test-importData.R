@@ -28,7 +28,7 @@ test_that("Test module importData", {
 
                expect_true(all(names(values) %in%
                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings", "version")))
+                              "errors", "warnings", "version", "sourceInputs")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers
@@ -89,7 +89,7 @@ test_that("Test module importData", {
 
                expect_true(all(names(values) %in%
                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings", "version")))
+                              "errors", "warnings", "version", "sourceInputs")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers
@@ -177,7 +177,7 @@ test_that("Test module importData", {
 
                expect_true(all(names(values) %in%
                             c("data", "preview", "dataImport", "fileImportSuccess", "fileName",
-                              "errors", "warnings", "version")))
+                              "errors", "warnings", "version", "sourceInputs")))
 
                # cannot test parent module of a submodule without adding some
                # undesired ignoreInit values in observers

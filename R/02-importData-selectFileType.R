@@ -35,10 +35,11 @@ selectFileTypeUI <- function(id,
                condition = paste0("input.type == 'csv' || input.type == 'txt'"),
                ns = ns,
                textInput(ns("colSep"), "column separator:", value = ","),
+               helpText("Use \\t for tabs. Leave blank to separate on whitespace."),
                textInput(ns("decSep"), "decimal separator:", value = ".")
              ),
              conditionalPanel(
-               condition = paste0("input.type == 'xlsx'"),
+               condition = paste0("input.type == 'xlsx' || input.type == 'ods'"),
                ns = ns,
                selectInput(
                  ns("sheet"),
@@ -64,56 +65,88 @@ selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
                  ns <- session$ns
                  logDebug(initServerLogTxt(ns("")))
 
-                 observe({
-                   logDebug("Updating input$type")
-                   if (is.null(input$type) || is.null(dataSource$file)) {
-                     updateSelectInput(session = session, "type", selected = character(0))
-                   } else {
-                     auto_type <- getExtension(dataSource$file)
-                     if (!(auto_type %in% defaultFileTypes)) {
-                       auto_type <- defaultFileTypes[1]
-                     }
-                     updateSelectInput(session, "type", selected = auto_type)
-                   }
+                 # Do not clear type and sheet when dataSource is reset: switching input$source
+                 # resets dataSource, which would discard inputs restored from a data link.
+                 observeEvent(dataSource$file, {
+                   # file types are restored from the data link, not detected from its json
+                   req(!identical(dataSource$type, "dataLink"))
+                   filepath <- dataSource$file
+                   file_selection <- getFileTypeSelection(filepath, defaultFileTypes)
+                   workbook_format <- file_selection$workbookFormat
+                   updateSelectInput(session, "type", selected = file_selection$type)
 
-                   logDebug("Updating input$sheet")
-                   if (is.null(input$type) || is.null(dataSource$file) ||
-                       !(input$type %in% c("xls", "xlsx"))) {
-                     updateSelectInput(session = session, "sheet",
-                                       selected = character(0))
+                   if (is.null(workbook_format)) {
+                     updateSelectInput(session, "sheet", selected = character(0))
                    } else {
-                     updateSelectInput(session, "sheet",
-                                       choices = getSheetSelection(dataSource$file))
+                     tryCatch(
+                       updateSelectInput(
+                         session,
+                         "sheet",
+                         choices = getSheetSelection(filepath, workbook_format)
+                       ),
+                       error = function(error) {
+                         updateSelectInput(session, "sheet", selected = character(0))
+                         showNotification(
+                           paste("Could not read workbook sheets:", conditionMessage(error)),
+                           type = "error"
+                         )
+                       }
+                     )
                    }
-                 }) %>%
-                   bindEvent(dataSource$file, ignoreNULL = FALSE, ignoreInit = TRUE)
+                 }, ignoreInit = TRUE)
                })
+}
+
+#' Get Workbook Sheet Names
+#'
+#' XLS content is staged with an XLS extension when needed because the sheet
+#' reader also checks the filename. Remote ODS files are staged because their
+#' sheet reader requires a local archive.
+#'
+#' @param filepath (character) url or path
+#' @param workbookFormat detected workbook format
+getSheetNames <- function(filepath, workbookFormat = detectWorkbookFormat(filepath)) {
+  if (is.null(filepath) || is.null(workbookFormat)) {
+    return(NULL)
+  }
+
+  is_url <- grepl("^https?://", filepath, ignore.case = TRUE)
+  if ((workbookFormat == "xls" && (is_url || getExtension(filepath) != "xls")) ||
+      (workbookFormat == "ods" && is_url)) {
+    staged_path <- tempfile(fileext = paste0(".", workbookFormat))
+    on.exit(unlink(staged_path), add = TRUE)
+    if (is_url) {
+      status <- download.file(filepath, staged_path, mode = "wb", quiet = TRUE)
+      if (status != 0L) stop("Could not download workbook for sheet discovery.", call. = FALSE)
+    } else if (!file.copy(filepath, staged_path)) {
+      stop("Could not stage XLS workbook for sheet discovery.", call. = FALSE)
+    }
+    filepath <- staged_path
+  }
+
+  sheetNames <- switch(
+    workbookFormat,
+    xlsx = names(loadWorkbook(filepath)),
+    xls = excel_sheets(filepath),
+    ods = list_ods_sheets(filepath),
+    stop("Unsupported workbook format.", call. = FALSE)
+  )
+
+  if (length(sheetNames) == 0L) return(NULL)
+  sheetNames
 }
 
 #' Get Sheet Selection
 #'
 #' @param filepath (character) url or path
-getSheetSelection <- function(filepath) {
-  if (is.null(filepath))
-    return(list())
+#' @param workbookFormat detected workbook format
+getSheetSelection <- function(filepath, workbookFormat = detectWorkbookFormat(filepath)) {
+  if (is.null(filepath)) return(list())
 
-  fileSplit <- strsplit(filepath, split = "\\.")[[1]]
-  typeOfFile <- fileSplit[length(fileSplit)]
+  sheetNames <- getSheetNames(filepath, workbookFormat)
+  if (is.null(sheetNames)) return(NULL)
 
-  if (!(typeOfFile %in% c("xls", "xlsx")))
-    return(NULL)
-
-  if (typeOfFile == "xlsx") {
-    # loadWorkbook() is also able to handle url's
-    sheetNames <- loadWorkbook(filepath) %>% names()
-  } else if (typeOfFile == "xls") {
-    sheetNames <- excel_sheets(filepath)
-  }
-
-  if (length(sheetNames) == 0)
-    return(NULL)
-
-  sheets <- 1:length(sheetNames)
+  sheets <- seq_along(sheetNames)
   names(sheets) <- sheetNames
 
   sheets

@@ -7,7 +7,7 @@ dataFileTypes:
   - "xlsx"
   - "xls"
   - "csv"
-  - "odt"
+  - "ods"
   - "txt"
 modelFileTypes:
   - "datatools"

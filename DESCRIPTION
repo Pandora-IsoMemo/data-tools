@@ -1,10 +1,11 @@
 Package: DataTools
 Type: Package
 Title: Data Tools for Shiny Apps
-Version: 26.08.2
-Date: 2026-08-18
+Version: 26.11.0
+Date: 2026-11-13
 Authors@R: c(
-            person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("cre", "aut"))
+            person("Ricardo", "Fernandes", email = "ldv1452@gmail.com", role = c("aut")),
+            person("Antonia", "Runge", email = "antonia.runge@inwt-statistics.de", role = c("aut", "cre"))
             )
 Maintainer: Antonia Runge <antonia.runge@inwt-statistics.de>
 Description: Helpful functions and modules that can be applied across the Isomemo Apps.
@@ -23,7 +24,8 @@ Imports:
   magrittr,
   openxlsx,
   readxl,
-  Pandora (>= 26.08.3),
+  Pandora (>= 26.11.0),
+  readODS (>= 2.2.0),
   RSQLite,
   shiny,
   shinyAce,
@@ -41,5 +43,5 @@ Suggests:
   devtools,
   lintr (>= 1.0.2),
   testthat (>= 2.0.0)
-RoxygenNote: 7.3.3
 URL: https://pandora-isomemo.github.io/data-tools/
+Config/roxygen2/version: 8.0.0

@@ -237,9 +237,6 @@ queryDataServer <- function(id, dataProcessList, isActiveTab) {
                      # keep filename
                      result$import <- setNames(list(result$data), input$fileNameQueried)
 
-                     shinyjs::enable(ns("downloadDataLink"), asis = TRUE)
-                   } else {
-                     shinyjs::disable(ns("downloadDataLink"), asis = TRUE)
                    }
                  }) %>%
                    bindEvent(input$applyQuery)

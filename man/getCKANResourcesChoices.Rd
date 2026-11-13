@@ -13,7 +13,7 @@ getCKANResourcesChoices(
 )
 }
 \arguments{
-\item{fileType}{(character) list of relevant file types, e.g. c("xls", "xlsx", "csv", "odt")}
+\item{fileType}{(character) list of relevant file types, e.g. c("xls", "xlsx", "csv", "ods")}
 
 \item{repository}{(character) name of a Pandora repository, e.g. an entry of the output from
 \code{getRepositories()$name}}

@@ -204,7 +204,15 @@ getFileInputs <- function(input, type = c("file", "source", "query")) {
 }
 
 extract_filename_from_source_input <- function(source_inputs) {
+  normalized <- removeNamespacePattern(source_inputs, "fileSource")
+  if (identical(normalized[["source"]], "radogost") &&
+      !is.null(normalized[["radogost-filename"]])) {
+    return(normalized[["radogost-filename"]])
+  }
   data_source <- extractDataSourceFromInputs(source_inputs)
+  if (identical(normalized[["source"]], "radogost")) {
+    on.exit(unlink(data_source$file), add = TRUE)
+  }
 
   filename <- data_source$filename
 

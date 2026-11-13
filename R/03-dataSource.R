@@ -2,20 +2,25 @@
 #'
 #' @inheritParams configureFileServer
 #' @param input (reactiveValues)
-#' @param type (character) source of import, one of "ckan", "file", "url", "remoteModel".
-#'  Possible sources for data are: "ckan", "file", "url".
+#' @param type (character) source of import, one of "ckan", "radogost", "file", "url", "remoteModel".
+#'  Possible sources for data are: "ckan", "radogost", "file", "url".
 #'  Possible sources for models are: "ckan", "file", "url", "remoteModel".
 #' @param isInternet (logical) set TRUE, if there is an internet connection. This parameter is
 #'  ignored if \code{type = "file"} or \code{type = "remoteModel"}
 #' @param pathToFile (character) file path, ignored if \code{type != "remoteModel"}
+#' @param radogostFiles (data.frame) RADOGOST search results when \code{type = "radogost"}.
+#'  If NULL, reconstruct a saved source using \code{input[["radogost-file-url"]]}.
+#' @param radogostDownload (function) RADOGOST file downloader
 getDataSource <- function(dataSource = reactiveValues(file = NULL,
                                                       filename = NULL,
                                                       type = NULL,
                                                       input = NULL),
                           input,
-                          type = c("ckan", "file", "url", "remoteModel"),
+                          type = c("ckan", "radogost", "file", "url", "remoteModel"),
                           isInternet = TRUE,
-                          pathToFile = NULL) {
+                          pathToFile = NULL,
+                          radogostFiles = NULL,
+                          radogostDownload = download_radogost_file) {
   type <- match.arg(type)
 
   # reset
@@ -25,6 +30,11 @@ getDataSource <- function(dataSource = reactiveValues(file = NULL,
 
   dataSource <- switch (type,
                         "ckan" = getSourceCKAN(dataSource, input, isInternet),
+                        "radogost" = getSourceRadogost(dataSource,
+                                                       input,
+                                                       isInternet,
+                                                       radogostFiles,
+                                                       radogostDownload),
                         "file" = getSourceFile(dataSource, input),
                         "url" = getSourceUrl(dataSource, input, isInternet),
                         "remoteModel" = getSourceModel(dataSource, input, pathToFile),
@@ -32,6 +42,50 @@ getDataSource <- function(dataSource = reactiveValues(file = NULL,
   )
 
   return(dataSource)
+}
+
+# Get Source RADOGOST
+#
+# @inheritParams getDataSource
+getSourceRadogost <- function(dataSource, input, isInternet, radogostFiles, radogostDownload) {
+  if (!isInternet) return(dataSource)
+
+  if (is.null(radogostFiles)) {
+    file_url <- input[["radogost-file-url"]]
+  } else {
+    if (nrow(radogostFiles) == 0) return(dataSource)
+    selected_index <- suppressWarnings(as.integer(input[["radogost-file"]]))
+    if (length(selected_index) != 1L || is.na(selected_index) ||
+        selected_index < 1L || selected_index > nrow(radogostFiles)) {
+      return(dataSource)
+    }
+
+    selected_file <- radogostFiles[selected_index, , drop = FALSE]
+    if (isTRUE(selected_file$restricted)) return(dataSource)
+    file_url <- selected_file$file_url
+  }
+
+  radogost_validate_url(file_url, endpoint = "file")
+  downloaded <- radogostDownload(file_url)
+  dataSource$file <- downloaded$file
+  dataSource$filename <- downloaded$filename
+  source_inputs <- getFileInputs(input, type = "source")
+  source_inputs[["radogost-file"]] <- NULL
+  source_inputs[["source"]] <- "radogost"
+  source_inputs[["radogost-file-url"]] <- file_url
+  source_inputs[["radogost-filename"]] <- downloaded$filename
+  dataSource$input <- source_inputs
+
+  dataSource
+}
+
+getDataSourceInputs <- function(input, dataSource) {
+  if (identical(dataSource$input[["source"]], "radogost")) {
+    source_inputs <- dataSource$input
+    names(source_inputs) <- paste0("fileSource-", names(source_inputs))
+    return(source_inputs)
+  }
+  getFileInputs(input, type = "source")
 }
 
 # Get Source Type
@@ -107,7 +161,7 @@ getSourceUrl <- function(dataSource, input, isInternet) {
 
   tmpPath <- try(downloadFileToTmp(
     url = input$url,
-    fileext = getExtension(basename(input$url), prefix = ".")
+    fileext = getExtension(input$url, prefix = ".")
   ))
 
   # "file" will be used to load the file

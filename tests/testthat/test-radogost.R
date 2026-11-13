@@ -1,0 +1,703 @@
+radogost_test_response <- function(items, total_count = nrow(items), count_in_response = nrow(items), status = "OK") {
+  as.character(jsonlite::toJSON(
+    list(
+      status = status,
+      data = list(
+        total_count = total_count,
+        count_in_response = count_in_response,
+        items = items
+      )
+    ),
+    auto_unbox = TRUE,
+    dataframe = "rows"
+  ))
+}
+
+test_that("RADOGOST query filters are normalized", {
+  expect_equal(
+    radogost_build_query("oak / data", ".CSV"),
+    "(name:*oak* AND name:*data*) AND fileExtension:csv"
+  )
+  expect_equal(radogost_build_query(), "*")
+  expect_error(radogost_build_query("---"), "at least one letter or digit")
+  expect_error(radogost_build_query(extension = "."), "at least one letter or digit")
+})
+
+test_that("RADOGOST multiple extensions use grouped OR filters", {
+  expect_equal(
+    radogost_build_query("oak / data", c(" .TAB ", ".CSV", "csv", "XLSX")),
+    "(name:*oak* AND name:*data*) AND (fileExtension:tab OR fileExtension:csv OR fileExtension:xlsx)"
+  )
+  expect_equal(
+    radogost_build_query(extension = c(".CSV", "csv")),
+    "fileExtension:csv"
+  )
+  expect_equal(radogost_build_query(extension = character()), "*")
+  expect_equal(radogost_build_query(extension = " "), "*")
+  expect_error(radogost_build_query(extension = c("csv", ".")), "at least one letter or digit")
+  expect_error(radogost_build_query(extension = c("csv", "")), "at least one letter or digit")
+  expect_error(radogost_build_query(extension = c("csv", NA_character_)), "without missing values")
+  expect_error(radogost_build_query(extension = list("csv", "tab")), "character vector")
+})
+
+test_that("RADOGOST file search paginates and preserves original-format URLs", {
+  requests <- list()
+  mock_request <- function(url, query, timeout) {
+    requests[[length(requests) + 1L]] <<- query
+    name <- if (query$start == 0) "table.tab" else "book.csv"
+    content_type <- if (query$start == 0) "text/tab-separated-values" else "text/csv"
+    items <- data.frame(
+      name = name,
+      url = sprintf("https://radogost.dariah.pl/api/access/datafile/%s", query$start + 1L),
+      file_content_type = content_type,
+      dataset_name = "dataset",
+      dataset_persistent_id = "doi:1"
+    )
+    radogost_test_response(items, total_count = 2L, count_in_response = 1L)
+  }
+
+  files <- fetch_radogost_files(
+    per_page = 1,
+    name_pattern = "oak data",
+    extension = c(".TAB", ".CSV"),
+    .request = mock_request
+  )
+
+  expect_length(requests, 2L)
+  expect_equal(vapply(requests, `[[`, integer(1), "start"), c(0L, 1L))
+  expect_true(all(vapply(requests, `[[`, character(1), "q") ==
+                    "(name:*oak* AND name:*data*) AND (fileExtension:tab OR fileExtension:csv)"))
+  expect_equal(
+    files$file_url[files$file_name == "table.tab"],
+    "https://radogost.dariah.pl/api/access/datafile/1?format=original"
+  )
+  expect_equal(files$dataset_persistent_id, c("doi:1", "doi:1"))
+
+  requests <- list()
+  limited_files <- fetch_radogost_files(
+    per_page = 1,
+    max_results = 1,
+    .request = mock_request
+  )
+  expect_equal(nrow(limited_files), 1L)
+  expect_true(attr(limited_files, "truncated"))
+  expect_length(requests, 1L)
+})
+
+test_that("RADOGOST search excludes restricted files by default", {
+  mock_request <- function(url, query, timeout) {
+    items <- data.frame(
+      name = "public.csv",
+      url = "https://radogost.dariah.pl/api/access/datafile/1",
+      file_content_type = "text/csv",
+      dataset_name = "dataset",
+      dataset_persistent_id = "doi:1"
+    )
+    if (query$fq == "fileAccess:Restricted") items$name <- "restricted.csv"
+    radogost_test_response(items)
+  }
+
+  public_files <- fetch_radogost_files(.request = mock_request)
+  all_files <- fetch_radogost_files(include_restricted = TRUE, .request = mock_request)
+
+  expect_equal(public_files$file_name, "public.csv")
+  expect_equal(all_files$restricted, c(FALSE, TRUE))
+
+  limited_public <- fetch_radogost_files(max_results = 1, .request = mock_request)
+  expect_false(attr(limited_public, "truncated"))
+
+  filters <- character()
+  limited_all <- fetch_radogost_files(
+    include_restricted = TRUE,
+    max_results = 1,
+    .request = function(url, query, timeout) {
+      filters <<- c(filters, query$fq)
+      mock_request(url, query, timeout)
+    }
+  )
+  expect_equal(limited_all$file_name, "public.csv")
+  expect_true(attr(limited_all, "truncated"))
+  expect_equal(filters, "fileAccess:Public")
+  expect_false(attr(all_files, "truncated"))
+})
+
+test_that("RADOGOST source refuses restricted records without downloading", {
+  restricted_file <- data.frame(
+    file_name = "restricted.tab",
+    file_url = "https://radogost.dariah.pl/api/access/datafile/1",
+    file_content_type = "text/tab-separated-values",
+    dataset_name = "dataset",
+    dataset_persistent_id = "doi:1",
+    restricted = TRUE
+  )
+  source <- getDataSource(
+    input = list("radogost-file" = "1"),
+    type = "radogost",
+    radogostFiles = restricted_file,
+    radogostDownload = function(...) stop("restricted file must not download")
+  )
+
+  expect_null(shiny::isolate(source$file))
+})
+
+test_that("RADOGOST empty and malformed responses are handled", {
+  empty_request <- function(url, query, timeout) {
+    radogost_test_response(data.frame(
+      name = character(),
+      url = character(),
+      file_content_type = character(),
+      dataset_name = character(),
+      dataset_persistent_id = character()
+    ), total_count = 0L, count_in_response = 0L)
+  }
+  expect_equal(nrow(fetch_radogost_files(.request = empty_request)), 0L)
+
+  expect_error(
+    fetch_radogost_files(.request = function(...) "not json"),
+    "invalid JSON"
+  )
+  expect_error(
+    fetch_radogost_files(.request = function(...) "{\"status\":\"ERROR\"}"),
+    "unsuccessful response"
+  )
+  expect_error(
+    fetch_radogost_files(base_url = "https://example.com/api/search",
+                         .request = function(...) stop("request should not run")),
+    "not a supported RADOGOST endpoint"
+  )
+})
+
+test_that("RADOGOST downloads preserve the original supported filename", {
+  file_url <- "https://radogost.dariah.pl/api/access/datafile/5360?format=original"
+  contents <- charToRaw("a,b\n1,2\n")
+  mock_download <- function(url, path, timeout) {
+    writeBin(contents, path)
+    list(
+      url = url,
+      headers = list(
+        "content-disposition" = paste0(
+          "attachment; filename*=utf-8''original%20table.csv; filename=original_table.csv"
+        ),
+        "content-length" = as.character(length(contents))
+      )
+    )
+  }
+
+  downloaded <- download_radogost_file(file_url, .request = mock_download)
+
+  expect_equal(downloaded$filename, "original table.csv")
+  expect_equal(getExtension(downloaded$file), "csv")
+  expect_equal(readBin(downloaded$file, "raw", n = length(contents)), contents)
+  unlink(downloaded$file)
+
+  mock_download_hash <- function(url, path, timeout) {
+    writeBin(contents, path)
+    list(url = url, headers = list(
+      "content-disposition" = "attachment; filename=\"sample#1.csv\"",
+      "content-length" = as.character(length(contents))
+    ))
+  }
+  downloaded <- download_radogost_file(file_url, .request = mock_download_hash)
+  expect_equal(downloaded$filename, "sample#1.csv")
+  expect_equal(getExtension(downloaded$file), "csv")
+  unlink(downloaded$file)
+})
+
+test_that("RADOGOST filenames keep semicolons inside quoted values", {
+  filename_from <- function(disposition) {
+    radogost_filename_from_headers(list("content-disposition" = disposition))
+  }
+  expect_equal(filename_from('attachment; filename="measurements;2026.csv"'),
+               "measurements;2026.csv")
+  expect_equal(filename_from('attachment; filename="say \\"hi\\".csv"; size=10'),
+               'say "hi".csv')
+  expect_equal(filename_from("attachment; filename=plain.csv; size=10"), "plain.csv")
+  expect_equal(filename_from("attachment;filename = spaced.csv"), "spaced.csv")
+})
+
+test_that("RADOGOST Excel downloads use the existing workbook loader", {
+  file_url <- "https://radogost.dariah.pl/api/access/datafile/5360?format=original"
+  workbook <- test_path("alkane_database.xlsx")
+  workbook_size <- file.info(workbook)$size
+  mock_download <- function(url, path, timeout) {
+    file.copy(workbook, path)
+    list(
+      url = url,
+      headers = list(
+        "content-disposition" = "attachment; filename=radogost_table.xlsx",
+        "content-length" = as.character(workbook_size)
+      )
+    )
+  }
+
+  downloaded <- download_radogost_file(file_url, .request = mock_download)
+  loaded <- loadDataWrapper(
+    values = list(),
+    filepath = downloaded$file,
+    filename = downloaded$filename,
+    type = "xlsx",
+    sep = ",",
+    dec = ".",
+    withRownames = FALSE,
+    withColnames = TRUE,
+    sheetId = 2
+  )
+
+  expect_equal(downloaded$filename, "radogost_table.xlsx")
+  expect_true(is.null(loaded$errors$load))
+  expect_gt(nrow(loaded$dataImport), 0L)
+  expect_gt(ncol(loaded$dataImport), 0L)
+  unlink(downloaded$file)
+})
+
+test_that("Excel type selections accept both workbook extensions but reject unrelated types", {
+  workbook <- test_path("alkane_database.xlsx")
+  xls_path <- tempfile(fileext = ".xls")
+  on.exit(unlink(xls_path), add = TRUE)
+  expect_true(file.copy(workbook, xls_path))
+  expected <- openxlsx::read.xlsx(workbook, sheet = 2)
+
+  for (case in list(list(path = xls_path, type = "xlsx"),
+                    list(path = workbook, type = "xls"),
+                    list(path = workbook, type = "csv"))) {
+    values <- shiny::reactiveValues()
+    loaded <- shiny::isolate({
+      result <- loadDataWrapper(
+        values = values,
+        filepath = case$path,
+        filename = basename(case$path),
+        type = case$type,
+        sep = ",",
+        dec = ".",
+        withRownames = FALSE,
+        withColnames = TRUE,
+        sheetId = 2
+      )
+      shiny::reactiveValuesToList(result)
+    })
+    if (case$type == "csv") {
+      expect_identical(loaded$errors$load, "File extension does not match selected file type.")
+      expect_null(loaded$dataImport)
+    } else {
+      expect_null(loaded$errors$load)
+      expect_null(loaded$warnings$load)
+      expect_equal(loaded$dataImport, expected)
+    }
+  }
+})
+
+test_that("RADOGOST filenames reject decoded path separators", {
+  for (disposition in c(
+    "attachment; filename*=UTF-8''..%5Ctable.csv",
+    "attachment; filename=..\\table.csv",
+    'attachment; filename="..\\\\table.csv"',
+    "attachment; filename*=UTF-8''..%2Ftable.csv"
+  )) {
+    expect_error(
+      radogost_filename_from_headers(list("content-disposition" = disposition)),
+      "invalid filename"
+    )
+  }
+})
+
+test_that("RADOGOST rejects unsafe, incomplete, inaccessible, and unsupported downloads", {
+  file_url <- "https://radogost.dariah.pl/api/access/datafile/5360?format=original"
+  mock_download <- function(filename, response_url = file_url, content_length = 1L) {
+    function(url, path, timeout) {
+      writeBin(charToRaw("x"), path)
+      list(
+        url = response_url,
+        headers = list(
+          "content-disposition" = paste0("attachment; filename=", filename),
+          "content-length" = as.character(content_length)
+        )
+      )
+    }
+  }
+
+  expect_error(
+    download_radogost_file(file_url, .request = mock_download("table.pdf")),
+    "not supported"
+  )
+  expect_error(
+    download_radogost_file(file_url, .request = mock_download("table.csv", content_length = 2L)),
+    "incomplete"
+  )
+  expect_error(
+    download_radogost_file(
+      file_url,
+      .request = mock_download("table.csv", response_url = "https://example.com/file.csv")
+    ),
+    "not a supported RADOGOST endpoint"
+  )
+  expect_error(
+    download_radogost_file(file_url, .request = function(...) stop("HTTP 403")),
+    "HTTP 403"
+  )
+})
+
+test_that("import source UI renders even when RADOGOST is not selected", {
+  expect_error(
+    selectSourceUI("test", "file", c("csv", "xlsx"), "data", TRUE),
+    NA
+  )
+})
+
+test_that("RADOGOST source searches only on demand and loads through the shared source path", {
+  search_calls <- 0L
+  mock_fetch <- function(name_pattern, extension, per_page, max_results) {
+    search_calls <<- search_calls + 1L
+    expect_equal(max_results, 500)
+    expect_equal(extension, c("tab", "xls", "xlsx", "csv", "ods"))
+    data.frame(
+      file_name = c("original_table.tab", "original_table.tab", "second_table.csv", "third_table.csv"),
+      file_url = paste0("https://radogost.dariah.pl/api/access/datafile/", seq_len(4L)),
+      file_content_type = "text/tab-separated-values",
+      dataset_name = c("Example dataset", "Another dataset", "Example dataset", "Another dataset"),
+      dataset_persistent_id = c("doi:1", "doi:2", "doi:1", "doi:3"),
+      restricted = FALSE
+    )
+  }
+  downloaded_paths <- character()
+  download_state <- new.env(parent = emptyenv())
+  download_state$fail <- FALSE
+  mock_download <- function(file_url) {
+    expect_equal(file_url, "https://radogost.dariah.pl/api/access/datafile/2")
+    if (download_state$fail) stop("download failed")
+    path <- tempfile(fileext = ".csv")
+    writeLines(c("first;second", "1;2", "3;4"), path)
+    downloaded_paths <<- c(downloaded_paths, path)
+    list(file = path, filename = "original_table.csv")
+  }
+  file_input_message <- NULL
+  mock_session <- shiny::MockShinySession$new()
+  mock_session$sendInputMessage <- function(inputId, message) {
+    if (identical(inputId, "radogost-file") && !is.null(message$options)) {
+      file_input_message <<- message
+    }
+  }
+
+  testServer(
+    selectSourceServer,
+    session = mock_session,
+    args = list(
+      importType = "data",
+      openPopupReset = reactive(FALSE),
+      internetCon = reactive(TRUE),
+      githubRepo = "data-tools",
+      folderOnGithub = "",
+      pathToLocal = "",
+      radogostFetch = mock_fetch,
+      radogostDownload = mock_download
+    ),
+    {
+      session$setInputs(source = "file", `radogost-search` = 1)
+      expect_equal(search_calls, 0L)
+
+      session$setInputs(source = "radogost", `radogost-name` = "original")
+      session$setInputs(`radogost-search` = 2)
+      expect_equal(search_calls, 1L)
+      expect_equal(file_input_message$value, "")
+      expect_match(file_input_message$options, 'value=""', fixed = TRUE)
+      expect_match(file_input_message$options, 'value="1"', fixed = TRUE)
+      expect_match(
+        file_input_message$options,
+        '<optgroup label="Example dataset">\\s*<option value="1">original_table.tab</option>\\s*<option value="3">second_table.csv</option>\\s*</optgroup>'
+      )
+      expect_match(
+        file_input_message$options,
+        '<optgroup label="Another dataset \\(doi:2\\)">\\s*<option value="2">original_table.tab</option>\\s*</optgroup>'
+      )
+      expect_match(file_input_message$options, '<optgroup label="Another dataset (doi:3)">', fixed = TRUE)
+
+      session$setInputs(`radogost-file` = "2", `radogost-load` = 1)
+      expect_equal(session$returned$filename, "original_table.csv")
+      expect_equal(session$returned$type, "data")
+      expect_equal(session$returned$input[["radogost-file-url"]],
+                   "https://radogost.dariah.pl/api/access/datafile/2")
+      expect_null(session$returned$input[["radogost-file"]])
+      session$setInputs(`radogost-file` = "3")
+      saved_inputs <- getDataSourceInputs(
+        list(`fileSource-source` = "radogost", `fileSource-radogost-file` = "3"),
+        session$returned
+      )
+      expect_equal(saved_inputs[["fileSource-radogost-file-url"]],
+                   "https://radogost.dariah.pl/api/access/datafile/2")
+      session$setInputs(`radogost-file` = "2")
+      loaded <- loadDataWrapper(
+        values = list(),
+        filepath = session$returned$file,
+        filename = session$returned$filename,
+        type = "csv",
+        sep = ";",
+        dec = ".",
+        withRownames = FALSE,
+        withColnames = TRUE,
+        sheetId = 1
+      )
+      expect_equal(names(loaded$dataImport), c("first", "second"))
+      expect_equal(as.numeric(loaded$dataImport[1, ]), c(1, 2))
+
+      active_path <- session$returned$file
+      session$setInputs(`fileType-colSep` = ",")
+      expect_true(file.exists(active_path))
+      expect_equal(session$returned$file, active_path)
+      session$setInputs(`radogost-load` = 2)
+      expect_false(file.exists(active_path))
+      expect_true(file.exists(session$returned$file))
+      expect_length(downloaded_paths, 2L)
+
+      download_state$fail <- TRUE
+      expect_equal(session$returned$loadFailed, 0L)
+      session$setInputs(`radogost-load` = 3)
+      expect_null(session$returned$file)
+      expect_equal(session$returned$loadFailed, 1L)
+      expect_false(any(file.exists(downloaded_paths)))
+      download_state$fail <- FALSE
+      session$setInputs(`radogost-load` = 4)
+      expect_true(file.exists(session$returned$file))
+
+      session$setInputs(source = "url")
+      expect_null(session$returned$file)
+      expect_null(session$returned$filename)
+      expect_false(any(file.exists(downloaded_paths)))
+
+      session$setInputs(source = "radogost", `radogost-search` = 3)
+      session$setInputs(`radogost-file` = "2", `radogost-load` = 5)
+      expect_true(file.exists(session$returned$file))
+      expect_length(downloaded_paths, 4L)
+      session$close()
+      expect_false(any(file.exists(downloaded_paths)))
+    }
+  )
+})
+
+test_that("RADOGOST query JSON reloads saved and current sources by stable URL", {
+  file_url <- "https://radogost.dariah.pl/api/access/datafile/4871"
+  downloaded_paths <- character()
+  mock_download <- function(url) {
+    expect_equal(url, file_url)
+    path <- tempfile(fileext = ".csv")
+    writeLines(c("first;second", "1;2", "3;4"), path)
+    downloaded_paths <<- c(downloaded_paths, path)
+    list(file = path, filename = "original.csv")
+  }
+  on.exit(unlink(downloaded_paths), add = TRUE)
+  local_mocked_bindings(download_radogost_file = mock_download)
+
+  source <- getDataSource(
+    dataSource = list(),
+    input = list(source = "radogost", `radogost-file` = "2"),
+    type = "radogost",
+    radogostFiles = data.frame(
+      file_url = c("https://radogost.dariah.pl/api/access/datafile/1", file_url),
+      restricted = FALSE
+    )
+  )
+  source_inputs <- getDataSourceInputs(list(), source)
+  file_inputs <- list(
+    `dataSelector-fileType-type` = "csv",
+    `dataSelector-fileType-colSep` = ";",
+    `dataSelector-fileType-decSep` = ".",
+    `dataSelector-fileType-sheet` = "1"
+  )
+  item <- new_DataProcessItem(
+    data.frame(first = c(1L, 3L), second = c(2L, 4L)),
+    input = c(file_inputs, source_inputs),
+    filename = source$filename,
+    unprocessed = TRUE
+  )
+  can_download <- reactiveVal(TRUE)
+
+  testServer(function(input, output, session) {
+    observeDownloadDataLink(
+      "test", input, output, session,
+      dataProcessList = reactiveVal(list(original.csv = item)),
+      sourceInputs = reactive(source_inputs),
+      canDownload = can_download
+    )
+  }, {
+    session$setInputs(
+      `dataSelector-fileType-type` = "csv",
+      `dataSelector-fileType-colSep` = ";",
+      `dataSelector-fileType-decSep` = ".",
+      `dataSelector-fileType-sheet` = "1",
+      `fileSource-source` = "radogost",
+      `fileSource-radogost-file` = "1",
+      `dataQuerier-sqlCommand` = "SELECT first, second FROM t1;"
+    )
+    exported <- jsonlite::read_json(output$downloadDataLink, simplifyVector = TRUE)
+    expect_setequal(names(exported), c("original.csv", nmLastInputs()))
+    expect_equal(extract_sql_command(as_DataProcessLink(exported[[nmLastInputs()]])),
+                 "SELECT first, second FROM t1;")
+    for (entry in exported) {
+      expect_equal(entry$source_inputs[["fileSource-radogost-file-url"]], file_url)
+      expect_null(entry$source_inputs[["fileSource-radogost-file"]])
+      loaded <- load_data_from_link(
+        as_DataProcessLink(entry),
+        customNames = list(withRownames = FALSE, withColnames = TRUE)
+      )
+      expect_equal(loaded$dataImport, item$data)
+      expect_equal(loaded$sourceInputs, source_inputs)
+      expect_false(file.exists(tail(downloaded_paths, 1L)))
+    }
+    can_download(FALSE)
+    expect_error(output$downloadDataLink, class = "shiny.silent.error")
+  })
+  expect_length(downloaded_paths, 3L)
+  expect_true(file.exists(source$file))
+})
+
+test_that("RADOGOST link filename inference cleans up its fallback download", {
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  downloads <- 0L
+  local_mocked_bindings(download_radogost_file = function(...) {
+    downloads <<- downloads + 1L
+    writeLines(c("first,second", "1,2"), path)
+    list(file = path, filename = "original.csv")
+  })
+  source_inputs <- list(
+    `fileSource-source` = "radogost",
+    `fileSource-radogost-file-url` = "https://radogost.dariah.pl/api/access/datafile/1"
+  )
+
+  testServer(function(input, output, session) {}, {
+    link <- new_DataProcessLink(input = source_inputs)
+    expect_equal(link$filename, "original.csv")
+    expect_equal(downloads, 1L)
+    expect_false(file.exists(path))
+
+    source_inputs[["fileSource-radogost-filename"]] <- "saved.csv"
+    link <- new_DataProcessLink(input = source_inputs)
+    expect_equal(link$filename, "saved.csv")
+    expect_equal(downloads, 1L)
+  })
+})
+
+test_that("RADOGOST query reconstruction reports invalid URLs and download failures", {
+  expect_error(
+    extractDataSourceFromInputs(list(
+      `fileSource-source` = "radogost",
+      `fileSource-radogost-file-url` = "https://example.com/file.csv"
+    )),
+    "not a supported RADOGOST endpoint"
+  )
+  local_mocked_bindings(download_radogost_file = function(...) stop("HTTP 403"))
+  expect_error(
+    extractDataSourceFromInputs(list(
+      `fileSource-source` = "radogost",
+      `fileSource-radogost-file-url` = "https://radogost.dariah.pl/api/access/datafile/1"
+    )),
+    "HTTP 403"
+  )
+})
+
+test_that("RADOGOST query downloads are cleaned up after parsing fails", {
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines("only_one_column", path)
+  local_mocked_bindings(download_radogost_file = function(...) {
+    list(file = path, filename = "invalid.csv")
+  })
+  link <- new_DataProcessLink(
+    input = list(
+      `fileSource-source` = "radogost",
+      `fileSource-radogost-file-url` = "https://radogost.dariah.pl/api/access/datafile/1",
+      `dataSelector-fileType-type` = "csv",
+      `dataSelector-fileType-colSep` = ",",
+      `dataSelector-fileType-decSep` = ".",
+      `dataSelector-fileType-sheet` = "1"
+    ),
+    filename = "invalid.csv"
+  )
+  testServer(function(input, output, session) {}, {
+    loaded <- load_data_from_link(
+      link, customNames = list(withRownames = FALSE, withColnames = TRUE)
+    )
+    expect_null(loaded$dataImport)
+    expect_match(loaded$errors$load, "Could not read in file")
+  })
+  expect_false(file.exists(path))
+})
+
+test_that("a failed source load clears the previous import but a plain reset keeps it", {
+  path <- tempfile(fileext = ".csv")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c("first;second", "1;2", "3;4"), path)
+  dataSource <- shiny::reactiveValues(file = NULL, filename = NULL, type = NULL,
+                                      input = NULL, loadFailed = 0L)
+  customNames <- shiny::reactiveValues(withRownames = FALSE, withColnames = TRUE)
+
+  testServer(
+    configureDataServer,
+    args = list(
+      dataProcessList = reactiveVal(list()),
+      customNames = customNames,
+      dataSource = dataSource,
+      dataSourceInputs = reactive(list(`fileSource-source` = "radogost")),
+      dataForPreview = reactiveVal(NULL)
+    ),
+    {
+      session$flushReact()
+      session$setInputs(`fileType-type` = "csv", `fileType-colSep` = ";",
+                        `fileType-decSep` = ".", `fileType-sheet` = "1")
+      dataSource$file <- path
+      dataSource$filename <- "original.csv"
+      dataSource$type <- "data"
+      session$flushReact()
+      expect_equal(names(session$returned$dataImport), c("first", "second"))
+
+      # restoring a data query resets the source after loading; data must survive
+      dataSource$file <- NULL
+      dataSource$type <- NULL
+      session$flushReact()
+      expect_equal(names(session$returned$dataImport), c("first", "second"))
+      expect_equal(session$returned$sourceInputs[["fileSource-source"]], "radogost")
+
+      dataSource$loadFailed <- 1L
+      session$flushReact()
+      expect_null(session$returned$dataImport)
+      expect_null(session$returned$fileName)
+      expect_null(session$returned$preview)
+      expect_length(session$returned$sourceInputs, 0L)
+    }
+  )
+})
+
+test_that("text imports normalize a typed tab separator", {
+  path <- tempfile(fileext = ".txt")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c("first\tsecond\tthird", "1\t2\t3", "4\t5\t6"), path)
+
+  values <- shiny::reactiveValues()
+  loaded <- shiny::isolate({
+    result <- loadDataWrapper(
+      values = values,
+      filepath = path,
+      filename = basename(path),
+      type = "txt",
+      sep = "\\t",
+      dec = ".",
+      withRownames = FALSE,
+      withColnames = TRUE,
+      sheetId = 1
+    )
+    shiny::reactiveValuesToList(result)
+  })
+
+  expect_null(loaded$errors$load)
+  expect_equal(
+    loaded$dataImport,
+    data.frame(first = c(1L, 4L), second = c(2L, 5L), third = c(3L, 6L))
+  )
+})
+
+test_that("text import separator help explains tabs and whitespace", {
+  ui <- htmltools::renderTags(
+    selectFileTypeUI("fileType", defaultFileTypes = c("csv", "txt"))
+  )$html
+
+  expect_match(ui, "Use \\t for tabs", fixed = TRUE)
+  expect_match(ui, "Leave blank to separate on whitespace", fixed = TRUE)
+})

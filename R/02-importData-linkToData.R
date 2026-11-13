@@ -12,7 +12,12 @@ downloadDataLinkUI <-
       column(4,
              align = "right",
              style = "margin-top: 0.5em",
-             downloadButton(ns(downloadBtnID), "Download Query as .json", style = "width: 100%;")
+             # Shiny removes the "disabled" class when it sets the download URL, but keeps the
+             # shinyjs "disabled" attribute; block clicks on links with that attribute.
+             tags$style(HTML("a.shiny-download-link[disabled] { pointer-events: none; }")),
+             shinyjs::disabled(
+               downloadButton(ns(downloadBtnID), "Download Query as .json", style = "width: 100%;")
+             )
       )
     )
   }
@@ -25,12 +30,16 @@ downloadDataLinkUI <-
 # @param session session from server function
 # @param dataProcessList (reactiveVal) list of data imports
 # @param downloadBtnID (character) ID of the downloadButton
+# @param sourceInputs (reactive) source inputs associated with the loaded data
+# @param canDownload (reactive) whether the current import permits query downloads
 observeDownloadDataLink <- function(
   id,
   input,
   output,
   session,
   dataProcessList,
+  sourceInputs,
+  canDownload,
   downloadBtnID = "downloadDataLink"
 ) {
   dataLinkDownload <- reactive({
@@ -46,7 +55,9 @@ observeDownloadDataLink <- function(
 
     # add current inputs as additional item but without data
     current_file_link <- new_DataProcessLink(
-      input = input,
+      input = c(getFileInputs(input, type = "file"),
+                sourceInputs(),
+                getFileInputs(input, type = "query")),
       filename = nmLastInputs()
     )
 
@@ -76,6 +87,7 @@ observeDownloadDataLink <- function(
             sep = "_")
     },
     content = function(file) {
+      req(isTRUE(canDownload()))
       logDebug("linkToData: download as json to '%s'", file)
       jsonlite::write_json(dataLinkDownload(), file, null = "null")
     }

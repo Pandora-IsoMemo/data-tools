@@ -36,5 +36,7 @@ loadDataWrapper(
 \item{sheetId}{(numeric) sheet id}
 }
 \description{
-Wrapper to load a data.frame from a `"xlsx", "xls", "odt", "csv", "txt"` file.
+Wrapper to load a data.frame from a `"xlsx", "xls", "ods", "csv", "txt"` file.
+XLS and XLSX extensions are compatible with either Excel type selection;
+Pandora determines the actual workbook format.
 }

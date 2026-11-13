@@ -20,7 +20,7 @@
 
 ## The Import Data Module
 
-Access to uploads from file, url, and the Pandora Platform. Optionally, merge data before the import via UI or SQL.
+Access to uploads from file, URL, the Pandora Platform, and the RADOGOST Repository. RADOGOST search covers public tabular records and is capped at 500 results per search; refine the filename query for more specific results. Selected files must resolve to a format supported by the data import settings. Restricted or embargoed files may be unavailable.
 
 UI function:
 

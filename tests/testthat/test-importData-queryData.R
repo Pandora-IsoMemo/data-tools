@@ -1,3 +1,62 @@
+test_that("query downloads follow Accept validation, including tab changes and resets", {
+  state <- new.env(parent = emptyenv())
+  state$values <- reactiveValues(
+    dataImport = NULL, fileName = "table.csv", warnings = list(), errors = list(),
+    sourceInputs = list(), fileImportSuccess = NULL
+  )
+  state$queried <- reactiveVal(NULL)
+  state$buttons <- list()
+  local_mocked_bindings(
+    selectSourceServer = function(...) reactiveValues(input = NULL),
+    configureDataServer = function(...) state$values,
+    prepareDataServer = function(...) reactiveValues(data = NULL, fileName = NULL),
+    mergeDataServer = function(...) reactive(NULL),
+    queryDataServer = function(...) state$queried,
+    observeUploadDataLink = function(...) NULL
+  )
+  local_mocked_bindings(
+    toggleState = function(id, condition, asis) {
+      state$buttons[[id]] <- condition
+    },
+    .package = "shinyjs"
+  )
+
+  testServer(importDataServer, args = list(
+    customErrorChecks = list(reactive(checkErrorNoNumericColumns))
+  ), {
+    session$setInputs(tabImport = "Select")
+    expect_false(canAccept())
+    expect_false(state$buttons[[session$ns("dataSelector-downloadDataLink")]])
+    expect_false(state$buttons[[session$ns("dataQuerier-downloadDataLink")]])
+
+    state$values$dataImport <- data.frame(first = 1:3, second = 4:6)
+    session$flushReact()
+    expect_true(canAccept())
+    expect_true(state$buttons[[session$ns("dataSelector-downloadDataLink")]])
+    expect_false(state$buttons[[session$ns("dataQuerier-downloadDataLink")]])
+
+    state$queried(list(query = data.frame(first = 1:3)))
+    session$flushReact()
+    expect_true(state$buttons[[session$ns("dataQuerier-downloadDataLink")]])
+    session$setInputs(tabImport = "Query with SQL")
+    expect_false(canAccept())
+    expect_false(state$buttons[[session$ns("accept")]])
+    expect_false(state$buttons[[session$ns("dataSelector-downloadDataLink")]])
+    expect_false(state$buttons[[session$ns("dataQuerier-downloadDataLink")]])
+
+    session$setInputs(tabImport = "Select")
+    expect_true(canAccept())
+    expect_true(state$buttons[[session$ns("dataSelector-downloadDataLink")]])
+    expect_true(state$buttons[[session$ns("dataQuerier-downloadDataLink")]])
+
+    state$values$dataImport <- NULL
+    session$flushReact()
+    expect_false(canAccept())
+    expect_false(state$buttons[[session$ns("dataSelector-downloadDataLink")]])
+    expect_false(state$buttons[[session$ns("dataQuerier-downloadDataLink")]])
+  })
+})
+
 testthat::test_that("Test queryDataServer", {
   testFile1 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 2)
   testFile2 <- openxlsx::read.xlsx(testthat::test_path("alkane_database.xlsx"), sheet = 3)
