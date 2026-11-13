@@ -293,6 +293,7 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
   mock_fetch <- function(name_pattern, extension, per_page, max_results) {
     search_calls <<- search_calls + 1L
     expect_equal(max_results, 500)
+    expect_equal(extension, c("tab", "xls", "xlsx", "csv", "ods"))
     data.frame(
       file_name = c("original_table.tab", "original_table.tab", "second_table.csv", "third_table.csv"),
       file_url = paste0("https://radogost.dariah.pl/api/access/datafile/", seq_len(4L)),
@@ -371,4 +372,41 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
       expect_null(session$returned$filename)
     }
   )
+})
+
+test_that("text imports normalize a typed tab separator", {
+  path <- tempfile(fileext = ".txt")
+  on.exit(unlink(path), add = TRUE)
+  writeLines(c("first\tsecond\tthird", "1\t2\t3", "4\t5\t6"), path)
+
+  values <- shiny::reactiveValues()
+  loaded <- shiny::isolate({
+    result <- loadDataWrapper(
+      values = values,
+      filepath = path,
+      filename = basename(path),
+      type = "txt",
+      sep = "\\t",
+      dec = ".",
+      withRownames = FALSE,
+      withColnames = TRUE,
+      sheetId = 1
+    )
+    shiny::reactiveValuesToList(result)
+  })
+
+  expect_null(loaded$errors$load)
+  expect_equal(
+    loaded$dataImport,
+    data.frame(first = c(1L, 4L), second = c(2L, 5L), third = c(3L, 6L))
+  )
+})
+
+test_that("text import separator help explains tabs and whitespace", {
+  ui <- htmltools::renderTags(
+    selectFileTypeUI("fileType", defaultFileTypes = c("csv", "txt"))
+  )$html
+
+  expect_match(ui, "Use \\t for tabs", fixed = TRUE)
+  expect_match(ui, "Leave blank to separate on whitespace", fixed = TRUE)
 })

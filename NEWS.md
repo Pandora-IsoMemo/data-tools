@@ -3,10 +3,12 @@
 ## Updates
 - Added RADOGOST Repository search and import for supported public tabular files (#124).
 - Replaced the unsupported ODT data-import option with ODS, added content-based Excel format detection, and enabled ODS sheet selection.
+- Excluded plain-text documents from RADOGOST search while retaining TXT imports for other sources.
 
 ## Bug Fixes
 - Allowed both XLS and XLSX files through Excel type validation, fixing XLS imports using the combined xls(x) choice.
 - Improved automatic file-type selection for combined Excel choices and normalized filename extensions to lowercase.
+- TXT imports now accept `\t` as a tab separator, and the separator help explains whitespace separation.
 
 # DataTools 26.08.2
 

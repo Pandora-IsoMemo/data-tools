@@ -37,6 +37,9 @@ loadDataWrapper <- function(values,
     )
     return(values)
   }
+  if (identical(sep, "\\t")) {
+    sep <- "\t"
+  }
 
   df <- tryCatch(
     Pandora::loadData(

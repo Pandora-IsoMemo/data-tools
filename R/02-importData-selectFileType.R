@@ -35,6 +35,7 @@ selectFileTypeUI <- function(id,
                condition = paste0("input.type == 'csv' || input.type == 'txt'"),
                ns = ns,
                textInput(ns("colSep"), "column separator:", value = ","),
+               helpText("Use \\t for tabs. Leave blank to separate on whitespace."),
                textInput(ns("decSep"), "decimal separator:", value = ".")
              ),
              conditionalPanel(

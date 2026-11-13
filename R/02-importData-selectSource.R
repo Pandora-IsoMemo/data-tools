@@ -373,7 +373,9 @@ selectSourceServer <- function(id,
                          message = "Searching RADOGOST...",
                          value = 0,
                          radogostFetch(name_pattern = input[["radogost-name"]],
-                                       extension = c("tab", ckanFileTypes),
+                                       extension = c("tab", ckanFileTypes[
+                                         !tolower(ckanFileTypes) %in% "txt"
+                                       ]),
                                        per_page = 100,
                                        max_results = 500)
                        )
