@@ -18,16 +18,16 @@ selectSourceUI <- function(id,
   sourceChoices <- switch(importType,
                           data = c("Pandora" = "ckan",
                                    "Radogost" = "radogost",
-                                   "URL" = "url",
                                    "Github" = "remoteModel",
+                                   "URL" = "url",
                                    "File" = "file"),
                           model = c("Pandora" = "ckan",
-                                    "URL" = "url",
                                     "Github" = "remoteModel",
+                                    "URL" = "url",
                                     "File" = "file"),
                           zip = c("Pandora" = "ckan",
-                                  "URL" = "url",
                                   "Github" = "remoteModel",
+                                  "URL" = "url",
                                   "File" = "file"),
                           list = c("Pandora" = "ckan",
                                    "URL" = "url",
@@ -89,14 +89,23 @@ selectSourceUI <- function(id,
       ns = ns,
       fluidRow(
         column(
-          width = 5,
-          textInput(ns("radogost-name"), "File name", value = ""),
+          width = 4,
+          textInput(ns("radogost-name"), "File name contains", value = "", width = "100%",
+                    placeholder = "Leave blank or enter words ..."),
+          helpText("Click Search to update the File list.")
+        ),
+        column(
+          width = 2,
+          style = "margin-top: 1.7em;",
           actionButton(ns("radogost-search"), "Search")
         ),
         column(
-          width = 7,
-          selectizeInput(ns("radogost-file"), "File", choices = c("Search for files first" = "")),
-          actionButton(ns("radogost-load"), "Load selected file"),
+          width = 6,
+          selectizeInput(ns("radogost-file"), "File",
+                         choices = c("Search files to see available results" = ""),
+                         options = list(placeholder = "Search files to see available results"),
+                         width = "100%"),
+          actionButton(ns("radogost-load"), "Load"),
           textOutput(ns("radogost-status"))
         )
       )
@@ -245,8 +254,9 @@ selectSourceServer <- function(id,
                    updateTextInput(session, "radogost-name", value = "")
                    updateSelectizeInput(session,
                                         "radogost-file",
-                                        choices = c("Search for files first" = ""),
-                                        selected = "")
+                                        choices = c("Search files to see available results" = ""),
+                                        selected = "",
+                                        options = list(placeholder = "Search files to see available results"))
                    updateTextInput(session, "repoFilter-ckanMeta", value = "")
 
                    if (isTRUE(internetCon())) {
@@ -339,8 +349,9 @@ selectSourceServer <- function(id,
                      radogostSearchError(NULL)
                      updateSelectizeInput(session,
                                           "radogost-file",
-                                          choices = c("Search for files first" = ""),
-                                          selected = "")
+                                          choices = c("Search files to see available results" = ""),
+                                          selected = "",
+                                          options = list(placeholder = "Search files to see available results"))
                    }
 
                    # Do not reset inputs when switching the input$source!!
@@ -355,6 +366,7 @@ selectSourceServer <- function(id,
                      radogostFiles(radogost_empty_files())
                      radogostSearchError("No internet connection.")
                    } else {
+                     logDebug("%s: Updating RADOGOST files", id)
                      tryCatch({
                        results <- withProgress(
                          message = "Searching RADOGOST...",
@@ -373,15 +385,21 @@ selectSourceServer <- function(id,
 
                    results <- radogostFiles()
                    choices <- if (nrow(results) == 0L) {
-                     c("No matching files" = "")
+                     c("No matching files - try different words" = "")
                    } else {
                      labels <- paste(results$dataset_name, results$file_name, sep = " / ")
-                     stats::setNames(as.character(seq_len(nrow(results))), labels)
+                     c("Select a file..." = "",
+                       stats::setNames(as.character(seq_len(nrow(results))), labels))
                    }
                    updateSelectizeInput(session,
                                         "radogost-file",
                                         choices = choices,
-                                        selected = "")
+                                        selected = "",
+                                        options = list(placeholder = if (nrow(results) == 0L) {
+                                          "No matching files - try different words"
+                                        } else {
+                                          "Select a file..."
+                                        }))
                  }, ignoreInit = TRUE)
 
                  output[["radogost-status"]] <- renderText({

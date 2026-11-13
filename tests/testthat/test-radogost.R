@@ -247,9 +247,17 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
     writeLines(c("first;second", "1;2", "3;4"), path)
     list(file = path, filename = "original_table.csv")
   }
+  file_input_message <- NULL
+  mock_session <- shiny::MockShinySession$new()
+  mock_session$sendInputMessage <- function(inputId, message) {
+    if (identical(inputId, "radogost-file") && !is.null(message$options)) {
+      file_input_message <<- message
+    }
+  }
 
   testServer(
     selectSourceServer,
+    session = mock_session,
     args = list(
       importType = "data",
       openPopupReset = reactive(FALSE),
@@ -267,6 +275,9 @@ test_that("RADOGOST source searches only on demand and loads through the shared 
       session$setInputs(source = "radogost", `radogost-name` = "original")
       session$setInputs(`radogost-search` = 2)
       expect_equal(search_calls, 1L)
+      expect_equal(file_input_message$value, "")
+      expect_match(file_input_message$options, 'value=""', fixed = TRUE)
+      expect_match(file_input_message$options, 'value="1"', fixed = TRUE)
 
       session$setInputs(`radogost-file` = "1", `radogost-load` = 1)
       expect_equal(session$returned$filename, "original_table.csv")
