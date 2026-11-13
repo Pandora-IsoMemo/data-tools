@@ -21,13 +21,37 @@ test_that("workbook format detection uses content for Excel and extension for OD
 test_that("sheet choices are read for Excel files by their content", {
   xlsx_path <- test_path("alkane_database.xlsx")
   xls_named_xlsx <- tempfile(fileext = ".xls")
-  on.exit(unlink(xls_named_xlsx), add = TRUE)
+  xls_path <- readxl::readxl_example("datasets.xls")
+  xlsx_named_xls <- tempfile(fileext = ".xlsx")
+  on.exit(unlink(c(xls_named_xlsx, xlsx_named_xls)), add = TRUE)
   expect_true(file.copy(xlsx_path, xls_named_xlsx))
+  expect_true(file.copy(xls_path, xlsx_named_xls))
 
   expect_equal(
     getSheetSelection(xls_named_xlsx),
     getSheetSelection(xlsx_path)
   )
+  expect_equal(detectWorkbookFormat(xlsx_named_xls), "xls")
+  expect_equal(
+    getSheetSelection(xlsx_named_xls),
+    getSheetSelection(xls_path)
+  )
+})
+
+test_that("remote XLS sheet discovery stages the detected extension and cleans up", {
+  staged_path <- NULL
+  testthat::local_mocked_bindings(download.file = function(url, destfile, mode, quiet) {
+    expect_equal(url, "https://example.com/workbook.xlsx")
+    staged_path <<- destfile
+    expect_equal(getExtension(destfile), "xls")
+    expect_true(file.copy(readxl::readxl_example("datasets.xls"), destfile))
+    0L
+  })
+  expect_equal(
+    getSheetSelection("https://example.com/workbook.xlsx", workbookFormat = "xls"),
+    getSheetSelection(readxl::readxl_example("datasets.xls"))
+  )
+  expect_false(file.exists(staged_path))
 })
 
 test_that("ODS sheet choices are available", {

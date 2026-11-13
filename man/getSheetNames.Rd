@@ -12,5 +12,6 @@ getSheetNames(filepath, workbookFormat = detectWorkbookFormat(filepath))
 \item{workbookFormat}{detected workbook format}
 }
 \description{
-Get Workbook Sheet Names
+XLS content is staged with an XLS extension when needed because the sheet
+reader also checks the filename.
 }

@@ -101,11 +101,27 @@ selectFileTypeServer <- function(id, dataSource, defaultFileTypes) {
 
 #' Get Workbook Sheet Names
 #'
+#' XLS content is staged with an XLS extension when needed because the sheet
+#' reader also checks the filename.
+#'
 #' @param filepath (character) url or path
 #' @param workbookFormat detected workbook format
 getSheetNames <- function(filepath, workbookFormat = detectWorkbookFormat(filepath)) {
   if (is.null(filepath) || is.null(workbookFormat)) {
     return(NULL)
+  }
+
+  is_url <- grepl("^https?://", filepath, ignore.case = TRUE)
+  if (workbookFormat == "xls" && (is_url || getExtension(filepath) != "xls")) {
+    staged_path <- tempfile(fileext = ".xls")
+    on.exit(unlink(staged_path), add = TRUE)
+    if (is_url) {
+      status <- download.file(filepath, staged_path, mode = "wb", quiet = TRUE)
+      if (status != 0L) stop("Could not download workbook for sheet discovery.", call. = FALSE)
+    } else if (!file.copy(filepath, staged_path)) {
+      stop("Could not stage XLS workbook for sheet discovery.", call. = FALSE)
+    }
+    filepath <- staged_path
   }
 
   sheetNames <- switch(
