@@ -60,3 +60,30 @@ test_that("getExtension returns lowercase extensions and ignores URL query strin
   expect_equal(getExtension("no-extension"), "")
 })
 
+test_that("remote signature reads request a range and consume only eight bytes", {
+  contents <- c(as.raw(c(0x50, 0x4b, 0x03, 0x04)), raw(1024 * 1024))
+  signature <- readRemoteWorkbookSignature(
+    "https://example.com/workbook.xls",
+    .open = function(description, open, method, headers) {
+      expect_equal(headers[["Range"]], "bytes=0-7")
+      expect_equal(method, "libcurl")
+      rawConnection(contents, open = open)
+    }
+  )
+  expect_identical(signature, contents[1:8])
+})
+
+test_that("remote Excel detection uses signature bytes rather than the URL extension", {
+  for (case in list(
+    list(extension = "xls", bytes = as.raw(c(0x50, 0x4b, 0x03, 0x04, 0, 0, 0, 0)), format = "xlsx"),
+    list(extension = "xlsx", bytes = as.raw(c(0xd0, 0xcf, 0x11, 0xe0, 0xa1, 0xb1, 0x1a, 0xe1)), format = "xls")
+  )) {
+    testthat::local_mocked_bindings(
+      readRemoteWorkbookSignature = function(filepath) case$bytes
+    )
+    expect_equal(
+      detectWorkbookFormat(paste0("https://example.com/workbook.", case$extension)),
+      case$format
+    )
+  }
+})

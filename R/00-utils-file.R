@@ -5,6 +5,18 @@ getExtension <- function(file, prefix = "") {
   paste0(prefix, tolower(extension))
 }
 
+readRemoteWorkbookSignature <- function(filepath, .open = base::url) {
+  connection <- .open(
+    filepath,
+    open = "rb",
+    method = "libcurl",
+    headers = c(Range = "bytes=0-7")
+  )
+  on.exit(close(connection))
+  # Closing after eight bytes also bounds reads when the server ignores Range.
+  readBin(connection, what = "raw", n = 8L)
+}
+
 detectWorkbookFormat <- function(filepath, inspectContent = TRUE) {
   if (is.null(filepath) || length(filepath) != 1L || is.na(filepath) || !nzchar(filepath)) {
     return(NULL)
@@ -21,9 +33,9 @@ detectWorkbookFormat <- function(filepath, inspectContent = TRUE) {
   signature <- tryCatch({
     signature_path <- filepath
     if (inspectContent && grepl("^https?://", filepath, ignore.case = TRUE)) {
-      signature_path <- tempfile(fileext = paste0(".", extension))
+      signature_path <- tempfile()
       on.exit(unlink(signature_path), add = TRUE)
-      utils::download.file(filepath, signature_path, mode = "wb", quiet = TRUE)
+      writeBin(readRemoteWorkbookSignature(filepath), signature_path)
     }
     if (inspectContent) readxl::format_from_signature(signature_path) else extension
   },
