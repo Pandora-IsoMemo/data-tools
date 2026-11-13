@@ -26,7 +26,11 @@ fetch_radogost_files(
 
 \item{name_pattern}{Optional filename words to match using order-independent AND logic.}
 
-\item{extension}{Optional file extension. Ingested tabular files are indexed as `tab`.}
+\item{extension}{Optional character vector of file extensions, matched using OR logic,
+e.g. \code{c("tab", "csv", "xlsx")}. Case and punctuation are normalized and duplicates
+removed. \code{NULL}, an empty vector, or a single blank string applies no extension filter.
+Each entry in a multi-extension vector must contain a letter or digit.
+Ingested tabular files are indexed as `tab`.}
 
 \item{timeout}{Request timeout in seconds.}
 

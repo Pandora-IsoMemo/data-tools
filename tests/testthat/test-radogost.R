@@ -23,6 +23,23 @@ test_that("RADOGOST query filters are normalized", {
   expect_error(radogost_build_query(extension = "."), "at least one letter or digit")
 })
 
+test_that("RADOGOST multiple extensions use grouped OR filters", {
+  expect_equal(
+    radogost_build_query("oak / data", c(" .TAB ", ".CSV", "csv", "XLSX")),
+    "(name:*oak* AND name:*data*) AND (fileExtension:tab OR fileExtension:csv OR fileExtension:xlsx)"
+  )
+  expect_equal(
+    radogost_build_query(extension = c(".CSV", "csv")),
+    "fileExtension:csv"
+  )
+  expect_equal(radogost_build_query(extension = character()), "*")
+  expect_equal(radogost_build_query(extension = " "), "*")
+  expect_error(radogost_build_query(extension = c("csv", ".")), "at least one letter or digit")
+  expect_error(radogost_build_query(extension = c("csv", "")), "at least one letter or digit")
+  expect_error(radogost_build_query(extension = c("csv", NA_character_)), "without missing values")
+  expect_error(radogost_build_query(extension = list("csv", "tab")), "character vector")
+})
+
 test_that("RADOGOST file search paginates and preserves original-format URLs", {
   requests <- list()
   mock_request <- function(url, query, timeout) {
@@ -42,14 +59,14 @@ test_that("RADOGOST file search paginates and preserves original-format URLs", {
   files <- fetch_radogost_files(
     per_page = 1,
     name_pattern = "oak data",
-    extension = ".CSV",
+    extension = c(".TAB", ".CSV"),
     .request = mock_request
   )
 
   expect_length(requests, 2L)
   expect_equal(vapply(requests, `[[`, integer(1), "start"), c(0L, 1L))
   expect_true(all(vapply(requests, `[[`, character(1), "q") ==
-                    "(name:*oak* AND name:*data*) AND fileExtension:csv"))
+                    "(name:*oak* AND name:*data*) AND (fileExtension:tab OR fileExtension:csv)"))
   expect_equal(
     files$file_url[files$file_name == "table.tab"],
     "https://radogost.dariah.pl/api/access/datafile/1?format=original"

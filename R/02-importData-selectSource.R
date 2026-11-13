@@ -70,18 +70,16 @@ selectSourceUI <- function(id,
     conditionalPanel(
       condition = "input.source == 'ckan'",
       ns = ns,
-      fluidRow(column(width = 6,
-                      filterCKANRepoUI(ns("repoFilter")),
-                      filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
-                      loadCKANResourceUI(ns("resourceLoad"))
-      ),
-      column(width = 6,
-             tags$strong("Additional information about the repository from ",
-                         tags$a("Pandora", href = "https://pandora.earth/", target = "_blank")),
-             dataTableOutput(ns(
-               "repoInfoTable"
-             ))
-      ))
+      fluidRow(
+        column(width = 6,
+               filterCKANRepoUI(ns("repoFilter")),
+               filterCKANResourceUI(ns("resourceFilter"), ckanFileTypes = ckanFileTypes),
+               loadCKANResourceUI(ns("resourceLoad"))),
+        column(width = 6,
+               tags$strong("Additional information about the repository from ",
+                           tags$a("Pandora", href = "https://pandora.earth/", target = "_blank")),
+               dataTableOutput(ns("repoInfoTable")))
+      )
     ),
     ## source == radogost
     conditionalPanel(
@@ -372,7 +370,7 @@ selectSourceServer <- function(id,
                          message = "Searching RADOGOST...",
                          value = 0,
                          radogostFetch(name_pattern = input[["radogost-name"]],
-                                       extension = "tab",
+                                       extension = c("tab", ckanFileTypes),
                                        per_page = 100,
                                        max_results = 500)
                        )

@@ -44,12 +44,22 @@ radogost_build_query <- function(name_pattern = NULL, extension = NULL) {
     query_parts <- c(query_parts, sprintf("(%s)", paste(words_query, collapse = " AND ")))
   }
 
-  if (!is.null(extension) && nzchar(trimws(extension))) {
-    ext_clean <- gsub("[^\\p{L}\\p{N}]", "", trimws(extension), perl = TRUE)
-    if (!nzchar(ext_clean)) {
-      stop("extension must contain at least one letter or digit", call. = FALSE)
+  if (!is.null(extension)) {
+    if (!is.character(extension) || anyNA(extension)) {
+      stop("extension must be a character vector without missing values", call. = FALSE)
     }
-    query_parts <- c(query_parts, sprintf("fileExtension:%s", tolower(ext_clean)))
+    if (length(extension) > 0L &&
+        !(length(extension) == 1L && !nzchar(trimws(extension)))) {
+      ext_clean <- unique(tolower(gsub("[^\\p{L}\\p{N}]", "", trimws(extension), perl = TRUE)))
+      if (any(!nzchar(ext_clean))) {
+        stop("each extension must contain at least one letter or digit", call. = FALSE)
+      }
+      ext_query <- sprintf("fileExtension:%s", ext_clean)
+      if (length(ext_query) > 1L) {
+        ext_query <- sprintf("(%s)", paste(ext_query, collapse = " OR "))
+      }
+      query_parts <- c(query_parts, ext_query)
+    }
   }
 
   if (length(query_parts) == 0) "*" else paste(query_parts, collapse = " AND ")
@@ -172,7 +182,11 @@ download_radogost_file <- function(file_url,
 #' @param per_page Number of results requested per API page.
 #' @param max_results Maximum number of results to return. The default returns all matching pages.
 #' @param name_pattern Optional filename words to match using order-independent AND logic.
-#' @param extension Optional file extension. Ingested tabular files are indexed as `tab`.
+#' @param extension Optional character vector of file extensions, matched using OR logic,
+#'   e.g. \code{c("tab", "csv", "xlsx")}. Case and punctuation are normalized and duplicates
+#'   removed. \code{NULL}, an empty vector, or a single blank string applies no extension filter.
+#'   Each entry in a multi-extension vector must contain a letter or digit.
+#'   Ingested tabular files are indexed as `tab`.
 #' @param timeout Request timeout in seconds.
 #' @param .request Internal request function, primarily used to mock API responses in tests.
 #' @return A data frame with file name, URL, content type, access status, and parent dataset metadata,
